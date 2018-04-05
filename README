@@ -1,0 +1,226 @@
+ This file describes the structure and the contents of the ASIS-for-GNAT
+distribution and explains how to install ASIS-for-GNAT.
+
+
+                      ASIS-for-GNAT Installation  Guide
+                      =================================
+
+Contents
+
+1. Structure of the ASIS-for-GNAT Distribution
+2. Coordination between ASIS-for-GNAT and GNAT Versions
+3. Building and installing ASIS-for-GNAT
+4. ASIS application examples
+5. Related information
+===========================================================================
+
+1. Structure of the ASIS-for-GNAT Distribution
+   -------------------------------------------
+
+ASIS-for-GNAT is distributed as a set of text files in ASCII format with
+UNIX-style line breaks. It includes all the sources of the ASIS-for-GNAT
+components.
+
+The ASIS-for-GNAT distribution is packaged as a UNIX tape archive file
+named asis-[version#]-src.tgz where [version#] is the number of the GNAT version
+for which ASIS-for-GNAT is distributed, for example asis-7.1.1-src.tgz.
+
+When you extract the content of this archive, you obtain the following
+directory structure:
+
+asis-[version#]-src <-- the top of the ASIS source distribution hierarchy
+
+   /asis      <-- the sources of the ASIS implementation components
+
+   /gnat      <--- sources of the GNAT compiler needed by ASIS
+
+   /lib       <-- the directory to place the ASIS library into
+
+   /obj       <-- the directory to be used for object and ALI files when
+                  installing ASIS. Originally it contains only the
+                  Makefile and the file install_asis.adb containing the
+                  source of a dummy Ada unit.
+
+   /doc      <-- the directory containing the ASIS-for-GNAT
+                       documentation
+
+   /tools     <-- ASIS-based tools
+
+      /asistant   <-- an interactive interpreter of ASIS queries and ASIS tree
+                      browser
+
+      /gnatcheck  <-- a tool which checks its argument sources against a
+                      given set of code style rules
+
+      /gnatelim   <-- a tool which analyzes a full Ada program and detects
+                      subprograms which are declared, but which are never
+                      called in this program
+
+      /gnatmetric <-- a tool which counts various metrics for its argument
+                      sources
+
+      /gnatpp     <-- a pretty-printing tool
+
+      /gnatstub   <-- a tool which can create an "empty", but compilable
+                      body for an library unit declaration.
+
+      /gnattest   <-- a tool which can create a test infrastructure for the
+                      test suites based on AUNIT testing framework.
+
+      /gnat2xml   <-- a tool that translates Ada source code into XML
+
+      /tool_utils <-- an ASIS Utility Library, it contains various resources
+                      that can be useful for ASIS application development,
+                      some of these resources are used for the ASIS tools
+                      listed above
+
+   /tutorial <--  Hands-On ASIS tutorials
+
+   /templates <-- A set of Ada source components which may be used for fast
+                  development of simple ASIS-based tools or which can be reused
+                  in the code of ASIS applications
+
+2. Coordination between ASIS-for-GNAT and GNAT Versions
+   ----------------------------------------------------
+
+The implementation of ASIS is always based on some persistent data structure
+produced by the underlying Ada compiler. ASIS-for-GNAT uses the tree output
+files produced by GNAT, and it incorporates some compiler components to work
+with these tree files.
+
+Each distribution of ASIS-for-GNAT corresponds to a specific version of GNAT.
+The version number is a part of the name of the archive file of the
+ASIS-for-GNAT distribution, as well as the name of the top catalog of the
+directory structure you will get when you unpack the archive.
+
+To use a given distribution of ASIS-for-GNAT, you must have the proper version
+of GNAT installed on your system.  Make sure that when you update
+ASIS-for-GNAT, you also update GNAT accordingly, and vice versa.
+
+To check that your GNAT/ASIS configuration is consistent, do the following:
+
+- Get the version number and the build date for the GNAT compiler installed in
+  your environment. To do this, run the gnatls tool with -v option
+
+  $ gnatls -v
+
+  The first line of the output produced in stdout will start with:
+
+     GNATLS <compiler_version> (<date[-<backend suffix>]>)
+
+  e.g. GNATLS Pro 7.1.1 (20130109-47)
+
+- Compare this to the version and the build date embedded in the name of
+  the ASIS source distribution.
+
+If the version numbers in the <compiler-version> parts and dates are exactly
+the same, your configuration is consistent.
+
+3. Building and installing ASIS-for-GNAT
+   -------------------------------------
+
+After unpacking the ASIS-for-GNAT archive, go to the resulting
+asis-[version#]-src directory.
+
+3.1 Installing under Unix systems
+    -----------------------------
+
+If you are under a Unix system (e.g. GNU/Linux, Solaris), or
+under Windows with cygwin or msys environment, use:
+
+   make all install prefix=<install_dir>
+
+This will create the required Ada sources from the templates present in
+the gnat subdirectory, build and install the ASIS library in the
+specified location. <install_dir> is the root directory of your GNAT
+installation (this is the recommended way to install ASIS).
+
+If you run in the root directory of the ASIS source distribution
+asis-[version#]-src:
+
+   make install-asistant prefix=<install_dir>
+
+this installs the ASIS interactive interpreter asistant (see
+the ASIS User's guide for more details).
+
+Then in order to be able to build your own ASIS tools with the project
+files, add:
+
+with "asis";
+
+to a project file used by your ASIS application.
+
+3.2 Installing under Windows
+    ------------------------
+
+If you do not have a possibility to use the 'make' utility, the process of
+ASIS installation requires a few more steps.
+
+First, you have to create two needed GNAT sources from the templates. In the
+root directory of the ASIS source distribution asis-[version#]-src do:
+
+cd gnat
+gprbuild -p  -XBLD=prod snames.gpr
+xsnamest.exe
+move snames.ns snames.ads
+move snames.nb snames.adb
+cd ..
+
+Now you can build ASIS. The recommended way is:
+
+gprbuild -p -j0 -XBLD=prod -vl -XASIS_COMPONENTS=lib build_asis.gpr
+
+The recommended way to install ASIS is:
+
+gprinstall -p -f --prefix=<install_dir> --sources-subdir=include/asis --lib-subdir=lib/asis --project-subdir=lib/gnat -XBLD=prod -XASIS_COMPONENTS=lib build_asis.gpr
+
+These steps build and install ASIS and asistant tool.
+
+Then in order to be able to build your own ASIS tools with the project
+files, add:
+
+with "asis";
+
+to a project file used by your ASIS application.
+
+You can build the ASIS tools executables. To build an
+ASIS tool, go into the corresponding tool sources directory
+tools\<toolname> and do:
+
+   gprbuild -j0 -P<toolname>
+
+This creates the executable for <toolname> in the tools\<toolname>
+directory.
+
+4. ASIS application examples
+   -------------------------
+The ASIS-for-GNAT does not contain any special directory with ASIS application
+examples. Instead, you may consider the directories with ASIS tools included
+in the distribution as examples of real-life ASIS applications. Note that the
+corresponding tool project files can be used as templates for creating project
+files for your own ASIS application. A good starting point as a full-size ASIS
+application example is the gnatstub tool.
+
+The solutions provided for the ASIS tutorial (asis-[version#]-src/tutorial)
+can be viewed as simple (introductory) ASIS application examples. The directory
+asis-[version#]-src/tutorial/using_templates/metrics contains a simple
+solution for the metric tool development problem (the full-size solution is
+given in asis-[version#]-src/tools/gnatmetric), the directory
+asis-[version#]-src/tutorial/using_templates/style_checker provides a simple
+solution for the style checking tool problem (the full-size solution is given
+in asis-[version#]-src/tools/gnatcheck).
+
+5. Related information
+   -------------------
+
+For more information about ASIS-for-GNAT see the following documents:
+
+ - The ASIS-for-GNAT User's Guide explains how to build tools with
+   ASIS-for-GNAT and describes how to create and maintain an ASIS Context
+   to be used with ASIS-for-GNAT, as well as other efficiency issues. It
+   also contains a general introduction to ASIS 95.
+
+ - The ASIS-for-GNAT Reference Manual describes in full the implementation
+   choices taken on all ASIS implementation-specific issues, and lists the
+   current implementation limitations.
+

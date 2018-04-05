@@ -1,0 +1,859 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>4. Implementation-Specific Features and Implementation Permissions &mdash; ASIS-for-GNAT Reference Manual 2017 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2017',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="ASIS-for-GNAT Reference Manual 2017 documentation" href="../asis_rm.html" />
+    <link rel="next" title="5. Debugging Information" href="debugging_information.html" />
+    <link rel="prev" title="3. ASIS Extensions" href="asis_extensions.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="debugging_information.html" title="5. Debugging Information"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="asis_extensions.html" title="3. ASIS Extensions"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../asis_rm.html">ASIS-for-GNAT Reference Manual 2017 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../asis_rm.html">
+              <img class="logo" src="../_static/adacore_transparent.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../asis_rm.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">4. Implementation-Specific Features and Implementation Permissions</a><ul>
+<li><a class="reference internal" href="#interacting-with-the-underlying-ada-implementation">4.1. Interacting with the Underlying Ada Implementation</a><ul>
+<li><a class="reference internal" href="#format-of-the-parameters-string">4.1.1. Format of the <code class="docutils literal"><span class="pre">Parameters</span></code> String</a></li>
+<li><a class="reference internal" href="#parameters-of-asis-implementation-initialize">4.1.2. Parameters of <code class="docutils literal"><span class="pre">Asis.Implementation.Initialize</span></code></a></li>
+<li><a class="reference internal" href="#parameters-of-asis-implementation-finalize">4.1.3. Parameters of <code class="docutils literal"><span class="pre">Asis.Implementation.Finalize</span></code></a></li>
+<li><a class="reference internal" href="#parameters-of-asis-ada-environments-associate">4.1.4. Parameters of <code class="docutils literal"><span class="pre">Asis.Ada_Environments.Associate</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#implementation-permissions">4.2. Implementation Permissions</a><ul>
+<li><a class="reference internal" href="#asis-implementation-permissions-queries">4.2.1. <code class="docutils literal"><span class="pre">Asis.Implementation.Permissions</span></code> Queries</a></li>
+<li><a class="reference internal" href="#processing-implicit-elements">4.2.2. Processing Implicit <code class="docutils literal"><span class="pre">Element</span></code>s</a></li>
+<li><a class="reference internal" href="#processing-several-contexts-at-a-time">4.2.3. Processing Several Contexts at a Time</a></li>
+<li><a class="reference internal" href="#implementation-defined-types-and-values">4.2.4. Implementation-Defined Types and Values</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#asis-queries-having-specific-implementation-permissions-or-implementation-specific-results">4.3. ASIS Queries Having Specific Implementation Permissions or Implementation-Specific Results</a></li>
+<li><a class="reference internal" href="#processing-of-predefined-input-output-packages">4.4. Processing of Predefined Input-Output Packages</a></li>
+<li><a class="reference internal" href="#representation-clauses-and-gnati-gnat-option">4.5. Representation clauses and <code class="docutils literal"><span class="pre">-gnatI</span></code> GNAT option</a></li>
+<li><a class="reference internal" href="#dynamic-context-modes">4.6. Dynamic <code class="docutils literal"><span class="pre">Context</span></code> Modes</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="asis_extensions.html"
+                        title="previous chapter">3. ASIS Extensions</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="debugging_information.html"
+                        title="next chapter">5. Debugging Information</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/asis_rm/implementation-specific_features_and_implementation_permissions.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="implementation-specific-features-and-implementation-permissions">
+<span id="id1"></span><h1>4. Implementation-Specific Features and Implementation Permissions<a class="headerlink" href="#implementation-specific-features-and-implementation-permissions" title="Permalink to this headline">¶</a></h1>
+<span class="target" id="index-0"></span><p id="index-1">ASIS permits four kinds of implementation-specific behavior.</p>
+<span class="target" id="index-2"></span><span class="target" id="index-3"></span><p id="index-4">First, ASIS subprograms that define an interface between an ASIS
+implementation and the underlying Ada implementation have
+implementation-specific parameters. There are three such queries &#8212;
+<code class="docutils literal"><span class="pre">Asis.Implementation.Initialize</span></code>,
+<code class="docutils literal"><span class="pre">Asis.Implementation.Finalize</span></code> and
+<code class="docutils literal"><span class="pre">Asis.Ada_Environments.Associate</span></code>.</p>
+<p>Each has a string parameter
+named <code class="docutils literal"><span class="pre">Parameters</span></code> with an implementation-specific meaning. The meaning
+of the <code class="docutils literal"><span class="pre">Parameters</span></code> string in ASIS-for-GNAT is discussed in
+<a class="reference internal" href="#interacting-with-the-underlying-ada-implementation"><em>Interacting with the Underlying Ada Implementation</em></a>.</p>
+<p id="index-5">Second, in some areas the ASIS standard explicitly grants the
+implementation permission to provide restricted functionality;
+generally this allows omitting features that could present
+considerable implementation difficulty.
+Such permissions usually affect more than one ASIS query.
+The ASIS package <code class="docutils literal"><span class="pre">Asis.Implementation.Permissions</span></code>
+contains boolean
+queries identifying the choices made by a given ASIS implementation.
+The ASIS-for-GNAT approach to these implementation permissions is discussed in
+<a class="reference internal" href="#implementation-permissions"><em>Implementation Permissions</em></a>.</p>
+<p>Third, the ASIS standard defines specific implementation permissions
+for some queries.
+Also, the result of a query may be implementation specific because of the
+nature of the query.
+See
+<a class="reference internal" href="#asis-queries-having-specific-implementation-permissions-or-implementation-specific-results"><em>ASIS Queries Having Specific Implementation Permissions or Implementation-Specific Results</em></a>.</p>
+<p>Finally, ASIS-for-GNAT provides special <code class="docutils literal"><span class="pre">Context</span></code> manipulation mechanisms
+that supplement those defined in the ASIS standard.
+These additional <code class="docutils literal"><span class="pre">Context</span></code> modes may be useful for
+some ASIS applications.</p>
+<div class="section" id="interacting-with-the-underlying-ada-implementation">
+<span id="id2"></span><h2>4.1. Interacting with the Underlying Ada Implementation<a class="headerlink" href="#interacting-with-the-underlying-ada-implementation" title="Permalink to this headline">¶</a></h2>
+<p>This section describes how to use the <code class="docutils literal"><span class="pre">Parameters</span></code> string to
+pass implementation-specific information to several ASIS subprograms.</p>
+<div class="section" id="format-of-the-parameters-string">
+<span id="id3"></span><h3>4.1.1. Format of the <code class="docutils literal"><span class="pre">Parameters</span></code> String<a class="headerlink" href="#format-of-the-parameters-string" title="Permalink to this headline">¶</a></h3>
+<span class="target" id="index-6"></span><span class="target" id="index-7"></span><span class="target" id="index-8"></span><p id="index-9">A <code class="docutils literal"><span class="pre">Parameters</span></code> string is passed to three ASIS
+subprograms: <code class="docutils literal"><span class="pre">Asis.Implementation.Initialize</span></code>,
+<code class="docutils literal"><span class="pre">Asis.Implementation.Finalize</span></code>,
+and <code class="docutils literal"><span class="pre">Asis.Ada_Environments.Associate</span></code>.</p>
+<p>The <code class="docutils literal"><span class="pre">Parameters</span></code> string comprises substrings delimited by separators.
+The substrings are called <em>parameters</em> (with lower-case &#8216;p&#8217;) below.
+A separator is a non-empty string comprising characters from the set
+&lt;Space&gt;, &lt;LF&gt;, and &lt;CR&gt;.
+There may be 0 or more parameters in a <code class="docutils literal"><span class="pre">Parameters</span></code> string, and there
+may be separators before the first and/or after the last parameter.</p>
+<span class="target" id="index-10"></span><p id="index-11">Each of the queries <code class="docutils literal"><span class="pre">Asis.Implementation.Initialize</span></code>,
+<code class="docutils literal"><span class="pre">Asis.Implementation.Finalize</span></code>, and
+<code class="docutils literal"><span class="pre">Asis.Ada_Environments.Associate</span></code> has specific rules for the
+format of its parameters.
+If some parameter is not well-formed,
+then either a warning message is generated or else
+the <code class="docutils literal"><span class="pre">ASIS_Failed</span></code>
+exception is raised with the <code class="docutils literal"><span class="pre">Parameter_Error</span></code> status.
+The descriptions below explain the situations where
+<code class="docutils literal"><span class="pre">ASIS_Failed</span></code> is raised.</p>
+</div>
+<div class="section" id="parameters-of-asis-implementation-initialize">
+<span id="id4"></span><h3>4.1.2. Parameters of <code class="docutils literal"><span class="pre">Asis.Implementation.Initialize</span></code><a class="headerlink" href="#parameters-of-asis-implementation-initialize" title="Permalink to this headline">¶</a></h3>
+<p id="index-12">The allowed parameters for <code class="docutils literal"><span class="pre">Asis.Implementation.Initialize</span></code> are as
+follows:</p>
+<dl class="docutils">
+<dt><code class="docutils literal"><span class="pre">-d&lt;flag&gt;</span></code></dt>
+<dd>The specific ASIS-for-GNAT debug flag named <code class="docutils literal"><span class="pre">&lt;flag&gt;</span></code> is set ON</dd>
+</dl>
+<dl class="docutils" id="index-13">
+<dt><code class="docutils literal"><span class="pre">-dall</span></code></dt>
+<dd>All the ASIS-for-GNAT debug flags are set ON</dd>
+<dt><code class="docutils literal"><span class="pre">-k</span></code></dt>
+<dd>Keep going even if an internal implementation error is detected.
+When a non-ASIS exception is raised, it is replaced by
+raising <code class="docutils literal"><span class="pre">ASIS_Failed</span></code> with <code class="docutils literal"><span class="pre">Unhandled_Exception_Error</span></code> status (this
+is the only case when <code class="docutils literal"><span class="pre">Unhandled_Exception_Error</span></code> is set) and the
+<code class="docutils literal"><span class="pre">Diagnosis</span></code> string containing the name and the message from the
+non-ASIS exception originally raised</dd>
+<dt><code class="docutils literal"><span class="pre">-nbb</span></code></dt>
+<dd>No bug box. Do not output to <code class="docutils literal"><span class="pre">Standard_Error</span></code> the bug box
+containing the description of the internal implementation bug.
+Implies <code class="docutils literal"><span class="pre">-k</span></code></dd>
+<dt><code class="docutils literal"><span class="pre">-sv</span></code></dt>
+<dd>Set the strong GNAT/ASIS version check when reading the tree files</dd>
+<dt><code class="docutils literal"><span class="pre">-wv</span></code></dt>
+<dd>Set the weak GNAT/ASIS version check when reading the tree files</dd>
+<dt><code class="docutils literal"><span class="pre">-we</span></code></dt>
+<dd><p class="first">All ASIS warnings are treated as errors.</p>
+<span class="target" id="index-14"></span><span class="target" id="index-15"></span><p class="last" id="index-16">When execution reaches the point where the warning would occur,
+the <code class="docutils literal"><span class="pre">ASIS_Failed</span></code>
+exception is raised;
+the warning message is the ASIS <code class="docutils literal"><span class="pre">Diagnosis</span></code> string.</p>
+</dd>
+<dt><code class="docutils literal"><span class="pre">-ws</span></code></dt>
+<dd>All ASIS warning messages are suppressed.</dd>
+</dl>
+<p>The <code class="docutils literal"><span class="pre">&lt;flag&gt;</span></code> value for the <code class="docutils literal"><span class="pre">-d</span></code> parameter
+may be any lower case letter from <code class="docutils literal"><span class="pre">a</span></code> through <code class="docutils literal"><span class="pre">z</span></code> or any digit
+from <code class="docutils literal"><span class="pre">0</span></code> through <code class="docutils literal"><span class="pre">9</span></code>, although
+not all of the 36 possible flags are implemented.
+For more information,
+refer to the documentation in the source file <code class="file docutils literal"><span class="pre">a4g-a_debug.adb</span></code>.
+See also <a class="reference internal" href="debugging_information.html#asis-debug-flags"><em>ASIS Debug Flags</em></a>.</p>
+<p id="index-17">If more then one parameter controlling the warning mode
+is set in the <code class="docutils literal"><span class="pre">Parameters</span></code> string, all but the last one are ignored.</p>
+</div>
+<div class="section" id="parameters-of-asis-implementation-finalize">
+<h3>4.1.3. Parameters of <code class="docutils literal"><span class="pre">Asis.Implementation.Finalize</span></code><a class="headerlink" href="#parameters-of-asis-implementation-finalize" title="Permalink to this headline">¶</a></h3>
+<p id="index-18">No parameters are allowed for <code class="docutils literal"><span class="pre">Asis.Implementation.Finalize</span></code>.</p>
+<p><code class="docutils literal"><span class="pre">Asis.Implementation.Finalize</span></code> resets all the general
+ASIS-for-GNAT parameters to their default values (that is, all the debug flags
+are set OFF, and the warning mode is set to the default warning mode).</p>
+</div>
+<div class="section" id="parameters-of-asis-ada-environments-associate">
+<h3>4.1.4. Parameters of <code class="docutils literal"><span class="pre">Asis.Ada_Environments.Associate</span></code><a class="headerlink" href="#parameters-of-asis-ada-environments-associate" title="Permalink to this headline">¶</a></h3>
+<p id="index-19">The following parameters are allowed:</p>
+<dl class="docutils">
+<dt><code class="docutils literal"><span class="pre">-C1</span></code></dt>
+<dd>The <code class="docutils literal"><span class="pre">Context</span></code> comprises a single tree file,
+whose name is given as the next parameter in the <code class="docutils literal"><span class="pre">Parameters</span></code> string.</dd>
+<dt><code class="docutils literal"><span class="pre">-CN</span></code></dt>
+<dd>The <code class="docutils literal"><span class="pre">Context</span></code> comprises a set of one or more tree files, whose names are
+given as the next set of parameters in the <code class="docutils literal"><span class="pre">Parameters</span></code> string.</dd>
+<dt><code class="docutils literal"><span class="pre">-CA</span></code></dt>
+<dd>The <code class="docutils literal"><span class="pre">Context</span></code> comprises all the tree files in the tree search path.</dd>
+<dt><code class="docutils literal"><span class="pre">-FS</span></code></dt>
+<dd>All the trees considered as making up a given <code class="docutils literal"><span class="pre">Context</span></code> are created
+&#8216;on the fly&#8217;, whether or not the corresponding tree file already exists.
+Once created, a tree file then is reused as long as the <code class="docutils literal"><span class="pre">Context</span></code> remains
+open.</dd>
+<dt><code class="docutils literal"><span class="pre">-FT</span></code></dt>
+<dd>Only pre-created trees are used; no tree files are created by ASIS.</dd>
+<dt><code class="docutils literal"><span class="pre">-FM</span></code></dt>
+<dd>Mixed approach: if a needed tree does not exist, an attempt is made to create
+it &#8216;on the fly&#8217;.</dd>
+<dt><code class="docutils literal"><span class="pre">-SA</span></code></dt>
+<dd>Source files for all the <code class="docutils literal"><span class="pre">Compilation_Unit</span></code>s belonging to the
+<code class="docutils literal"><span class="pre">Context</span></code> (except
+the predefined <code class="docutils literal"><span class="pre">Standard</span></code> package) are considered in the consistency
+check when opening the <code class="docutils literal"><span class="pre">Context</span></code>.</dd>
+<dt><code class="docutils literal"><span class="pre">-SE</span></code></dt>
+<dd>Only existing source files for all the <code class="docutils literal"><span class="pre">Compilation_Units</span></code> belonging to
+the <code class="docutils literal"><span class="pre">Context</span></code> are considered in the consistency check when opening the
+<code class="docutils literal"><span class="pre">Context</span></code>.</dd>
+<dt><code class="docutils literal"><span class="pre">-SN</span></code></dt>
+<dd>No source files from the underlying file system are taken into account when
+checking the consistency of the set of tree files making up the
+<code class="docutils literal"><span class="pre">Context</span></code>.</dd>
+<dt><code class="docutils literal"><span class="pre">-I&lt;dir&gt;</span></code></dt>
+<dd>Defines the directory in which to search for source files when compiling
+sources to create a tree &#8216;on the fly&#8217;.</dd>
+<dt><code class="docutils literal"><span class="pre">--GCC=compiler_name</span></code></dt>
+<dd>Defines the program to be called to create the tree on the fly</dd>
+<dt><code class="docutils literal"><span class="pre">-gnatec&lt;file&gt;</span></code></dt>
+<dd>Defines the additional configuration file to be used when calling GNAT to
+create the tree on the fly for <code class="docutils literal"><span class="pre">-FS</span></code> or <code class="docutils literal"><span class="pre">-FM</span></code> Context</dd>
+<dt><code class="docutils literal"><span class="pre">-gnatA</span></code></dt>
+<dd>Avoid processing <code class="file docutils literal"><span class="pre">gnat.adc</span></code> when calling GNAT to create
+the tree on the fly for <code class="docutils literal"><span class="pre">-FS</span></code> or <code class="docutils literal"><span class="pre">-FM</span></code> Context</dd>
+<dt><code class="docutils literal"><span class="pre">-T&lt;dir&gt;</span></code></dt>
+<dd>Defines the directory in which to search for a tree file.</dd>
+<dt><code class="docutils literal"><span class="pre">&lt;file_name&gt;</span></code></dt>
+<dd>Defines the name of a tree file (used in conjunction with <code class="docutils literal"><span class="pre">-C1</span></code> or
+<code class="docutils literal"><span class="pre">-CN</span></code>).</dd>
+</dl>
+<p id="index-22">For the <code class="docutils literal"><span class="pre">-I</span></code> and <code class="docutils literal"><span class="pre">-T</span></code> parameters, <code class="docutils literal"><span class="pre">&lt;dir&gt;</span></code> should denote an
+existing directory in the underlying file system. The &#8216;.&#8217; and &#8216;..&#8217;
+notations are allowed, as well as relative or absolute directory names.
+If <code class="docutils literal"><span class="pre">&lt;dir&gt;</span></code> does not denote an existing directory, <code class="docutils literal"><span class="pre">ASIS_Failed</span></code>
+with <code class="docutils literal"><span class="pre">Parameter_Error</span></code> status is raised.</p>
+<p>For ASIS <code class="docutils literal"><span class="pre">-FS</span></code> or <code class="docutils literal"><span class="pre">-FM</span></code> Context, Context parameters <code class="docutils literal"><span class="pre">-I</span></code>,
+<code class="docutils literal"><span class="pre">-gnatec</span></code> and <code class="docutils literal"><span class="pre">-gnatA</span></code> are passed to the GNAT call to create
+the tree on the fly and these parameters have exactly the same meaning as they
+have for GNAT.</p>
+<p>A tree file name given by a <code class="docutils literal"><span class="pre">&lt;file_name&gt;</span></code> parameter may or may not
+contain directory information.</p>
+<p>Any relative directory name or file name containing relative directory
+information should start from &#8216;.&#8217; or &#8216;..&#8217;.</p>
+<p>If a directory or a file name used as a part of some Context parameter contains
+space characters, this name should be quoted.</p>
+<p id="index-23">The search path
+associated with an ASIS <code class="docutils literal"><span class="pre">Context</span></code> consists of the directories
+listed as parameters for the <code class="docutils literal"><span class="pre">Asis.Ada_Environments.Associate</span></code> query, in
+the same order as they are included in the actual <code class="docutils literal"><span class="pre">Parameters</span></code> string.
+The ASIS source search path consists only of the directories following
+<code class="docutils literal"><span class="pre">-I</span></code>, and the ASIS tree search path consists only of the directories
+following <code class="docutils literal"><span class="pre">-T</span></code>. If no source (tree) directories are present in the
+value of the <code class="docutils literal"><span class="pre">Parameters</span></code> string, then the ASIS source (tree) search path
+consists of the current directory only.  Otherwise the current directory is
+included in the ASIS search path if and only if it is set explicitly as
+<code class="docutils literal"><span class="pre">-I.</span></code> or <code class="docutils literal"><span class="pre">-T.</span></code> respectively.</p>
+<p>If an ASIS <code class="docutils literal"><span class="pre">Context</span></code> is associated with an <code class="docutils literal"><span class="pre">-FS</span></code> or <code class="docutils literal"><span class="pre">-FM</span></code>
+option, the <code class="docutils literal"><span class="pre">Context</span></code> source search path is used to locate sources of the
+units for which tree files need to be created, and to locate other source
+files needed during compilation. For example, if we have:</p>
+<div class="highlight-ada"><div class="highlight"><pre><span class="n">Asis.Ada_Environments.Associate</span>
+  <span class="o">(</span><span class="n">My_Context</span><span class="p">,</span>
+  <span class="s">&quot;My_Context_Name&quot;</span><span class="p">,</span>
+  <span class="s">&quot;-CA -FS -I./dir -I.&quot;</span><span class="o">)</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>then, when processing a call:</p>
+<div class="highlight-ada"><div class="highlight"><pre><span class="n">My_Unit</span> <span class="o">:=</span> <span class="n">Asis.Compilation_Units.Library_Unit_Declaration</span>
+            <span class="o">(</span><span class="s">&quot;Foo&quot;</span><span class="p">,</span> <span class="n">My_Context</span><span class="o">)</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>ASIS first tries to locate the source file <code class="file docutils literal"><span class="pre">foo.ads</span></code> in <code class="file docutils literal"><span class="pre">./dir</span></code>, and
+if this attempt fails, it tries to locate it in the current directory. If
+there is no such file in the current directory, ASIS continues the search by
+looking into the directories listed in the value of <code class="docutils literal"><span class="pre">ADA_INCLUDE_PATH</span></code>
+environment variable. If the source file is found (say in the current
+directory), ASIS creates the tree file by calling the compiler:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ gcc -c -gnatc -gnatt -I./dir -I. -I- foo.ads
+</pre></div>
+</div>
+<p>If an ASIS <code class="docutils literal"><span class="pre">Context</span></code> is associated with <code class="docutils literal"><span class="pre">-CA</span></code> option, then, when
+this <code class="docutils literal"><span class="pre">Context</span></code> is opened, ASIS processes all the tree files located in
+the tree search path associated with the <code class="docutils literal"><span class="pre">Context</span></code>.</p>
+<p>The following further rules define the required combinations of parameters
+in the actual <code class="docutils literal"><span class="pre">Parameters</span></code> string:</p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">-C1</span></code> and <code class="docutils literal"><span class="pre">-CN</span></code> require <code class="docutils literal"><span class="pre">-FT</span></code></li>
+<li><code class="docutils literal"><span class="pre">-FS</span></code> and <code class="docutils literal"><span class="pre">-FM</span></code> require <code class="docutils literal"><span class="pre">-SA</span></code></li>
+</ul>
+<span class="target" id="index-24"></span><p id="index-25">In case an incompatible combination is set, <code class="docutils literal"><span class="pre">ASIS_Failed</span></code>
+with <code class="docutils literal"><span class="pre">Parameter_Error</span></code>
+status is raised.</p>
+<p>If the actual <code class="docutils literal"><span class="pre">Parameters</span></code> string passed to
+<code class="docutils literal"><span class="pre">Associate</span></code> contains no parameters, the default parameters
+are <code class="docutils literal"><span class="pre">-CA</span></code>, <code class="docutils literal"><span class="pre">-FT</span></code>, and <code class="docutils literal"><span class="pre">-SA</span></code>.</p>
+<p id="index-26">The <code class="docutils literal"><span class="pre">-FS</span></code> and <code class="docutils literal"><span class="pre">-FM</span></code> options define <em>dynamic Context modes</em>;
+they allow the content of a <code class="docutils literal"><span class="pre">Context</span></code> (that is, the set
+of ASIS <code class="docutils literal"><span class="pre">Compilation_Unit</span></code>s contained in the <code class="docutils literal"><span class="pre">Context</span></code>) to be
+changed while the <code class="docutils literal"><span class="pre">Context</span></code> is open. See <a class="reference internal" href="#dynamic-context-modes"><em>Dynamic Context Modes</em></a> for
+more details.</p>
+<p id="index-27">For the <code class="docutils literal"><span class="pre">Name</span></code> parameter
+of the <code class="docutils literal"><span class="pre">Asis.Ada_Environments.Associate</span></code>
+query, any string can be passed as an actual parameter.
+No verification is performed on the contents, and no semantics are
+associated with this parameter.</p>
+</div>
+</div>
+<div class="section" id="implementation-permissions">
+<span id="id5"></span><h2>4.2. Implementation Permissions<a class="headerlink" href="#implementation-permissions" title="Permalink to this headline">¶</a></h2>
+<p id="index-28">This section describes how ASIS-for-GNAT deals with
+implementation permissions.</p>
+<div class="section" id="asis-implementation-permissions-queries">
+<h3>4.2.1. <code class="docutils literal"><span class="pre">Asis.Implementation.Permissions</span></code> Queries<a class="headerlink" href="#asis-implementation-permissions-queries" title="Permalink to this headline">¶</a></h3>
+<p id="index-29">The Boolean queries defined in the <code class="docutils literal"><span class="pre">Asis.Implementation.Permissions</span></code>
+package return the following results:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="79%" />
+<col width="21%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head"><em>Query</em></th>
+<th class="head"><em>Value</em></th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">Is_Formal_Parameter_Named_Notation_Supported</span></code></td>
+<td><code class="docutils literal"><span class="pre">True</span></code></td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">Default_In_Mode_Supported</span></code></td>
+<td><code class="docutils literal"><span class="pre">True</span></code></td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">Generic_Actual_Part_Normalized</span></code></td>
+<td><code class="docutils literal"><span class="pre">False</span></code></td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">Record_Component_Associations_Normalized</span></code></td>
+<td><code class="docutils literal"><span class="pre">False</span></code></td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">Is_Prefix_Call_Supported</span></code></td>
+<td><code class="docutils literal"><span class="pre">True</span></code></td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">Function_Call_Parameters_Normalized</span></code></td>
+<td><code class="docutils literal"><span class="pre">False</span></code></td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">Call_Statement_Parameters_Normalized</span></code></td>
+<td><code class="docutils literal"><span class="pre">False</span></code></td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">Discriminant_Associations_Normalized</span></code></td>
+<td><code class="docutils literal"><span class="pre">False</span></code></td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">Is_Line_Number_Supported</span></code></td>
+<td><code class="docutils literal"><span class="pre">True</span></code></td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">Is_Span_Column_Position_Supported</span></code></td>
+<td><code class="docutils literal"><span class="pre">True</span></code></td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">Is_Commentary_Supported</span></code></td>
+<td><code class="docutils literal"><span class="pre">True</span></code></td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">Attributes_Are_Supported</span></code></td>
+<td><code class="docutils literal"><span class="pre">False</span></code></td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">Implicit_Components_Supported</span></code></td>
+<td><code class="docutils literal"><span class="pre">False</span></code> (*)</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">Object_Declarations_Normalized</span></code></td>
+<td><code class="docutils literal"><span class="pre">False</span></code></td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">Predefined_Operations_Supported</span></code></td>
+<td><code class="docutils literal"><span class="pre">False</span></code> (*)</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">Inherited_Declarations_Supported</span></code></td>
+<td><code class="docutils literal"><span class="pre">True</span></code>  (*)</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">Inherited_Subprograms_Supported</span></code></td>
+<td><code class="docutils literal"><span class="pre">True</span></code>  (*)</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">Generic_Macro_Expansion_Supported</span></code></td>
+<td><code class="docutils literal"><span class="pre">True</span></code></td>
+</tr>
+</tbody>
+</table>
+<p>(*) See also <a class="reference internal" href="#processing-implicit-elements"><em>Processing Implicit Elements</em></a>.</p>
+</div>
+<div class="section" id="processing-implicit-elements">
+<span id="id6"></span><h3>4.2.2. Processing Implicit <code class="docutils literal"><span class="pre">Element</span></code>s<a class="headerlink" href="#processing-implicit-elements" title="Permalink to this headline">¶</a></h3>
+<p id="index-30">ASIS <code class="docutils literal"><span class="pre">Element</span></code>s represent both explicit and implicit
+components of Ada programs.
+(An example of an implicit construct is an inherited subprogram
+of a derived type.)
+Some ASIS queries can return implicit <code class="docutils literal"><span class="pre">Element</span></code>s (that is,
+<code class="docutils literal"><span class="pre">Element</span></code>s representing implicit Ada constructs). Any syntactic or
+semantic query should accept an implicit <code class="docutils literal"><span class="pre">Element</span></code> as an <code class="docutils literal"><span class="pre">Element</span></code>
+parameter, but the ASIS Standard allows an implementation not to support
+implicit <code class="docutils literal"><span class="pre">Element</span></code>s at all, or to support them only partially. If an
+implementation does not support the implicit <code class="docutils literal"><span class="pre">Element</span></code> representing
+a particular kind of construct, then an ASIS query that is supposed to process
+this implicit <code class="docutils literal"><span class="pre">Element</span></code> should return either a <code class="docutils literal"><span class="pre">Nil_Element</span></code> or a
+<code class="docutils literal"><span class="pre">Nil_Element_List</span></code> depending on whether the query returns a single
+<code class="docutils literal"><span class="pre">Element</span></code> or an <code class="docutils literal"><span class="pre">Element_List</span></code>.</p>
+<p>Implicit <code class="docutils literal"><span class="pre">Element</span></code>s are partially supported by ASIS-for-GNAT.</p>
+<p>ASIS-for-GNAT supports implicit <code class="docutils literal"><span class="pre">Element</span></code>s for the following constructs:</p>
+<ul class="simple">
+<li>Derived user-defined subprograms</li>
+<li>Derived enumeration literals</li>
+<li>Derived record components</li>
+</ul>
+<p>ASIS-for-GNAT does not
+support implicit <code class="docutils literal"><span class="pre">Element</span></code>s representing implicit declarations of
+predefined type operations (such as &#8216;<cite>=</cite>&#8216;, or the &#8216;<cite>+</cite>&#8216;
+operation for numeric types).</p>
+</div>
+<div class="section" id="processing-several-contexts-at-a-time">
+<h3>4.2.3. Processing Several Contexts at a Time<a class="headerlink" href="#processing-several-contexts-at-a-time" title="Permalink to this headline">¶</a></h3>
+<p>According to the ASIS Standard, the number of ASIS <code class="docutils literal"><span class="pre">Context</span></code>s that can be
+associated and opened at a time, as well as the number of ASIS
+<code class="docutils literal"><span class="pre">Compilation_Unit</span></code>s that can be processed at a time, are
+implementation specific.
+ASIS-for-GNAT does not impose any restriction on the number of
+<code class="docutils literal"><span class="pre">Context</span></code>s opened at the same time, or on the number of
+<code class="docutils literal"><span class="pre">Compilation_Unit</span></code>s that can be obtained from all the opened
+<code class="docutils literal"><span class="pre">Context</span></code>s, as long as the application does not go beyond general
+system resource limitations.</p>
+<p id="index-31">However, for a <code class="docutils literal"><span class="pre">Context</span></code> associated with an <code class="docutils literal"><span class="pre">-FS</span></code> or <code class="docutils literal"><span class="pre">-FM</span></code>
+option, all the trees created &#8216;on the fly&#8217; while obtaining
+<code class="docutils literal"><span class="pre">Compilation_Unit</span></code>s from this <code class="docutils literal"><span class="pre">Context</span></code> are placed in the current
+directory. If the current directory also contains
+some tree files belonging to another <code class="docutils literal"><span class="pre">Context</span></code>, the latter may become
+corrupted. To process more than one <code class="docutils literal"><span class="pre">Context</span></code> safely, an application
+should have at most one <code class="docutils literal"><span class="pre">Context</span></code> associated with the <code class="docutils literal"><span class="pre">-FS</span></code> or
+<code class="docutils literal"><span class="pre">-FM</span></code> option. Moreover, if among <code class="docutils literal"><span class="pre">Context</span></code>s processed at the same
+time there is one that can create trees &#8216;on the fly&#8217;, then the other
+<code class="docutils literal"><span class="pre">Context</span></code>s should not use tree files located in the current directory.</p>
+</div>
+<div class="section" id="implementation-defined-types-and-values">
+<h3>4.2.4. Implementation-Defined Types and Values<a class="headerlink" href="#implementation-defined-types-and-values" title="Permalink to this headline">¶</a></h3>
+<span class="target" id="index-32"></span><p id="index-33">All the implementation-defined types, subtypes and values depend on the
+subtype <code class="docutils literal"><span class="pre">Implementation_Defined_Integer_Type</span></code>
+and on the
+<code class="docutils literal"><span class="pre">Implementation_Defined_Integer_Constant</span></code>
+defined in package <code class="docutils literal"><span class="pre">Asis</span></code>.
+ASIS-for-GNAT&#8217;s declarations for these entities are the same as in the ASIS
+Standard:</p>
+<div class="highlight-ada"><div class="highlight"><pre><span class="kr">subtype</span><span class="p"> </span><span class="n">Implementation_Defined_Integer_Type</span> <span class="kr">is</span><span class="p"> </span><span class="n">Integer</span><span class="p">;</span>
+<span class="n">Implementation_Defined_Integer_Constant</span> <span class="o">:</span> <span class="kr">constant</span><span class="p"> </span><span class="o">:=</span> <span class="mi">2</span><span class="o">**</span><span class="mi">31</span><span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>All the ASIS (sub)types used as list indexes for ASIS array types have
+<code class="docutils literal"><span class="pre">Implementation_Defined_Integer_Constant</span></code> as an upper bound.</p>
+</div>
+</div>
+<div class="section" id="asis-queries-having-specific-implementation-permissions-or-implementation-specific-results">
+<span id="id7"></span><h2>4.3. ASIS Queries Having Specific Implementation Permissions or Implementation-Specific Results<a class="headerlink" href="#asis-queries-having-specific-implementation-permissions-or-implementation-specific-results" title="Permalink to this headline">¶</a></h2>
+<p id="index-34">This section documents
+queries having implementation permissions (given under <code class="docutils literal"><span class="pre">--|IP</span></code> sentinel
+in the ASIS definition) and queries whose behavior is otherwise
+implementation specific. Such queries are presented below
+in their order of appearance in the ASIS Standard.
+The clause and subclause numbers shown are those from the ASIS Standard.</p>
+<p id="index-35">The results returned by the ASIS <code class="docutils literal"><span class="pre">Debug_Image</span></code>
+queries are discussed in
+<a class="reference internal" href="debugging_information.html#interpreting-debug-images"><em>Interpreting Debug Images</em></a>.</p>
+<p><strong>ASIS 8</strong> <code class="docutils literal"><span class="pre">package</span> <span class="pre">Asis.Ada_Environments</span></code></p>
+<p id="index-36">ASIS 8.1 <code class="docutils literal"><span class="pre">function</span> <span class="pre">Default_Name</span></code></p>
+<ul class="simple" id="index-37">
+<li>Null string is returned.</li>
+</ul>
+<p>ASIS 8.2  <code class="docutils literal"><span class="pre">function</span> <span class="pre">Default_Parameters</span></code></p>
+<ul class="simple" id="index-38">
+<li>Null string is returned;.</li>
+</ul>
+<p>ASIS 8.4  <code class="docutils literal"><span class="pre">procedure</span> <span class="pre">Open</span></code></p>
+<ul id="index-39">
+<li><p class="first">For a <code class="docutils literal"><span class="pre">Context</span></code> associated with the <code class="docutils literal"><span class="pre">-CA</span></code> option:</p>
+<ul>
+<li><p class="first">If <code class="docutils literal"><span class="pre">-FS</span></code> is also set, nothing is done.</p>
+</li>
+<li><p class="first">If the <code class="docutils literal"><span class="pre">-FT</span></code> or <code class="docutils literal"><span class="pre">-FM</span></code> is set, all the tree files (that is,
+files having <code class="file docutils literal"><span class="pre">.adt</span></code> suffix) in the tree search path
+associated with the <code class="docutils literal"><span class="pre">Context</span></code> are processed.
+ASIS reads in each tree file and checks
+that it was created with
+the <code class="docutils literal"><span class="pre">-gnatc</span></code> option. Tree files that cannot be read in or
+that were not created with the <code class="docutils literal"><span class="pre">-gnatc</span></code> option are ignored.
+For each other tree ASIS collects some &#8216;black-box&#8217;
+information about the <code class="docutils literal"><span class="pre">Compilation_Unit</span></code>s that it represents,
+and performs a consistency check
+for every unit it encounters in the tree (see ASIS-for-GNAT
+User&#8217;s Guide for a discussion of the consistency
+problem). If any consistency check fails, <code class="docutils literal"><span class="pre">ASIS_Failed</span></code>
+is raised and the <code class="docutils literal"><span class="pre">Context</span></code> remains closed.</p>
+<span class="target" id="index-40"></span></li>
+</ul>
+</li>
+<li id="index-41"><p class="first">For a <code class="docutils literal"><span class="pre">Context</span></code> associated with a <code class="docutils literal"><span class="pre">-C1</span></code> or <code class="docutils literal"><span class="pre">-CN</span></code> option,
+ASIS processes all the tree files associated with the <code class="docutils literal"><span class="pre">Context</span></code>,
+collecting &#8216;black-box&#8217; information and performing consistency
+checks for all the encountered Compilation Units.
+If for any reason a tree file cannot be
+successfully read in for a <code class="docutils literal"><span class="pre">Context</span></code> associated with a <code class="docutils literal"><span class="pre">-C1</span></code>
+option, <code class="docutils literal"><span class="pre">ASIS_Failed</span></code> is raised and the <code class="docutils literal"><span class="pre">Context</span></code> remains
+closed.
+If a tree read fails for a <code class="docutils literal"><span class="pre">Context</span></code> associated with a
+<code class="docutils literal"><span class="pre">-CN</span></code> option, an ASIS warning
+is generated and the <code class="docutils literal"><span class="pre">Context</span></code> opening process continues.
+If any consistency check fails, <code class="docutils literal"><span class="pre">ASIS_Failed</span></code>
+is raised and the <code class="docutils literal"><span class="pre">Context</span></code> remains closed.</p>
+<span class="target" id="index-42"></span></li>
+</ul>
+<p id="index-43"><strong>ASIS 9</strong> <code class="docutils literal"><span class="pre">package</span> <span class="pre">Asis.Ada_Environments.Containers</span></code></p>
+<ul class="simple" id="index-44">
+<li>ASIS-for-GNAT supports the trivial <code class="docutils literal"><span class="pre">Container</span></code> model. Every
+<code class="docutils literal"><span class="pre">Context</span></code> contains exactly one <code class="docutils literal"><span class="pre">Container</span></code>, whose content and name
+are the same as its enclosing <code class="docutils literal"><span class="pre">Context</span></code></li>
+</ul>
+<p><strong>ASIS 10</strong> <code class="docutils literal"><span class="pre">package</span> <span class="pre">Asis.Compilation_Units</span></code></p>
+<p id="index-45">ASIS 10.3  <code class="docutils literal"><span class="pre">function</span> <span class="pre">Unit_Origin</span></code></p>
+<ul id="index-46">
+<li><p class="first"><code class="docutils literal"><span class="pre">A_Predefined_Unit</span></code> origin is returned for those compilation units
+listed in RM95, Annex A(2), and only for these units.</p>
+</li>
+<li id="index-47"><p class="first"><code class="docutils literal"><span class="pre">An_Implementation_Unit</span></code> origin is returned for compilation
+units that are the components of the GNAT Run-Time
+Library, but that are not listed in RM95, Annex A(2).</p>
+</li>
+<li id="index-48"><p class="first"><code class="docutils literal"><span class="pre">An_Application_Unit</span></code> origin is returned for all other
+compilation units.</p>
+</li>
+</ul>
+<p id="index-49">ASIS 10.6 <code class="docutils literal"><span class="pre">function</span> <span class="pre">Library_Unit_Declaration</span></code> and ASIS 10.7
+<code class="docutils literal"><span class="pre">function</span> <span class="pre">Compilation_Unit_Body</span></code></p>
+<span class="target" id="index-50"></span><ul class="simple" id="index-51">
+<li>When processing a <code class="docutils literal"><span class="pre">Context</span></code> associated with an <code class="docutils literal"><span class="pre">-FS</span></code> or
+<code class="docutils literal"><span class="pre">-FM</span></code> option, if ASIS cannot find a needed unit in the tree files
+that have been already processed, it tries to create the needed tree by
+locating the source of the unit and compiling it &#8216;on the fly&#8217;. If this
+attempt fails for any reason, <code class="docutils literal"><span class="pre">Nil_Compilation_Unit</span></code> is returned.</li>
+</ul>
+<p>ASIS 10.13 <code class="docutils literal"><span class="pre">function</span> <span class="pre">Corresponding_Declaration</span></code></p>
+<ul id="index-52">
+<li><p class="first">ASIS-for-GNAT does not make use of ASIS <code class="docutils literal"><span class="pre">Compilation_Unit</span></code>s
+of <code class="docutils literal"><span class="pre">An_Unknown_Unit</span></code> kind.</p>
+</li>
+<li id="index-53"><p class="first">If an argument is of <code class="docutils literal"><span class="pre">A_Public_Declaration_And_Body</span></code> class,
+<code class="docutils literal"><span class="pre">Nil_Compilation_Unit</span></code> is returned.</p>
+</li>
+</ul>
+<p>ASIS 10.14 <code class="docutils literal"><span class="pre">function</span> <span class="pre">Corresponding_Body</span></code></p>
+<ul class="simple" id="index-54">
+<li>ASIS-for-GNAT does not make use of ASIS <code class="docutils literal"><span class="pre">Compilation_Unit</span></code>s
+of <code class="docutils literal"><span class="pre">An_Unknown_Unit</span></code> kind.</li>
+</ul>
+<p>ASIS 10.22 <code class="docutils literal"><span class="pre">function</span> <span class="pre">Can_Be_Main_Program</span></code></p>
+<ul class="simple" id="index-55">
+<li>For GNAT, any parameterless library procedure and any
+parameterless library function returning a result of an integer type is
+classified by this  query as a (possible) main subprogram for a partition.</li>
+<li>If for such a library subprogram both spec and body exist as ASIS
+<code class="docutils literal"><span class="pre">Compilation_Unit</span></code>s retrievable from a given ASIS <code class="docutils literal"><span class="pre">Context</span></code>, both
+are considered as  <code class="docutils literal"><span class="pre">Can_Be_Main_Program</span></code>.</li>
+</ul>
+<p>ASIS 10.24 <code class="docutils literal"><span class="pre">function</span> <span class="pre">Text_Name</span></code></p>
+<ul class="simple" id="index-56">
+<li>This function returns the name of the source file containing the source of
+<code class="docutils literal"><span class="pre">Compilation_Unit</span></code>. This name may or may not contain a prefix denoting
+the directory in the underlying file system.  If present, the directory may be
+given in absolute or relative form, depending on the command line options
+that were used for the call to GNAT that created the corresponding tree
+file.</li>
+<li>This function does not check the existence of the corresponding source file in
+the underlying file system, it just reflects the situation which was in
+effect when the corresponding tree file was created. Thus, if you delete or
+move the corresponding source file after creating the tree, the full file
+name returned by this function will be incorrect.</li>
+<li>Use the query <code class="docutils literal"><span class="pre">Asis.Extensions.Source_File_Status</span></code> to get the information
+about the current status of the source file for a <code class="docutils literal"><span class="pre">Compilation_Unit</span></code>.</li>
+</ul>
+<p>ASIS 10.25 <code class="docutils literal"><span class="pre">function</span> <span class="pre">Text_Form</span></code></p>
+<ul class="simple" id="index-57">
+<li>In the GNAT compilation model all source files are ordinary text files in the
+underlying file system. Therefore this function always returns a
+<code class="docutils literal"><span class="pre">Nil_Asis_String</span></code> to indicate that <code class="docutils literal"><span class="pre">Text_IO.Open</span></code> uses the default
+options for manipulating Ada sources.</li>
+</ul>
+<p>ASIS 10.26 <code class="docutils literal"><span class="pre">function</span> <span class="pre">Object_Name</span></code></p>
+<ul class="simple" id="index-58">
+<li>Returns a null string. In the GNAT environment, creating an object file has
+no connection with creating trees for ASIS.</li>
+</ul>
+<p>ASIS 10.27 <code class="docutils literal"><span class="pre">function</span> <span class="pre">Object_Form</span></code></p>
+<ul class="simple" id="index-59">
+<li>Returns a null string.</li>
+</ul>
+<p>ASIS 10.29 <code class="docutils literal"><span class="pre">function</span> <span class="pre">Has_Attribute</span></code></p>
+<ul class="simple" id="index-60">
+<li>Returns <code class="docutils literal"><span class="pre">False</span></code>. ASIS-for-GNAT does not provide any additional attributes
+for Compilation Units.</li>
+</ul>
+<p>ASIS 10.30 <code class="docutils literal"><span class="pre">function</span> <span class="pre">Attribute_Value_Delimiter</span></code></p>
+<ul class="simple" id="index-61">
+<li>Returns a wide string of length one containing the <code class="docutils literal"><span class="pre">LF</span></code> wide
+character.</li>
+</ul>
+<p>ASIS 10.31 <code class="docutils literal"><span class="pre">function</span> <span class="pre">Attribute_Values</span></code></p>
+<ul class="simple" id="index-62">
+<li>A null string is returned.</li>
+</ul>
+<p><strong>ASIS 11</strong> <code class="docutils literal"><span class="pre">package</span> <span class="pre">Asis.Compilation_Units.Times</span></code></p>
+<p id="index-63">ASIS 11.2  <code class="docutils literal"><span class="pre">function</span> <span class="pre">Time_Of_Last_Update</span></code></p>
+<ul class="simple" id="index-64">
+<li>This function returns the time stamp (the time of the latest change)
+of the corresponding
+source file. The corresponding source file is the source file whose name is
+returned by <code class="docutils literal"><span class="pre">Asis.Compilation_Units.Text_Name</span></code>.</li>
+</ul>
+<p>ASIS 11.3  <code class="docutils literal"><span class="pre">function</span> <span class="pre">Compilation_CPU_Duration</span></code></p>
+<ul class="simple" id="index-65">
+<li>This function always returns zero duration, because the CPU compilation
+duration concept does not apply to ASIS-for-GNAT</li>
+</ul>
+<p>ASIS 11.4  <code class="docutils literal"><span class="pre">function</span> <span class="pre">Attribute_Time</span></code></p>
+<ul class="simple" id="index-66">
+<li>This function always returns <code class="docutils literal"><span class="pre">Nil_ASIS_Time</span></code> because
+ASIS-for-GNAT does not provide any <code class="docutils literal"><span class="pre">Compilation_Unit</span></code> attributes</li>
+</ul>
+<p><strong>ASIS 13</strong> <code class="docutils literal"><span class="pre">package</span> <span class="pre">Asis.Elements</span></code></p>
+<p id="index-67">ASIS 13.3  <code class="docutils literal"><span class="pre">function</span> <span class="pre">Context_Clause_Elements</span></code></p>
+<ul class="simple" id="index-68">
+<li>This function returns exactly those clauses and pragmas that are in the
+source for the unit.</li>
+<li>Returns <code class="docutils literal"><span class="pre">Nil_Element_List</span></code> if the argument unit is of
+<code class="docutils literal"><span class="pre">A_Nonexistent_Declaration</span></code>, <code class="docutils literal"><span class="pre">A_Nonexistent_Body</span></code> or
+<code class="docutils literal"><span class="pre">An_Unknown_Unit</span></code> kind</li>
+<li>Returns <code class="docutils literal"><span class="pre">Nil_Element_List</span></code> for the predefined package <code class="docutils literal"><span class="pre">Standard</span></code>.
+For all other predefined Ada compilation units, returns their context clauses
+as they appear in the sources held in the GNAT Run-Time
+Library.</li>
+</ul>
+<p>ASIS 13.4  <code class="docutils literal"><span class="pre">function</span> <span class="pre">Configuration_Pragmas</span></code></p>
+<ul class="simple" id="index-69">
+<li>This function always returns <code class="docutils literal"><span class="pre">Nil_Element_List</span></code>, because in the GNAT
+compilation environment &#8220;a list of pragmas that apply to all future
+compilation_unit elements compiled into <code class="docutils literal"><span class="pre">The_Context</span></code>&#8221; essentially
+depends on the GNAT options set when compiling a unit (in particular the
+<code class="docutils literal"><span class="pre">-gnatA</span></code> and <code class="docutils literal"><span class="pre">-gnatec</span></code> options), and this cannot be determined
+from the content of the given <code class="docutils literal"><span class="pre">Context</span></code>.</li>
+</ul>
+<p>ASIS 13.5  <code class="docutils literal"><span class="pre">function</span> <span class="pre">Compilation_Pragmas</span></code></p>
+<ul class="simple" id="index-70">
+<li>If the argument unit has been compiled on its own to produce a corresponding
+tree file, then the result contains the configuration pragmas from the
+GNAT configuration file(s) involved in this compilation. Otherwise  (that is,
+if the argument unit has been compiled only as an effect of compiling some
+other unit), the result contains only those pragmas that belong to
+the unit&#8217;s source file.</li>
+<li>A pragma that appears in the unit&#8217;s context clause is included in the result
+list only if it is a configuration pragma.</li>
+<li>Returns <code class="docutils literal"><span class="pre">Nil_Element_List</span></code> for the predefined package <code class="docutils literal"><span class="pre">Standard</span></code>.</li>
+</ul>
+<p>ASIS 13.31 <code class="docutils literal"><span class="pre">function</span> <span class="pre">Is_Equal</span></code></p>
+<ul class="simple" id="index-71">
+<li>Two elements representing configuration pragmas belonging to
+<code class="docutils literal"><span class="pre">A_Configuration_Compilation</span></code> unit (or components thereof) are considered
+as being equal only if they are created by the same compilation (belong
+to the same tree).</li>
+</ul>
+<p>ASIS 13.36 <code class="docutils literal"><span class="pre">function</span> <span class="pre">Enclosing_Element</span></code></p>
+<ul class="simple" id="index-72">
+<li>ASIS-for-GNAT does not require the <code class="docutils literal"><span class="pre">Element_Context</span></code> parameter.
+The <code class="docutils literal"><span class="pre">Enclosing_Element</span></code> function with two parameters just calls the
+<code class="docutils literal"><span class="pre">Enclosing_Element</span></code> function with one parameter for its <code class="docutils literal"><span class="pre">Element</span></code>
+parameter.</li>
+</ul>
+<p><strong>ASIS 15</strong> <code class="docutils literal"><span class="pre">package</span> <span class="pre">Asis.Declarations</span></code></p>
+<p id="index-73">ASIS 15.24 <code class="docutils literal"><span class="pre">function</span> <span class="pre">Body_Block_Statement</span></code></p>
+<ul class="simple" id="index-74">
+<li>If the body passed as the actual parameter has no declarative items of its
+own,  <code class="docutils literal"><span class="pre">Asis.Statements.Is_Declare_Block</span></code> returns <code class="docutils literal"><span class="pre">False</span></code>.</li>
+</ul>
+<p><strong>ASIS 18</strong> <code class="docutils literal"><span class="pre">package</span> <span class="pre">Asis.Statements</span></code></p>
+<p id="index-75">ASIS 18.14 <code class="docutils literal"><span class="pre">function</span> <span class="pre">Is_Declare_Block</span></code></p>
+<ul class="simple" id="index-76">
+<li>If the argument represents the dummy block statement created by
+<code class="docutils literal"><span class="pre">Asis.Declarations.Body_Block_Statement</span></code> function, the result will be
+<code class="docutils literal"><span class="pre">True</span></code> if and only if the corresponding body has declarative items.</li>
+</ul>
+<p><strong>ASIS 20</strong> <code class="docutils literal"><span class="pre">package</span> <span class="pre">Asis.Text</span></code></p>
+<p id="index-77">ASIS 20.1 <code class="docutils literal"><span class="pre">type</span> <span class="pre">Line</span></code></p>
+<ul class="simple" id="index-78">
+<li>Lines in ASIS-for-GNAT do not contain any end-of-line characters
+(see RM95, 2.2(2)).</li>
+</ul>
+<p>ASIS 20.22 <code class="docutils literal"><span class="pre">function</span> <span class="pre">Delimiter_Image</span></code></p>
+<ul class="simple" id="index-79">
+<li>Returns a wide string of length one, containing the <code class="docutils literal"><span class="pre">LF</span></code> wide character.</li>
+</ul>
+</div>
+<div class="section" id="processing-of-predefined-input-output-packages">
+<h2>4.4. Processing of Predefined Input-Output Packages<a class="headerlink" href="#processing-of-predefined-input-output-packages" title="Permalink to this headline">¶</a></h2>
+<p id="index-80">The GNAT compiler transforms the structure of the predefined input-output
+packages (<cite>Ada.Text_IO</cite>, <code class="docutils literal"><span class="pre">Ada.Wide_Text_IO</span></code> and
+<code class="docutils literal"><span class="pre">Ada.Wide_Wide_Text_IO</span></code>) to optimize compilations of their clients.
+The documentation of <code class="docutils literal"><span class="pre">Ada.Text_IO</span></code> says:</p>
+<div class="highlight-ada"><div class="highlight"><pre><span class="c">--  Note: the generic subpackages of Text_IO (Integer_IO, Float_IO, Fixed_IO,</span>
+<span class="c">--  Modular_IO, Decimal_IO and Enumeration_IO) appear as private children in</span>
+<span class="c">--  GNAT. These children are with&#39;ed automatically if they are referenced, so</span>
+<span class="c">--  this rearrangement is invisible to user programs, but has the advantage</span>
+<span class="c">--  that only the needed parts of Text_IO are processed and loaded.</span>
+</pre></div>
+</div>
+<p>The same happens for <code class="docutils literal"><span class="pre">Ada.Wide_Text_IO</span></code> and <code class="docutils literal"><span class="pre">Ada.Wide_Wide_Text_IO</span></code>.
+In this situation ASIS follows not the Ada Standard, but the actual code
+contained in the GNAT Run-Time Library. That is, the
+<code class="docutils literal"><span class="pre">Enclosing_Compilation_Unit</span></code> for an ASIS <code class="docutils literal"><span class="pre">Element</span></code> representing
+<code class="docutils literal"><span class="pre">Ada.Text_IO.Integer_IO</span></code> will be not the
+<code class="docutils literal"><span class="pre">Compilation_Unit</span></code> that contains the whole package <code class="docutils literal"><span class="pre">Ada.Text_IO</span></code>, but
+the <code class="docutils literal"><span class="pre">Compilation_Unit</span></code> representing its private child as it is described
+above.</p>
+<p>The <code class="docutils literal"><span class="pre">Asis.Extensions</span></code> package contains a query named
+<code class="docutils literal"><span class="pre">Is_Sub_Package_Implemented_As_Child_Unit</span></code> that allows to detect such
+private children of predefined Ada text input-output packages.</p>
+</div>
+<div class="section" id="representation-clauses-and-gnati-gnat-option">
+<h2>4.5. Representation clauses and <code class="docutils literal"><span class="pre">-gnatI</span></code> GNAT option<a class="headerlink" href="#representation-clauses-and-gnati-gnat-option" title="Permalink to this headline">¶</a></h2>
+<p id="index-81">GNAT <code class="docutils literal"><span class="pre">-gnatI</span></code> allows to ignore all the representation clauses in the
+code being compiled. This allows to compile the code if it contains representation
+clauses that are illegal in the given compilation environment. ASIS can process
+tree files created with <code class="docutils literal"><span class="pre">-gnatI</span></code>, and for the ASIS <code class="docutils literal"><span class="pre">Context</span></code> that
+is based on such trees, ASIS does not yield <code class="docutils literal"><span class="pre">Elements</span></code> that correspond
+to representation clauses.</p>
+<p>Note that you will see these representation clauses in the text images of
+the enclosing <code class="docutils literal"><span class="pre">Elements</span></code>, but nevertheless you will not be able to get
+them as subcomponents of such <code class="docutils literal"><span class="pre">Elements</span></code>.</p>
+</div>
+<div class="section" id="dynamic-context-modes">
+<span id="id8"></span><h2>4.6. Dynamic <code class="docutils literal"><span class="pre">Context</span></code> Modes<a class="headerlink" href="#dynamic-context-modes" title="Permalink to this headline">¶</a></h2>
+<p id="index-82">If an ASIS <code class="docutils literal"><span class="pre">Context</span></code> is defined with an <code class="docutils literal"><span class="pre">-FS</span></code> or <code class="docutils literal"><span class="pre">-FM</span></code>
+option, then ASIS may compile sources &#8216;on the fly&#8217; to obtain
+<code class="docutils literal"><span class="pre">Compilation_Unit</span></code>s.
+Thus the content of the <code class="docutils literal"><span class="pre">Context</span></code> will not necessarily remain frozen
+when the <code class="docutils literal"><span class="pre">Context</span></code> is open &#8212; when ASIS gets a new
+<code class="docutils literal"><span class="pre">Compilation_Unit</span></code>, it &#8216;adds&#8217; it to the <code class="docutils literal"><span class="pre">Context</span></code>.
+The <code class="docutils literal"><span class="pre">-FS</span></code> and <code class="docutils literal"><span class="pre">-FM</span></code> options
+are referred to as <em>dynamic Context modes</em>.</p>
+<p>The difference between the two modes is as follows:</p>
+<dl class="docutils">
+<dt><code class="docutils literal"><span class="pre">-FS</span></code></dt>
+<dd>ASIS does not take into account any existing tree file when opening a
+<code class="docutils literal"><span class="pre">Context</span></code>.</dd>
+<dt><code class="docutils literal"><span class="pre">-FM</span></code></dt>
+<dd>ASIS first processes the tree files in the tree search
+path.  If a given <code class="docutils literal"><span class="pre">Compilation_Unit</span></code> is present in the existing set of
+tree files, these tree files are used; otherwise ASIS tries to locate the
+source of the unit and to compile it to produce a tree file.</dd>
+</dl>
+<p>For both <code class="docutils literal"><span class="pre">-FS</span></code> and
+<code class="docutils literal"><span class="pre">-FM</span></code> <code class="docutils literal"><span class="pre">Context</span></code>s, once a tree file
+is created it is added to the set of tree
+files making up the <code class="docutils literal"><span class="pre">Context</span></code> and then it is reused (without recreating
+it from sources again) for the queries dealing with <code class="docutils literal"><span class="pre">Compilation_Unit</span></code>s
+represented by this tree.</p>
+<p id="index-83">An advantage of these dynamic <code class="docutils literal"><span class="pre">Context</span></code> modes is that you do not have to
+create the tree files explicitly; to users of an ASIS application based on
+such <code class="docutils literal"><span class="pre">Context</span></code> modes the application appears to operate directly from
+source files. But there is also a
+drawback, a consequence of the fact that the content of a <code class="docutils literal"><span class="pre">Context</span></code> may
+change while the <code class="docutils literal"><span class="pre">Context</span></code> is open: some ASIS queries dealing
+with <code class="docutils literal"><span class="pre">Compilation_Unit</span></code>s or returning lists of <code class="docutils literal"><span class="pre">Compilation_Unit</span></code>s
+raise the <code class="docutils literal"><span class="pre">ASIS_Failed</span></code>
+exception (with <code class="docutils literal"><span class="pre">Use_Error</span></code> status).</p>
+<span class="target" id="index-84"></span><p id="index-85">These queries are as follows:</p>
+<div class="highlight-ada"><div class="highlight"><pre><span class="n">Asis.Compilation_Units</span><span class="o">:</span>
+     <span class="n">Library_Unit_Declarations</span>
+     <span class="n">Compilation_Unit_Bodies</span>
+     <span class="n">Compilation_Units</span>
+     <span class="n">Corresponding_Children</span>
+</pre></div>
+</div>
+<p>Another limitation of the dynamic <code class="docutils literal"><span class="pre">Context</span></code> mode is that ASIS uses the
+standard GNAT naming scheme to compute the name of the source to be compiled
+from the name of the corresponding Ada compilation unit. That is, if the name
+of the source containing the code of some unit does not follow the GNAT
+naming scheme, then ASIS will not locate this source, and it will treat
+this unit as <code class="docutils literal"><span class="pre">Nil_Compilation_Unit</span></code>.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="debugging_information.html" title="5. Debugging Information"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="asis_extensions.html" title="3. ASIS Extensions"
+             >previous</a> |</li>
+        <li><a href="../asis_rm.html">ASIS-for-GNAT Reference Manual 2017 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2008-2017, AdaCore.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3b2.
+    </div>
+  </body>
+</html>

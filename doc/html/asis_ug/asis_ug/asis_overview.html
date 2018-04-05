@@ -1,0 +1,471 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>4. ASIS Overview &mdash; ASIS-for-GNAT User&#39;s Guide 2017 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2017',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="ASIS-for-GNAT User&#39;s Guide 2017 documentation" href="../asis_ug.html" />
+    <link rel="next" title="5. ASIS Context" href="asis_context.html" />
+    <link rel="prev" title="3. Getting Started" href="getting_started.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="asis_context.html" title="5. ASIS Context"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="getting_started.html" title="3. Getting Started"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../asis_ug.html">ASIS-for-GNAT User&#39;s Guide 2017 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../asis_ug.html">
+              <img class="logo" src="../_static/adacore_transparent.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../asis_ug.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">4. ASIS Overview</a><ul>
+<li><a class="reference internal" href="#main-asis-abstractions">4.1. Main ASIS Abstractions</a></li>
+<li><a class="reference internal" href="#asis-package-hierarchy">4.2. ASIS Package Hierarchy</a></li>
+<li><a class="reference internal" href="#structural-and-semantic-queries">4.3. Structural and Semantic Queries</a></li>
+<li><a class="reference internal" href="#asis-error-handling-policy">4.4. ASIS Error Handling Policy</a></li>
+<li><a class="reference internal" href="#dynamic-typing-of-asis-queries">4.5. Dynamic Typing of ASIS Queries</a></li>
+<li><a class="reference internal" href="#asis-iterator">4.6. ASIS Iterator</a></li>
+<li><a class="reference internal" href="#how-to-navigate-through-the-asis-package-hierarchy">4.7. How to Navigate through the <code class="docutils literal"><span class="pre">Asis</span></code> Package Hierarchy</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="getting_started.html"
+                        title="previous chapter">3. Getting Started</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="asis_context.html"
+                        title="next chapter">5. ASIS <code class="docutils literal"><span class="pre">Context</span></code></a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/asis_ug/asis_overview.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="asis-overview">
+<span id="id1"></span><h1>4. ASIS Overview<a class="headerlink" href="#asis-overview" title="Permalink to this headline">¶</a></h1>
+<p id="index-0">This chapter contains a short overview of the ASIS definition as given in
+the ISO/IEC 15291:1999 ASIS Standard. This overview is aimed at helping an ASIS
+newcomer find needed information in the ASIS definition.</p>
+<p>For more details, please refer to the ASIS definition itself. To gain some initial
+experience with ASIS, try the examples in <a class="reference internal" href="asis_tutorials.html#asis-tutorials"><em>ASIS Tutorials</em></a>.</p>
+<div class="section" id="main-asis-abstractions">
+<h2>4.1. Main ASIS Abstractions<a class="headerlink" href="#main-asis-abstractions" title="Permalink to this headline">¶</a></h2>
+<p>ASIS is based on three main abstractions used to describe Ada programs;
+these abstractions are implemented as Ada private types:</p>
+<p><em>Context</em></p>
+<blockquote>
+<div><p id="index-1">An ASIS <code class="docutils literal"><span class="pre">Context</span></code> is a logical handle to an Ada environment, as defined in the
+Ada Reference Manual,
+Chapter 10. An ASIS application developer may view an ASIS <code class="docutils literal"><span class="pre">Context</span></code> as a way
+to define a set of compilation units available through the ASIS queries.</p>
+</div></blockquote>
+<p id="index-2"><em>Compilation_Unit</em></p>
+<blockquote>
+<div><p id="index-3">An ASIS <code class="docutils literal"><span class="pre">Compilation_Unit</span></code> is a logical handle to an Ada compilation unit. It
+reflects practically all the properties of compilation units
+defined by the Ada Reference Manual,
+and it also reflects some properties of &#8216;physical objects&#8217;
+used by an underlying Ada implementation to model compilation units.  Examples of
+such properties are the time of the last update, and
+the name of the object containing the unit&#8217;s source text.
+An ASIS <code class="docutils literal"><span class="pre">Compilation_Unit</span></code> provides the &#8216;black-box&#8217; view of a
+compilation unit, considering the unit as a whole. It may be decomposed
+into ASIS <code class="docutils literal"><span class="pre">Element</span></code>s
+and then analyzed in &#8216;white-box&#8217; fashion.</p>
+</div></blockquote>
+<p id="index-4"><em>Element</em></p>
+<blockquote>
+<div><p id="index-5">An ASIS <code class="docutils literal"><span class="pre">Element</span></code> is a logical handle to a syntactic component of an ASIS
+<code class="docutils literal"><span class="pre">Compilation_Unit</span></code> (either explicit or implicit).</p>
+</div></blockquote>
+<p>Some ASIS components use additional abstractions (private types) needed for
+specific pieces of functionality:</p>
+<p><em>Container</em></p>
+<blockquote>
+<div><span class="target" id="index-6"></span><p id="index-7">An ASIS <code class="docutils literal"><span class="pre">Container</span></code> (defined by the
+<code class="docutils literal"><span class="pre">Asis.Ada_Environments.Containers</span></code> package)
+provides a means for
+structuring the content of an ASIS <code class="docutils literal"><span class="pre">Context</span></code>; i.e., ASIS <code class="docutils literal"><span class="pre">Compilation_Unit</span></code>s
+are grouped into <code class="docutils literal"><span class="pre">Container</span></code>s.</p>
+</div></blockquote>
+<p><em>Line</em></p>
+<blockquote>
+<div><span class="target" id="index-8"></span><p id="index-9">An ASIS <code class="docutils literal"><span class="pre">Line</span></code> (defined by the <code class="docutils literal"><span class="pre">Asis.Text</span></code> package)
+is the
+abstraction of a line of code in an Ada source text. An ASIS <code class="docutils literal"><span class="pre">Line</span></code> has a length, a
+string image and a number.</p>
+</div></blockquote>
+<p><em>Span</em></p>
+<blockquote>
+<div><span class="target" id="index-10"></span><p id="index-11">An ASIS <code class="docutils literal"><span class="pre">Span</span></code> (defined by the <code class="docutils literal"><span class="pre">Asis.Text</span></code> package)
+defines the
+location of an <code class="docutils literal"><span class="pre">Element</span></code>, a <code class="docutils literal"><span class="pre">Compilation_Unit</span></code>, or a whole compilation in the
+corresponding source text.</p>
+</div></blockquote>
+<p><em>Id</em></p>
+<blockquote>
+<div><span class="target" id="index-12"></span><p id="index-13">An ASIS <code class="docutils literal"><span class="pre">Id</span></code> (defined by the <code class="docutils literal"><span class="pre">Asis.Ids</span></code>
+package)  provides a way to
+store some &#8216;image&#8217; of an ASIS <code class="docutils literal"><span class="pre">Element</span></code> outside an ASIS application. An
+application may create an <code class="docutils literal"><span class="pre">Id</span></code> value from an <code class="docutils literal"><span class="pre">Element</span></code> and store it in a
+file. Subsequently the same or another application may read this <code class="docutils literal"><span class="pre">Id</span></code> value
+and convert it back into the corresponding <code class="docutils literal"><span class="pre">Element</span></code> value.</p>
+</div></blockquote>
+</div>
+<div class="section" id="asis-package-hierarchy">
+<span id="id2"></span><h2>4.2. ASIS Package Hierarchy<a class="headerlink" href="#asis-package-hierarchy" title="Permalink to this headline">¶</a></h2>
+<p id="index-14">ASIS is defined as a hierarchy of Ada packages. Below is a
+short description of this hierarchy.</p>
+<p><code class="docutils literal"><span class="pre">Asis</span></code></p>
+<blockquote>
+<div><span class="target" id="index-15"></span><span class="target" id="index-16"></span><span class="target" id="index-17"></span><p id="index-18">The root package of the hierarchy. It defines the main ASIS
+abstractions &#8212; <code class="docutils literal"><span class="pre">Context</span></code>,
+<code class="docutils literal"><span class="pre">Compilation_Unit</span></code>
+and <code class="docutils literal"><span class="pre">Element</span></code>
+&#8212; as Ada private types. It also contains a set of enumeration types that define
+the classification hierarchy for ASIS <code class="docutils literal"><span class="pre">Element</span></code>s (which closely reflects the
+Ada syntax defined in the Ada Reference Manual) and the classification of
+ASIS <code class="docutils literal"><span class="pre">Compilation_Unit</span></code>s.
+This package does not contain any queries.</p>
+</div></blockquote>
+<dl class="docutils">
+<dt><code class="docutils literal"><span class="pre">Asis.Implementation</span></code></dt>
+<dd>Contains subprograms that control an ASIS implementation: initializing and
+finalizing it, retrieving and resetting diagnosis information. Its child
+package <code class="docutils literal"><span class="pre">Asis.Implementation.Permissions</span></code>
+contains boolean queries that
+reflect how ASIS implementation-specific features are implemented.<span class="target" id="index-19"></span></dd>
+</dl>
+<p id="index-20"><code class="docutils literal"><span class="pre">Asis.Ada_Environments</span></code></p>
+<blockquote>
+<div><span class="target" id="index-21"></span><span class="target" id="index-22"></span><p id="index-23">Contains queries
+that deal with an ASIS <code class="docutils literal"><span class="pre">Context</span></code>: associating and dissociating,
+opening and closing a <code class="docutils literal"><span class="pre">Context</span></code>.</p>
+</div></blockquote>
+<p><code class="docutils literal"><span class="pre">Asis.Compilation_Units</span></code></p>
+<blockquote>
+<div><span class="target" id="index-24"></span><p id="index-25">Contains queries
+that work with ASIS <code class="docutils literal"><span class="pre">Compilation_Unit</span></code>s: obtaining units from a
+<code class="docutils literal"><span class="pre">Context</span></code>, getting semantic dependencies between units and &#8216;black-box&#8217; unit
+properties.</p>
+</div></blockquote>
+<p><code class="docutils literal"><span class="pre">Asis.Compilation_Units.Relations</span></code></p>
+<blockquote>
+<div><span class="target" id="index-26"></span><p id="index-27">Contains queries
+that return integrated semantic dependencies among ASIS
+<code class="docutils literal"><span class="pre">Compilation_Unit</span></code>s; e.g., all the units needed by a given unit to be included
+in a partition.</p>
+</div></blockquote>
+<p><code class="docutils literal"><span class="pre">Asis.Elements</span></code></p>
+<blockquote>
+<div><span class="target" id="index-28"></span><p id="index-29">Contains queries
+working on <code class="docutils literal"><span class="pre">Element</span></code>s and implementing general <code class="docutils literal"><span class="pre">Element</span></code>
+properties: gateway queries from ASIS Compilation Units to ASIS <code class="docutils literal"><span class="pre">Element</span></code>s,
+queries defining the position of an <code class="docutils literal"><span class="pre">Element</span></code> in the <code class="docutils literal"><span class="pre">Element</span></code> classification
+hierarchy, queries which define for a given <code class="docutils literal"><span class="pre">Element</span></code> its enclosing
+<code class="docutils literal"><span class="pre">Compilation_Unit</span></code> and its enclosing <code class="docutils literal"><span class="pre">Element</span></code>.
+It also contains queries for processing pragmas.</p>
+</div></blockquote>
+<p><em>Packages working on specific</em> <code class="docutils literal"><span class="pre">Element</span></code>s</p>
+<blockquote>
+<div><span class="target" id="index-30"></span><span class="target" id="index-31"></span><span class="target" id="index-32"></span><span class="target" id="index-33"></span><p id="index-34">This group contains the following packages: <code class="docutils literal"><span class="pre">Asis.Declarations</span></code>,
+<code class="docutils literal"><span class="pre">Asis.Definitions</span></code>,
+<code class="docutils literal"><span class="pre">Asis.Statements</span></code>,
+<code class="docutils literal"><span class="pre">Asis.Expressions</span></code>
+and
+<code class="docutils literal"><span class="pre">ASIS.Clauses</span></code>.
+Each of these packages contains queries working on
+<code class="docutils literal"><span class="pre">Element</span></code>s of the corresponding kind &#8212; that is, representing Ada declarations,
+definitions, statements, expressions and clauses respectively.</p>
+</div></blockquote>
+<p><code class="docutils literal"><span class="pre">Asis.Text</span></code></p>
+<blockquote>
+<div><span class="target" id="index-35"></span><p id="index-36">Contains queries
+returning information about the source representation of ASIS
+<code class="docutils literal"><span class="pre">Compilation_Unit</span></code>s and ASIS <code class="docutils literal"><span class="pre">Element</span></code>s.</p>
+</div></blockquote>
+<p><code class="docutils literal"><span class="pre">Asis.Exceptions</span></code></p>
+<blockquote>
+<div><p id="index-37">Defines ASIS exceptions.</p>
+</div></blockquote>
+<p><code class="docutils literal"><span class="pre">Asis.Errors</span></code></p>
+<blockquote>
+<div><p id="index-38">Defines possible ASIS error status values.</p>
+</div></blockquote>
+</div>
+<div class="section" id="structural-and-semantic-queries">
+<h2>4.3. Structural and Semantic Queries<a class="headerlink" href="#structural-and-semantic-queries" title="Permalink to this headline">¶</a></h2>
+<span class="target" id="index-39"></span><span class="target" id="index-40"></span><span class="target" id="index-41"></span><span class="target" id="index-42"></span><p id="index-43">Queries working on <code class="docutils literal"><span class="pre">Element</span></code>s and returning <code class="docutils literal"><span class="pre">Element</span></code>s or <code class="docutils literal"><span class="pre">Element</span></code> lists
+are divided into structural and semantic queries.
+Each structural query (except <code class="docutils literal"><span class="pre">Enclosing_Element</span></code>)
+implements one step of
+the parent-to-child decomposition of an Ada program according to the ASIS
+<code class="docutils literal"><span class="pre">Element</span></code> classification hierarchy. <code class="docutils literal"><span class="pre">Asis.Elements.Enclosing_Element</span></code> query
+implements the reverse child-to-parent step. (For implicit <code class="docutils literal"><span class="pre">Element</span></code>s obtained
+as results of semantic queries, <code class="docutils literal"><span class="pre">Enclosing_Element</span></code> might not correspond to what
+could be expected from the Ada syntax and semantics; in
+this case the documentation of a semantic query also defines the effect of
+<code class="docutils literal"><span class="pre">Enclosing_Element</span></code> applied to its result).</p>
+<p>A semantic query for a given <code class="docutils literal"><span class="pre">Element</span></code> returns the <code class="docutils literal"><span class="pre">Element</span></code> or the list of
+<code class="docutils literal"><span class="pre">Element</span></code>s representing some semantic property &#8212; e.g., a type
+declaration for an expression as the expression&#8217;s type, a defining identifier as a
+definition for a simple name, etc.</p>
+<p>For example, if we have <code class="docutils literal"><span class="pre">Element</span></code> <code class="docutils literal"><span class="pre">El</span></code> representing an assignment statement:</p>
+<div class="highlight-ada"><div class="highlight"><pre><span class="n">X</span> <span class="o">:=</span> <span class="n">A</span> <span class="o">+</span> <span class="n">B</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>then we can retrieve the structural components of this assignment statement by
+applying the appropriate structural queries:</p>
+<div class="highlight-ada"><div class="highlight"><pre><span class="n">El_Var</span>  <span class="o">:=</span> <span class="n">Asis.Statements.Assignment_Variable_Name</span> <span class="o">(</span><span class="n">El</span><span class="o">)</span><span class="p">;</span> <span class="c">--  X</span>
+<span class="n">El_Expr</span> <span class="o">:=</span> <span class="n">Asis.Statements.Assignment_Expression</span>    <span class="o">(</span><span class="n">El</span><span class="o">)</span><span class="p">;</span> <span class="c">--  A + B</span>
+</pre></div>
+</div>
+<p>Then we can analyze semantic properties of the variable name represented by
+<code class="docutils literal"><span class="pre">El_Var</span></code> and of the expression represented by <code class="docutils literal"><span class="pre">El_Expr</span></code> by means of
+appropriate semantic queries:</p>
+<div class="highlight-ada"><div class="highlight"><pre><span class="n">El_Var_Def</span>   <span class="o">:=</span>
+   <span class="n">Asis.Expressions.Corresponding_Name_Definition</span> <span class="o">(</span><span class="n">El_Var</span><span class="o">)</span><span class="p">;</span>
+<span class="n">El_Expt_Type</span> <span class="o">:=</span>
+   <span class="n">Asis.Expressions.Corresponding_Expression_Type</span> <span class="o">(</span><span class="n">El_Expr</span><span class="o">)</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>As a result, <code class="docutils literal"><span class="pre">El_Var_Def</span></code> will be of <code class="docutils literal"><span class="pre">A_Defining_Identifier</span></code> kind
+and will represent the defining occurrence of <code class="docutils literal"><span class="pre">X</span></code>, while
+<code class="docutils literal"><span class="pre">El_Expt_Type</span></code> of a kind <code class="docutils literal"><span class="pre">An_Ordinary_Type_Declaration</span></code> will
+represent the declaration of the type of the expression <code class="docutils literal"><span class="pre">A</span> <span class="pre">+</span> <span class="pre">B</span></code>.</p>
+<p>If we apply <code class="docutils literal"><span class="pre">Asis.Elements.Enclosing_Element</span></code> to <code class="docutils literal"><span class="pre">El_Var</span></code> or to
+<code class="docutils literal"><span class="pre">El_Expr</span></code>, we will get back to the <code class="docutils literal"><span class="pre">Element</span></code> representing the
+assignment statement.</p>
+<p>An important difference between classifying queries working on <code class="docutils literal"><span class="pre">Element</span></code>s as
+structural versus
+semantic is that all the structural queries must be within one ASIS
+<code class="docutils literal"><span class="pre">Compilation_Unit</span></code>, but for semantic queries it is typical for the
+argument of a query to be in one ASIS <code class="docutils literal"><span class="pre">Compilation_Unit</span></code>, while the result of this
+query is in another ASIS <code class="docutils literal"><span class="pre">Compilation_Unit</span></code>.</p>
+</div>
+<div class="section" id="asis-error-handling-policy">
+<h2>4.4. ASIS Error Handling Policy<a class="headerlink" href="#asis-error-handling-policy" title="Permalink to this headline">¶</a></h2>
+<span class="target" id="index-44"></span><span class="target" id="index-45"></span><span class="target" id="index-46"></span><span class="target" id="index-47"></span><span class="target" id="index-48"></span><span class="target" id="index-49"></span><span class="target" id="index-50"></span><p id="index-51">Only ASIS-defined exceptions (and the Ada predefined <code class="docutils literal"><span class="pre">Storage_Error</span></code>
+exception) propagate out from ASIS queries. ASIS exceptions
+are defined in the <code class="docutils literal"><span class="pre">Asis.Exceptions</span></code> package.
+When an ASIS exception is raised, ASIS sets the Error Status (the possible
+ASIS error conditions are defined as the values of the
+<code class="docutils literal"><span class="pre">Asis.Errors.Error_Kinds</span></code> type)
+and forms the <code class="docutils literal"><span class="pre">Diagnosis</span></code> string.
+An application can query the current value of the ASIS Error Status by the
+<code class="docutils literal"><span class="pre">Asis.Implementation.Status</span></code> query,
+and the current content of the
+<code class="docutils literal"><span class="pre">Diagnosis</span></code> string by <code class="docutils literal"><span class="pre">Asis.Implementation.Diagnosis</span></code> query.
+An application
+can reset the Error Status and the <code class="docutils literal"><span class="pre">Diagnosis</span></code> string by
+invoking the <code class="docutils literal"><span class="pre">Asis.Implementation.Set_Status</span></code> procedure.</p>
+<p id="index-52"><em>Caution:</em> The ASIS way of providing error information is not tasking safe.
+The <code class="docutils literal"><span class="pre">Diagnosis</span></code> string and Error Kind are global to an entire partition,
+and are not &#8216;per task&#8217;.
+If ASIS exceptions are raised in more then
+one task of a multi-tasking ASIS application, the result of
+querying the error information in a particular task may be incorrect.</p>
+</div>
+<div class="section" id="dynamic-typing-of-asis-queries">
+<h2>4.5. Dynamic Typing of ASIS Queries<a class="headerlink" href="#dynamic-typing-of-asis-queries" title="Permalink to this headline">¶</a></h2>
+<span class="target" id="index-53"></span><span class="target" id="index-54"></span><span class="target" id="index-55"></span><p id="index-56">The ASIS type <code class="docutils literal"><span class="pre">Element</span></code>
+covers all Ada syntactic constructs,
+and <code class="docutils literal"><span class="pre">Compilation_Unit</span></code>
+covers all Ada compilation
+units. ASIS defines an <code class="docutils literal"><span class="pre">Element</span></code> classification hierarchy (which reflects
+very closely the hierarchy of Ada syntactic categories defined in the
+Ada Reference Manual,
+and ASIS similarly defines a classification scheme for ASIS <code class="docutils literal"><span class="pre">Compilation_Unit</span></code>s.
+For
+any <code class="docutils literal"><span class="pre">Element</span></code> you can get its position in the <code class="docutils literal"><span class="pre">Element</span></code>
+classification hierarchy by means of classification queries defined in the
+package <code class="docutils literal"><span class="pre">Asis.Elements</span></code>.</p>
+<p id="index-57">The classification queries for <code class="docutils literal"><span class="pre">Compilation_Unit</span></code>s
+are defined in the package <code class="docutils literal"><span class="pre">Asis.Compilation_Units</span></code>.
+Many of the queries working on <code class="docutils literal"><span class="pre">Element</span></code>s and <code class="docutils literal"><span class="pre">Compilation_Unit</span></code>s can be applied
+only to specific kinds of <code class="docutils literal"><span class="pre">Element</span></code>s and <code class="docutils literal"><span class="pre">Compilation_Unit</span></code>s respectively. For
+example, it does not make sense to query
+<code class="docutils literal"><span class="pre">Assignment_Variable_Name</span></code> for an <code class="docutils literal"><span class="pre">Element</span></code> of
+<code class="docutils literal"><span class="pre">An_Ordinary_Type_Declaration</span></code> kind.
+An attempt to perform such an operation will be detected at run-time, and
+an exception will be raised as explained in the next paragraph.</p>
+<span class="target" id="index-58"></span><p id="index-59">ASIS may be viewed as a dynamically typed interface. For any <code class="docutils literal"><span class="pre">Element</span></code> structural
+or semantic query (that is, for a query having an <code class="docutils literal"><span class="pre">Element</span></code> as an argument and
+returning either an <code class="docutils literal"><span class="pre">Element</span></code> or <code class="docutils literal"><span class="pre">Element</span></code> list as a result) a list of appropriate
+<code class="docutils literal"><span class="pre">Element</span></code> kinds is explicitly defined in the query documentation which
+immediately follows the declaration of the corresponding subprogram in the
+code of the ASIS package. This means that the query can be applied only to
+argument <code class="docutils literal"><span class="pre">Element</span></code>s being of the kinds from this list. If the kind of the
+argument <code class="docutils literal"><span class="pre">Element</span></code> does not belong to this list, the corresponding call to this
+query raises the <code class="docutils literal"><span class="pre">Asis.Exceptions.ASIS_Inappropriate_Element</span></code> exception
+with <code class="docutils literal"><span class="pre">Asis.Errors.Value_Error</span></code> error status set.</p>
+<p id="index-60">The situation for the queries working on <code class="docutils literal"><span class="pre">Compilation_Unit</span></code>s is similar. If a
+query lists appropriate unit kinds in its documentation, then this query can
+work only on <code class="docutils literal"><span class="pre">Compilation_Unit</span></code>s of the kinds from this list. The query should
+raise <code class="docutils literal"><span class="pre">Asis.Exceptions.ASIS_Inappropriate_Compilation_Unit</span></code>
+with <code class="docutils literal"><span class="pre">Asis.Errors.Value_Error</span></code> error status set when called for any
+<code class="docutils literal"><span class="pre">Compilation_Unit</span></code> with a kind not from the list of the appropriate unit kinds.</p>
+<p id="index-61">If a query has a list of expected <code class="docutils literal"><span class="pre">Element</span></code> kinds or expected <code class="docutils literal"><span class="pre">Compilation_Unit</span></code>
+kinds in its documentation, this query does not raise any exception when
+called with any argument, but it produces a meaningful result only when called
+with an argument with the kind from this list. For example, if
+<code class="docutils literal"><span class="pre">Asis.Elements.Statement_Kind</span></code> query
+is called for an argument of
+<code class="docutils literal"><span class="pre">A_Declaration</span></code> kind, it just returns <code class="docutils literal"><span class="pre">Not_A_Statement</span></code>, but without
+raising any exception.</p>
+</div>
+<div class="section" id="asis-iterator">
+<h2>4.6. ASIS Iterator<a class="headerlink" href="#asis-iterator" title="Permalink to this headline">¶</a></h2>
+<span class="target" id="index-62"></span><p id="index-63">ASIS provides a powerful mechanism to traverse an Ada unit, the generic
+procedure <code class="docutils literal"><span class="pre">Asis.Iterator.Traverse_Element</span></code>.
+This procedure makes a top-down
+left-to-right (or depth-first) traversal of the ASIS tree (that is, of
+the syntax structure of the Ada code viewed as the hierarchy of ASIS
+<code class="docutils literal"><span class="pre">Element</span></code>s). In the course of this traversal, it applies to each <code class="docutils literal"><span class="pre">Element</span></code> the
+formal <code class="docutils literal"><span class="pre">Pre_Operation</span></code> procedure when visiting this <code class="docutils literal"><span class="pre">Element</span></code> for the first
+time, and the formal <code class="docutils literal"><span class="pre">Post_Operation</span></code> procedure when leaving this <code class="docutils literal"><span class="pre">Element</span></code>.
+By providing specific procedures for <code class="docutils literal"><span class="pre">Pre_Operation</span></code> and
+<code class="docutils literal"><span class="pre">Post_Operation</span></code> when instantiating the generic unit, you
+can automatically process all ASIS <code class="docutils literal"><span class="pre">Element</span></code>s found
+in a given ASIS tree.</p>
+<p>For example, suppose we have an assignment statement:</p>
+<div class="highlight-ada"><div class="highlight"><pre><span class="n">X</span> <span class="o">:=</span> <span class="n">F</span> <span class="o">(</span><span class="n">Y</span><span class="o">)</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>When called for an <code class="docutils literal"><span class="pre">Element</span></code> representing this statement, a
+<code class="docutils literal"><span class="pre">Traverse_Element</span></code> instantiation does the following (below <code class="docutils literal"><span class="pre">Pre_Op</span></code>
+and <code class="docutils literal"><span class="pre">Post_Op</span></code> stand for actual procedures provided for formal
+<code class="docutils literal"><span class="pre">Pre_Operation</span></code> and <code class="docutils literal"><span class="pre">Post_Operation</span></code>, and numbers indicate the
+sequence of calls to <code class="docutils literal"><span class="pre">Pre_Op</span></code> and <code class="docutils literal"><span class="pre">Post_Op</span></code> during traversal):</p>
+<div class="highlight-python"><div class="highlight"><pre>             (1 Pre_Op)  X := F (Y) (10 Post_Op)
+                             |
+                             |
+           -----------------------------------
+           |                                 |
+(2 Pre_Op) X (3 Post_Op)                     |
+                                             |
+                                (4 Pre_Op) F(Y) (9 Post_Op)
+                                             |
+                                             |
+                                ---------------------------
+                                |                         |
+                    (5 Pre_Op)  F (6 Post_Op)  (7 Pre_Op) Y (8 Post_Op)
+</pre></div>
+</div>
+<p>To see in more detail how <code class="docutils literal"><span class="pre">Traverse_Element</span></code> may be used for rapid
+development of a number of useful ASIS applications, try the examples in
+<a class="reference internal" href="asis_tutorials.html#asis-tutorials"><em>ASIS Tutorials</em></a>.</p>
+</div>
+<div class="section" id="how-to-navigate-through-the-asis-package-hierarchy">
+<h2>4.7. How to Navigate through the <code class="docutils literal"><span class="pre">Asis</span></code> Package Hierarchy<a class="headerlink" href="#how-to-navigate-through-the-asis-package-hierarchy" title="Permalink to this headline">¶</a></h2>
+<p>The following hints and tips may be useful when looking for some specific
+information in the ASIS source files:</p>
+<ul class="simple">
+<li>Use the short overview of the ASIS packages given in
+<a class="reference internal" href="#asis-package-hierarchy"><em>ASIS Package Hierarchy</em></a>, to limit your browsing to a smaller set
+of ASIS packages (e.g., if
+you are interested in what can be done with <code class="docutils literal"><span class="pre">Compilation_Unit</span></code>s then look only in
+<code class="docutils literal"><span class="pre">Asis.Compilation_Units</span></code>; if you are looking for queries that can be
+used to decompose and analyze declarations, limit your search to
+<code class="docutils literal"><span class="pre">Asis.Declarations</span></code>).</li>
+<li>Inside ASIS packages working with particular kinds of <code class="docutils literal"><span class="pre">Element</span></code>s
+(<code class="docutils literal"><span class="pre">Asis.Declarations</span></code>, <code class="docutils literal"><span class="pre">Asis.Definitions</span></code>, <code class="docutils literal"><span class="pre">Asis.Statements</span></code>,
+<code class="docutils literal"><span class="pre">Asis.Expressions</span></code> and <code class="docutils literal"><span class="pre">ASIS.Clauses</span></code>) queries are ordered according
+to the order of the description of the corresponding constructions in the
+Ada Reference Manual
+(e.g., package <code class="docutils literal"><span class="pre">Asis.Statements</span></code> starts from a query retrieving labels
+and ends with the query decomposing a code statement).</li>
+<li>The names of all the semantic queries (and only ones) start from
+<code class="docutils literal"><span class="pre">Corresponding_...</span></code> or <code class="docutils literal"><span class="pre">Implicit_...</span></code></li>
+<li>Use comment sentinels given in the specification of the ASIS packages. A
+sentinel of the form &#8216;<code class="docutils literal"><span class="pre">--|ER</span></code>&#8216; (from &#8216;<code class="docutils literal"><span class="pre">Element</span></code> Reference&#8217;) introduces a new
+<code class="docutils literal"><span class="pre">Element</span></code> kind, and it is followed by a group of sentinels of the form
+&#8216;<code class="docutils literal"><span class="pre">--|CR</span></code>&#8216; (from &#8216;Child Reference&#8217;), which list queries yielding the child
+<code class="docutils literal"><span class="pre">Element</span></code>s for the <code class="docutils literal"><span class="pre">Element</span></code> just introduced.</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="asis_context.html" title="5. ASIS Context"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="getting_started.html" title="3. Getting Started"
+             >previous</a> |</li>
+        <li><a href="../asis_ug.html">ASIS-for-GNAT User&#39;s Guide 2017 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2008-2017, AdaCore.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3b2.
+    </div>
+  </body>
+</html>

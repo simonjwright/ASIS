@@ -1,0 +1,131 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>13. Exception Handling and Reporting Internal Bugs &mdash; ASIS-for-GNAT User&#39;s Guide 2017 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2017',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="ASIS-for-GNAT User&#39;s Guide 2017 documentation" href="../asis_ug.html" />
+    <link rel="next" title="14. File Naming Conventions and Application Name Space" href="file_naming_conventions_and_application_name_space.html" />
+    <link rel="prev" title="12. ASIS-for-GNAT Warnings" href="asis-for-gnat_warnings.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="file_naming_conventions_and_application_name_space.html" title="14. File Naming Conventions and Application Name Space"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="asis-for-gnat_warnings.html" title="12. ASIS-for-GNAT Warnings"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../asis_ug.html">ASIS-for-GNAT User&#39;s Guide 2017 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../asis_ug.html">
+              <img class="logo" src="../_static/adacore_transparent.png" alt="Logo"/>
+            </a></p>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="asis-for-gnat_warnings.html"
+                        title="previous chapter">12. ASIS-for-GNAT Warnings</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="file_naming_conventions_and_application_name_space.html"
+                        title="next chapter">14. File Naming Conventions and Application Name Space</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/asis_ug/exception_handling_and_reporting_internal_bugs.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="exception-handling-and-reporting-internal-bugs">
+<span id="id1"></span><h1>13. Exception Handling and Reporting Internal Bugs<a class="headerlink" href="#exception-handling-and-reporting-internal-bugs" title="Permalink to this headline">¶</a></h1>
+<p>According to the ASIS Standard, only ASIS-defined exceptions can
+be propagated from ASIS queries. The same holds for the
+ASIS Extensions queries supported by ASIS-for-GNAT.</p>
+<p>If a non-ASIS exception is raised during the processing of
+an ASIS or ASIS extension query, this symptom reflects
+an internal implementation problem. Under such a circumstance,
+by default the ASIS query will output some diagnostic information
+to <code class="docutils literal"><span class="pre">Standard_Error</span></code> and then exit to the OS; that is,
+the execution of the ASIS application is aborted.</p>
+<p>In order to allow the execution of an ASIS-based program
+to continue even in case of such internal ASIS
+implementation errors, you can change the default behavior by supplying
+appropriate parameters to <code class="docutils literal"><span class="pre">Asis.Implementation.Initialize</span></code>. See
+ASIS-for-GNAT Reference Manual
+for more details.</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="file_naming_conventions_and_application_name_space.html" title="14. File Naming Conventions and Application Name Space"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="asis-for-gnat_warnings.html" title="12. ASIS-for-GNAT Warnings"
+             >previous</a> |</li>
+        <li><a href="../asis_ug.html">ASIS-for-GNAT User&#39;s Guide 2017 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2008-2017, AdaCore.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3b2.
+    </div>
+  </body>
+</html>

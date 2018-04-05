@@ -1,0 +1,304 @@
+---------------------------------------------------------------
+--  This is an ASIStant script which contains a sequence     --
+--  of the ASIS queries doing some white-box processing      --
+--  of ASIS Compilation Units. The task is to add some more  --
+--  steps to this processing to get some more information    --
+--  from the ASIS Context                                    --
+--                                                           --
+--  In the beginning just follow the script, resuming it     --
+--  when needed, to see an example of white_box processing   --
+--  of ASIS Compilation Units, and then make your own        --
+--  processing using the tasks and hints we prepared for you --
+---------------------------------------------------------------
+
+--  Utility call that instructs asistant what information should
+--  the 'print' command output for ASIS Elements. The settings
+--  below mean, that 'print' should output the text image of
+--  Element and it should not output the debug image of
+--  Element
+
+printdetail("dT")
+
+--  resume the script by "run" command to see the continuation
+pause
+
+--  defining Cont - variable of Asis.Context type
+set (Cont)
+
+--  initializing the ASIS implementation
+initialize ("")
+
+--  Associating Cont as having no name and made up by the tree
+--  files contained in the current directory
+associate (Cont, "", "")
+
+--  and opening it
+open (Cont)
+
+--  obtaining the ASIS Compilation Unit named Ex_Proc from our
+--  Context
+set (CU_1, Compilation_Unit_Body ("Ex_Proc", cont))
+
+--  and going down its structure - we use the Element gateway
+--  to get the unit declaration from the compilation unit
+
+set (CU_unit, Unit_Declaration (CU_1))
+
+-- let's see, what we have got:
+-- we can do it, outputing the Element debug image, like this
+pause  --  resume the script to see the output...
+print (Debug_Image (CU_unit))
+pause  --  resume the script...
+
+--  or by outputing its text image:
+pause  --  resume the script to see the output...
+
+print (Element_Image (CU_unit))
+
+pause  --  resume the script...
+
+--  As we will see, asistant 'print' command is more
+--  convenient for displaying Element's values - with the given
+--  settings it gives us the Element kind and it's text image with line
+--  numbers;
+
+print (CU_Unit)
+
+pause  --  resume the script...
+--  now let's go deeper into the structure - let's
+--  get the statements:
+
+set   (Stmts, Body_Statements (CU_unit, false))
+--  checking what we have got
+pause  --  resume the script to see the output...
+print (Stmts)
+pause  --  resume the script...
+
+--  now, let's investigate the first statement enclosed into the loop
+--  statement. First, getting the loop statement itself:
+
+set   (S_Loop, Stmts (1))
+
+print (S_Loop)
+pause  --  resume the script...
+
+--  now we have to decompose the loop:
+set   (Loop_Stmts, Loop_Statements (S_Loop, false))
+
+--  and now - let's do something wrong - just to see what happens 8-)
+--  let's try to get *declarations* from a loop statement:
+
+set   (buggy_result, Body_Declarative_Items (S_Loop, false))
+
+--  as you see, ASIS is "strongly-dynamically-typed" interface -
+--  you cannot apply a query to an Element if the Element is not appropriate
+--  for the query
+
+pause  --  resume the script to see the output...
+
+--  let's go back to the correct stuff, and let's take the first
+--  statement from the loop and see, how it looks:
+
+set   (stmt1, Loop_Stmts (1))
+
+print (stmt1)
+
+pause  --  resume the script...
+--  now, let's decompose this assignment statement:
+set   (Assign_Var, Assignment_Variable_Name (stmt1))
+
+print (Assign_Var)
+
+pause  --  resume the script...
+--  and now - debug image to see some technical details
+
+print (Debug_Image (Assign_Var))
+
+pause  --  resume the script...
+
+set (Assign_Expr, Assignment_Expression (stmt1))
+
+print (Assign_Expr)
+
+--  and now - debug image to see some technical details
+
+print (Debug_Image(Assign_Expr))
+pause  --  resume the script...
+
+--  now let's do some semantic processing. First, lets's see where
+--  the variable from the left part of the assignment statement
+--  is defined:
+
+set   (Assign_Var_Def, Corresponding_Name_Definition (Assign_Var))
+
+print (Assign_Var_Def)
+pause  --  resume the script...
+
+--  but it is a defining name! Let's see the declaration:
+
+set   (Assign_Var_Decl, Enclosing_Element (Assign_Var_Def))
+
+pause  --  resume the script to see the output...
+print (Assign_Var_Decl)
+
+pause  --  resume the script...
+
+--  let's see what function is called in the expression from the
+--  assignment statement being analyzed (reminder - this expression is
+--  of A_Function_Call kind)
+
+set   (F_Decl, Corresponding_Called_Function (Assign_Expr))
+
+print (F_Decl)
+
+pause  --  resume the script...
+
+--  we hope you have not got tired yet :)
+--  Because now it's time for you to do something yourself:
+--  Let's take the second statements from the loop statement:
+
+set   (Stmt2, Loop_Stmts (2))
+
+--  it looks like:
+
+print (Stmt2)
+
+pause  --  resume the script...
+
+--  and now there is the task for you: decompose this statement and
+--  get some semantic information from it and from its components
+--  Do not be afraid! We've decomposed this task into a sequence of small
+--  subtasks. Just follw the script and type your queries when it
+--  is paused.
+--
+--  Resume it now to come to the first small task
+pause
+
+---------------------------------------------------------------
+--  Task 1: The element to analyse is of                     --
+--          A_Procedure_Call_Statement kind. What procedure  --
+--          is called here?                                  --
+--                                                           --
+--  Hints:                                                   --
+--  1.  Browse the package Asis.Statements to see what       --
+--      semantic queries are applicable to procedure calls.  --
+--      (see, in particular, subclause 18.25)                --
+--                                                           --
+--  2. The required sequience of ASIS/ASIStant calls is      --
+--                                                           --
+--       set (Proc_Decl, <Needed_Query> (<arguments>))       --
+--       print (Element_Image (Proc_Decl))                   --
+--                                                           --
+--  Now type your queries and when complete, resume the      --
+--  script to see our solution                               --
+---------------------------------------------------------------
+pause
+
+--  Our solution is:
+
+set   (Proc_Decl, Corresponding_Called_Entity (Stmt2))
+
+print (Proc_Decl)
+
+--  resume the script to get the next tack:
+pause
+---------------------------------------------------------------
+--  Task 2: Let's do something new - let's see, where (that  --
+--          is, in which compilayion unit) this procedure is --
+--          declared, and then let's see, in which           --
+--          compilation unit it is called                    --
+--                                                           --
+--  Hints:                                                   --
+--  1.  Browse the package Asis.Elements to see how to go    --
+--      from an Element to the Compilation Unit which        --
+--      contains this Element.                               --
+--      (see, in particular, subclause 13.2)                 --
+--                                                           --
+--  2.  Print the value of the result Compilation Units to   --
+--      see what you will get as a result                    --
+--                                                           --
+--  3. The required sequience of ASIS/ASIStant calls is      --
+--                                                           --
+--       --  to see where the procedure is called:           --
+--       set (Calling_Unit, <Needed_Query> (Stmt2))          --
+--       print (Calling_Unit)                                --
+--                                                           --
+--       --  to see where the procedure is declared          --
+--       set (Called_Unit, <Needed_Query> (Proc_Decl))       --
+--       print (Called_Unit)                                 --
+--                                                           --
+--  Now type your queries and when complete, resume the      --
+--  script to see our solution                               --
+---------------------------------------------------------------
+pause
+
+--  Our solution is:
+
+--  to see where the procedure is called:
+set (Calling_Unit, Enclosing_Compilation_Unit (Stmt2))
+print (Calling_Unit)
+
+--  to see where the procedure is declared
+set (Called_Unit, Enclosing_Compilation_Unit (Proc_Decl))
+print (Called_Unit)
+
+-- resume the script
+pause
+
+---------------------------------------------------------------
+--  Task 3: And now, let's decompose the procedure call      --
+--          statement we are working with. The task is to    --
+--          get and to display its components                --
+--  Hints:                                                   --
+--  1. See the package Asis.Statements, subclauses 18.24 and --
+--     18.26 for the queries decomposing a procedure call    --
+--                                                           --
+--  If you are here, we think, that this hint is enough for  --
+--  you to solve the task                                    --
+--  Now type your queries and when complete, resume the      --
+--  script to see our solution                               --
+---------------------------------------------------------------
+pause
+
+--  Our solution is:
+
+--  Getting and displaying the name of the called procedure:
+
+set   (P_Name, Called_Name (Stmt2))
+
+print (P_Name)
+
+-- resume the script
+pause
+
+--  getting and displaying the parameter associations
+set (Associatons, Call_Statement_Parameters (Stmt2, false))
+print (Associatons)
+pause -- resume the script
+
+--  Try out the asistant browsing capabilities: type
+--  browse (CU_Unit) and brose the element structure
+
+
+pause
+
+---------------------------------------------------------------
+--  Of course, we could provide some more tasks like these   --
+--  But if we are here, we are sure that you can play around --
+--  with ASIS queries yourself. So - do what you want and    --
+--  the resume the script for the last time to allow him     --
+--  to finalize everything                                   --
+---------------------------------------------------------------
+
+pause -- resume the script
+--  closing the Context
+Close (Cont)
+
+-- breaking its connection with the "external word"
+Dissociate (Cont)
+
+--  and finalizing the ASIS implementation itself
+Finalize ("")
+
+-- and this completes the ASIStant script
+quit

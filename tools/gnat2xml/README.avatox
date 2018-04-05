@@ -1,0 +1,165 @@
+			      Avatox 1.8
+
+		  Copyright 2007, McKae Technologies
+
+
+OVERVIEW
+
+Avatox ("Ada, Via Asis, To Xml") accepts an Ada compilation unit and
+traverses its elements via ASIS to produce an XML represenation of the
+unit.  Avatox tries to be a bit smart by making some components, like
+literals, into attributes. It also extracts the line and column information
+for every ASIS element and puts that into the XML as well.  To facilitate
+subsequent analyses and transformations, certain items of information are
+also extracted and recorded in context-dependent elements.
+
+See the Avatox User Guide for detailed usage instructions and
+Avatox_XML_Format.pdf for complete information about the structure of the
+generated XML.
+
+BUILDING AVATOX
+
+Obviously ASIS must be installed on the system.
+
+Some of the Mckae Technologies' McKae components (with version 1.05 or
+better of XML EZ Out) are utilized, so the necessary subset of the whole
+collection accompanies the distribution in the mckae subdirectory.
+
+In addition, a subset of Dmitri Kazakov's "Strings_Edit" utilities are
+included for handling UTF-8 character encoding.  His entire collection is
+available at http://www.dmitry-kazakov.de/ada/strings_edit.htm.
+
+Avatox utilizes Ada 2005 features and some GNAT vendor-supplied utilities.
+
+Avatox can be built with or without support for XSL stylesheet
+transformations. By default Avatox is built with XSL support as provided by
+the libxslt library.
+
+Users of GNAT GPL 2006 can simply build using the provided "gpr" file:
+
+  gnatmake -Pavatox.gpr
+
+Building without XSL is performed by referencing a different project file:
+
+  gnatmake -Pavatox_noxsl.gpr
+
+
+Users of other GNAT versions may need to adjust the gpr file, or can invoke
+gnatmake with the appropriate inclusions.  E.g.:
+
+(with XSL)
+
+  gnatmake -O2 avatox.adb -Imckae -Istrings_edit_subset -I<path-to-ASIS> \
+	-Iwith_xslt -L<path-to-asis-libs> -largs -lasis -lxslt
+
+(without XSL)
+
+  gnatmake -O2 avatox.adb -Imckae -Istrings_edit_subset -I<path-to-ASIS> \
+	-Ino_xslt -L<path-to-asis-libs> -largs -lasis
+
+
+LICENSING
+
+Avatox is licensed as GPL, due to it being derived from the GPL-licensed
+distribution of the Display_Source application that accompanies AdaCore's
+ASIS distribution.
+
+The supporting McKae components, for command line processing, lexical name
+transformation, and XML EZ Out, are licensed under the GNAT-Modified GPL
+(GMGPL).
+
+All other components are licensed by their respective copyright holder(s).
+
+
+HISTORY
+
+== Changes since v1.7 =====================================================
+
+Fixed a problem with private parts of various kinds of units not being
+recognized as private.
+
+Fixed a letter casing problem with rep specs.
+
+Numerous upgrades to the AXF2Ada stylesheet.
+
+== Changes since v1.6 =====================================================
+
+Three new attributes were created to be associated with selected elements
+when needed: prefixNotation, accessibility, and isAStatement.  For more
+information on these and other elements, see the Avatox XML Format
+document.
+
+
+== Changes since v1.5 =====================================================
+
+Added built-in support for XSL transformations by specifying a stylesheet
+and associated options on the command line.
+
+Provides finer control over axfPoint element generation.  Previously it was
+all or nothing, now specific axfPoint element kinds can be selectively
+generated.
+
+Fixed a bug when doing multiple file generation and a units' specs and
+bodies were among those for which AXF was being generated.
+
+== Changes since v1.4 =====================================================
+
+Now accepts multiple filenames on the command line, including wildcarded
+filenames.
+
+Can direct that the supporting units ("withed" units) or closure units of
+the explicitly specified units be collected and transformed into AXF as
+well.
+
+Compilation units identified as supporting or closure units can be filtered
+by regexp or file-style wildcard filtering.
+
+Included an XSL stylesheet, deleteCLInfo.xsl, to declutter an AXF file by
+removing all line and column information from elements.
+
+== Changes since v1.3 =====================================================
+
+Fixed bug that resulted in an attribute appearing twice with its element.
+Such a situation is not well-formed XML.
+
+Added additional axfPoint element types: axfNumber and axfScope.  See the
+AVATOX_XML_FORMAT file for detailed information.
+
+== Changes since v1.2 =====================================================
+
+Fixed bug that caused comments in certain source code configurations to be
+skipped.
+
+Added the generation of axfPoint elements, which are intended to supplement
+the extracted information in ways that will aid the transformations.  See
+the AVATOX_XML_FORMAT file for detailed information.
+
+== Changes since v1.1 =====================================================
+
+Actually support UTF-8 encodings, instead of just pretending to.
+
+Added "krunch", "-k" switch to generate XML in a continuous stream,
+without indenting.
+
+Added "tree retaining", "-t" switch to retain preexisting or generated ASIS
+tree files.  By default all "adt" files are deleted.
+
+
+== Changes since v1.0 =====================================================
+
+Added specification of "pedigrees" for elements so as to distinguish
+between standard ASIS elements and vendor-specific elements.  (See
+AVATOX_XML_FORMAT for more information.)
+
+The generated ASIS-based XML is now embedded within a codeRepresentation
+element, along with pedigree and other related information.
+
+Fixed some minor bugs where span information was not being output.
+
+===========================================================================
+
+Marc A. Criley
+Mckae Technologies
+www.mckae.com
+
+26 Aug 2007

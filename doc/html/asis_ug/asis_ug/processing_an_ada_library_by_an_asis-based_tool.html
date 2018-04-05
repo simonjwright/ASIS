@@ -1,0 +1,186 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>10. Processing an Ada Library by an ASIS-Based Tool &mdash; ASIS-for-GNAT User&#39;s Guide 2017 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2017',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="ASIS-for-GNAT User&#39;s Guide 2017 documentation" href="../asis_ug.html" />
+    <link rel="next" title="11. Compiling, Binding, and Linking Applications with ASIS-for-GNAT" href="compiling_binding_and_linking_applications_with_asis-for-gnat.html" />
+    <link rel="prev" title="9. How to Build Efficient ASIS Applications" href="how_to_build_efficient_asis_applications.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="compiling_binding_and_linking_applications_with_asis-for-gnat.html" title="11. Compiling, Binding, and Linking Applications with ASIS-for-GNAT"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="how_to_build_efficient_asis_applications.html" title="9. How to Build Efficient ASIS Applications"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../asis_ug.html">ASIS-for-GNAT User&#39;s Guide 2017 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../asis_ug.html">
+              <img class="logo" src="../_static/adacore_transparent.png" alt="Logo"/>
+            </a></p>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="how_to_build_efficient_asis_applications.html"
+                        title="previous chapter">9. How to Build Efficient ASIS Applications</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="compiling_binding_and_linking_applications_with_asis-for-gnat.html"
+                        title="next chapter">11. Compiling, Binding, and Linking Applications with ASIS-for-GNAT</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/asis_ug/processing_an_ada_library_by_an_asis-based_tool.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="processing-an-ada-library-by-an-asis-based-tool">
+<span id="id1"></span><h1>10. Processing an Ada Library by an ASIS-Based Tool<a class="headerlink" href="#processing-an-ada-library-by-an-asis-based-tool" title="Permalink to this headline">¶</a></h1>
+<p id="index-0">When an Ada unit to be processed by some ASIS-based tool makes
+use of an Ada library, you need to be aware of the following features
+of using Ada libraries with GNAT:</p>
+<ul>
+<li><p class="first">An Ada library is a collection of precompiled Ada components. The sources
+of the Ada components belonging to the library are present,
+but if your program uses some components from a
+library, these components are not recompiled by <em>gnatmake</em>
+(except in circumstances described below).
+For example, <code class="docutils literal"><span class="pre">Ada.Text_IO</span></code> is not recompiled
+when you invoke <em>gnatmake</em> on a unit that <code class="docutils literal"><span class="pre">with</span></code>s
+<code class="docutils literal"><span class="pre">Ada.Text_IO</span></code>.</p>
+</li>
+<li><p class="first">According to the GNAT source-based compilation model, the spec of a library
+component is processed when an application unit depending on such a component is
+compiled, but the body of the library component is not processed. As a result,
+if you invoke <em>gnatmake</em> to create a set of tree files covering a given
+program, and if this program references an entity from an Ada library, then the
+set of tree files created by such a call will contain only specs, but not
+bodies for library components.</p>
+</li>
+<li><p class="first">Any GNAT installation contains the GNAT Run-Time Library (RTL) as a
+precompiled Ada library. In some cases, a GNAT installation may contain some
+other libraries (such as Win32Ada Binding on a Windows GNAT
+platform).</p>
+<span class="target" id="index-1"></span></li>
+<li id="index-2"><p class="first">In ASIS-for-GNAT, there is no standard way to define whether a given
+<code class="docutils literal"><span class="pre">Compilation_Unit</span></code> belongs to some precompiled Ada library other than
+the GNAT Run-Time Library (some heuristics may be added to <code class="docutils literal"><span class="pre">Asis.Extensions</span></code>).
+ASIS-for-GNAT classifies (by means of the
+<code class="docutils literal"><span class="pre">Asis.Compilation_Units.Unit_Origin</span></code> query)
+a unit as
+<code class="docutils literal"><span class="pre">A_Predefined_Unit</span></code>, if it is from the Run-Time Library
+and if it is mentioned in the Ada Reference Manual, Annex A, Paragraph 2
+as an Ada 95 predefined unit;
+a unit is classified as
+<code class="docutils literal"><span class="pre">An_Implementation_Unit</span></code> if is belongs to Run-Time Library but is not mentioned in
+the paragraph just cited.
+Components of Ada libraries other than the Run-Time Library are always classified
+as <code class="docutils literal"><span class="pre">An_Application_Unit</span></code>;</p>
+</li>
+<li><p class="first">It is possible to recompile the components of the Ada libraries used
+by a given program. To do this, you have to invoke <code class="docutils literal"><span class="pre">gnatmake</span></code> for this
+program with the <code class="docutils literal"><span class="pre">-a</span></code> option. If you create a set of
+tree files for your program by invoking <em>gnatmake</em> with the <code class="docutils literal"><span class="pre">-a</span></code> option, the
+resulting set of tree files will contain all the units needed by this
+program to make up a complete partition.</p>
+</li>
+</ul>
+<p>Therefore, there are two possibilities for an ASIS-based tool if processing
+(or avoiding processing) of Ada libraries is important for
+the functionality of the tool:</p>
+<blockquote>
+<div><span class="target" id="index-3"></span></div></blockquote>
+<ul class="simple" id="index-4">
+<li>If the tool is not to process components of Ada libraries, then
+a set of tree files for this tool may be created by invoking <em>gnatmake</em>
+without the <code class="docutils literal"><span class="pre">-a</span></code> option (this is the usual way of using <em>gnatmake</em>).
+When the tool encounters a <code class="docutils literal"><span class="pre">Compilation_Unit</span></code> which represents a spec of some
+library unit, and for which <code class="docutils literal"><span class="pre">Asis.Compilation_Units.Is_Body_Required</span></code>
+returns <code class="docutils literal"><span class="pre">True</span></code>, but <code class="docutils literal"><span class="pre">Asis.Compilation_Units.Corresponding_Body</span></code>
+yields a
+result of <code class="docutils literal"><span class="pre">A_Nonexistent_Body</span></code> kind, then the tool may conclude that
+this library unit belongs to some precompiled Ada library.</li>
+<li>If a tool needs to process all the Ada compilation units making up a
+program, then a set of tree files for this program should be created by
+invoking <em>gnatmake</em> with the <code class="docutils literal"><span class="pre">-a</span></code> option.</li>
+</ul>
+<p id="index-5">You can use <code class="docutils literal"><span class="pre">Asis.Compilation_units.Unit_Origin</span></code>
+to filter out Run-Time Library components.</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="compiling_binding_and_linking_applications_with_asis-for-gnat.html" title="11. Compiling, Binding, and Linking Applications with ASIS-for-GNAT"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="how_to_build_efficient_asis_applications.html" title="9. How to Build Efficient ASIS Applications"
+             >previous</a> |</li>
+        <li><a href="../asis_ug.html">ASIS-for-GNAT User&#39;s Guide 2017 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2008-2017, AdaCore.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3b2.
+    </div>
+  </body>
+</html>

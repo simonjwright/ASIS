@@ -1,0 +1,22 @@
+with "xmlada";
+with "../../asis";
+with "../../common";
+
+project Self_Rep extends "../tool_utils/tool_utils" is
+
+   --  Project file used by the do-self-rep.sh script to build the
+   --  Self_Replicate programs (all of which have the same name).
+
+   for Source_Dirs use ("stage/2/self_rep", ".");
+   for Object_Dir use "obj";
+   for Exec_Dir use ".";
+   for Main use ("self_replicate.adb", "regenerate_ada.adb");
+
+   package Compiler is
+      for Default_Switches ("ada") use Common.Compiler'Default_Switches ("ada")
+         & ("-gnatyN", "-gnatws");
+      --  Need to suppress style warnings, because the code is completely
+      --  unformatted.
+   end Compiler;
+
+end Self_Rep;

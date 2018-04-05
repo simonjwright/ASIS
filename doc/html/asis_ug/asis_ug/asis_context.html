@@ -1,0 +1,560 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>5. ASIS Context &mdash; ASIS-for-GNAT User&#39;s Guide 2017 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2017',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="ASIS-for-GNAT User&#39;s Guide 2017 documentation" href="../asis_ug.html" />
+    <link rel="next" title="6. ASIS Interpreter asistant" href="asis_interpreter_asistant.html" />
+    <link rel="prev" title="4. ASIS Overview" href="asis_overview.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="asis_interpreter_asistant.html" title="6. ASIS Interpreter asistant"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="asis_overview.html" title="4. ASIS Overview"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../asis_ug.html">ASIS-for-GNAT User&#39;s Guide 2017 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../asis_ug.html">
+              <img class="logo" src="../_static/adacore_transparent.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../asis_ug.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">5. ASIS <code class="docutils literal"><span class="pre">Context</span></code></a><ul>
+<li><a class="reference internal" href="#asis-context-and-tree-files">5.1. ASIS <code class="docutils literal"><span class="pre">Context</span></code> and Tree Files</a></li>
+<li><a class="reference internal" href="#creating-tree-files-for-use-by-asis">5.2. Creating Tree Files for Use by ASIS</a><ul>
+<li><a class="reference internal" href="#creating-trees-for-data-decomposition-annex">5.2.1. Creating Trees for Data Decomposition Annex</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#different-ways-to-define-an-asis-context-in-asis-for-gnat">5.3. Different Ways to Define an ASIS <code class="docutils literal"><span class="pre">Context</span></code> in ASIS-for-GNAT</a><ul>
+<li><a class="reference internal" href="#defining-a-set-of-tree-files-making-up-a-context">5.3.1. Defining a set of tree files making up a <code class="docutils literal"><span class="pre">Context</span></code></a></li>
+<li><a class="reference internal" href="#dealing-with-tree-files-when-opening-a-context-and-processing-asis-queries">5.3.2. Dealing with tree files when opening a <code class="docutils literal"><span class="pre">Context</span></code> and processing ASIS queries</a></li>
+<li><a class="reference internal" href="#processing-source-files-during-the-consistency-check">5.3.3. Processing source files during the consistency check</a></li>
+<li><a class="reference internal" href="#setting-search-paths">5.3.4. Setting search paths</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#consistency-problems">5.4. Consistency Problems</a><ul>
+<li><a class="reference internal" href="#inconsistent-versions-of-asis-and-gnat">5.4.1. Inconsistent versions of ASIS and GNAT</a></li>
+<li><a class="reference internal" href="#consistency-of-a-set-of-tree-and-source-files">5.4.2. Consistency of a set of tree and source files</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#processing-several-contexts-at-a-time">5.5. Processing Several <code class="docutils literal"><span class="pre">Context</span></code>s at a Time</a></li>
+<li><a class="reference internal" href="#using-asis-with-a-cross-compiler">5.6. Using ASIS with a cross-compiler</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="asis_overview.html"
+                        title="previous chapter">4. ASIS Overview</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="asis_interpreter_asistant.html"
+                        title="next chapter">6. ASIS Interpreter <code class="docutils literal"><span class="pre">asistant</span></code></a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/asis_ug/asis_context.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="asis-context">
+<span id="id1"></span><h1>5. ASIS <code class="docutils literal"><span class="pre">Context</span></code><a class="headerlink" href="#asis-context" title="Permalink to this headline">¶</a></h1>
+<span class="target" id="index-0"></span><p id="index-1">From an ASIS application viewpoint we may view an ASIS <code class="docutils literal"><span class="pre">Context</span></code> as a set of
+ASIS <code class="docutils literal"><span class="pre">Compilation_Unit</span></code>s accessible through ASIS queries.</p>
+<p>The common ASIS
+implementation technique is to base an implementation of an ASIS <code class="docutils literal"><span class="pre">Context</span></code> on
+some persistent data structures created by the underlying Ada compiler when
+compiling Ada compilation units maintained by this compiler. An ASIS <code class="docutils literal"><span class="pre">Context</span></code>
+can only contain compilable (that is, legal) compilation units.</p>
+<div class="section" id="asis-context-and-tree-files">
+<h2>5.1. ASIS <code class="docutils literal"><span class="pre">Context</span></code> and Tree Files<a class="headerlink" href="#asis-context-and-tree-files" title="Permalink to this headline">¶</a></h2>
+<span class="target" id="index-2"></span><span class="target" id="index-3"></span><span class="target" id="index-4"></span><p id="index-5">The ASIS-for-GNAT
+implementation is based on <em>tree output files</em>,
+or, simply, <em>tree files</em>. When called with the special option
+<code class="docutils literal"><span class="pre">-gnatt</span></code>,
+GNAT creates and outputs a tree file if no error was
+detected during the compilation. The tree file is a kind of snapshot of
+the compiler internal data structures (basically, of the Abstract Syntax Tree
+(AST))
+at the end of the successful compilation. ASIS then inputs tree
+files and recreates in its internal data structures exactly the same picture
+the compiler had at the end of the corresponding successful compilation.</p>
+<p>An important consequence of the GNAT source-based compilation model is that the
+AST contains full information not only about the unit being compiled, but also
+about all the units upon which this unit depends semantically. Therefore,
+having read a tree file, ASIS can in general provide information about more
+than one unit. By processing a tree file, a tool can provide information about the
+unit for which this tree was created and about all the units upon which it
+depends semantically. However, to process several units, ASIS sometimes has to
+change the tree being processed (in particular, this occurs when an
+application switches between units which do not semantically depend on each
+other, for example, two package bodies). Therefore, in the course of an ASIS
+application, ASIS may read different tree files and it may read the same tree
+file more then once.</p>
+<p id="index-6">The name of a tree file is obtained from the name of the source file being
+compiled by replacing its suffix with &#8216;<code class="file docutils literal"><span class="pre">.adt</span></code>&#8216;. For example, the tree
+file for <code class="file docutils literal"><span class="pre">foo.adb</span></code> is named <code class="file docutils literal"><span class="pre">foo.adt</span></code>.</p>
+</div>
+<div class="section" id="creating-tree-files-for-use-by-asis">
+<h2>5.2. Creating Tree Files for Use by ASIS<a class="headerlink" href="#creating-tree-files-for-use-by-asis" title="Permalink to this headline">¶</a></h2>
+<p id="index-7">Neither <em>gcc</em> nor <em>gnatmake</em> will create tree files automatically when you
+are working with your Ada program. It is your responsibility as a user of an
+ASIS application to create a set of tree files that correctly reflect
+the set of the Ada components to be processed by the ASIS application, as
+well as to maintain the consistency of the trees and the related source files.</p>
+<p id="index-8">To create a tree file for a given source file, you need to compile the corresponding source file
+with the <code class="docutils literal"><span class="pre">-gnatct</span></code> option.</p>
+<div class="highlight-python"><div class="highlight"><pre>$ gcc -c -gnatct foo.adb
+</pre></div>
+</div>
+<span class="target" id="index-9"></span><span class="target" id="index-10"></span><span class="target" id="index-11"></span><p id="index-12">will produce <code class="file docutils literal"><span class="pre">foo.adt</span></code>, provided that <code class="file docutils literal"><span class="pre">foo.adb</span></code> contains the source
+of a legal Ada compilation unit. Actially, the <code class="docutils literal"><span class="pre">-gnatct</span></code> is an
+ASIS-specific combination of two compileation options, <code class="docutils literal"><span class="pre">-gnatt</span></code> and
+<code class="docutils literal"><span class="pre">-gnatc</span></code>. The <code class="docutils literal"><span class="pre">-gnatt</span></code> option generates a tree file,
+and
+<code class="docutils literal"><span class="pre">-gnatc</span></code> turns off AST expansion. ASIS needs tree files created without
+AST expansion, whereas to create an object file, GNAT needs an expanded AST.
+Therefore it is impossible for one compilation command to
+to produce both a tree file and an object file for a given source file.</p>
+<p>The following points are important to remember when generating and dealing
+with tree files:</p>
+<ul>
+<li><p class="first">ASIS-for-GNAT is distributed for a particular version of
+GNAT.</p>
+<p id="index-13">All the trees to be processed by an ASIS application should be
+generated by this specific version of the compiler.</p>
+</li>
+<li><p class="first">A tree file is not created if an error has been detected during the
+compilation.</p>
+</li>
+<li><p class="first">In contrast with object files, a tree file may be generated for any legal Ada
+compilation unit, including a library package declaration requiring a body
+or a subunit.</p>
+</li>
+<li><p class="first">A set of tree files processed by an ASIS application may be inconsistent;
+for example, two tree files may have been created with different versions
+of the source of the same unit. This will lead to inconsistencies in the
+corresponding ASIS <code class="docutils literal"><span class="pre">Context</span></code>. See <a class="reference internal" href="#consistency-problems"><em>Consistency Problems</em></a>, for more details.</p>
+</li>
+<li><p class="first">Do not move tree, object or source files among directories in the underlying
+file system! ASIS might assume an inconsistency between
+tree and source files when opening a <code class="docutils literal"><span class="pre">Context</span></code>, or you may get wrong results
+when querying the source or object file for a given ASIS
+<code class="docutils literal"><span class="pre">Compilation_Unit</span></code>.</p>
+</li>
+<li><p class="first">When invoking <em>gcc</em> or <em>gnatmake</em> to create tree files,
+make sure that all file and
+directory names containing relative path information start from
+<code class="file docutils literal"><span class="pre">./</span></code>  or <code class="file docutils literal"><span class="pre">../</span></code> (<code class="file docutils literal"><span class="pre">.\</span></code> and <code class="file docutils literal"><span class="pre">..\</span></code> respectively in MS Windows).
+That is, to create a
+tree file for the source file <code class="file docutils literal"><span class="pre">foo.adb</span></code> located in the inner directory
+named <code class="file docutils literal"><span class="pre">inner</span></code>, you should invoke gcc (assuming an MS Windows platform) as:</p>
+<div class="highlight-python" id="index-14"><div class="highlight"><pre>$ gcc -c -gnatct  .\inner\foo.adb
+</pre></div>
+</div>
+<p>but not as</p>
+<div class="highlight-python"><div class="highlight"><pre>$ gcc -c -gnatct inner\foo.ads
+</pre></div>
+</div>
+<p>Otherwise ASIS will not perform correctly.</p>
+</li>
+<li><p class="first">When reading in a tree file, ASIS checks that this tree file was created with
+the <code class="docutils literal"><span class="pre">-gnatc</span></code> option, and it does not accept trees created without
+this option.</p>
+</li>
+</ul>
+<ul id="index-15">
+<li><p class="first">If called to create a tree, GNAT does not destroy an <code class="file docutils literal"><span class="pre">ALI</span></code> file if the <code class="file docutils literal"><span class="pre">ALI</span></code> file
+already exists for the unit being compiled and if this <code class="file docutils literal"><span class="pre">ALI</span></code> file is
+up-to-date. Moreover, GNAT may place some information from the existing <code class="file docutils literal"><span class="pre">ALI</span></code>
+file into the tree file. If you would like to have both object
+and tree files for your program, first create the object files, and then the tree
+files.</p>
+</li>
+<li><p class="first">There is only one extension for tree files, namely <code class="file docutils literal"><span class="pre">.adt</span></code>, whereas the standard
+GNAT name convention for the Ada source files uses different extensions
+for a spec (<code class="file docutils literal"><span class="pre">.ads</span></code>) and for a body (<code class="file docutils literal"><span class="pre">.adb</span></code>). This means that if you
+first generate a tree for a unit&#8217;s body:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ gcc -c -gnatct foo.adb
+</pre></div>
+</div>
+<p>and then generate the tree for the corresponding spec:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ gcc -c -gnatct foo.ads
+</pre></div>
+</div>
+<p id="index-16">then the tree file <code class="file docutils literal"><span class="pre">foo.adt</span></code>
+will be created twice: first for the
+body, and then for the spec. The tree for the spec will override
+the tree for the body, and the information about the body will be lost
+for ASIS. If you first create the tree for a spec, and then for a body,
+the second tree will also override the first one, but no information will
+be lost for ASIS, because the tree for a body contains full
+information about the corresponding spec.</p>
+<p>To avoid losing information when creating trees for a set of Ada sources,
+try to use <code class="docutils literal"><span class="pre">gnatmake</span></code> whenever possible (see
+<a class="reference internal" href="how_to_build_efficient_asis_applications.html#using-gnatmake-to-create-tree-files"><em>Using gnatmake to Create Tree Files</em></a> for more details).
+Otherwise, first create trees for specs and then for bodies:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ gcc -c -gnatct *.ads
+$ gcc -c -gnatct *.adb
+</pre></div>
+</div>
+</li>
+<li><p class="first">Reading tree files is a time-consuming operation. Try to minimize the number
+of tree files to be processed by your application, and try to avoid unnecessary
+tree swappings.
+(See <a class="reference internal" href="how_to_build_efficient_asis_applications.html#how-to-build-efficient-asis-applications"><em>How to Build Efficient ASIS Applications</em></a>, for some
+tips).</p>
+</li>
+<li id="index-17"><p class="first">It is possible to create tree files &#8220;on the fly&#8221;, as part of the
+processing of the ASIS queries that obtain units from a <code class="docutils literal"><span class="pre">Context</span></code>. In this
+case there is no need to create tree files before running an ASIS application
+using the corresponding <code class="docutils literal"><span class="pre">Context</span></code> mode. Note that this possibility goes beyond
+the ASIS Standard, and there are some limitations imposed on
+some ASIS queries, but this functionality may be useful for
+ASIS tools that process only one <code class="docutils literal"><span class="pre">Compilation_Unit</span></code> at a time. See the
+ASIS-for-GNAT Reference Manual for more details.</p>
+</li>
+</ul>
+<p id="index-18">Note that between opening and closing a <code class="docutils literal"><span class="pre">Context</span></code>, an ASIS application should
+not change its working directory; otherwise execution of the application is
+erroneous.</p>
+<div class="section" id="creating-trees-for-data-decomposition-annex">
+<h3>5.2.1. Creating Trees for Data Decomposition Annex<a class="headerlink" href="#creating-trees-for-data-decomposition-annex" title="Permalink to this headline">¶</a></h3>
+<span class="target" id="index-19"></span><span class="target" id="index-20"></span><p id="index-21">Using the ASIS Data Decomposition Annex (DDA) does not require anything special
+to be done by an ASIS user, with one exception. The implementation of the ASIS
+DDA is based on some special annotations added by the compiler to the trees
+used by ASIS. An ASIS user should be aware of the fact that trees created for
+subunits do not have this special annotation.</p>
+<p>Therefore ASIS DDA queries do
+not work correctly on trees created for subunits (and these queries might not
+work correctly if a set of tree files making up a <code class="docutils literal"><span class="pre">Context</span></code> contains a tree
+created for a subunit).</p>
+<p>Thus, when working with the ASIS DDA, you should avoid creating separate trees
+for subunits. Actually, this is not a limitation: to create a tree for a
+subunit, you should also have the source of the parent body available. If in
+this situation you create the tree for the parent body, it will contain
+the full information (including DDA-specific annotation) for all the subunits
+that are present. From the other side, a tree created for a single subunit has
+to contain information about the parent body, so it has about the same size
+as the tree for the parent body.</p>
+<p>The best way to create trees when using ASIS DDA is to use <em>gnatmake</em>: it will
+never create separate trees for subunits.</p>
+</div>
+</div>
+<div class="section" id="different-ways-to-define-an-asis-context-in-asis-for-gnat">
+<h2>5.3. Different Ways to Define an ASIS <code class="docutils literal"><span class="pre">Context</span></code> in ASIS-for-GNAT<a class="headerlink" href="#different-ways-to-define-an-asis-context-in-asis-for-gnat" title="Permalink to this headline">¶</a></h2>
+<span class="target" id="index-22"></span><span class="target" id="index-23"></span><p id="index-24">The <code class="docutils literal"><span class="pre">Asis.Ada_Environments.Associate</span></code> query
+that defines a <code class="docutils literal"><span class="pre">Context</span></code> has the following spec:</p>
+<div class="highlight-ada"><div class="highlight"><pre><span class="k">procedure </span><span class="nf">Associate</span>
+             <span class="o">(</span><span class="n">The_Context</span> <span class="o">:</span> <span class="kr">in</span><span class="p"> </span><span class="kr">out</span><span class="p"> </span><span class="n">Asis.Context</span><span class="p">;</span>
+              <span class="n">Name</span>        <span class="o">:</span> <span class="kr">in</span><span class="p"> </span><span class="n">Wide_String</span><span class="p">;</span>
+              <span class="n">Parameters</span>  <span class="o">:</span> <span class="kr">in</span><span class="p"> </span><span class="n">Wide_String</span> <span class="o">:=</span> <span class="n">Default_Parameters</span><span class="o">)</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>In ASIS-for-GNAT, <code class="docutils literal"><span class="pre">Name</span></code> does not have any special meaning, and the
+properties of the <code class="docutils literal"><span class="pre">Context</span></code> are set by &#8216;options&#8217; specified
+in the <code class="docutils literal"><span class="pre">Parameters</span></code> string:</p>
+<ul class="simple">
+<li>How to define a set of tree files making up the <code class="docutils literal"><span class="pre">Context</span></code> (<code class="docutils literal"><span class="pre">-C</span></code> options);</li>
+<li>How to deal with tree files when opening a <code class="docutils literal"><span class="pre">Context</span></code> and when
+processing ASIS queries (<code class="docutils literal"><span class="pre">-F</span></code> options);</li>
+<li>How to process the source files during the consistency check when
+opening the <code class="docutils literal"><span class="pre">Context</span></code> (<code class="docutils literal"><span class="pre">-S</span></code> options):</li>
+<li>The search path for tree files making up the <code class="docutils literal"><span class="pre">Context</span></code> (<code class="docutils literal"><span class="pre">-T</span></code> options);</li>
+<li>The search path for source files used for calling GNAT to create a tree
+file &#8220;on the fly&#8221; (<code class="docutils literal"><span class="pre">-I</span></code> options);</li>
+</ul>
+<p>The association parameters may (and in some cases must) also contain the
+names of tree files or directories making up search paths for tree and/or
+source files. Below is the overview of the <code class="docutils literal"><span class="pre">Context</span></code> association parameters in
+ASIS-for-GNAT; for full details refer to the ASIS-for-GNAT Reference Manual.</p>
+<div class="section" id="defining-a-set-of-tree-files-making-up-a-context">
+<h3>5.3.1. Defining a set of tree files making up a <code class="docutils literal"><span class="pre">Context</span></code><a class="headerlink" href="#defining-a-set-of-tree-files-making-up-a-context" title="Permalink to this headline">¶</a></h3>
+<p>The following options are available:</p>
+<dl class="docutils">
+<dt><code class="docutils literal"><span class="pre">-C1</span></code></dt>
+<dd><p class="first">&#8216;One tree&#8217; <code class="docutils literal"><span class="pre">Context</span></code>,</p>
+<p class="last" id="index-25">defining a <code class="docutils literal"><span class="pre">Context</span></code> comprising a single tree file; this tree
+file name should be given explicitly in the <code class="docutils literal"><span class="pre">Parameters</span></code> string.</p>
+</dd>
+<dt><code class="docutils literal"><span class="pre">-CN</span></code></dt>
+<dd><p class="first">&#8216;N-trees&#8217; <code class="docutils literal"><span class="pre">Context</span></code>,</p>
+<p class="last" id="index-26">defining a <code class="docutils literal"><span class="pre">Context</span></code> comprising a set of tree files; the names
+of the tree files making up the <code class="docutils literal"><span class="pre">Context</span></code> should be given explicitly in the
+<code class="docutils literal"><span class="pre">Parameters</span></code> string.</p>
+</dd>
+<dt><code class="docutils literal"><span class="pre">-CA</span></code></dt>
+<dd><p class="first">&#8216;All trees&#8217; <code class="docutils literal"><span class="pre">Context</span></code>,</p>
+<p class="last" id="index-27">defining a <code class="docutils literal"><span class="pre">Context</span></code> comprising all the tree files in the
+tree search path given in the same <code class="docutils literal"><span class="pre">Parameters</span></code> string; if this option
+is set together with <code class="docutils literal"><span class="pre">-FM</span></code> option, ASIS can also create new tree files
+&#8220;on the fly&#8221; when processing queries yielding ASIS <code class="docutils literal"><span class="pre">Compilation_Unit</span></code>s.</p>
+</dd>
+</dl>
+<p>The default option is <code class="docutils literal"><span class="pre">-CA</span></code>.</p>
+<p id="index-28">Note that for <code class="docutils literal"><span class="pre">-C1</span></code>, the <code class="docutils literal"><span class="pre">Parameters</span></code> string should contain the name of exactly
+one tree file. Moreover, if during the opening of such a
+<code class="docutils literal"><span class="pre">Context</span></code> this tree file could not be successfully read in because of any
+reason, the <code class="docutils literal"><span class="pre">Asis_Failed</span></code> exception is raised.</p>
+</div>
+<div class="section" id="dealing-with-tree-files-when-opening-a-context-and-processing-asis-queries">
+<h3>5.3.2. Dealing with tree files when opening a <code class="docutils literal"><span class="pre">Context</span></code> and processing ASIS queries<a class="headerlink" href="#dealing-with-tree-files-when-opening-a-context-and-processing-asis-queries" title="Permalink to this headline">¶</a></h3>
+<p>The following options are available:</p>
+<dl class="docutils">
+<dt><code class="docutils literal"><span class="pre">-FT</span></code></dt>
+<dd>Only pre-created trees are used, no tree file can be created by ASIS.</dd>
+<dt><code class="docutils literal"><span class="pre">-FS</span></code></dt>
+<dd>All the trees considered as making up a given <code class="docutils literal"><span class="pre">Context</span></code> are created &#8220;on
+the fly&#8221;, whether or not the corresponding tree file already exists;
+once created, a tree file may then be reused while the <code class="docutils literal"><span class="pre">Context</span></code> remains
+open. This option can be set only with <code class="docutils literal"><span class="pre">-CA</span></code> option.</dd>
+<dt><code class="docutils literal"><span class="pre">-FM</span></code></dt>
+<dd>Mixed approach: if a needed tree does not exist, the attempt to create
+it &#8220;on the fly&#8221; is made. This option can only be set with <code class="docutils literal"><span class="pre">-CA</span></code> option.</dd>
+</dl>
+<p>The default option is <code class="docutils literal"><span class="pre">-FT</span></code>.</p>
+<p>Note that the <code class="docutils literal"><span class="pre">-FS</span></code> and <code class="docutils literal"><span class="pre">-FM</span></code> options
+go beyond the scope of the
+official ASIS standard. They may be useful for some ASIS applications with
+specific requirements for defining and processing an ASIS <code class="docutils literal"><span class="pre">Context</span></code>,
+but in each case the ramifications of using such non-standard options
+should be carefully considered. See the ASIS-for-GNAT Reference Manual
+for a detailed description of these option.</p>
+</div>
+<div class="section" id="processing-source-files-during-the-consistency-check">
+<h3>5.3.3. Processing source files during the consistency check<a class="headerlink" href="#processing-source-files-during-the-consistency-check" title="Permalink to this headline">¶</a></h3>
+<p>When ASIS reads a tree fule as a part of opening a <code class="docutils literal"><span class="pre">Context</span></code>, it
+checks, that the tree is consistent with the source files of the
+<code class="docutils literal"><span class="pre">Compilation_Unit</span></code>s represented by this tree.</p>
+<p>The following options are available to control this check:</p>
+<dl class="docutils">
+<dt><code class="docutils literal"><span class="pre">-SA</span></code></dt>
+<dd>Source files for all the <code class="docutils literal"><span class="pre">Compilation_Unit</span></code>s belonging to the <code class="docutils literal"><span class="pre">Context</span></code> (except
+the predefined <code class="docutils literal"><span class="pre">Standard</span></code> package) have to be available, and all of them
+are taken into account for consistency checks when opening the <code class="docutils literal"><span class="pre">Context</span></code>.</dd>
+<dt><code class="docutils literal"><span class="pre">-SE</span></code></dt>
+<dd>Only existing source files for all the <code class="docutils literal"><span class="pre">Compilation_Unit</span></code>s belonging to the
+<code class="docutils literal"><span class="pre">Context</span></code> are taken into account for consistency checks when opening the <code class="docutils literal"><span class="pre">Context</span></code>.</dd>
+<dt><code class="docutils literal"><span class="pre">-SN</span></code></dt>
+<dd>None of the source files from the underlying file system are taken into
+account when checking the consistency of the set of tree files making up a
+<code class="docutils literal"><span class="pre">Context</span></code> (that is, no check is made).</dd>
+</dl>
+<p>The default option is <code class="docutils literal"><span class="pre">-SA</span></code>.
+See <a class="reference internal" href="#consistency-problems"><em>Consistency Problems</em></a>, concerning consistency issues in ASIS-for-GNAT.</p>
+</div>
+<div class="section" id="setting-search-paths">
+<h3>5.3.4. Setting search paths<a class="headerlink" href="#setting-search-paths" title="Permalink to this headline">¶</a></h3>
+<p>Using the <code class="docutils literal"><span class="pre">-I</span></code>, <code class="docutils literal"><span class="pre">-gnatec</span></code> and <code class="docutils literal"><span class="pre">-gnatA</span></code> options for defining
+an ASIS <code class="docutils literal"><span class="pre">Context</span></code> is similar to using the same optionsfor <em>gcc</em>.
+The <code class="docutils literal"><span class="pre">-T</span></code> option is used in the same way,
+for tree files.  For full details about the <code class="docutils literal"><span class="pre">-T</span></code> and <code class="docutils literal"><span class="pre">-I</span></code>
+options, refer to the ASIS-for-GNAT Reference Manual. Note that the <code class="docutils literal"><span class="pre">-T</span></code>
+option is used only to locate existing tree files, and it has no effect for
+<code class="docutils literal"><span class="pre">-FS</span></code> <code class="docutils literal"><span class="pre">Context</span></code>s. On the other hand, the <code class="docutils literal"><span class="pre">-I</span></code> option is used only to
+construct a set of arguments when ASIS calls GNAT to create a tree file &#8220;on
+the fly&#8221;; it has no effect for <code class="docutils literal"><span class="pre">-FT</span></code> <code class="docutils literal"><span class="pre">Context</span></code>s, and it cannot be used to
+tell ASIS where it should look for source files for ASIS <code class="docutils literal"><span class="pre">Compilation_Unit</span></code>s.</p>
+</div>
+</div>
+<div class="section" id="consistency-problems">
+<span id="id2"></span><h2>5.4. Consistency Problems<a class="headerlink" href="#consistency-problems" title="Permalink to this headline">¶</a></h2>
+<p id="index-29">There are two different kinds of consistency problems existing for
+ASIS-for-GNAT, and both of them can show up when opening an ASIS <code class="docutils literal"><span class="pre">Context</span></code>.</p>
+<span class="target" id="index-30"></span><p id="index-31">First, a tree file may have been created by another version of GNAT (see the
+README file about the coordination between the GNAT and ASIS-for-GNAT
+versions). This means that there is an ASIS-for-GNAT installation problem.</p>
+<p>Second, the tree files may be inconsistent with the existing
+source files or with each other.</p>
+<div class="section" id="inconsistent-versions-of-asis-and-gnat">
+<h3>5.4.1. Inconsistent versions of ASIS and GNAT<a class="headerlink" href="#inconsistent-versions-of-asis-and-gnat" title="Permalink to this headline">¶</a></h3>
+<p id="index-32">When ASIS-for-GNAT reads a tree file created by the version of the compiler
+for which a given version of ASIS-for-GNAT is not supposed to be used, ASIS
+treats the situation as an ASIS-for-GNAT installation problem
+and raises <code class="docutils literal"><span class="pre">Program_Error</span></code>
+with a corresponding exception message. In
+this case, <code class="docutils literal"><span class="pre">Program_Error</span></code> is not caught by any ASIS query, and it propagates
+outside ASIS.
+Note that the real cause may be an old tree file you have forgotten to
+remove when reinstalling ASIS-for-GNAT. This is also considered an
+installation error.</p>
+<p>ASIS uses the tree files created by the GNAT compiler installed on your
+machine, and the ASIS implementation includes some compiler components to
+define and to get access to the corresponding data structures. Therefore,
+the version of the GNAT compiler installed on your machine and the version
+of the GNAT compiler whose sources are used as a part of the ASIS
+implementation should be close enough to define the same data structures.
+We do not require these versions to be exactly the same, and, by default,
+when ASIS reads a tree file it only checks for significant differences.
+That is, it will accept tree files from previous versions of GNAT as long as
+it is possible for such files to be read. In theory, this check is not 100%
+safe; that is, a tree created by one version of GNAT might not be correctly
+processed by ASIS built with GNAT sources taken from another version.
+But in practice this situation is extremely unlikely.</p>
+<p>An ASIS application may set a strong GNAT version check by providing the
+<code class="docutils literal"><span class="pre">-vs</span></code> parameter for the ASIS <code class="docutils literal"><span class="pre">Initialize</span></code> procedure, see
+ASIS-for-GNAT Reference Manual
+for more details. If the strong version check is set, then only a
+tree created by exactly the same version of GNAT whose sources are used
+as a part of the ASIS implementation can be successfully read in, and
+<code class="docutils literal"><span class="pre">Program_Error</span></code> will be raised otherwise.</p>
+<p>Be careful when using a <code class="docutils literal"><span class="pre">when</span> <span class="pre">others</span></code> exception handler in your ASIS
+application: do not use it just to catch non-ASIS exceptions and to ignore
+them without any analysis.</p>
+</div>
+<div class="section" id="consistency-of-a-set-of-tree-and-source-files">
+<h3>5.4.2. Consistency of a set of tree and source files<a class="headerlink" href="#consistency-of-a-set-of-tree-and-source-files" title="Permalink to this headline">¶</a></h3>
+<p id="index-33">When processing a set of more then one tree file making up the same <code class="docutils literal"><span class="pre">Context</span></code>,
+ASIS may face a consistency problem. A set of tree files is inconsistent if it
+contains two trees representing the same compilation unit, and these trees
+were created with different versions of the source of this unit. A tree file
+is inconsistent with a source of a unit represented by this tree if the source
+file currently available for the unit differs from the source used to create
+the tree file.</p>
+<p id="index-34">When opening a <code class="docutils literal"><span class="pre">Context</span></code> (via the <code class="docutils literal"><span class="pre">Asis.Ada_Environments.Open</span></code> query),
+ASIS does the
+following checks for all the tree files making up the <code class="docutils literal"><span class="pre">Context</span></code>:</p>
+<ul class="simple">
+<li>If the <code class="docutils literal"><span class="pre">-SA</span></code> option is set for the <code class="docutils literal"><span class="pre">Context</span></code>, ASIS checks that for every
+<code class="docutils literal"><span class="pre">Compilation_Unit</span></code> represented by a tree, the source file is available and it
+is the same as the source file used to create the tree (a tree file contains
+references to all the source files used to create this tree file).</li>
+<li>If the <code class="docutils literal"><span class="pre">-SE</span></code> option is set for the <code class="docutils literal"><span class="pre">Context</span></code>, then if for a <code class="docutils literal"><span class="pre">Compilation_Unit</span></code>
+represented by a tree a source file is available, ASIS checks that this
+source is the same as the source used to create the tree. If for a
+<code class="docutils literal"><span class="pre">Compilation_Unit</span></code> belonging to a <code class="docutils literal"><span class="pre">Context</span></code> a source file is not available, ASIS
+checks that all the tree files containing this unit were created with the
+same version of the source of this unit.</li>
+<li>If the <code class="docutils literal"><span class="pre">-SN</span></code> option is set for the <code class="docutils literal"><span class="pre">Context</span></code>, ASIS checks that all the trees
+were created from the same versions of the sources involved. It does not check if any of
+these sources is available or if this is the same version of the source that has been
+used to create the tree files.</li>
+</ul>
+<p id="index-35">If any of these checks fail, the <code class="docutils literal"><span class="pre">Asis_Failed</span></code> exception
+is raised as a result of
+opening a <code class="docutils literal"><span class="pre">Context</span></code>. If the <code class="docutils literal"><span class="pre">Context</span></code> has been successfully opened,
+you are guaranteed
+that ASIS will process only consistent sets of tree and source files until the
+<code class="docutils literal"><span class="pre">Context</span></code> is closed (provided that this set is not changed by some non-ASIS
+actions).</p>
+</div>
+</div>
+<div class="section" id="processing-several-contexts-at-a-time">
+<h2>5.5. Processing Several <code class="docutils literal"><span class="pre">Context</span></code>s at a Time<a class="headerlink" href="#processing-several-contexts-at-a-time" title="Permalink to this headline">¶</a></h2>
+<p>If your application processes more then one open <code class="docutils literal"><span class="pre">Context</span></code> at a time, and if
+at least one of the <code class="docutils literal"><span class="pre">Context</span></code>s is defined with an <code class="docutils literal"><span class="pre">-FS</span></code> or <code class="docutils literal"><span class="pre">-FM</span></code> option,
+be aware that all the tree files created by ASIS &#8220;on the fly&#8221; are
+placed in the current directory. Therefore, to be on the safe side when
+processing several opened <code class="docutils literal"><span class="pre">Context</span></code>s at a time, an ASIS application should
+have at most one <code class="docutils literal"><span class="pre">Context</span></code> defined with an <code class="docutils literal"><span class="pre">-FS</span></code> or <code class="docutils literal"><span class="pre">-FM</span></code> option. If the
+application has such a <code class="docutils literal"><span class="pre">Context</span></code>, all the other <code class="docutils literal"><span class="pre">Context</span></code>s should not use
+tree files located in the current directory.</p>
+</div>
+<div class="section" id="using-asis-with-a-cross-compiler">
+<h2>5.6. Using ASIS with a cross-compiler<a class="headerlink" href="#using-asis-with-a-cross-compiler" title="Permalink to this headline">¶</a></h2>
+<p>If you would like to use ASIS with a cross-compiler, you should use
+this cross-compiler to create the tree files to be used for the ASIS
+<code class="docutils literal"><span class="pre">Context</span></code> defined with <code class="docutils literal"><span class="pre">-FS</span></code> option. If you would like to
+use trees created on the fly (that is, to use a <code class="docutils literal"><span class="pre">Context</span></code> defined with the
+<code class="docutils literal"><span class="pre">-FS</span></code> or <code class="docutils literal"><span class="pre">-FM</span></code> option), you have to tell ASIS which compiler should
+be called to perform this function. There are two ways to do this.</p>
+<ul>
+<li><p class="first">You can use the <code class="docutils literal"><span class="pre">--GCC</span></code> option in the <code class="docutils literal"><span class="pre">Context</span></code> definition to specify
+explicitly the name of the command to be called to create the trees on the fly</p>
+</li>
+<li id="index-36"><p class="first">You may use the prefix of the name of your ASIS tool to indicate the name of the command
+to be used to call the compiler. If the name of your tool contains a hyphen character &#8216;<code class="docutils literal"><span class="pre">-</span></code>&#8216;,
+for example <code class="docutils literal"><span class="pre">some_specific-foo</span></code>, then ASIS will try to call the command with the
+name created as a concatenation of the tool name prefix preceding the rightmost
+hyphen, the hyphen character itself, and <code class="docutils literal"><span class="pre">gcc</span></code>. For example, for <code class="docutils literal"><span class="pre">some_specific-foo</span></code>,
+ASIS will try to call <code class="docutils literal"><span class="pre">some_specific-gcc</span></code> to create the tree file.</p>
+</li>
+</ul>
+<p>The algorithm for defining the name of the command to be used to create trees on the fly
+is as follows. If the <code class="docutils literal"><span class="pre">--GCC</span></code> option is used in the <code class="docutils literal"><span class="pre">Context</span></code> definition and if the name
+that is the parameter of this option denotes some executable existing in the path, this
+executable is used. Otherwise ASIS tries to define the name of the executable from
+the name of the ASIS application. If the corresponding executable exists on the path,
+it is used. Otherwise the standard <code class="docutils literal"><span class="pre">gcc</span></code> installation is used.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="asis_interpreter_asistant.html" title="6. ASIS Interpreter asistant"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="asis_overview.html" title="4. ASIS Overview"
+             >previous</a> |</li>
+        <li><a href="../asis_ug.html">ASIS-for-GNAT User&#39;s Guide 2017 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2008-2017, AdaCore.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3b2.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<package_declaration sloc="1:1">
+  <names_ql>
+    <defining_identifier def_name="Root_Package" def="Root_Package" sloc="1:9"/>
+  </names_ql>
+  <visible_part_declarative_items_ql>
+    <package_declaration sloc="2:4">
+      <names_ql>
+        <defining_identifier def_name="Public_Package" def="Public_Package" sloc="4:8"/>
+      </names_ql>
+      <visible_part_declarative_items_ql>
+      </visible_part_declarative_items_ql>
+      <private_part_declarative_items_ql>
+      </private_part_declarative_items_ql>
+    </package_declaration>
+    <use_package_clause sloc="4:4">
+      <clause_names_ql>
+        <identifier ref_name="Public_Package" ref="Public_Package" type="null" sloc="4:8"/>
+      </clause_names_ql>
+    </use_package_clause>
+  </visible_part_declarative_items_ql>
+  <private_part_declarative_items_ql>
+  </private_part_declarative_items_ql>
+</package_declaration>

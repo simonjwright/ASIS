@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<package_declaration line="1" col="1" endline="9999" endcol="9999">
+  <names>
+    <defining_identifier image="Root_Package" id="Root_Package" line="1" col="9" endline="9999" endcol="9999"/>
+  </names>
+  <visible_part_declarative_items>
+    <package_declaration line="2" col="4" endline="9999" endcol="9999">
+      <names>
+        <defining_identifier image="Public_Package" id="Public_Package" line="4" col="8" endline="9999" endcol="9999"/>
+      </names>
+      <visible_part_declarative_items>
+      </visible_part_declarative_items>
+      <private_part_declarative_items>
+      </private_part_declarative_items>
+    </package_declaration>
+    <use_package_clause line="4" col="4" endline="9999" endcol="9999">
+      <clause_names>
+        <identifier image="Public_Package" ref="Public_Package" line="4" col="8" endline="9999" endcol="9999"/>
+      </clause_names>
+    </use_package_clause>
+  </visible_part_declarative_items>
+  <private_part_declarative_items>
+  </private_part_declarative_items>
+</package_declaration>

@@ -1,0 +1,821 @@
+A S I S t a n t
+User's Guide
+
+Version 1.5
+
+Author:
+  Vasiliy Fofanov,   Ada Core Technologies, Inc.
+
+Co-authors:
+  Sergey Rybin,      Ada Core Technologies, Inc.
+  Alfred Strohmeier, Swiss Federal Institute of Technology in Lausanne
+
+Date: March 2, 2000
+
+
+Revisions history
+
+  V1.5   02.03.2000   Online help expanded (see 8.)
+  V1.4   15.11.1999   Source location search capability added (see 4.5.3.4.)
+                      Browser capability expanded (see 5.)
+  V1.3.3 11.11.1999   Special script processing mode added (see 2.)
+  V1.3.2 23.06.1999   Interactive script execution added (see 7.)
+  V1.3.1 03.06.1999   Partial support for Asis.Data_Decomposition
+  V1.2   21.01.1999   ASIStant commands may now optionally terminate with ';'
+                      Several bugs fixed
+  V1.1   31.10.1998   Browser capability added (see 5.)
+                      Output section revised   (see 4.5.2.4.)
+  V1.0   15.10.1998   Original version
+
+
+
+Contents
+
+1. Introduction
+2. Launching ASIStant
+3. General ASIStant Language Description
+4. Language Components
+  4.1. Data Types
+  4.2. Constants
+  4.3. Variables
+  4.4. Expressions
+  4.5. Function Calls
+    4.5.1. ASIS Queries
+    4.5.2. ASIStant Utilities
+      4.5.2.1. Help system
+      4.5.2.2. Environment control
+      4.5.2.3. Variable handling
+      4.5.2.4. Output
+      4.5.2.5. Conditional execution
+    4.5.3. ASIStant Service Functions
+      4.5.3.1. Access to components of ASIS record types
+      4.5.3.2. List handling
+      4.5.3.3. Functions for the types String, Boolean and Integer
+      4.5.3.4. Source location search capability
+5. Browser capability
+  5.1. Access to the Browser capability from inside ASIStant
+  5.2. Browser environment
+  5.3. Displaying the current Element
+  5.4. Advanced traversal
+  5.5. Going to a different source location.
+6. Log Management
+7. Script Management
+8. Online help
+  8.1. Help on query syntax profile
+  8.2. Help on applicable queries
+9. Implementation Limitations of ASIStant
+  9.1. Syntax and Run-Time Limitations
+  9.2. Default Parameters
+  9.3. Not Implemented ASIS Queries
+  9.4. Ambiguous ASIS Queries
+  9.5. Package Asis.Data_Decomposition
+10. References
+
+
+
+1.  Introduction
+
+ASIStant, a contraction of ASIS Tester And iNTerpreter, pronounced like
+assistant, is an interactive ASIS interpreter with scripting and integrated
+ASIS Browser capability. It may be used for learning ASIS, i.e. the user may
+try out interactively the effects of the various ASIS queries. It might also
+be used as an assistant (sic!) when experimenting with ASIS queries, e.g. in
+order to find out a way of implementing a part of an ASIS application, or to
+correct it. ASIStant was developed jointly with ASIS-for-GNAT [1,2] and is
+extensively used during the debugging and testing of ASIS-for-GNAT
+implementation.
+
+ASIStant allows the user to call ASIS queries interactively. For this purpose
+a command language is provided. Commands may also be grouped in a script, and
+such a script can be called both interactively and in batch mode. Both the
+input and the output of a session can be logged in a file. The input commands
+can then be replayed in another session.
+
+
+Acknowledgments
+
+The original version of this tool, then called ASIStint, was developed as part
+of the collaboration between Software Engineering Laboratory of the Swiss
+Federal Institute of Technology in Lausanne, Switzerland, and the Scientific
+Research Computer Center of Moscow University, Russia, supported by a grant
+from the Swiss National Science Foundation, no 7SUPJ048247, funding a project
+"Development of ASIS for GNAT with industry quality" [3].
+
+The original version of the ASIS Browser tool was created by Alain Le Guennec.
+
+
+2.  Launching ASIStant
+
+Provided that the executable for ASIStant is named "asistant", the command
+line syntax for ASIStant is
+
+  asistant [-o<output_level] [<script_filename>]
+
+If no filename is specified, ASIStant enters the interactive mode and its
+command prompt appears.
+
+The key -o, followed by a number from 0 to 6, allows to change the amount of
+output to the screen. This is typically used in the batch mode to filter
+unnecessary output. When -o0 is specified, everything is displayed, while in
+-o6 mode, nothing. For explanation of other values, refer to 4.5.2.2.
+
+The following script enables logging the session to the file "dummy.log",
+initializes an ASIS environment and prepares the compilation unit "dummy" for
+further work:
+
+  log ("dummy.log") -- log session to file "dummy.log".
+
+  Initialize ("")
+  -- initialize an ASIS environment; will call Asis.Implementation.-
+  -- Initialize, and pass "" as parameter to this ASIS query.
+
+  set (Ctx)
+  -- create an undefined Asis.Context variable Ctx.
+
+  Associate (Ctx, "", "")
+  -- call Asis.Environments.Associate with empty strings as parameters;
+  -- this call assigns the context by default to the previously created
+  -- variable Ctx.
+
+  Open (Ctx)
+  -- call to Asis.Environments.Open with Ctx as a parameter.
+
+  set (Dummy_Unit, Library_Unit_Declaration ("dummy", Ctx))
+
+  -- fetch the library unit "dummy" from the context Ctx; will call the
+  -- Asis.Compilation_Units.Library_Unit_Declaration query.
+
+Although identifiers are not case-sensitive, we will use all small letters for
+identifiers of ASIStant-specific operations, i.e. log, set, and initial
+capital letters for ASIS queries, i.e. Initialize, Associate, Open,
+Library_Unit_Declaration, and for variable names, i.e. Ctx, Dummy_Unit.
+
+If the previous script is in a file named "dummy.scr", it can be launched
+automatically upon startup with the following command:
+
+  asistant dummy.scr
+
+After finishing the script, ASIStant switches to command-line mode with the
+variables Ctx and Dummy_Unit properly initialized.
+
+ASIStant only interprets calls to ASIS queries, and it does not produce any
+calls to ASIS queries on its own. Therefore, to simulate the correct behavior
+of an ASIS application when working with ASIStant, one should follow the
+general rules given in the root package of the ASIS 95 specification. An
+ASIStant session should therefore start by initializing an ASIS
+implementation; then it should define a context variable and associate it with
+an Ada environment, called a context in ASIS; then the context must be opened,
+before issuing any query for it.
+
+NOTE: ASIStant is considered to be running in a special script mode when it is
+launched with the command
+
+  asistant -o5 <script_filename>
+
+In this mode, ASIStant will quit whenever it would normally enter interactive
+mode (i.e. upon script errors or script termination).
+
+
+3.  General ASIStant Language Description
+
+The ASIStant command language is a simple functional language.
+
+An ASIStant program is a sequence of function calls, also called commands when
+at the level of the program. Function calls may take other function calls as
+arguments. The function Set allows the user to define an arbitrary number of
+variables of all ASIS types.
+
+In a command-line mode, a function call must fit on a single line. In a script,
+line breaks may appear wherever a blank space is allowed. There are no other
+formatting limitations: spaces, tabs and line terminators are not significant
+and can be present in any number.
+
+Ada-style comments are allowed: a comment starts with a double hyphen "--" and
+lasts to the end of the line.
+
+An ASIStant program can be stored on disk as a script file; there are no
+restrictions on script file names.
+
+Identifiers are not case sensitive.
+
+
+4.  Language Components
+
+4.1.  Data Types
+
+ASIStant supports the following predefined Ada types: Integer, Boolean, and
+String, but only with a limited set of operations (see 4.5.3.3.).
+
+All ASIS composite types are supported by ASIStant.
+
+All ASIS record types are implemented as private types in ASIStant. For these
+types, functions are provided for accessing their components; e.g. for the
+Asis.Span type, there are the service functions First_Line, First_Column, etc.
+that take a Span as a parameter and return the value of the corresponding
+component.
+
+The values of ASIS enumeration types are mapped to string literals, in
+conformance to the 'Image attribute.
+
+The values of the Ada.Calendar.Time type are represented by Strings.
+
+For variables of the ASIS list types, i.e. Element_List, etc., indexing is
+defined:
+
+  <list_variable> (<integer_index>)
+
+
+4.2.  Constants
+
+Literals for the predefined Ada types Integer, Boolean and String are
+supported.
+
+There are also predefined constants for the composite ASIS types, which have a
+nil value. The prefix Nil is used in their names: Nil_Element,
+Nil_Element_List, etc.
+
+
+4.3.  Variables
+
+ASIStant variables are used to store values returned from queries, in order to
+display them, and in order to pass them to subsequent calls.
+
+ASIStant variables can be of any ASIStant type.
+
+A variable name is an Ada-style identifier.
+
+Variables are created and assigned by the ASIStant Set utility. There are no
+predefined variables at the start of a session.
+
+The first (or the only) parameter of the Set utility must be a variable name.
+The second parameter (if any) is an ASIStant expression. ASIStant starts by
+creating dynamically a variable of the given name, if there is not yet such a
+variable. In any case, the variable inherits the type of the expression
+provided by the second parameter. Finally, the value of the expression is
+assigned to the variable.
+
+In one case, the Set utility has only one parameter. It is provided for
+creating a context variable, which is of a limited type and therefore cannot
+be initialized by means of an assignment. Thus the command
+
+        set (My_Context)
+
+creates an undefined context variable My_Context which can then be initialized
+by a call to the Associate query.
+
+
+4.4.  Expressions
+
+An ASIStant expression is either an ASIStant constant, an ASIStant variable,
+an indexed ASIStant list variable, or an ASIStant function call.
+
+All ASIStant variables used in expressions should previously be (dynamically)
+initialized.
+
+
+4.5.  Function Calls
+
+An ASIStant function call follows the Ada syntax for a function call, but only
+positional parameter association is allowed.
+
+There are two kinds of functions: ASIS queries and ASIStant-specific
+functions, which are in turn divided into ASIStant utilities and ASIStant
+service functions.
+
+ASIStant function calls may have empty results, and are then procedures alike;
+this holds for all ASIStant utilities, but also for some ASIS queries, e.g.
+Initialize, Open, etc.
+
+A script is a sequence of function calls; the result of such a function call
+at the level of a script, also called a command, is always ignored.
+
+An ASIStant command may optionally be terminated by a semicolon.
+
+
+4.5.1.  ASIS Queries
+
+ASIStant supports all queries defined by ASIS 95, except for the generic
+procedure Traverse_Element which does not fit consistently in the
+interpretation-oriented concept.
+
+
+4.5.2.  ASIStant Utilities
+
+In this subsection <ID> means <ASIStant_variable_name> and <EXPR> means
+<ASIStant_expression>.
+
+
+4.5.2.1.  Help system
+
+  Help
+
+Displays a list and a brief description of ASIStant utilities.
+
+  Help (<topic-name>)
+
+Displays the help specific to the <topic-name>.
+
+  Info
+
+Displays ASIS and ASIStant technical information.
+
+
+4.5.2.2.  Environment control
+
+- Program exit:
+
+  Quit [ (<exit-status>) ]
+
+Exits the program, after setting the operating system execution environment
+variable to the value specified by the <exit-status> expression, which should
+be an integer expression, or to 0 if the expression is omitted.
+
+A script file to be used in batch mode should finish with a Quit command.
+
+- Log control:
+
+  Log ("<filename>")
+
+Opens file <filename> and uses it for the session log.
+
+  Log
+
+Closes the current log file.
+
+  Loglevel (<level>)
+
+Sets the log control level to the natural value <level>; the default value is
+1. All output is always displayed, but only output with a level higher or
+equal to the specified one is sent to the log file. The available control
+levels are:
+
+  Level 5: ASIS exceptions, and Print output.
+  Level 4: ASIStant warnings.
+  Level 3: ASIStant standard messages.
+  Level 2: Command prompts, and input logging.
+  Level 1: Reserved for future extensions.
+  Level 0: Internal ASIStant debugging information.
+
+NOTE: Regardless of the log control level, ASIStant keeps track of all I/O
+throughout the session in the files "input.log" (input) and "session.log"
+(input+output). Therefore, it is usually enough to set the log control level
+to 5.
+
+- Script control:
+
+  Run ("<filename>")
+  IRun ("<filename>")
+
+Launches the script in the file <filename>, reading further commands from it.
+
+  Pause
+
+Pauses the current script, and switches to command mode.
+
+  Run
+  IRun
+
+Resumes the current script, which was previously paused.
+
+  Exit
+
+Exits the script and returns to the calling script or to command mode.
+
+
+4.5.2.3. Variable handling
+
+  Set ( <ID>, <EXPR> )
+
+For the first (dynamically) occurrence of the given ID, the corresponding
+ASIStant variable is created. ID is further used as its name. The type and the
+value of the variable is inherited from <EXPR>. If <EXPR> contains a call to
+an ASIS query that raises an exception, the variable is not created; any
+further reference to it is hence invalid.
+
+If the ASIStant variable ID already exists, its type and value are changed to
+those of <EXPR>. If <EXPR> contains a call to an ASIS query that raises an
+exception, the variable is not changed.
+
+<EXPR> can be of any ASIStant type, except Asis.Context.
+
+  Set (<ID>)
+
+Creates a variable with name <ID> of the type Asis.Context.
+
+
+4.5.2.4. Output
+
+  Print ( <EXPR> )
+
+Displays the value of the expression <EXPR>:
+
+- For standard predefined types (Integer, Boolean and String) the
+  value is directly displayed.
+
+- For ASIS.Text.Span type the value is displayed in the form
+
+    (First_Line:First_Column)-(Last_Line:Last_Column)
+
+- For ASIS.Element type the value by default is displayed in the form
+
+    <Element Kind> <Element position>
+
+  where Element kind is the exact position of an Element in the ASIS Element
+  classification hierarchy (e.g., An_Assignment_Statement, but not
+  A_Statement), and position is represented by the span of the Element's text
+  image.
+
+  On demand, the Element's Debug_Image and Text Image may be displayed.
+  This is controlled by the Printdetail utility (see below).
+
+- For ASIS.Compilation_Unit type and ASIS.Context type the value is displayed
+  by means of Debug_Image query.
+
+- For ASIS.Element_List and ASIS.Compilation_Unit_List types, first the
+  length of the list is displayed, and then the values of all its components
+
+  Printdetail("{d|D}{t|T}")
+
+Switches display of additional information for Elements on or off. The
+parameter is the string of two characters "DT", both of which can be in the
+upper or lower case. 'D' controls the output of Debug_Image, and 'T' - the
+output of Text Image. The use of upper case switches the corresponding option
+on, and the lower case switches it off. The default is "dt".
+
+
+4.5.2.5. Conditional execution
+
+  If ( <bool_expr> , <ASIStant_command1> [, <ASIStant_command2>] )
+
+Evaluates the boolean expression <bool_expr>, and then executes
+<ASIStant_command1> if <bool_expr> is True, and executes <ASIStant_command2>,
+if any, if <bool_expr> is False.
+
+For example,
+
+  set ( Debug, True )
+  if ( Debug, Initialize("-asisd"), Initialize("") )
+  -- switch on the ASIS-for-GNAT internal debugging mode depending
+  -- on the state of the Debug flag
+
+There are no restrictions on the <ASIStant_command> parts. Therefore, several
+If statements can be nested.
+
+The execution of another script can be conditionally started with a command
+like
+
+  if ( Debug , run ("debug.scr") )
+
+
+4.5.3.  ASIStant Service Functions
+
+4.5.3.1. Access to components of ASIS record types
+
+- Asis.Span
+
+  function First_Line   (Sp: in Span) return Integer
+  function First_Column (Sp: in Span) return Integer
+  function Last_Line    (Sp: in Span) return Integer
+  function Last_Column  (Sp: in Span) return Integer
+
+- Asis.Compilation_Units.Relations.Relationship
+
+  function Consistent   (R: in Relationship) return Compilation_Unit_List
+  function Inconsistent (R: in Relationship) return Compilation_Unit_List
+  function Missing      (R: in Relationship) return Compilation_Unit_List
+  function Circular     (R: in Relationship) return Compilation_Unit_List
+
+4.5.3.2. List handling
+
+  function Length (L: in 'any ASIS list type') return Integer
+
+A set of overloaded queries for all ASIS list types, e.g.
+Compilation_Unit_List.
+
+4.5.3.3. Functions for the types String, Boolean and Integer
+
+- String
+
+  function Concat (S1, S2: in String) return String
+  function Eq     (S1, S2: in String) return Boolean
+  function Lt     (S1, S2: in String) return Boolean
+  function Gt     (S1, S2: in String) return Boolean
+
+- Boolean
+
+  function Not (B:      in Boolean) return Boolean
+  function And (B1, B2: in Boolean) return Boolean
+  function Or  (B1, B2: in Boolean) return Boolean
+
+- Integer
+
+  function Add (I1, I2: in Integer) return Integer
+  function Sub (I1, I2: in Integer) return Integer
+  function Eq  (I1, I2: in Integer) return Boolean
+  function Lt  (I1, I2: in Integer) return Boolean
+  function Gt  (I1, I2: in Integer) return Boolean
+
+4.5.3.4. Source location search capability
+
+The service function Find_Element allows to go to the innermost ASIS
+Element that corresponds to a given source location (SLOC). This
+function accepts three parameters, the first one, a Compilation_Unit
+corresponding to the source text, the second, SLOC line, and the third,
+SLOC column. It returns an Element that contains this SLOC or
+Nil_Element if none do or Nil_Compilation_Unit was supplied.
+
+If the column value supplied is outside the line bounds, the search of
+a deepest Element on this line is performed.
+
+This function is extremely helpful if a user wants to experiment with
+a certain fragment of the source text but would like to avoid having to
+build entire ASIS execution context that leads to the subtree he is
+interested in.
+
+
+5. Browser capability
+
+5.1. Access to the Browser capability from inside ASIStant
+
+Browser is invoked from the ASIStant command line by calling the ASIStant
+service function BROWSE. BROWSE disables the ASIStant command interpreter and
+enables the command interpreter of Browser. The Browser 'Q' command switches
+back into the ASIStant environment by enabling ASIStant command interpreter
+and disabling the Browser interpreter.
+
+BROWSE has a single parameter of Element type, and it starts browsing the ASIS
+tree starting from its argument Element. BROWSE returns the result of Element
+type, an Element on which the process of tree browsing was stopped.
+
+In the ASIStant environment Browse can be called as an ordinary ASIS
+query or ASIStant command. E.g. if a user types
+
+> set (e0, Browse (e1))
+
+he will start ASIS tree browsing from e1, and when he finishes the
+browsing, e0 will represent the last Element being visited during the
+browsing.
+
+If a user types
+
+> Browse (e1)
+
+he will be able to browse the ASIS tree, but the last element of the
+browsing will be discarded.
+
+Additionally, a version that starts with a Compilation_Unit is supplied.
+Calling Browse for Compilation_Unit C is exactly equivalent to calling
+Browse for Unit_Declaration (C), but saves a lot of keystrokes.
+
+
+5.2. Browser environment
+
+In a loop, the Browser displays (see 5.3.) the ASIS Element it currently
+points at and expects one of the following keystrokes:
+
+  U - one step up the ASIS tree (equivalent to calling the ASIS
+      Enclosing_Element query);
+
+  D - one step down the ASIS tree, to the left-most component of the
+      current Element
+
+  N - go to the right sibling (to the next element in the ASIS tree
+      hierarchy)
+
+  P - go to the left sibling (to the previous element in the ASIS
+      tree hierarchy)
+
+  \<option> - change the form of displaying the current Element
+
+  ? - print the list of ASIS structural queries applicable to the current
+      Element (see 8.2. for more information)
+
+  <SPACE><query> - call the <query> for the current Element (see 5.4.);
+
+  G - go to a certain SLOC in the source of a unit containing current
+      element (see 5.5);
+
+  Q - back to the ASIStant environment, the Browser command interpreter is
+      disabled and the ASIStant command interpreter is enabled with the
+      current Element returned as a result of the call to BROWSE;
+
+Browser immediately interprets the keystroke and displays the new current
+Element. If the message "Cannot go in this direction." appears, this means
+that traversal in this direction from current node is impossible (that is,
+the current node is either a terminal Element and it is not possible to go
+down, or it is the leftmost or the rightmost component of some element, and
+it is not possible to go left or right, or it is the top Element in its
+enclosing unit structure and it is not possible to go up).
+
+
+5.3. Displaying the current Element
+
+The current Element is displayed in the same format as PRINT utility, using
+whatever additions are imposed by the current PRINTDETAIL setting. By pressing
+the '\' key it is possible to change this setting from inside the Browser
+session. The '\' command is an equivalent of PRINTDETAIL (see 4.5.2.4.)
+
+
+5.4. Advanced traversal
+
+It is possible to issue additional queries from inside the Browser (for
+example, semantic queries). The legal queries are those that accept one
+parameter of type Element and return Element as a result.
+
+When the user presses <SPACE>, he is asked to enter the query name. If the
+query is legal, the current Element is replaced by the result of the call to
+the given query with the current Element as a parameter.
+
+
+5.5. Going to a different source location
+
+The SLOC search capability (see 4.5.3.4) is also accessible from the Browser.
+
+When the user presses "G", he is asked to enter the SLOC line, and after that,
+the SLOC column. The Browser then switches to the Element corresponding to this
+SLOC in a unit to which current Element belongs.
+
+
+6.  Log Management
+
+ASIStant is able to record the trace of a session in a log file. Logging is
+started by calling the utility Log, and providing a name for the log file. For
+example, the command
+
+  log ("dummy.log")
+
+will start recording the session to the file "dummy.log". Logging can be
+stopped and the log file closed by a Log command without parameters.
+
+NOTE: ASIStant always records all session events in the file "session.log". It
+contains the most detailed information about the current session. Also, all
+commands processed by ASIStant are recorded in the file "input.log".
+
+
+The Loglevel utility is used to filter the log output. Its parameter is an
+integer value that inhibits logging of messages with lower priority. For
+instance, after the command
+
+  loglevel (5)
+
+only the most important messages are logged. Note that the Loglevel utility
+does not affect output to the display and to the file "session.log".
+
+
+7.  Script Management
+
+ASIStant scripts are text files that contain sequences of ASIStant function
+calls.
+
+When launching ASIStant, a script name can be specified as a command-line
+parameter. The script is then interpreted before exiting on a Quit command or
+handing control over to the user for a follow-up interactive session.
+
+A script file can also be parameter of the Run utility, which hands over
+control to a script. For example, the command
+
+  run ("dummy.scr")
+
+starts execution of the script "dummy.scr". When ASIStant encounters a Pause
+utility, it pauses the execution of the script and switches to interactive
+command-line mode. A paused script can be resumed by the Run utility without
+parameters.
+
+Scripts can be nested. Therefore, if the script "dummy_1.scr" issues the
+command
+
+  run ("dummy_2.scr"),
+
+the execution of "dummy_1.scr" is suspended, and the execution of
+"dummy_2.scr" is started. The execution of script "dummy_1.scr" will resume
+after the script dummy_2.scr has been completed by encountering its end or an
+Exit command.
+
+Scripts can be launched in an interactive mode by means of IRun utility, which
+can be used exactly in the same way as Run. When launched in this mode, the
+script is executed one statement at a time and then the user is expected to
+press one of the following keys:
+
+  C - continue running the script in a normal (non-interactive) mode
+
+  P - pause the script
+
+  Q - abort the script
+
+  any other key - proceed to next statement
+
+
+8. Online help
+
+
+ASIStant's online help offers brief reference information on some ASIS and
+ASIStant aspects. The online help is available through
+
+  help (<topic-name>)
+
+command. There are currently two groups of topics, described in this section.
+
+
+8.1. Help on query syntax profile
+
+Specifying the name of an ASIS query or ASIStant service function as a
+parameter to Help command displays the syntax of an ASIS query or ASIStant
+service function. If the query name is overloaded, all possible syntax profiles
+are displayed. For example,
+
+>help (Debug_Image)
+Debug_Image syntax:
+   Debug_Image (CONTEXT) return STRING
+   Debug_Image (CUNIT) return STRING
+   Debug_Image (ELEMENT) return STRING
+   Debug_Image (LINE) return STRING
+
+
+8.2. Help on applicable queries
+
+
+Specifying the extended Element kind (that is, the terminal value in ASIS
+Element classification hierarchy - e.g. A_Loop_Statement, but not A_Statement)
+as a parameter to Help command displays the all ASIS structural queries,
+applicable to the Element of this kind. For example,
+
+>help (A_Loop_Statement)
+Appropriate ASIS structural queries for A_Loop_Statement:
+   Label_Names
+   Statement_Identifier
+   Loop_Statements
+
+
+9.  Implementation Limitations of ASIStant
+
+
+9.1.  Syntax and Run-Time Limitations
+
+In a command-line mode, a function call must fit on a single line. In a script,
+line breaks may appear wherever a blank space is allowed.
+
+The length of the name of a variable is limited to 32.
+
+The depth of script nesting is limited to 5.
+
+
+9.2.  Default Parameters
+
+Some ASIS queries have default parameters, whereas ASIStant does not support
+default parameters; all arguments must be specified explicitly.
+
+For example, Body_Statements cannot be called as
+
+  set (My_Stmts, Body_Statements (My_Body))
+
+using the default "False" for the Include_Pragmas parameter. Instead, this
+parameter must be provided explicitly:
+
+  set (My_Stmts, Body_Statements (My_Body, False))
+
+
+9.3.  Not Implemented ASIS Queries
+
+The generic procedure Traverse_Element is not and will not be implemented.
+Indeed we do not see a simple solution for generic instantiation with
+user-defined procedures as actuals, within an interpretation-oriented
+environment.
+
+
+9.4.  Ambiguous ASIS Queries
+
+There are two ASIS queries that have the same parameter and result profiles.
+These queries cannot be distinguished without full name qualification.
+ASIStant deals with this issue by providing unique simple names for them.
+
+The two queries are Asis.Statements.Is_Name_Repeated and
+Asis.Declarations.Is_Name_Repeated; they are renamed
+Statements_Is_Name_Repeated and Declarations_Is_Name_Repeated, respectively.
+
+
+9.5. Package Asis.Data_Decomposition
+
+ASIStant now offers a partial support of this optional ASIS package; supported
+are types Array_Component, Record_Component and their lists, as are all queries
+that work with these types.
+
+All queries from Asis.Data_Decomposition have a prefix DDA prepended to their
+names to signify that they come from Data Decomposition Annex. Thus, a valid
+ASIStant query is DDA_Array_Components, NOT simply Array_Components.
+
+
+10.  References
+
+[1] S. Rybin, A. Strohmeier, E. Zueff: ASIS for GNAT: Goals,
+    Problems and Implementation Strategy. In Marcel Toussaint (Ed.),
+    Second International Eurospace - Ada-Europe Symposium Proceedings,
+    LNCS no 1031, Springer, pp. 139-151.
+
+[2] S. Rybin, A. Strohmeier, A. Kuchumov, V. Fofanov: ASIS for GNAT:
+    From the Prototype to the Full Implementation. In Alfred Strohmeier
+    (Ed.), 1996 Ada-Europe International Conference on Reliable Software
+    Technologies Proceedings, LNCS no 1088, Springer, pp. 298-311, 1996.
+
+[3] V. Fofanov, S. Rybin, A. Strohmeier: ASIStint: An Interactive ASIS
+    Interpreter. In Tri-Ada'97 Conference Proceedings, ACM Press,
+    pp.205-209, 1997

@@ -1,0 +1,35 @@
+------------------------------------------------------------------------------
+--                                                                          --
+--                     ASIS UTILITY LIBRARY COMPONENTS                      --
+--                                                                          --
+--                              A S I S _ U L                               --
+--                                                                          --
+--                                 S p e c                                  --
+--                                                                          --
+--                       Copyright (C) 2016, AdaCore                        --
+--                                                                          --
+-- Asis Utility Library (ASIS UL) is free software; you can redistribute it --
+-- and/or  modify  it  under  terms  of  the  GNU General Public License as --
+-- published by the Free Software Foundation; either version 3, or (at your --
+-- option)  any later version.  ASIS UL  is distributed in the hope that it --
+-- will  be  useful,  but  WITHOUT  ANY  WARRANTY; without even the implied --
+-- warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the --
+-- GNU  General Public License for more details. You should have received a --
+-- copy of the  GNU General Public License  distributed with GNAT; see file --
+-- COPYING3. If not, go to  http://www.gnu.org/licenses for a complete copy --
+-- of the license                                                           --
+--                                                                          --
+-- ASIS UL is maintained by AdaCore (http://www.adacore.com).               --
+--                                                                          --
+------------------------------------------------------------------------------
+
+with "../common";
+
+project snames is
+   for Source_Dirs use (".");
+   for Main use ("xsnamest.adb");
+
+   package Builder is
+      for Default_Switches ("ada") use Common.Builder'Default_Switches ("ada");
+   end Builder;
+end snames;

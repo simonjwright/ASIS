@@ -1,0 +1,270 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>9. Example of gnatcheck Usage &mdash; GNATcheck Reference Manual 2017 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2017',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="GNATcheck Reference Manual 2017 documentation" href="../gnatcheck_rm.html" />
+    <link rel="next" title="10. List of Rules" href="list_of_rules.html" />
+    <link rel="prev" title="8. Predefined Rules" href="predefined_rules.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="list_of_rules.html" title="10. List of Rules"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="predefined_rules.html" title="8. Predefined Rules"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../gnatcheck_rm.html">GNATcheck Reference Manual 2017 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../gnatcheck_rm.html">
+              <img class="logo" src="../_static/adacore_transparent.png" alt="Logo"/>
+            </a></p>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="predefined_rules.html"
+                        title="previous chapter">8. Predefined Rules</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="list_of_rules.html"
+                        title="next chapter">10. List of Rules</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/gnatcheck_rm/example_of_gnatcheck_usage.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="example-of-gnatcheck-usage">
+<span id="id1"></span><h1>9. Example of <em>gnatcheck</em> Usage<a class="headerlink" href="#example-of-gnatcheck-usage" title="Permalink to this headline">¶</a></h1>
+<p>Here is a simple example. Suppose that in the current directory we have a
+project file named <code class="file docutils literal"><span class="pre">gnatcheck_example.gpr</span></code> with the following content:</p>
+<div class="highlight-ada"><div class="highlight"><pre><span class="n">project</span> <span class="n">Gnatcheck_Example</span> <span class="kr">is</span><span class="p"></span>
+
+   <span class="kr">for</span><span class="p"> </span><span class="n">Source_Dirs</span> <span class="kr">use</span><span class="p"> </span><span class="o">(</span><span class="s">&quot;src&quot;</span><span class="o">)</span><span class="p">;</span>
+   <span class="kr">for</span><span class="p"> </span><span class="n">Object_Dir</span> <span class="kr">use</span><span class="p"> </span><span class="s">&quot;obj&quot;</span><span class="p">;</span>
+   <span class="kr">for</span><span class="p"> </span><span class="n">Main</span> <span class="kr">use</span><span class="p"> </span><span class="o">(</span><span class="s">&quot;main.adb&quot;</span><span class="o">)</span><span class="p">;</span>
+
+   <span class="k">package </span><span class="nf">Check</span> <span class="kr">is</span><span class="p"></span>
+      <span class="kr">for</span><span class="p"> </span><span class="n">Default_Switches</span> <span class="o">(</span><span class="s">&quot;ada&quot;</span><span class="o">)</span> <span class="kr">use</span><span class="p"> </span><span class="o">(</span><span class="s">&quot;-rules&quot;</span><span class="p">,</span> <span class="s">&quot;-from=coding_standard&quot;</span><span class="o">)</span><span class="p">;</span>
+   <span class="k">end </span><span class="nf">Check</span><span class="p">;</span>
+
+<span class="k">end </span><span class="nf">Gnatcheck_Example</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>And the file named <code class="file docutils literal"><span class="pre">coding_standard</span></code> is also located in the current
+directory and has the following content:</p>
+<div class="highlight-python"><div class="highlight"><pre>-----------------------------------------------------
+-- This is a sample gnatcheck coding standard file --
+-----------------------------------------------------
+
+--  First, turning on rules, that are directly implemented in gnatcheck
++RAbstract_Type_Declarations
++RAnonymous_Arrays
++RLocal_Packages
++RFloat_Equality_Checks
++REXIT_Statements_With_No_Loop_Name
+
+--  Then, activating compiler checks of interest:
++RStyle_Checks:e
+--  This style check checks if a unit name is present on END keyword that
+--  is the end of the unit declaration
+</pre></div>
+</div>
+<p>And the subdirectory <code class="file docutils literal"><span class="pre">src</span></code> contains the following Ada sources:</p>
+<p><code class="file docutils literal"><span class="pre">pack.ads</span></code>:</p>
+<div class="highlight-ada"><div class="highlight"><pre><span class="k">package </span><span class="nf">Pack</span> <span class="kr">is</span><span class="p"></span>
+   <span class="kr">type</span><span class="p"> </span><span class="n">T</span> <span class="kr">is</span><span class="p"> </span><span class="kr">abstract</span><span class="p"> </span><span class="kr">tagged</span><span class="p"> </span><span class="kr">private</span><span class="p">;</span>
+   <span class="k">procedure </span><span class="nf">P</span> <span class="o">(</span><span class="n">X</span> <span class="o">:</span> <span class="n">T</span><span class="o">)</span> <span class="kr">is</span><span class="p"> </span><span class="kr">abstract</span><span class="p">;</span>
+
+   <span class="k">package </span><span class="nf">Inner</span> <span class="kr">is</span><span class="p"></span>
+      <span class="kr">type</span><span class="p"> </span><span class="n">My_Float</span> <span class="kr">is</span><span class="p"> </span><span class="kr">digits</span><span class="p"> </span><span class="mi">8</span><span class="p">;</span>
+      <span class="k">function </span><span class="nf">Is_Equal</span> <span class="o">(</span><span class="n">L</span><span class="p">,</span> <span class="n">R</span> <span class="o">:</span> <span class="n">My_Float</span><span class="o">)</span> <span class="kr">return</span><span class="p"> </span><span class="n">Boolean</span><span class="p">;</span>
+   <span class="k">end </span><span class="nf">Inner</span><span class="p">;</span>
+<span class="kr">private</span><span class="p"></span>
+   <span class="kr">type</span><span class="p"> </span><span class="n">T</span> <span class="kr">is</span><span class="p"> </span><span class="kr">abstract</span><span class="p"> </span><span class="kr">tagged</span><span class="p"> </span><span class="kr">null</span><span class="p"> </span><span class="kr">record</span><span class="p">;</span>
+<span class="kr">end</span><span class="p">;</span>
+</pre></div>
+</div>
+<p><code class="file docutils literal"><span class="pre">pack.adb</span></code>:</p>
+<div class="highlight-ada"><div class="highlight"><pre><span class="k">package body </span><span class="nf">Pack</span> <span class="kr">is</span><span class="p"></span>
+   <span class="k">package body </span><span class="nf">Inner</span> <span class="kr">is</span><span class="p"></span>
+      <span class="k">function </span><span class="nf">Is_Equal</span> <span class="o">(</span><span class="n">L</span><span class="p">,</span> <span class="n">R</span> <span class="o">:</span> <span class="n">My_Float</span><span class="o">)</span> <span class="kr">return</span><span class="p"> </span><span class="n">Boolean</span> <span class="kr">is</span><span class="p"></span>
+      <span class="kr">begin</span><span class="p"></span>
+         <span class="kr">return</span><span class="p"> </span><span class="n">L</span> <span class="o">=</span> <span class="n">R</span><span class="p">;</span>
+      <span class="kr">end</span><span class="p">;</span>
+   <span class="k">end </span><span class="nf">Inner</span><span class="p">;</span>
+<span class="k">end </span><span class="nf">Pack</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>and <code class="file docutils literal"><span class="pre">main.adb</span></code></p>
+<div class="highlight-ada"><div class="highlight"><pre><span class="kr">with</span><span class="p"> </span><span class="n">Pack</span><span class="p">; </span><span class="kr">use</span><span class="nn"> Pack</span><span class="p">;</span>
+<span class="k">procedure </span><span class="nf">Main</span> <span class="kr">is</span><span class="p"></span>
+
+   <span class="kr">pragma</span><span class="p"> </span><span class="n">Annotate</span>
+     <span class="o">(</span><span class="n">gnatcheck</span><span class="p">,</span> <span class="n">Exempt_On</span><span class="p">,</span> <span class="s">&quot;Anonymous_Arrays&quot;</span><span class="p">,</span> <span class="s">&quot;this one is fine&quot;</span><span class="o">)</span><span class="p">;</span>
+   <span class="n">Float_Array</span> <span class="o">:</span> <span class="kr">array</span><span class="p"> </span><span class="o">(</span><span class="mi">1</span> <span class="o">..</span> <span class="mi">10</span><span class="o">)</span> <span class="kr">of</span><span class="p"> </span><span class="n">Inner.My_Float</span><span class="p">;</span>
+   <span class="kr">pragma</span><span class="p"> </span><span class="n">Annotate</span> <span class="o">(</span><span class="n">gnatcheck</span><span class="p">,</span> <span class="n">Exempt_Off</span><span class="p">,</span> <span class="s">&quot;Anonymous_Arrays&quot;</span><span class="o">)</span><span class="p">;</span>
+
+   <span class="n">Another_Float_Array</span> <span class="o">:</span> <span class="kr">array</span><span class="p"> </span><span class="o">(</span><span class="mi">1</span> <span class="o">..</span> <span class="mi">10</span><span class="o">)</span> <span class="kr">of</span><span class="p"> </span><span class="n">Inner.My_Float</span><span class="p">;</span>
+
+<span class="p">   </span><span class="kr">use</span><span class="nn"> Inner</span><span class="p">;</span>
+
+   <span class="n">B</span> <span class="o">:</span> <span class="n">Boolean</span> <span class="o">:=</span> <span class="kc">False</span><span class="p">;</span>
+
+<span class="kr">begin</span><span class="p"></span>
+   <span class="kr">for</span><span class="p"> </span><span class="n">J</span> <span class="kr">in</span><span class="p"> </span><span class="n">Float_Array</span><span class="na">&#39;Range</span> <span class="kr">loop</span><span class="p"></span>
+      <span class="kr">if</span><span class="p"> </span><span class="n">Is_Equal</span> <span class="o">(</span><span class="n">Float_Array</span> <span class="o">(</span><span class="n">J</span><span class="o">)</span><span class="p">,</span> <span class="n">Another_Float_Array</span> <span class="o">(</span><span class="n">J</span><span class="o">))</span> <span class="kr">then</span><span class="p"></span>
+         <span class="n">B</span> <span class="o">:=</span> <span class="kc">True</span><span class="p">;</span>
+         <span class="kr">exit</span><span class="p">;</span>
+      <span class="k">end if</span><span class="p">;</span>
+   <span class="k">end loop</span><span class="p">;</span>
+<span class="k">end </span><span class="nf">Main</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>And suppose we call <em>gnatcheck</em> from the current directory using
+the project file as the only parameter of the call:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">gnatcheck</span> <span class="o">-</span><span class="n">Pgnatcheck_example</span><span class="o">.</span><span class="n">gpr</span>
+</pre></div>
+</div>
+<p>As a result, <em>gnatcheck</em> is called to check all the files from the
+project <code class="file docutils literal"><span class="pre">gnatcheck_example.gpr</span></code> using the coding standard defined by
+the file <code class="file docutils literal"><span class="pre">coding_standard</span></code>. The <em>gnatcheck</em>
+report file named <code class="file docutils literal"><span class="pre">gnatcheck.out</span></code> will be created in the <code class="docutils literal"><span class="pre">obj</span></code>
+directory, and it will have the following content:</p>
+<div class="highlight-python"><div class="highlight"><pre>RULE CHECKING REPORT
+
+1. OVERVIEW
+
+Date and time of execution: 2009.10.28 14:17
+Tool version: GNATCHECK (built with ASIS 2.0.R for GNAT Pro 6.3.0w (20091016))
+Command line:
+
+gnatcheck -files=... -cargs -gnatec=... -rules -from=coding_standard
+
+Coding standard (applied rules):
+   Abstract_Type_Declarations
+   Anonymous_Arrays
+   EXIT_Statements_With_No_Loop_Name
+   Float_Equality_Checks
+   Local_Packages
+
+   Compiler style checks: -gnatye
+
+Number of coding standard violations: 6
+Number of exempted coding standard violations: 1
+
+2. DETECTED RULE VIOLATIONS
+
+2.1. NON-EXEMPTED VIOLATIONS
+
+Source files with non-exempted violations
+   pack.ads
+   pack.adb
+   main.adb
+
+List of violations grouped by files, and ordered by increasing source location:
+
+pack.ads:2:4: declaration of abstract type
+pack.ads:5:4: declaration of local package
+pack.ads:10:30: declaration of abstract type
+pack.ads:11:1: (style) &quot;end Pack&quot; required
+pack.adb:5:19: use of equality operation for float values
+pack.adb:6:7: (style) &quot;end Is_Equal&quot; required
+main.adb:9:26: anonymous array type
+main.adb:19:10: exit statement with no loop name
+
+2.2. EXEMPTED VIOLATIONS
+
+Source files with exempted violations
+   main.adb
+
+List of violations grouped by files, and ordered by increasing source location:
+
+main.adb:6:18: anonymous array type
+   (this one is fine)
+
+2.3. SOURCE FILES WITH NO VIOLATION
+
+   No files without violations
+
+END OF REPORT
+</pre></div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="list_of_rules.html" title="10. List of Rules"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="predefined_rules.html" title="8. Predefined Rules"
+             >previous</a> |</li>
+        <li><a href="../gnatcheck_rm.html">GNATcheck Reference Manual 2017 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2008-2017, AdaCore.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3b2.
+    </div>
+  </body>
+</html>

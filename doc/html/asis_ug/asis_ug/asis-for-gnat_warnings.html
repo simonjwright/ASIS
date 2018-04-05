@@ -1,0 +1,146 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>12. ASIS-for-GNAT Warnings &mdash; ASIS-for-GNAT User&#39;s Guide 2017 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2017',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="ASIS-for-GNAT User&#39;s Guide 2017 documentation" href="../asis_ug.html" />
+    <link rel="next" title="13. Exception Handling and Reporting Internal Bugs" href="exception_handling_and_reporting_internal_bugs.html" />
+    <link rel="prev" title="11. Compiling, Binding, and Linking Applications with ASIS-for-GNAT" href="compiling_binding_and_linking_applications_with_asis-for-gnat.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="exception_handling_and_reporting_internal_bugs.html" title="13. Exception Handling and Reporting Internal Bugs"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="compiling_binding_and_linking_applications_with_asis-for-gnat.html" title="11. Compiling, Binding, and Linking Applications with ASIS-for-GNAT"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../asis_ug.html">ASIS-for-GNAT User&#39;s Guide 2017 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../asis_ug.html">
+              <img class="logo" src="../_static/adacore_transparent.png" alt="Logo"/>
+            </a></p>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="compiling_binding_and_linking_applications_with_asis-for-gnat.html"
+                        title="previous chapter">11. Compiling, Binding, and Linking Applications with ASIS-for-GNAT</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="exception_handling_and_reporting_internal_bugs.html"
+                        title="next chapter">13. Exception Handling and Reporting Internal Bugs</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/asis_ug/asis-for-gnat_warnings.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="asis-for-gnat-warnings">
+<span id="id1"></span><h1>12. ASIS-for-GNAT Warnings<a class="headerlink" href="#asis-for-gnat-warnings" title="Permalink to this headline">¶</a></h1>
+<p id="index-0">The ASIS definition specifies the situations when certain ASIS-defined
+exceptions should be raised, and ASIS-for-GNAT conforms to these rules.</p>
+<p>ASIS-for-GNAT also generates warnings if it considers some situation arising
+during the ASIS query processing to be potentially wrong, and if the
+ASIS definition does not require raising an exception. Usually
+this occurs with actual or potential problems in an
+implementation-specific part of ASIS, such as providing
+implementation-specific parameters to the queries <code class="docutils literal"><span class="pre">Initialize</span></code>,
+<code class="docutils literal"><span class="pre">Finalize</span></code> and <code class="docutils literal"><span class="pre">Associate</span></code> or opening a <code class="docutils literal"><span class="pre">Context</span></code>.</p>
+<p>There are three warning modes in ASIS-for-GNAT:</p>
+<dl class="docutils">
+<dt><em>default</em></dt>
+<dd>Warning messages are output to <code class="docutils literal"><span class="pre">Standard_Error</span></code>.</dd>
+<dt><em>suppress</em></dt>
+<dd>Warning messages are suppressed.<span class="target" id="index-1"></span></dd>
+<dt><em>treat as error</em></dt>
+<dd>A warning is treated as an error by ASIS-for-GNAT: instead of sending a
+message to <code class="docutils literal"><span class="pre">Standard_Error</span></code>, ASIS-for-GNAT raises <code class="docutils literal"><span class="pre">Asis_Failed</span></code>
+and converts the
+warning message into the ASIS <code class="docutils literal"><span class="pre">Diagnosis</span></code> string.
+ASIS Error Status depends on
+the cause of the warning.</dd>
+</dl>
+<p>The ASIS-for-GNAT warning mode may be set when initializing the ASIS
+implementation. The <code class="docutils literal"><span class="pre">-ws</span></code> parameter of
+<code class="docutils literal"><span class="pre">Asis.Implementation.Initialize</span></code>
+query suppresses warnings, the <code class="docutils literal"><span class="pre">-we</span></code>
+parameter of this query sets treating all the warnings as errors. When set,
+the warning mode remains the same for all <code class="docutils literal"><span class="pre">Context</span></code>s processed until
+ASIS-for-GNAT has completed.</p>
+<span class="target" id="index-3"></span></div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="exception_handling_and_reporting_internal_bugs.html" title="13. Exception Handling and Reporting Internal Bugs"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="compiling_binding_and_linking_applications_with_asis-for-gnat.html" title="11. Compiling, Binding, and Linking Applications with ASIS-for-GNAT"
+             >previous</a> |</li>
+        <li><a href="../asis_ug.html">ASIS-for-GNAT User&#39;s Guide 2017 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2008-2017, AdaCore.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3b2.
+    </div>
+  </body>
+</html>

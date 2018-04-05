@@ -1,0 +1,466 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>3. Getting Started &mdash; ASIS-for-GNAT User&#39;s Guide 2017 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2017',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="ASIS-for-GNAT User&#39;s Guide 2017 documentation" href="../asis_ug.html" />
+    <link rel="next" title="4. ASIS Overview" href="asis_overview.html" />
+    <link rel="prev" title="2. Introduction" href="introduction.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="asis_overview.html" title="4. ASIS Overview"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="introduction.html" title="2. Introduction"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../asis_ug.html">ASIS-for-GNAT User&#39;s Guide 2017 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../asis_ug.html">
+              <img class="logo" src="../_static/adacore_transparent.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../asis_ug.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">3. Getting Started</a><ul>
+<li><a class="reference internal" href="#the-problem">3.1. The Problem</a></li>
+<li><a class="reference internal" href="#an-asis-application-that-solves-the-problem">3.2. An ASIS Application that Solves the Problem</a></li>
+<li><a class="reference internal" href="#required-sequence-of-calls">3.3. Required Sequence of Calls</a></li>
+<li><a class="reference internal" href="#building-the-executable-for-an-asis-application">3.4. Building the Executable for an ASIS application</a></li>
+<li><a class="reference internal" href="#preparing-data-for-an-asis-application-generating-tree-files">3.5. Preparing Data for an ASIS Application &#8212; Generating Tree Files</a></li>
+<li><a class="reference internal" href="#running-an-asis-application">3.6. Running an ASIS Application</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="introduction.html"
+                        title="previous chapter">2. Introduction</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="asis_overview.html"
+                        title="next chapter">4. ASIS Overview</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/asis_ug/getting_started.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="getting-started">
+<span id="id1"></span><h1>3. Getting Started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h1>
+<p>This section outlines the ASIS application development and usage cycle.
+We first take a sample problem and present an ASIS application that offers a
+solution; then we show how to build the
+executable with ASIS-for-GNAT and how to prepare an ASIS &#8216;Context&#8217; to be
+processed by the program; and finally we show the output produced by our
+program when it is applied to itself.</p>
+<div class="section" id="the-problem">
+<h2>3.1. The Problem<a class="headerlink" href="#the-problem" title="Permalink to this headline">¶</a></h2>
+<p id="index-0">We wish to process some set of Ada compilation units as follows:
+for every unit, print its full expanded Ada name,
+whether this unit is a spec, a
+body or a subunit, and whether this unit is a user-defined unit, an Ada predefined
+unit or an implementation-specific unit (such as a part of
+a Run-Time Library).</p>
+</div>
+<div class="section" id="an-asis-application-that-solves-the-problem">
+<span id="id2"></span><h2>3.2. An ASIS Application that Solves the Problem<a class="headerlink" href="#an-asis-application-that-solves-the-problem" title="Permalink to this headline">¶</a></h2>
+<span class="target" id="index-1"></span><span class="target" id="index-2"></span><span class="target" id="index-3"></span><span class="target" id="index-4"></span><span class="target" id="index-5"></span><span class="target" id="index-6"></span><span class="target" id="index-7"></span><span class="target" id="index-8"></span><span class="target" id="index-9"></span><span class="target" id="index-10"></span><span class="target" id="index-11"></span><span class="target" id="index-12"></span><span class="target" id="index-13"></span><span class="target" id="index-14"></span><span class="target" id="index-15"></span><div class="highlight-ada" id="index-16"><div class="highlight"><pre><span class="kr">with</span><span class="p"> </span><span class="n">Ada.Wide_Text_IO</span><span class="p">;        </span><span class="kr">use</span><span class="nn"> Ada.Wide_Text_IO</span><span class="p">;</span>
+<span class="kr">with</span><span class="nn"> Ada.Characters.Handling</span><span class="p">; </span><span class="kr">use</span><span class="nn"> Ada.Characters.Handling</span><span class="p">;</span>
+
+<span class="c">--  ASIS-specific context clauses:</span><span class="p"></span>
+<span class="kr">with</span><span class="nn"> Asis</span><span class="p">;</span>
+<span class="kr">with</span><span class="nn"> Asis.Implementation</span><span class="p">;</span>
+<span class="kr">with</span><span class="nn"> Asis.Ada_Environments</span><span class="p">;</span>
+<span class="kr">with</span><span class="nn"> Asis.Compilation_Units</span><span class="p">;</span>
+<span class="kr">with</span><span class="nn"> Asis.Exceptions</span><span class="p">;</span>
+<span class="kr">with</span><span class="nn"> Asis.Errors</span><span class="p">;</span>
+
+<span class="k">procedure </span><span class="nf">Example1</span> <span class="kr">is</span><span class="p"></span>
+   <span class="n">My_Context</span> <span class="o">:</span> <span class="n">Asis.Context</span><span class="p">;</span>
+   <span class="c">--  ASIS Context is an abstraction of an Ada compilation environment,</span>
+   <span class="c">--  it defines a set of ASIS Compilation Units available through</span>
+   <span class="c">--  ASIS queries</span>
+
+<span class="kr">begin</span><span class="p"></span>
+   <span class="c">--  first, by initializing an ASIS implementation, we make it</span>
+   <span class="c">--  ready for work</span>
+   <span class="n">Asis.Implementation.Initialize</span> <span class="o">(</span><span class="s">&quot;-ws&quot;</span><span class="o">)</span><span class="p">;</span>
+   <span class="c">--  The &quot;-ws&quot; parameter of the Initialize procedure means</span>
+   <span class="c">--  &quot;turn off all the ASIS warnings&quot;</span>
+
+   <span class="c">--  then we define our Context by making an association with</span>
+   <span class="c">--  the &quot;physical&quot; environment:</span>
+   <span class="n">Asis.Ada_Environments.Associate</span>
+    <span class="o">(</span><span class="n">My_Context</span><span class="p">,</span> <span class="s">&quot;My Asis Context&quot;</span><span class="p">,</span> <span class="s">&quot;-CA&quot;</span><span class="o">)</span><span class="p">;</span>
+   <span class="c">--  &quot;-CA&quot; as a Context parameter means &quot;consider all the tree</span>
+   <span class="c">--  files in the current directory&quot;</span>
+   <span class="c">--  See ASIS-for-GNAT Reference Manual for the description of the</span>
+   <span class="c">--  parameters of the Associate query, see also chapter</span>
+   <span class="c">--  &quot;ASIS Context&quot; for the description of different kinds of</span>
+   <span class="c">--  ASIS Context in case of ASIS-for-GNAT</span>
+
+   <span class="c">--  by opening a Context we make it ready for processing by ASIS</span>
+   <span class="c">--  queries</span>
+   <span class="n">Asis.Ada_Environments.Open</span> <span class="o">(</span><span class="n">My_Context</span><span class="o">)</span><span class="p">;</span>
+   <span class="n">Processing_Units</span><span class="o">:</span> <span class="kr">declare</span><span class="p"></span>
+      <span class="n">Next_Unit</span> <span class="o">:</span> <span class="n">Asis.Compilation_Unit</span><span class="p">;</span>
+      <span class="c">--  ASIS Compilation_Unit is the abstraction to represent Ada</span>
+      <span class="c">--  compilation units as described in RM 95</span>
+
+      <span class="n">All_Units</span> <span class="o">:</span> <span class="n">Asis.Compilation_Unit_List</span> <span class="o">:=</span>
+      <span class="c">--  ASIS lists are one-dimensional unconstrained arrays.</span>
+      <span class="c">--  Therefore, when declaring an object of an ASIS list type,</span>
+      <span class="c">--  we have to provide either a constraint or explicit</span>
+      <span class="c">--  initialization expression:</span>
+
+         <span class="n">Asis.Compilation_Units.Compilation_Units</span> <span class="o">(</span><span class="n">My_Context</span><span class="o">)</span><span class="p">;</span>
+      <span class="c">--  The Compilation_Units query returns a list of all the units</span>
+      <span class="c">--  contained in an ASIS Context</span>
+   <span class="kr">begin</span><span class="p"></span>
+      <span class="n">Put_Line</span>
+        <span class="o">(</span><span class="s">&quot;A Context contains the following compilation units:&quot;</span><span class="o">)</span><span class="p">;</span>
+      <span class="n">New_Line</span><span class="p">;</span>
+      <span class="kr">for</span><span class="p"> </span><span class="n">I</span> <span class="kr">in</span><span class="p"> </span><span class="n">All_Units</span><span class="na">&#39;Range</span> <span class="kr">loop</span><span class="p"></span>
+         <span class="n">Next_Unit</span> <span class="o">:=</span> <span class="n">All_Units</span> <span class="o">(</span><span class="n">I</span><span class="o">)</span><span class="p">;</span>
+         <span class="n">Put</span> <span class="o">(</span><span class="s">&quot;   &quot;</span><span class="o">)</span><span class="p">;</span>
+
+         <span class="c">--  to get a unit name, we just need a Unit_Full_Name</span>
+         <span class="c">--  query. ASIS uses Wide_String as a string type,</span>
+         <span class="c">--  that is why we are using Ada.Wide_Text_IO</span>
+
+         <span class="n">Put</span> <span class="o">(</span><span class="n">Asis.Compilation_Units.Unit_Full_Name</span> <span class="o">(</span><span class="n">Next_Unit</span><span class="o">))</span><span class="p">;</span>
+         <span class="c">--  to get more info about a unit, we ask about unit class</span>
+         <span class="c">--  and about unit origin</span>
+
+         <span class="kr">case</span><span class="p"> </span><span class="n">Asis.Compilation_Units.Unit_Kind</span> <span class="o">(</span><span class="n">Next_Unit</span><span class="o">)</span> <span class="kr">is</span><span class="p"></span>
+            <span class="kr">when</span><span class="p"> </span><span class="n">Asis.A_Library_Unit_Body</span> <span class="o">=&gt;</span>
+               <span class="n">Put</span> <span class="o">(</span><span class="s">&quot; (body)&quot;</span><span class="o">)</span><span class="p">;</span>
+            <span class="kr">when</span><span class="p"> </span><span class="n">Asis.A_Subunit</span> <span class="o">=&gt;</span>
+               <span class="n">Put</span> <span class="o">(</span><span class="s">&quot; (subunit)&quot;</span><span class="o">)</span><span class="p">;</span>
+            <span class="kr">when</span><span class="p"> </span><span class="kr">others</span><span class="p"> </span><span class="o">=&gt;</span>
+               <span class="n">Put</span> <span class="o">(</span><span class="s">&quot; (spec)&quot;</span><span class="o">)</span><span class="p">;</span>
+         <span class="k">end </span><span class="nf">case</span><span class="p">;</span>
+
+         <span class="kr">case</span><span class="p"> </span><span class="n">Asis.Compilation_Units.Unit_Origin</span> <span class="o">(</span><span class="n">Next_Unit</span><span class="o">)</span> <span class="kr">is</span><span class="p"></span>
+            <span class="kr">when</span><span class="p"> </span><span class="n">Asis.An_Application_Unit</span> <span class="o">=&gt;</span>
+               <span class="n">Put_Line</span> <span class="o">(</span><span class="s">&quot; - user-defined unit&quot;</span><span class="o">)</span><span class="p">;</span>
+            <span class="kr">when</span><span class="p"> </span><span class="n">Asis.An_Implementation_Unit</span> <span class="o">=&gt;</span>
+               <span class="n">Put_Line</span> <span class="o">(</span><span class="s">&quot; - implementation-specific unit&quot;</span><span class="o">)</span><span class="p">;</span>
+            <span class="kr">when</span><span class="p"> </span><span class="n">Asis.A_Predefined_Unit</span> <span class="o">=&gt;</span>
+               <span class="n">Put_Line</span> <span class="o">(</span><span class="s">&quot; - Ada predefined unit&quot;</span><span class="o">)</span><span class="p">;</span>
+            <span class="kr">when</span><span class="p"> </span><span class="n">Asis.Not_An_Origin</span> <span class="o">=&gt;</span>
+               <span class="n">Put_Line</span>
+                 <span class="o">(</span><span class="s">&quot; - unit does not actually exist in a Context&quot;</span><span class="o">)</span><span class="p">;</span>
+         <span class="k">end </span><span class="nf">case</span><span class="p">;</span>
+
+      <span class="k">end loop</span><span class="p">;</span>
+   <span class="k">end </span><span class="nf">Processing_Units</span><span class="p">;</span>
+
+   <span class="c">--  Cleaning up: we have to close out the Context, break its</span>
+   <span class="c">--  association with the external environment and finalize</span>
+   <span class="c">--  our ASIS implementation to release all the resources used:</span>
+   <span class="n">Asis.Ada_Environments.Close</span> <span class="o">(</span><span class="n">My_Context</span><span class="o">)</span><span class="p">;</span>
+   <span class="n">Asis.Ada_Environments.Dissociate</span> <span class="o">(</span><span class="n">My_Context</span><span class="o">)</span><span class="p">;</span>
+   <span class="n">Asis.Implementation.Finalize</span><span class="p">;</span>
+<span class="kr">exception</span><span class="p"></span>
+   <span class="kr">when</span><span class="p"> </span><span class="n">Asis.Exceptions.ASIS_Inappropriate_Context</span> <span class="o">|</span>
+        <span class="n">Asis.Exceptions.ASIS_Inappropriate_Compilation_Unit</span> <span class="o">|</span>
+        <span class="n">Asis.Exceptions.ASIS_Failed</span> <span class="o">=&gt;</span>
+      <span class="c">--  we check not for all the ASIS-defined exceptions, but only</span>
+      <span class="c">--  those of them which can actually be raised in our ASIS</span>
+      <span class="c">--  application.</span>
+      <span class="c">--</span>
+      <span class="c">--  If an ASIS exception is raised, we output the ASIS error</span>
+      <span class="c">--  status and the ASIS diagnosis string:</span>
+
+      <span class="n">Put_Line</span> <span class="o">(</span><span class="s">&quot;ASIS exception is raised:&quot;</span><span class="o">)</span><span class="p">;</span>
+      <span class="n">Put_Line</span> <span class="o">(</span><span class="s">&quot;ASIS diagnosis is:&quot;</span><span class="o">)</span><span class="p">;</span>
+      <span class="n">Put_Line</span> <span class="o">(</span><span class="n">Asis.Implementation.Diagnosis</span><span class="o">)</span><span class="p">;</span>
+      <span class="n">Put</span>      <span class="o">(</span><span class="s">&quot;ASIS error status is: &quot;</span><span class="o">)</span><span class="p">;</span>
+      <span class="n">Put_Line</span>
+        <span class="o">(</span><span class="n">Asis.Errors.Error_Kinds</span><span class="na">&#39;Wide_Image</span>
+           <span class="o">(</span><span class="n">Asis.Implementation.Status</span><span class="o">))</span><span class="p">;</span>
+<span class="k">end </span><span class="nf">Example1</span><span class="p">;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="required-sequence-of-calls">
+<h2>3.3. Required Sequence of Calls<a class="headerlink" href="#required-sequence-of-calls" title="Permalink to this headline">¶</a></h2>
+<p>An ASIS application must use the following sequence of calls:</p>
+<span class="target" id="index-17"></span><ul id="index-18">
+<li><p class="first"><code class="docutils literal"><span class="pre">Asis.Implementation.Initialize</span> <span class="pre">(...);</span></code></p>
+<p>This initializes the ASIS implementation&#8217;s internal data structures.
+In general, calling an ASIS
+query is erroneous unless the <code class="docutils literal"><span class="pre">Initialize</span></code> procedure has been invoked.</p>
+</li>
+</ul>
+<ul id="index-19">
+<li><p class="first"><code class="docutils literal"><span class="pre">Asis.Ada_Environments.Associate</span> <span class="pre">(...);</span></code></p>
+<span class="target" id="index-20"></span><p id="index-21">This call is the only means to define a value of a variable of the
+ASIS limited private type <code class="docutils literal"><span class="pre">Context</span></code>.
+The value represents some specific
+association of the ASIS <code class="docutils literal"><span class="pre">Context</span></code> with the &#8216;external world&#8217;. The way
+of making this association and the meaning of the corresponding
+parameters of the <code class="docutils literal"><span class="pre">Associate</span></code> query are implementation-specific,
+but as soon as this association has been made and a <code class="docutils literal"><span class="pre">Context</span></code> variable
+is opened, the ASIS <code class="docutils literal"><span class="pre">Context</span></code> designated by this variable may be
+considered to be a set of ASIS <code class="docutils literal"><span class="pre">Compilation_Unit</span></code>s
+available through the ASIS queries.</p>
+</li>
+</ul>
+<ul id="index-22">
+<li><p class="first"><code class="docutils literal"><span class="pre">Asis.Ada_Environments.Open</span> <span class="pre">(...);</span></code></p>
+<p>Opening an ASIS <code class="docutils literal"><span class="pre">Context</span></code> variable makes the corresponding <code class="docutils literal"><span class="pre">Context</span></code>
+accessible to all ASIS queries.</p>
+<span class="target" id="index-23"></span><span class="target" id="index-24"></span><p id="index-25">After opening the <code class="docutils literal"><span class="pre">Context</span></code>, an ASIS application can start obtaining
+ASIS <code class="docutils literal"><span class="pre">Compilation_Unit</span></code>s from it, can further analyze <code class="docutils literal"><span class="pre">Compilation_Unit</span></code>s
+by decomposing them into ASIS <code class="docutils literal"><span class="pre">Element</span></code>s, etc.
+ASIS relies on the fact that the content of a <code class="docutils literal"><span class="pre">Context</span></code> remains &#8216;frozen&#8217;
+as long as the <code class="docutils literal"><span class="pre">Context</span></code> remains open.
+It is erroneous
+to change through some non-ASIS program any data
+structures used by an ASIS implementation to define and implement
+this <code class="docutils literal"><span class="pre">Context</span></code> while the <code class="docutils literal"><span class="pre">Context</span></code> is open.</p>
+<span class="target" id="index-26"></span></li>
+<li id="index-27"><p class="first">Now all the ASIS queries can be used. It is possible to access <code class="docutils literal"><span class="pre">Compilation_Unit</span></code>s
+from the <code class="docutils literal"><span class="pre">Context</span></code>, to decompose units into syntactic <code class="docutils literal"><span class="pre">Element</span></code>s,
+to query syntactic and semantic properties of these
+<code class="docutils literal"><span class="pre">Element</span></code>s and so on.</p>
+<span class="target" id="index-28"></span><span class="target" id="index-29"></span><span class="target" id="index-30"></span><span class="target" id="index-31"></span><span class="target" id="index-32"></span></li>
+<li id="index-33"><p class="first"><code class="docutils literal"><span class="pre">Asis.Ada_Environments.Close</span> <span class="pre">(...);</span></code></p>
+<p>After closing the <code class="docutils literal"><span class="pre">Context</span></code> it is impossible to retrieve any information
+from it. All the values of the ASIS objects of <code class="docutils literal"><span class="pre">Compilation_Unit</span></code>,
+<code class="docutils literal"><span class="pre">Element</span></code>
+and <code class="docutils literal"><span class="pre">Line</span></code>
+types obtained when this <code class="docutils literal"><span class="pre">Context</span></code> was open become
+obsolete, and it is erroneous
+to use them after the <code class="docutils literal"><span class="pre">Context</span></code> was closed.
+The content of this <code class="docutils literal"><span class="pre">Context</span></code> need not be frozen while
+the <code class="docutils literal"><span class="pre">Context</span></code> remains closed. Note that a closed <code class="docutils literal"><span class="pre">Context</span></code> keeps its
+association with the &#8216;external world&#8217; and it may be opened again with
+the same association. Note also that the content (that is, the
+corresponding set of ASIS <code class="docutils literal"><span class="pre">Compilation_Unit</span></code>s) of the <code class="docutils literal"><span class="pre">Context</span></code> may be
+different from what was in the <code class="docutils literal"><span class="pre">Context</span></code> before, because the external
+world may have changed while the <code class="docutils literal"><span class="pre">Context</span></code> remained closed.</p>
+</li>
+<li id="index-34"><p class="first"><code class="docutils literal"><span class="pre">Asis.Ada_Environments.Dissociate</span> <span class="pre">(...);</span></code></p>
+<p>This query breaks the association between the corresponding ASIS
+<code class="docutils literal"><span class="pre">Context</span></code> and the &#8216;external world&#8217;, and the corresponding <code class="docutils literal"><span class="pre">Context</span></code>
+variable becomes undefined.</p>
+</li>
+<li id="index-35"><p class="first"><code class="docutils literal"><span class="pre">Asis.Implementation.Finalize</span> <span class="pre">(...);</span></code></p>
+<p>This releases all the resources used by an ASIS implementation.</p>
+</li>
+</ul>
+<span class="target" id="index-36"></span><p id="index-37">An application can perform these steps in a loop. It may initialize and
+finalize an ASIS implementation several times, it may associate and dissociate
+the same <code class="docutils literal"><span class="pre">Context</span></code> several times while an ASIS implementation remains
+initialized, and it may open and close the same <code class="docutils literal"><span class="pre">Context</span></code> several times while
+the <code class="docutils literal"><span class="pre">Context</span></code> keeps its association with the &#8216;external world&#8217;.
+An application can have several ASIS <code class="docutils literal"><span class="pre">Context</span></code>s opened at a time (the upper
+limit is implementation-specific), and for each open <code class="docutils literal"><span class="pre">Context</span></code>, an application
+can process several <code class="docutils literal"><span class="pre">Compilation_Unit</span></code>s obtained from this <code class="docutils literal"><span class="pre">Context</span></code> at a time
+(the upper limit is also implementation-specific). ASIS-for-GNAT
+does not
+impose any special limitations on the number of ASIS <code class="docutils literal"><span class="pre">Context</span></code>s and on the
+number of the ASIS <code class="docutils literal"><span class="pre">Compilation_Unit</span></code>s processed at a time, as long as an ASIS
+application is within the general resource limitations of the underlying
+system.</p>
+</div>
+<div class="section" id="building-the-executable-for-an-asis-application">
+<h2>3.4. Building the Executable for an ASIS application<a class="headerlink" href="#building-the-executable-for-an-asis-application" title="Permalink to this headline">¶</a></h2>
+<p id="index-38">The rest of this section assumes that you have ASIS-for-GNAT properly
+installed as an Ada library.
+As for other components of the GNAT technology, the structure of the
+ASIS distribution and the ASIS building and installation process is
+based on project files. So, the same should be the case for ASIS
+application.</p>
+<p>For your ASIS application you should create a project file that depends
+on the main ASIS project file <code class="docutils literal"><span class="pre">asis.gpr</span></code>. Here is the simplest version of
+such a project file:</p>
+<div class="highlight-ada"><div class="highlight"><pre><span class="kr">with</span><span class="p"> </span><span class="s">&quot;asis&quot;</span><span class="p">;</span>
+<span class="n">project</span> <span class="n">Example1</span> <span class="kr">is</span><span class="p"></span>
+   <span class="kr">for</span><span class="p"> </span><span class="n">Main</span> <span class="kr">use</span><span class="p"> </span><span class="o">(</span><span class="s">&quot;example1.adb&quot;</span><span class="o">)</span><span class="p">;</span>
+<span class="k">end </span><span class="nf">Example1</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>To get the executable for the ASIS application from
+<a class="reference internal" href="#an-asis-application-that-solves-the-problem"><em>An ASIS Application that Solves the Problem</em></a> (assuming
+that it is located in your current directory as the Ada source file named
+<code class="file docutils literal"><span class="pre">example1.adb</span></code>, and the corresponding project file is also located
+in the current directory), invoke <em>gprbuid</em> as follows:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ gprbuild example1.gpr
+</pre></div>
+</div>
+<p>For more details concerning compiling ASIS applications and building
+executables for them with ASIS-for-GNAT see
+<a class="reference internal" href="compiling_binding_and_linking_applications_with_asis-for-gnat.html#compiling-binding-and-linking-applications-with-asis-for-gnat"><em>Compiling, Binding, and Linking Applications with ASIS-for-GNAT</em></a>.</p>
+</div>
+<div class="section" id="preparing-data-for-an-asis-application-generating-tree-files">
+<h2>3.5. Preparing Data for an ASIS Application &#8212; Generating Tree Files<a class="headerlink" href="#preparing-data-for-an-asis-application-generating-tree-files" title="Permalink to this headline">¶</a></h2>
+<p>The general ASIS implementation technique is to use some information generated
+by the underlying Ada compiler as the basis for retrieving information
+from the Ada environment. As a consequence, an ASIS application can process
+only legal (compilable) Ada code, and in most of the cases to make a
+compilation unit &#8216;visible&#8217; for ASIS means to compile this unit (probably
+with some ASIS-specific options)</p>
+<p id="index-39">ASIS-for-GNAT uses <em>tree output files</em> (or, in short, <em>tree files</em>)
+to capture
+information about an Ada unit from an Ada environment. A tree file is
+generated by GNAT, and it contains a snapshot of the compiler&#8217;s internal
+data structures at the end of the successful compilation of the
+corresponding source file.</p>
+<p id="index-40">To create a tree file for a unit contained in some source file, you should
+compile this file with the <code class="docutils literal"><span class="pre">-gnatct</span></code> compiler option.
+If you want to apply
+the program described in section
+<a class="reference internal" href="#an-asis-application-that-solves-the-problem"><em>An ASIS Application that Solves the Problem</em></a> to itself,
+compile the source of this application with the command:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ gcc -c -gnatct example1.adb
+</pre></div>
+</div>
+<p>and as a result, GNAT will generate the tree file named <code class="file docutils literal"><span class="pre">example1.adt</span></code> in the current
+directory.</p>
+<p>For more information on how to generate and deal with tree files, see
+<a class="reference internal" href="asis_context.html#asis-context"><em>ASIS Context</em></a>, and <a class="reference internal" href="asis_tutorials.html#asis-tutorials"><em>ASIS Tutorials</em></a>.</p>
+</div>
+<div class="section" id="running-an-asis-application">
+<h2>3.6. Running an ASIS Application<a class="headerlink" href="#running-an-asis-application" title="Permalink to this headline">¶</a></h2>
+<p id="index-41">To complete our example, let&#8217;s execute our ASIS application. If you have
+followed all the steps described in this chapter,
+your current directory should contain the executable <code class="file docutils literal"><span class="pre">example1</span></code>
+(<code class="file docutils literal"><span class="pre">example1.exe</span></code> on a Windows platform)
+and the tree file <code class="file docutils literal"><span class="pre">example1.adt</span></code>.
+If we run
+our application, it will process an ASIS <code class="docutils literal"><span class="pre">Context</span></code> defined by one tree file
+<code class="file docutils literal"><span class="pre">example1.adt</span></code> (for more details about defining an ASIS <code class="docutils literal"><span class="pre">Context</span></code> see
+<a class="reference internal" href="asis_context.html#asis-context"><em>ASIS Context</em></a>, and the ASIS-for-GNAT Reference Manual).
+The result will be:</p>
+<div class="highlight-ada"><div class="highlight"><pre><span class="n">A</span> <span class="n">Context</span> <span class="n">contains</span> <span class="n">the</span> <span class="n">following</span> <span class="n">compilation</span> <span class="n">units</span><span class="o">:</span>
+
+   <span class="n">Standard</span> <span class="o">(</span><span class="n">spec</span><span class="o">)</span> <span class="o">-</span> <span class="n">Ada</span> <span class="n">predefined</span> <span class="n">unit</span>
+   <span class="n">Example1</span> <span class="o">(</span><span class="n">body</span><span class="o">)</span> <span class="o">-</span> <span class="n">user</span><span class="o">-</span><span class="n">defined</span> <span class="n">unit</span>
+   <span class="n">Ada</span> <span class="o">(</span><span class="n">spec</span><span class="o">)</span> <span class="o">-</span> <span class="n">Ada</span> <span class="n">predefined</span> <span class="n">unit</span>
+   <span class="n">Ada.Wide_Text_IO</span> <span class="o">(</span><span class="n">spec</span><span class="o">)</span> <span class="o">-</span> <span class="n">Ada</span> <span class="n">predefined</span> <span class="n">unit</span>
+   <span class="n">Ada.IO_Exceptions</span> <span class="o">(</span><span class="n">spec</span><span class="o">)</span> <span class="o">-</span> <span class="n">Ada</span> <span class="n">predefined</span> <span class="n">unit</span>
+   <span class="n">Ada.Streams</span> <span class="o">(</span><span class="n">spec</span><span class="o">)</span> <span class="o">-</span> <span class="n">Ada</span> <span class="n">predefined</span> <span class="n">unit</span>
+   <span class="n">System</span> <span class="o">(</span><span class="n">spec</span><span class="o">)</span> <span class="o">-</span> <span class="n">Ada</span> <span class="n">predefined</span> <span class="n">unit</span>
+   <span class="n">System.File_Control_Block</span> <span class="o">(</span><span class="n">spec</span><span class="o">)</span> <span class="o">-</span> <span class="n">implementation</span><span class="o">-</span><span class="n">specific</span> <span class="n">unit</span>
+   <span class="n">Interfaces</span> <span class="o">(</span><span class="n">spec</span><span class="o">)</span> <span class="o">-</span> <span class="n">Ada</span> <span class="n">predefined</span> <span class="n">unit</span>
+   <span class="n">Interfaces.C_Streams</span> <span class="o">(</span><span class="n">spec</span><span class="o">)</span> <span class="o">-</span> <span class="n">implementation</span><span class="o">-</span><span class="n">specific</span> <span class="n">unit</span>
+   <span class="n">System.Parameters</span> <span class="o">(</span><span class="n">spec</span><span class="o">)</span> <span class="o">-</span> <span class="n">implementation</span><span class="o">-</span><span class="n">specific</span> <span class="n">unit</span>
+   <span class="n">System.WCh_Con</span> <span class="o">(</span><span class="n">spec</span><span class="o">)</span> <span class="o">-</span> <span class="n">implementation</span><span class="o">-</span><span class="n">specific</span> <span class="n">unit</span>
+   <span class="n">Ada.Characters</span> <span class="o">(</span><span class="n">spec</span><span class="o">)</span> <span class="o">-</span> <span class="n">Ada</span> <span class="n">predefined</span> <span class="n">unit</span>
+   <span class="n">Ada.Characters.Handling</span> <span class="o">(</span><span class="n">spec</span><span class="o">)</span> <span class="o">-</span> <span class="n">Ada</span> <span class="n">predefined</span> <span class="n">unit</span>
+   <span class="n">Asis</span> <span class="o">(</span><span class="n">spec</span><span class="o">)</span> <span class="o">-</span> <span class="n">user</span><span class="o">-</span><span class="n">defined</span> <span class="n">unit</span>
+   <span class="n">A4G</span> <span class="o">(</span><span class="n">spec</span><span class="o">)</span> <span class="o">-</span> <span class="n">user</span><span class="o">-</span><span class="n">defined</span> <span class="n">unit</span>
+   <span class="n">A4G.A_Types</span> <span class="o">(</span><span class="n">spec</span><span class="o">)</span> <span class="o">-</span> <span class="n">user</span><span class="o">-</span><span class="n">defined</span> <span class="n">unit</span>
+   <span class="n">Ada.Characters.Latin_1</span> <span class="o">(</span><span class="n">spec</span><span class="o">)</span> <span class="o">-</span> <span class="n">Ada</span> <span class="n">predefined</span> <span class="n">unit</span>
+   <span class="n">GNAT</span> <span class="o">(</span><span class="n">spec</span><span class="o">)</span> <span class="o">-</span> <span class="n">implementation</span><span class="o">-</span><span class="n">specific</span> <span class="n">unit</span>
+   <span class="n">GNAT.OS_Lib</span> <span class="o">(</span><span class="n">spec</span><span class="o">)</span> <span class="o">-</span> <span class="n">implementation</span><span class="o">-</span><span class="n">specific</span> <span class="n">unit</span>
+   <span class="n">GNAT.Strings</span> <span class="o">(</span><span class="n">spec</span><span class="o">)</span> <span class="o">-</span> <span class="n">implementation</span><span class="o">-</span><span class="n">specific</span> <span class="n">unit</span>
+   <span class="n">Unchecked_Deallocation</span> <span class="o">(</span><span class="n">spec</span><span class="o">)</span> <span class="o">-</span> <span class="n">Ada</span> <span class="n">predefined</span> <span class="n">unit</span>
+   <span class="n">Sinfo</span> <span class="o">(</span><span class="n">spec</span><span class="o">)</span> <span class="o">-</span> <span class="n">user</span><span class="o">-</span><span class="n">defined</span> <span class="n">unit</span>
+   <span class="n">Types</span> <span class="o">(</span><span class="n">spec</span><span class="o">)</span> <span class="o">-</span> <span class="n">user</span><span class="o">-</span><span class="n">defined</span> <span class="n">unit</span>
+   <span class="n">Uintp</span> <span class="o">(</span><span class="n">spec</span><span class="o">)</span> <span class="o">-</span> <span class="n">user</span><span class="o">-</span><span class="n">defined</span> <span class="n">unit</span>
+   <span class="n">Alloc</span> <span class="o">(</span><span class="n">spec</span><span class="o">)</span> <span class="o">-</span> <span class="n">user</span><span class="o">-</span><span class="n">defined</span> <span class="n">unit</span>
+   <span class="n">Table</span> <span class="o">(</span><span class="n">spec</span><span class="o">)</span> <span class="o">-</span> <span class="n">user</span><span class="o">-</span><span class="n">defined</span> <span class="n">unit</span>
+   <span class="n">Urealp</span> <span class="o">(</span><span class="n">spec</span><span class="o">)</span> <span class="o">-</span> <span class="n">user</span><span class="o">-</span><span class="n">defined</span> <span class="n">unit</span>
+   <span class="n">A4G.Int_Knds</span> <span class="o">(</span><span class="n">spec</span><span class="o">)</span> <span class="o">-</span> <span class="n">user</span><span class="o">-</span><span class="n">defined</span> <span class="n">unit</span>
+   <span class="n">Asis.Implementation</span> <span class="o">(</span><span class="n">spec</span><span class="o">)</span> <span class="o">-</span> <span class="n">user</span><span class="o">-</span><span class="n">defined</span> <span class="n">unit</span>
+   <span class="n">Asis.Errors</span> <span class="o">(</span><span class="n">spec</span><span class="o">)</span> <span class="o">-</span> <span class="n">user</span><span class="o">-</span><span class="n">defined</span> <span class="n">unit</span>
+   <span class="n">Asis.Ada_Environments</span> <span class="o">(</span><span class="n">spec</span><span class="o">)</span> <span class="o">-</span> <span class="n">user</span><span class="o">-</span><span class="n">defined</span> <span class="n">unit</span>
+   <span class="n">Asis.Compilation_Units</span> <span class="o">(</span><span class="n">spec</span><span class="o">)</span> <span class="o">-</span> <span class="n">user</span><span class="o">-</span><span class="n">defined</span> <span class="n">unit</span>
+   <span class="n">Asis.Ada_Environments.Containers</span> <span class="o">(</span><span class="n">spec</span><span class="o">)</span> <span class="o">-</span> <span class="n">user</span><span class="o">-</span><span class="n">defined</span> <span class="n">unit</span>
+   <span class="n">Asis.Exceptions</span> <span class="o">(</span><span class="n">spec</span><span class="o">)</span> <span class="o">-</span> <span class="n">user</span><span class="o">-</span><span class="n">defined</span> <span class="n">unit</span>
+   <span class="n">System.Unsigned_Types</span> <span class="o">(</span><span class="n">spec</span><span class="o">)</span> <span class="o">-</span> <span class="n">implementation</span><span class="o">-</span><span class="n">specific</span> <span class="n">unit</span>
+</pre></div>
+</div>
+<p id="index-42">Note that the tree file
+contains the full syntactic and semantic information not only
+about the unit compiled by the given call to <em>gcc</em>, but also about all
+the units upon which this unit depends semantically; that is why you can see
+in the output list a number of units which are not mentioned in our example.</p>
+<p>In the current version of ASIS-for-GNAT, ASIS implementation components are considered
+user-defined, rather than implementation-specific, units.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="asis_overview.html" title="4. ASIS Overview"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="introduction.html" title="2. Introduction"
+             >previous</a> |</li>
+        <li><a href="../asis_ug.html">ASIS-for-GNAT User&#39;s Guide 2017 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2008-2017, AdaCore.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3b2.
+    </div>
+  </body>
+</html>

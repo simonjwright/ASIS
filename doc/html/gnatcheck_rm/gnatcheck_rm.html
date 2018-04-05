@@ -1,0 +1,203 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>GNATcheck Reference Manual &mdash; GNATcheck Reference Manual 2017 documentation</title>
+    
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '2017',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+    <link rel="top" title="GNATcheck Reference Manual 2017 documentation" href="#" />
+    <link rel="next" title="1. About This Manual" href="gnatcheck_rm/about_this_manual.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="gnatcheck_rm/about_this_manual.html" title="1. About This Manual"
+             accesskey="N">next</a> |</li>
+        <li><a href="#">GNATcheck Reference Manual 2017 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="#">
+              <img class="logo" src="_static/adacore_transparent.png" alt="Logo"/>
+            </a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="gnatcheck_rm/about_this_manual.html"
+                        title="next chapter">1. About This Manual</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/gnatcheck_rm.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="gnatcheck-reference-manual">
+<h1>GNATcheck Reference Manual<a class="headerlink" href="#gnatcheck-reference-manual" title="Permalink to this headline">¶</a></h1>
+<p><em>GNAT, The GNU Ada Development Environment</em></p>
+<div class="line-block">
+<div class="line">The GNAT Ada Compiler</div>
+<div class="line">Version 2017</div>
+</div>
+<p>Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.1
+or any later version published by the Free Software Foundation;
+with the Invariant Sections being &#8216;GNU Free Documentation License&#8217;, with the
+Front-Cover Texts being
+&#8216;GNATcheck Reference Manual&#8217;,
+and with no Back-Cover Texts.
+A copy of the license is included in the section entitled
+&#8216;GNU Free Documentation License&#8217;.</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="gnatcheck_rm/about_this_manual.html">1. About This Manual</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gnatcheck_rm/introduction.html">2. Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gnatcheck_rm/format_of_the_report_file.html">3. Format of the Report File</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gnatcheck_rm/general_gnatcheck_switches.html">4. General <em>gnatcheck</em> Switches</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gnatcheck_rm/gnatcheck_rule_options.html">5. <em>gnatcheck</em> Rule Options</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gnatcheck_rm/adding_the_results_of_compiler_checks_to_gnatcheck_output.html">6. Adding the Results of Compiler Checks to <em>gnatcheck</em> Output</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gnatcheck_rm/rule_exemption.html">7. Rule exemption</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="gnatcheck_rm/rule_exemption.html#using-pragma-annotate-to-control-rule-exemption">7.1. Using pragma <code class="docutils literal"><span class="pre">Annotate</span></code> to Control Rule Exemption</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gnatcheck_rm/rule_exemption.html#gnatcheck-annotations-rules">7.2. <em>gnatcheck</em> Annotations Rules</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="gnatcheck_rm/predefined_rules.html">8. Predefined Rules</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="gnatcheck_rm/predefined_rules.html#style-related-rules">8.1. Style-Related Rules</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="gnatcheck_rm/predefined_rules.html#tasking">8.1.1. Tasking</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gnatcheck_rm/predefined_rules.html#object-orientation">8.1.2. Object Orientation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gnatcheck_rm/predefined_rules.html#portability">8.1.3. Portability</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gnatcheck_rm/predefined_rules.html#program-structure">8.1.4. Program Structure</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gnatcheck_rm/predefined_rules.html#programming-practice">8.1.5. Programming Practice</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gnatcheck_rm/predefined_rules.html#readability">8.1.6. Readability</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gnatcheck_rm/predefined_rules.html#source-code-presentation">8.1.7. Source Code Presentation</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="gnatcheck_rm/predefined_rules.html#feature-usage-rules">8.2. Feature Usage Rules</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="gnatcheck_rm/predefined_rules.html#abstract-type-declarations">8.2.1. <code class="docutils literal"><span class="pre">Abstract_Type_Declarations</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gnatcheck_rm/predefined_rules.html#anonymous-subtypes">8.2.2. <code class="docutils literal"><span class="pre">Anonymous_Subtypes</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gnatcheck_rm/predefined_rules.html#blocks">8.2.3. <code class="docutils literal"><span class="pre">Blocks</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gnatcheck_rm/predefined_rules.html#complex-inlined-subprograms">8.2.4. <code class="docutils literal"><span class="pre">Complex_Inlined_Subprograms</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gnatcheck_rm/predefined_rules.html#conditional-expressions">8.2.5. <code class="docutils literal"><span class="pre">Conditional_Expressions</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gnatcheck_rm/predefined_rules.html#controlled-type-declarations">8.2.6. <code class="docutils literal"><span class="pre">Controlled_Type_Declarations</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gnatcheck_rm/predefined_rules.html#declarations-in-blocks">8.2.7. <code class="docutils literal"><span class="pre">Declarations_In_Blocks</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gnatcheck_rm/predefined_rules.html#deeply-nested-inlining">8.2.8. <code class="docutils literal"><span class="pre">Deeply_Nested_Inlining</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gnatcheck_rm/predefined_rules.html#default-parameters">8.2.9. <code class="docutils literal"><span class="pre">Default_Parameters</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gnatcheck_rm/predefined_rules.html#discriminated-records">8.2.10. <code class="docutils literal"><span class="pre">Discriminated_Records</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gnatcheck_rm/predefined_rules.html#explicit-full-discrete-ranges">8.2.11. <code class="docutils literal"><span class="pre">Explicit_Full_Discrete_Ranges</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gnatcheck_rm/predefined_rules.html#fixed-equality-checks">8.2.12. <code class="docutils literal"><span class="pre">Fixed_Equality_Checks</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gnatcheck_rm/predefined_rules.html#float-equality-checks">8.2.13. <code class="docutils literal"><span class="pre">Float_Equality_Checks</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gnatcheck_rm/predefined_rules.html#function-style-procedures">8.2.14. <code class="docutils literal"><span class="pre">Function_Style_Procedures</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gnatcheck_rm/predefined_rules.html#generics-in-subprograms">8.2.15. <code class="docutils literal"><span class="pre">Generics_In_Subprograms</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gnatcheck_rm/predefined_rules.html#implicit-in-mode-parameters">8.2.16. <code class="docutils literal"><span class="pre">Implicit_IN_Mode_Parameters</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gnatcheck_rm/predefined_rules.html#improperly-located-instantiations">8.2.17. <code class="docutils literal"><span class="pre">Improperly_Located_Instantiations</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gnatcheck_rm/predefined_rules.html#library-level-subprograms">8.2.18. <code class="docutils literal"><span class="pre">Library_Level_Subprograms</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gnatcheck_rm/predefined_rules.html#membership-tests">8.2.19. <code class="docutils literal"><span class="pre">Membership_Tests</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gnatcheck_rm/predefined_rules.html#non-qualified-aggregates">8.2.20. <code class="docutils literal"><span class="pre">Non_Qualified_Aggregates</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gnatcheck_rm/predefined_rules.html#numeric-literals">8.2.21. <code class="docutils literal"><span class="pre">Numeric_Literals</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gnatcheck_rm/predefined_rules.html#parameters-out-of-order">8.2.22. <code class="docutils literal"><span class="pre">Parameters_Out_Of_Order</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gnatcheck_rm/predefined_rules.html#predicate-testing">8.2.23. <code class="docutils literal"><span class="pre">Predicate_Testing</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gnatcheck_rm/predefined_rules.html#quantified-expressions">8.2.24. <code class="docutils literal"><span class="pre">Quantified_Expressions</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gnatcheck_rm/predefined_rules.html#raising-predefined-exceptions">8.2.25. <code class="docutils literal"><span class="pre">Raising_Predefined_Exceptions</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gnatcheck_rm/predefined_rules.html#unassigned-out-parameters">8.2.26. <code class="docutils literal"><span class="pre">Unassigned_OUT_Parameters</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gnatcheck_rm/predefined_rules.html#unconstrained-array-returns">8.2.27. <code class="docutils literal"><span class="pre">Unconstrained_Array_Returns</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="gnatcheck_rm/predefined_rules.html#metrics-related-rules">8.3. Metrics-Related Rules</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="gnatcheck_rm/predefined_rules.html#metrics-essential-complexity">8.3.1. <code class="docutils literal"><span class="pre">Metrics_Essential_Complexity</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gnatcheck_rm/predefined_rules.html#metrics-cyclomatic-complexity">8.3.2. <code class="docutils literal"><span class="pre">Metrics_Cyclomatic_Complexity</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gnatcheck_rm/predefined_rules.html#metrics-lsloc">8.3.3. <code class="docutils literal"><span class="pre">Metrics_LSLOC</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="gnatcheck_rm/predefined_rules.html#spark-ada-rules">8.4. SPARK Ada Rules</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="gnatcheck_rm/predefined_rules.html#annotated-comments">8.4.1. <code class="docutils literal"><span class="pre">Annotated_Comments</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gnatcheck_rm/predefined_rules.html#boolean-relational-operators">8.4.2. <code class="docutils literal"><span class="pre">Boolean_Relational_Operators</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gnatcheck_rm/predefined_rules.html#expanded-loop-exit-names">8.4.3. <code class="docutils literal"><span class="pre">Expanded_Loop_Exit_Names</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gnatcheck_rm/predefined_rules.html#non-spark-attributes">8.4.4. <code class="docutils literal"><span class="pre">Non_SPARK_Attributes</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gnatcheck_rm/predefined_rules.html#non-tagged-derived-types">8.4.5. <code class="docutils literal"><span class="pre">Non_Tagged_Derived_Types</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gnatcheck_rm/predefined_rules.html#outer-loop-exits">8.4.6. <code class="docutils literal"><span class="pre">Outer_Loop_Exits</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gnatcheck_rm/predefined_rules.html#overloaded-operators">8.4.7. <code class="docutils literal"><span class="pre">Overloaded_Operators</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gnatcheck_rm/predefined_rules.html#slices">8.4.8. <code class="docutils literal"><span class="pre">Slices</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gnatcheck_rm/predefined_rules.html#universal-ranges">8.4.9. <code class="docutils literal"><span class="pre">Universal_Ranges</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="gnatcheck_rm/example_of_gnatcheck_usage.html">9. Example of <em>gnatcheck</em> Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gnatcheck_rm/list_of_rules.html">10. List of Rules</a></li>
+</ul>
+</div>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="share/gnu_free_documentation_license.html">GNU Free Documentation License</a></li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="gnatcheck_rm/about_this_manual.html" title="1. About This Manual"
+             >next</a> |</li>
+        <li><a href="#">GNATcheck Reference Manual 2017 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2008-2017, AdaCore.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3b2.
+    </div>
+  </body>
+</html>

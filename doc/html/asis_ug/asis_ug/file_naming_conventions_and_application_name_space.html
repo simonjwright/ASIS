@@ -1,0 +1,178 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>14. File Naming Conventions and Application Name Space &mdash; ASIS-for-GNAT User&#39;s Guide 2017 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2017',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="ASIS-for-GNAT User&#39;s Guide 2017 documentation" href="../asis_ug.html" />
+    <link rel="next" title="GNU Free Documentation License" href="../share/gnu_free_documentation_license.html" />
+    <link rel="prev" title="13. Exception Handling and Reporting Internal Bugs" href="exception_handling_and_reporting_internal_bugs.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../share/gnu_free_documentation_license.html" title="GNU Free Documentation License"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="exception_handling_and_reporting_internal_bugs.html" title="13. Exception Handling and Reporting Internal Bugs"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../asis_ug.html">ASIS-for-GNAT User&#39;s Guide 2017 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../asis_ug.html">
+              <img class="logo" src="../_static/adacore_transparent.png" alt="Logo"/>
+            </a></p>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="exception_handling_and_reporting_internal_bugs.html"
+                        title="previous chapter">13. Exception Handling and Reporting Internal Bugs</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../share/gnu_free_documentation_license.html"
+                        title="next chapter">GNU Free Documentation License</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/asis_ug/file_naming_conventions_and_application_name_space.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="file-naming-conventions-and-application-name-space">
+<span id="id1"></span><h1>14. File Naming Conventions and Application Name Space<a class="headerlink" href="#file-naming-conventions-and-application-name-space" title="Permalink to this headline">¶</a></h1>
+<p>Any ASIS application depends on the ASIS
+interface components; an ASIS application programmer thus needs to be alert to (and to avoid)
+clashes with the names of these components.</p>
+<span class="target" id="index-0"></span><span class="target" id="index-1"></span><span class="target" id="index-2"></span><p id="index-3">ASIS-for-GNAT includes the full specification of the ASIS Standard,
+and also adds the following children and grandchildren of the root <code class="docutils literal"><span class="pre">Asis</span></code> package:</p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">Asis.Extensions</span></code> hierarchy (the source file names start with
+<code class="file docutils literal"><span class="pre">asis-extensions</span></code>) defines some useful ASIS extensions, see ASIS
+Reference Manual for more details.</li>
+<li><code class="docutils literal"><span class="pre">Asis.Set_Get</span></code> (the source files <code class="file docutils literal"><span class="pre">asis-set_get.ad(b|s)</span></code>
+respectively) contains the access and update subprograms for the
+implementation of the main ASIS abstractions defined in <code class="docutils literal"><span class="pre">Asis</span></code>.</li>
+<li><code class="docutils literal"><span class="pre">Asis.Text.Set_Get</span></code> (the source files <code class="file docutils literal"><span class="pre">asis-text-set_get.ad(b|s)</span></code>
+respectively) contains the access and update subprograms for the
+implementation of the ASIS abstractions defined in <code class="docutils literal"><span class="pre">Asis.Text</span></code>;</li>
+</ul>
+<p id="index-4">All other ASIS-for-GNAT Ada implementation components belong to the
+hierarchy rooted at the package <code class="docutils literal"><span class="pre">A4G</span></code>
+(which comes from &#8216;ASIS-for-GNAT&#8217;).</p>
+<p>ASIS-for-GNAT also incorporates the following GNAT components as a part of the
+ASIS implementation:</p>
+<div class="highlight-ada"><div class="highlight"><pre><span class="n">Alloc</span>
+<span class="n">Atree</span>
+<span class="n">Casing</span>
+<span class="n">Csets</span>
+<span class="n">Debug</span>
+<span class="n">Einfo</span>
+<span class="n">Elists</span>
+<span class="n">Fname</span>
+<span class="n">Gnatvsn</span>
+<span class="n">Hostparm</span>
+<span class="n">Krunch</span>
+<span class="n">Lib</span>
+  <span class="n">Lib.List</span>
+  <span class="n">Lib.Sort</span>
+<span class="n">Namet</span>
+<span class="n">Nlists</span>
+<span class="n">Opt</span>
+<span class="n">Output</span>
+<span class="n">Repinfo</span>
+<span class="n">Scans</span>
+<span class="n">Sinfo</span>
+<span class="n">Sinput</span>
+<span class="n">Snames</span>
+<span class="n">Stand</span>
+<span class="n">Stringt</span>
+<span class="n">Table</span>
+<span class="n">Tree_In</span>
+<span class="n">Tree_Io</span>
+<span class="n">Types</span>
+<span class="n">Uintp</span>
+<span class="n">Uname</span>
+<span class="n">Urealp</span>
+<span class="n">Widechar</span>
+</pre></div>
+</div>
+<p>Therefore, in your ASIS application you should not add children at any level of the <code class="docutils literal"><span class="pre">Asis</span></code>
+or <code class="docutils literal"><span class="pre">A4G</span></code> hierarchies, and you should avoid using
+any name from the list of the GNAT component names above.</p>
+<p>All Ada source files making up the ASIS implementation for GNAT (including
+the GNAT components being a part of ASIS-for-GNAT) follow the GNAT file name
+conventions without any name &#8216;krunch&#8217;ing.</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../share/gnu_free_documentation_license.html" title="GNU Free Documentation License"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="exception_handling_and_reporting_internal_bugs.html" title="13. Exception Handling and Reporting Internal Bugs"
+             >previous</a> |</li>
+        <li><a href="../asis_ug.html">ASIS-for-GNAT User&#39;s Guide 2017 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2008-2017, AdaCore.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3b2.
+    </div>
+  </body>
+</html>

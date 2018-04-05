@@ -1,0 +1,66 @@
+Task 1:
+======
+The initial version of the style checker should check the following
+coding style rule:
+
+   All subprograms should have separate declarations;
+
+Task 2:
+======
+Add to the initial version of the style checker checks for the
+following rules:
+
+   All the generic instantiation should contain only named generic
+   associations;
+
+   Any declaration should define exactly one entity (that is,
+   multi-identifier declarations are not allowed);
+
+The diagnosis generated when a style rule violation is detected
+should contain the location of the syntax construct for which the
+violation is detected.
+
+The subdirectory 'task_1' contains three files:
+
+- actuals_for_traversing-pre_op.adb - actual Pre-Operation to
+    instantiate Traverse_Element, this file should replace the file
+    with the same name in ASIS Application Templates to get the
+    solution for Task 1.
+
+- style_checker_utilities.ads and style_checker_utilities.adb - the
+    package Style_Checker_Utilities, contains the procedure for
+    printing out the style violation diagnosis.
+
+The subdirectory 'task_2' contains one file:
+
+- actuals_for_traversing-pre_op.adb - actual Pre-Operation to
+    instantiate Traverse_Element, this file should replace the file
+    with the same name in ASIS Application Templates to get the
+    solution for Task 2, it is the extended version of the same
+    file from subdirectory 'task_1', and it contains the code for
+    checks to be implemented for Task 2. This file uses the same
+    version of Style_Checker_Utilities as for Task 1.
+
+
+Hints for Task 1
+----------------
+The only thing to do to solve Task 1 is to provide the real code for
+actual Pre-Operation for Traverse_Element. You do not need to do
+anything in Post-Operation: Pre-Operation will give you the natural
+left-to-right top-down sequence of style rule checking.
+
+The rule to check is about declarations, and, more specific, about
+only specific kinds of declarations - namely, about the subprogram
+body declarations. So, the first thing to do is to define the kind of
+the argument Element in Pre-Operation, and if it is a declaration
+Element, you have to define its subordinate declaration kind.
+
+Actually, you have to check, that each Element which represents a
+subprogram body has the corresponding separate subprogram
+declaration Element. To get the declaration for a body, you need the
+Asis.Declarations.Corresponding_Declaration query. See also the
+Element classification hierarchy defined in the Asis package and
+classification queries in the package Asis.Elements.
+
+Hints for Task 2 are given as comments in the solution for Task 1
+(file task_1/actuals_for_traversing-pre_op.adb).

@@ -1,0 +1,208 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>1. About This Guide &mdash; ASIS-for-GNAT User&#39;s Guide 2017 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2017',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="ASIS-for-GNAT User&#39;s Guide 2017 documentation" href="../asis_ug.html" />
+    <link rel="next" title="2. Introduction" href="introduction.html" />
+    <link rel="prev" title="ASIS-for-GNAT User’s Guide" href="../asis_ug.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="introduction.html" title="2. Introduction"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../asis_ug.html" title="ASIS-for-GNAT User’s Guide"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../asis_ug.html">ASIS-for-GNAT User&#39;s Guide 2017 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../asis_ug.html">
+              <img class="logo" src="../_static/adacore_transparent.png" alt="Logo"/>
+            </a></p>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../asis_ug.html"
+                        title="previous chapter">ASIS-for-GNAT User&#8217;s Guide</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="introduction.html"
+                        title="next chapter">2. Introduction</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/asis_ug/about_this_guide.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="about-this-guide">
+<span id="id1"></span><h1>1. About This Guide<a class="headerlink" href="#about-this-guide" title="Permalink to this headline">¶</a></h1>
+<p>This guide has two aims. The first one is to introduce you to the Ada Semantic
+Interface Specification (ASIS) and show you how you can build various useful
+tools on top of ASIS. The second is to describe the ASIS implementation
+for the GNAT Ada compiler.</p>
+<p><strong>What This Guide Contains</strong></p>
+<p>This guide contains the following chapters:</p>
+<ul class="simple">
+<li><a class="reference internal" href="introduction.html#introduction"><em>Introduction</em></a>, contains the general definition of ASIS and gives some
+examples of tools which can be built on top of ASIS.</li>
+<li><a class="reference internal" href="getting_started.html#getting-started"><em>Getting Started</em></a>, contains a short guided tour through the
+development and use of ASIS-for-GNAT-based tools.</li>
+<li><a class="reference internal" href="asis_overview.html#asis-overview"><em>ASIS Overview</em></a>, gives an overview of ASIS, allowing
+an ASIS newcomer to navigate through the ASIS definition
+(readers already familiar with ASIS can skip this section).</li>
+<li><a class="reference internal" href="asis_context.html#asis-context"><em>ASIS Context</em></a>, defines the ASIS <code class="docutils literal"><span class="pre">Context</span></code> concept in
+ASIS-for-GNAT and explains how to prepare a set of Ada
+components to be processed by an ASIS application.</li>
+<li><a class="reference internal" href="asis_application_templates.html#asis-application-templates"><em>ASIS Application Templates</em></a>, describes a set of Ada source components
+provided by the ASIS-for-GNAT distribution that may be used as a basis for
+developing ASIS applications.</li>
+<li><a class="reference internal" href="asis_tutorials.html#asis-tutorials"><em>ASIS Tutorials</em></a>, describes some examples included in
+the ASIS-for-GNAT distribution.</li>
+<li><a class="reference internal" href="how_to_build_efficient_asis_applications.html#how-to-build-efficient-asis-applications"><em>How to Build Efficient ASIS Applications</em></a>, describes how to
+deal with &#8216;tree swapping&#8217;, a potential performance issue with ASIS
+applications.</li>
+<li><a class="reference internal" href="processing_an_ada_library_by_an_asis-based_tool.html#processing-an-ada-library-by-an-asis-based-tool"><em>Processing an Ada Library by an ASIS-Based Tool</em></a>, shows how to use an
+ASIS tool on pre-compiled Ada libraries.</li>
+<li><a class="reference internal" href="compiling_binding_and_linking_applications_with_asis-for-gnat.html#compiling-binding-and-linking-applications-with-asis-for-gnat"><em>Compiling, Binding, and Linking Applications with ASIS-for-GNAT</em></a>, explains
+how to compile an ASIS application with ASIS-for-GNAT and how to create
+the resulting executable.</li>
+<li><a class="reference internal" href="asis-for-gnat_warnings.html#asis-for-gnat-warnings"><em>ASIS-for-GNAT Warnings</em></a>, describes the warnings generated by
+the ASIS implementation.</li>
+<li><a class="reference internal" href="exception_handling_and_reporting_internal_bugs.html#exception-handling-and-reporting-internal-bugs"><em>Exception Handling and Reporting Internal Bugs</em></a>, explains
+what happens if an ASIS implementation internal problem is detected during
+the processing of an ASIS or ASIS Extensions query</li>
+<li><a class="reference internal" href="file_naming_conventions_and_application_name_space.html#file-naming-conventions-and-application-name-space"><em>File Naming Conventions and Application Name Space</em></a>, explains
+which names can and cannot be used as names of ASIS application
+components.</li>
+</ul>
+<p><strong>What You Should Know Before Reading This Guide</strong></p>
+<p>This User&#8217;s Guide assumes that you are familiar with Ada language, as
+described in the International Standard ANSI/ISO/IEC-8652:2012(E) (hereafter
+referred to as the Ada Reference Manual),
+and that you have some basic experience in Ada programming with GNAT.</p>
+<p>This User&#8217;s Guide also assumes that you have ASIS-for-GNAT properly installed
+for your GNAT compiler, and that you are familiar with the structure of the
+ASIS-for-GNAT distribution (if not, see the top ASIS README file).</p>
+<p>This guide does not require previous knowledge of or experience with ASIS itself.</p>
+<p><strong>Related Information</strong></p>
+<p>The following sources contain useful supplemental information:</p>
+<ul class="simple">
+<li>GNAT User&#8217;s Guide, for information about the GNAT environment</li>
+<li>ASIS-for-GNAT Installation Guide</li>
+<li>The ASIS-for-GNAT Reference Manual</li>
+<li>The ASIS 95 definition, available as ISO/IEC International Standard
+15291.</li>
+<li>The Web site for the ASIS Working Group:
+<a class="reference external" href="http://www.acm.org/sigada/wg/asiswg">http://www.acm.org/sigada/wg/asiswg</a></li>
+</ul>
+<p><strong>Conventions</strong></p>
+<p>Following are examples of the typographical and graphic conventions used
+in this guide:</p>
+<ul>
+<li><p class="first"><code class="docutils literal"><span class="pre">Functions</span></code>, <code class="docutils literal"><span class="pre">utility</span> <span class="pre">program</span> <span class="pre">names</span></code>, <code class="docutils literal"><span class="pre">standard</span> <span class="pre">names</span></code>,
+and <code class="docutils literal"><span class="pre">classes</span></code>.</p>
+</li>
+<li><p class="first"><code class="docutils literal"><span class="pre">Option</span> <span class="pre">flags</span></code></p>
+</li>
+<li><p class="first"><code class="file docutils literal"><span class="pre">File</span> <span class="pre">Names</span></code>, <code class="file docutils literal"><span class="pre">button</span> <span class="pre">names</span></code>, and <code class="file docutils literal"><span class="pre">field</span> <span class="pre">names</span></code>.</p>
+</li>
+<li><p class="first"><cite>Variables</cite>.</p>
+</li>
+<li><p class="first"><em>Emphasis</em>.</p>
+</li>
+<li><p class="first">[optional information or parameters]</p>
+</li>
+<li><p class="first">Examples are described by text</p>
+<div class="highlight-ada"><div class="highlight"><pre><span class="kr">and</span><span class="p"> </span><span class="kr">then</span><span class="p"> </span><span class="n">shown</span> <span class="n">this</span> <span class="n">way.</span>
+</pre></div>
+</div>
+</li>
+</ul>
+<p>Commands that are entered by the user are preceded in this manual by the
+character &#8216;$&#8217; (dollar sign) followed by space. If your system
+uses this sequence as a prompt, then the commands will appear exactly as
+you see them in the manual. If your system uses some other prompt, then
+the command will appear with the <code class="docutils literal"><span class="pre">$</span></code> replaced by whatever prompt
+character you are using.</p>
+<p>Full file names are shown with the &#8216;<code class="docutils literal"><span class="pre">/</span></code>&#8216; character
+as the directory separator; e.g., <code class="file docutils literal"><span class="pre">parent-dir/subdir/myfile.adb</span></code>.
+If you are using GNAT on a Windows platform, please note that
+the &#8216;<code class="docutils literal"><span class="pre">\</span></code>&#8216; character should be used instead.</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="introduction.html" title="2. Introduction"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../asis_ug.html" title="ASIS-for-GNAT User’s Guide"
+             >previous</a> |</li>
+        <li><a href="../asis_ug.html">ASIS-for-GNAT User&#39;s Guide 2017 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2008-2017, AdaCore.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3b2.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,244 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>5. Debugging Information &mdash; ASIS-for-GNAT Reference Manual 2017 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2017',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="ASIS-for-GNAT Reference Manual 2017 documentation" href="../asis_rm.html" />
+    <link rel="next" title="GNU Free Documentation License" href="../share/gnu_free_documentation_license.html" />
+    <link rel="prev" title="4. Implementation-Specific Features and Implementation Permissions" href="implementation-specific_features_and_implementation_permissions.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../share/gnu_free_documentation_license.html" title="GNU Free Documentation License"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="implementation-specific_features_and_implementation_permissions.html" title="4. Implementation-Specific Features and Implementation Permissions"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../asis_rm.html">ASIS-for-GNAT Reference Manual 2017 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../asis_rm.html">
+              <img class="logo" src="../_static/adacore_transparent.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../asis_rm.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">5. Debugging Information</a><ul>
+<li><a class="reference internal" href="#interpreting-debug-images">5.1. Interpreting Debug Images</a></li>
+<li><a class="reference internal" href="#asis-debug-flags">5.2. ASIS Debug Flags</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="implementation-specific_features_and_implementation_permissions.html"
+                        title="previous chapter">4. Implementation-Specific Features and Implementation Permissions</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../share/gnu_free_documentation_license.html"
+                        title="next chapter">GNU Free Documentation License</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/asis_rm/debugging_information.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="debugging-information">
+<span id="id1"></span><h1>5. Debugging Information<a class="headerlink" href="#debugging-information" title="Permalink to this headline">¶</a></h1>
+<span class="target" id="index-0"></span><p id="index-1">There are two kinds of the debugging information available in ASIS-for-GNAT
+&#8212; debug images returned by the ASIS query <code class="docutils literal"><span class="pre">Debug_Image</span></code>
+(for <code class="docutils literal"><span class="pre">Context</span></code>s,
+<code class="docutils literal"><span class="pre">Compilation_Unit</span></code>s and <code class="docutils literal"><span class="pre">Element</span></code>s); and debug output generated by
+ASIS queries when the corresponding implementation debug flag is set ON during
+ASIS initialization (see <a class="reference internal" href="implementation-specific_features_and_implementation_permissions.html#parameters-of-asis-implementation-initialize"><em>Parameters of Asis.Implementation.Initialize</em></a>).</p>
+<div class="section" id="interpreting-debug-images">
+<span id="id2"></span><h2>5.1. Interpreting Debug Images<a class="headerlink" href="#interpreting-debug-images" title="Permalink to this headline">¶</a></h2>
+<p id="index-2">It is straightforward to interpret the debug images generated for the main ASIS
+abstractions, because most of the information directly
+corresponds to ASIS concepts. The following details of debug images are
+implementation specific.</p>
+<ul>
+<li><p class="first"><code class="docutils literal"><span class="pre">Context</span></code></p>
+<ul>
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">Context</span></code> Id</dt>
+<dd><p class="first last">This is the internal <code class="docutils literal"><span class="pre">Context</span></code> Id used in the
+implementation data structures. This Id is assigned to a
+<code class="docutils literal"><span class="pre">Context</span></code> when it is associated for the first time, and it
+remains unchanged and unique until ASIS is finalized.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>All tree files</dt>
+<dd><p class="first last">The number of tree files making up the given <code class="docutils literal"><span class="pre">Context</span></code>.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</li>
+<li><p class="first"><code class="docutils literal"><span class="pre">Compilation_Unit</span></code></p>
+<ul>
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">Compilation_Unit</span></code> Id</dt>
+<dd><p class="first last">This is the internal <code class="docutils literal"><span class="pre">Compilation_Unit</span></code> Id used in the
+implementation data structures. This Id remains
+unchanged and unique until the unit&#8217;s enclosed <code class="docutils literal"><span class="pre">Context</span></code> is closed.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>Is consistent</dt>
+<dd><p class="first last"><code class="docutils literal"><span class="pre">True</span></code> if the same version of the unit&#8217;s source was used for
+all the tree files making up the enclosed unit&#8217;s context,
+and <code class="docutils literal"><span class="pre">False</span></code> otherwise</p>
+</dd>
+</dl>
+</li>
+</ul>
+</li>
+<li><p class="first"><code class="docutils literal"><span class="pre">Element</span></code></p>
+<ul>
+<li><dl class="first docutils">
+<dt>Node, R_Node, Node_Field_1</dt>
+<dd><p class="first last">Tree nodes on which the internal representation of a given <code class="docutils literal"><span class="pre">Element</span></code>
+is based. They are meaningful only in the tree file indicated in
+the <code class="docutils literal"><span class="pre">Enclosing_Tree</span></code> field of the debug image</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>Special Case</dt>
+<dd><p class="first last">Implementation-specific indication of the cases when the
+<code class="docutils literal"><span class="pre">Element</span></code> needs some special processing.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>Obtained from the tree</dt>
+<dd><p class="first last">The Id and the name of the tree file from which
+the tree-specific fields of the internal representation of
+given <code class="docutils literal"><span class="pre">Element</span></code> were obtained</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">Rel_Sloc</span></code></dt>
+<dd><p class="first last">Indicates the (relative) position of the source text of the
+<code class="docutils literal"><span class="pre">Element</span></code>, counting from the beginning of the source of its
+enclosing compilation unit. Applies to implicit
+<code class="docutils literal"><span class="pre">Element</span></code>s also.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="asis-debug-flags">
+<span id="id3"></span><h2>5.2. ASIS Debug Flags<a class="headerlink" href="#asis-debug-flags" title="Permalink to this headline">¶</a></h2>
+<p id="index-3">ASIS provides several internal debug flags, which are described in
+<code class="file docutils literal"><span class="pre">a_debug.adb</span></code>. When one or more of these flags is set,
+useful internal debugging information is directed to <code class="docutils literal"><span class="pre">Standard_Output</span></code>.
+Although this information is not always user-oriented, you
+may find the following debug flags helpful when you are developing an ASIS
+application:</p>
+<dl class="docutils">
+<dt><em>-dc</em></dt>
+<dd>Outputs the content of the internal data structures for a <code class="docutils literal"><span class="pre">Context</span></code>, when
+the <code class="docutils literal"><span class="pre">Context</span></code> is closed and dissociated. By analyzing this information,
+you may map other debug information onto unit and tree Ids.</dd>
+<dt><em>-di</em></dt>
+<dd>Turns off including the location of an <code class="docutils literal"><span class="pre">Element</span></code> into the result
+generated by <code class="docutils literal"><span class="pre">Debug_Image</span></code>. This may be useful if an ASIS program crashes
+because of some problem with ASIS structural queries (structural
+queries are used by <code class="docutils literal"><span class="pre">Element</span></code>&#8216;s <code class="docutils literal"><span class="pre">Debug_Image</span></code> query to compute the
+source location of the argument).</dd>
+<dt><em>-do</em></dt>
+<dd>When the <code class="docutils literal"><span class="pre">Context</span></code> is opened, lists the tree files being processed, and
+the ones selected to represent a given <code class="docutils literal"><span class="pre">Context</span></code></dd>
+<dt><em>-dt</em></dt>
+<dd>Outputs a message whenever a tree file is read in. This
+information may be useful for analyzing and reducing the tree swapping
+profile
+of your application.<span class="target" id="index-4"></span></dd>
+</dl>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../share/gnu_free_documentation_license.html" title="GNU Free Documentation License"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="implementation-specific_features_and_implementation_permissions.html" title="4. Implementation-Specific Features and Implementation Permissions"
+             >previous</a> |</li>
+        <li><a href="../asis_rm.html">ASIS-for-GNAT Reference Manual 2017 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2008-2017, AdaCore.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3b2.
+    </div>
+  </body>
+</html>

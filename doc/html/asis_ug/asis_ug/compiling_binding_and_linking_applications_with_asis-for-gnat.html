@@ -1,0 +1,124 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>11. Compiling, Binding, and Linking Applications with ASIS-for-GNAT &mdash; ASIS-for-GNAT User&#39;s Guide 2017 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2017',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="ASIS-for-GNAT User&#39;s Guide 2017 documentation" href="../asis_ug.html" />
+    <link rel="next" title="12. ASIS-for-GNAT Warnings" href="asis-for-gnat_warnings.html" />
+    <link rel="prev" title="10. Processing an Ada Library by an ASIS-Based Tool" href="processing_an_ada_library_by_an_asis-based_tool.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="asis-for-gnat_warnings.html" title="12. ASIS-for-GNAT Warnings"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="processing_an_ada_library_by_an_asis-based_tool.html" title="10. Processing an Ada Library by an ASIS-Based Tool"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../asis_ug.html">ASIS-for-GNAT User&#39;s Guide 2017 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../asis_ug.html">
+              <img class="logo" src="../_static/adacore_transparent.png" alt="Logo"/>
+            </a></p>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="processing_an_ada_library_by_an_asis-based_tool.html"
+                        title="previous chapter">10. Processing an Ada Library by an ASIS-Based Tool</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="asis-for-gnat_warnings.html"
+                        title="next chapter">12. ASIS-for-GNAT Warnings</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/asis_ug/compiling_binding_and_linking_applications_with_asis-for-gnat.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="compiling-binding-and-linking-applications-with-asis-for-gnat">
+<span id="id1"></span><h1>11. Compiling, Binding, and Linking Applications with ASIS-for-GNAT<a class="headerlink" href="#compiling-binding-and-linking-applications-with-asis-for-gnat" title="Permalink to this headline">¶</a></h1>
+<p id="index-0">The recommended way of building ASIS applications is to define for an
+application a project file that depends on the main ASIS project file
+<code class="docutils literal"><span class="pre">asis.gpr</span></code>. All you have to do is to add a with clause</p>
+<div class="highlight-ada"><div class="highlight"><pre><span class="kr">with</span><span class="p"> </span><span class="s">&quot;asis&quot;</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>to the application project file. After that you can build an executable
+for an application using <em>gprbuild</em> in the usual way.</p>
+<span class="target" id="index-1"></span></div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="asis-for-gnat_warnings.html" title="12. ASIS-for-GNAT Warnings"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="processing_an_ada_library_by_an_asis-based_tool.html" title="10. Processing an Ada Library by an ASIS-Based Tool"
+             >previous</a> |</li>
+        <li><a href="../asis_ug.html">ASIS-for-GNAT User&#39;s Guide 2017 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2008-2017, AdaCore.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3b2.
+    </div>
+  </body>
+</html>

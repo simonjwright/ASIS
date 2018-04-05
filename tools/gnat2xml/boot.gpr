@@ -1,0 +1,27 @@
+--  Project file used by Makefile to build the stage 2 version
+
+with "xmlada.gpr";
+with "../../../../../asis.gpr";
+--  This gets copied into .../ASIS/tools/gnat2xml/stage/1/generated_ada,
+--  and we're referring to .../ASIS/asis.gpr.
+with "../../../../../common.gpr";
+
+project Boot extends "../../../../tool_utils/tool_utils.gpr" is
+   --  And here we're referring to .../ASIS/tools/tool_utils/tool_utils.gpr.
+
+   for Source_Dirs use (".");
+   for Object_Dir use "obj";
+   for Exec_Dir use ".";
+   for Main use ("gnat2xml-gnat2xsd.adb",
+                 "gnat2xml-driver.adb",
+                 "gnat2xml-xml2gnat.adb",
+                 "gnat2xml-strip_comments.adb");
+
+   package Builder is
+      for Default_Switches ("ada") use Common.Builder'Default_Switches ("ada");
+      for Executable ("gnat2xml-gnat2xsd.adb") use "gnat2xsd";
+      for Executable ("gnat2xml-driver.adb") use "gnat2xml";
+      for Executable ("gnat2xml-xml2gnat.adb") use "xml2gnat";
+   end Builder;
+
+end Boot;

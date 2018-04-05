@@ -1,0 +1,419 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>6. ASIS Interpreter asistant &mdash; ASIS-for-GNAT User&#39;s Guide 2017 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2017',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="ASIS-for-GNAT User&#39;s Guide 2017 documentation" href="../asis_ug.html" />
+    <link rel="next" title="7. ASIS Application Templates" href="asis_application_templates.html" />
+    <link rel="prev" title="5. ASIS Context" href="asis_context.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="asis_application_templates.html" title="7. ASIS Application Templates"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="asis_context.html" title="5. ASIS Context"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../asis_ug.html">ASIS-for-GNAT User&#39;s Guide 2017 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../asis_ug.html">
+              <img class="logo" src="../_static/adacore_transparent.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../asis_ug.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">6. ASIS Interpreter <code class="docutils literal"><span class="pre">asistant</span></code></a><ul>
+<li><a class="reference internal" href="#asistant-introduction">6.1. <code class="docutils literal"><span class="pre">asistant</span></code> Introduction</a></li>
+<li><a class="reference internal" href="#asistant-commands">6.2. <code class="docutils literal"><span class="pre">asistant</span></code> commands</a></li>
+<li><a class="reference internal" href="#asistant-variables">6.3. <code class="docutils literal"><span class="pre">asistant</span></code> variables</a></li>
+<li><a class="reference internal" href="#browsing-an-asis-tree">6.4. Browsing an ASIS tree</a></li>
+<li><a class="reference internal" href="#example">6.5. Example</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="asis_context.html"
+                        title="previous chapter">5. ASIS <code class="docutils literal"><span class="pre">Context</span></code></a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="asis_application_templates.html"
+                        title="next chapter">7. ASIS Application Templates</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/asis_ug/asis_interpreter_asistant.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="asis-interpreter-asistant">
+<h1>6. ASIS Interpreter <code class="docutils literal"><span class="pre">asistant</span></code><a class="headerlink" href="#asis-interpreter-asistant" title="Permalink to this headline">¶</a></h1>
+<span class="target" id="index-0"></span><p id="index-1">This chapter describes <code class="docutils literal"><span class="pre">asistant</span></code>, an interactive interface to ASIS queries.</p>
+<div class="section" id="asistant-introduction">
+<h2>6.1. <code class="docutils literal"><span class="pre">asistant</span></code> Introduction<a class="headerlink" href="#asistant-introduction" title="Permalink to this headline">¶</a></h2>
+<p>The <code class="docutils literal"><span class="pre">asistant</span></code> tool allows you
+to use ASIS without building your own ASIS applications. It
+provides a simple command language that allows you to define variables of ASIS
+types and to assign them values by calling ASIS queries.</p>
+<p>This tool may be very useful while you are learning ASIS:
+it lets you try different ASIS queries and see the results immediately.
+It does not crash when there is an error in calling an ASIS query
+(such as passing an inappropriate <code class="docutils literal"><span class="pre">Element</span></code>); instead <code class="docutils literal"><span class="pre">asistant</span></code> reports an
+error and lets you try again.</p>
+<p>You can also use <code class="docutils literal"><span class="pre">asistant</span></code> as a debug and &#8216;ASIS visualization&#8217; tool in
+an ASIS application project.  If you have problems
+finding out which query should be used in a given situation, or why a given
+query does not work correctly with a given piece of Ada code, you may use
+<code class="docutils literal"><span class="pre">asistant</span></code> to reconstruct the situation that causes the problems,
+and then experiment with ASIS queries.</p>
+<p id="index-2">Though primarily an interactive tool, <code class="docutils literal"><span class="pre">asistant</span></code> also can interpret
+sequences of commands written to a file (called a &#8216;script file&#8217;
+below). The <code class="docutils literal"><span class="pre">asistant</span></code> tool can also store in a file the log of an interactive
+session that can then be reused as a script file.</p>
+<p>The full documentation of <code class="docutils literal"><span class="pre">asistant</span></code> may be found in the
+<code class="docutils literal"><span class="pre">asistant</span></code> Users&#8217; Guide (file <code class="file docutils literal"><span class="pre">asistant.ug</span></code> in the <code class="docutils literal"><span class="pre">asistant</span></code> source directory).
+Here is a brief overview of <code class="docutils literal"><span class="pre">asistant</span></code> usage.</p>
+<p id="index-3">The executable for <code class="docutils literal"><span class="pre">asistant</span></code> is created in the <code class="docutils literal"><span class="pre">asistant</span></code>
+source directory as a part of the standard procedure of installing
+ASIS-for-GNAT as an Ada library (or it is placed in the <code class="file docutils literal"><span class="pre">GNATPRO/bin</span></code>
+directory when installing ASIS from the binary distribution). Put this
+executable somewhere on your path (unless you have
+installed ASIS from the binary distribution, in which case the executable for
+<code class="docutils literal"><span class="pre">asistant</span></code> has been added to other GNAT executables).
+Then type
+&#8216;<code class="docutils literal"><span class="pre">asistant</span></code>&#8216; to call <code class="docutils literal"><span class="pre">asistant</span></code> in an interactive mode. As a result,
+the program will output brief information about itself and then the
+<code class="docutils literal"><span class="pre">asistant</span></code> prompt &#8216;<code class="docutils literal"><span class="pre">&gt;</span></code>&#8216; will appear:</p>
+<div class="highlight-python"><div class="highlight"><pre>ASIStant - ASIS Tester And iNTerpreter, v1.2
+(C) 1997-2002, Free Software Foundation, Inc.
+  Asis Version: ASIS 2.0.R
+
+&gt;
+</pre></div>
+</div>
+<p>Now you can input <code class="docutils literal"><span class="pre">asistant</span></code> commands (<code class="docutils literal"><span class="pre">asistant</span></code> supports
+in its command language the same form of comments as Ada, and names in
+<code class="docutils literal"><span class="pre">asistant</span></code> are not case-sensitive):</p>
+<div class="highlight-ada"><div class="highlight"><pre><span class="o">&gt;</span><span class="n">Initialize</span> <span class="o">(</span><span class="s">&quot;&quot;</span><span class="o">)</span> <span class="c">-- the ASIS Initialize query is called with an</span>
+                 <span class="c">-- empty string as a parameter</span>
+
+<span class="o">&gt;</span><span class="n">set</span> <span class="o">(</span><span class="n">Cont</span><span class="o">)</span> <span class="c">--  the non-initialized variable Cont of the ASIS</span>
+            <span class="c">--  Context type is created</span>
+
+<span class="o">&gt;</span><span class="n">Associate</span> <span class="o">(</span><span class="n">Cont</span><span class="p">,</span> <span class="s">&quot;&quot;</span><span class="p">,</span> <span class="s">&quot;&quot;</span><span class="o">)</span> <span class="c">--  the ASIS Associate query with two empty</span>
+                          <span class="c">--  strings as parameters is called for Cont</span>
+
+<span class="o">&gt;</span><span class="n">Open</span> <span class="o">(</span><span class="n">Cont</span><span class="o">)</span>  <span class="c">--  the ASIS Open query is called for Cont</span>
+
+<span class="o">&gt;</span><span class="n">set</span> <span class="o">(</span><span class="n">C_U</span><span class="p">,</span> <span class="n">Compilation_Unit_Body</span> <span class="o">(</span><span class="s">&quot;Test&quot;</span><span class="p">,</span> <span class="n">Cont</span><span class="o">))</span> <span class="c">-- the variable C_U</span>
+  <span class="c">--  of the ASIS Compilation_Unit type is created and initialized as</span>
+  <span class="c">--  the result of the call to the ASIS query Compilation_Unit_Body.</span>
+  <span class="c">--  As a result, C_U will represent a compilation unit named &quot;Test&quot;</span>
+  <span class="c">--  and contained in the ASIS Context named Cont</span>
+
+<span class="o">&gt;</span><span class="n">set</span> <span class="o">(</span><span class="n">Unit</span><span class="p">,</span> <span class="n">Unit_Declaration</span> <span class="o">(</span><span class="n">C_U</span><span class="o">))</span>  <span class="c">--  the variable Unit of the ASIS</span>
+  <span class="c">--  Element type is created and initialized as the result of calling</span>
+  <span class="c">--  the ASIS Unit_Declaration query</span>
+
+<span class="o">&gt;</span><span class="n">print</span> <span class="o">(</span><span class="n">Unit</span><span class="o">)</span> <span class="c">--  as a result of this command, some information about</span>
+              <span class="c">--  the current value of Unit will be printed (a user can set</span>
+              <span class="c">--  the desired level of detail of this information):</span>
+
+<span class="n">A_PROCEDURE_BODY_DECLARATION</span> <span class="kr">at</span><span class="p"> </span><span class="o">(</span> <span class="mi">1</span> <span class="o">:</span> <span class="mi">1</span> <span class="o">)-(</span> <span class="mi">9</span> <span class="o">:</span> <span class="mi">9</span> <span class="o">)</span>
+
+<span class="c">--  suppose now, that we do make an error - we call an ASIS query for</span>
+<span class="c">--  an inappropriate element:</span>
+
+<span class="o">&gt;</span><span class="n">set</span> <span class="o">(</span><span class="n">Elem</span><span class="p">,</span> <span class="n">Assignment_Expression</span> <span class="o">(</span><span class="n">Unit</span><span class="o">))</span>
+
+<span class="c">--  ASIS will raise an exception, asistant will output the ASIS debug</span>
+<span class="c">--  information:</span>
+
+<span class="kr">Exception</span><span class="p"> </span><span class="kr">is</span><span class="p"> </span><span class="n">raised</span> <span class="n">by</span> <span class="n">ASIS</span> <span class="n">query</span> <span class="n">ASSIGNMENT_EXPRESSION.</span>
+<span class="n">Status</span> <span class="o">:</span> <span class="n">VALUE_ERROR</span>
+<span class="n">Diagnosis</span> <span class="o">:</span>
+<span class="n">Inappropriate</span> <span class="n">Element</span> <span class="n">Kind</span> <span class="kr">in</span><span class="p"> </span><span class="n">Asis.Statements.Assignment_Expression</span>
+
+<span class="c">--  it does not change any of the existing variables and it prompts</span>
+<span class="c">--  a user again:</span>
+
+<span class="o">&gt;</span> <span class="o">...</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="asistant-commands">
+<h2>6.2. <code class="docutils literal"><span class="pre">asistant</span></code> commands<a class="headerlink" href="#asistant-commands" title="Permalink to this headline">¶</a></h2>
+<p id="index-4">The list of <code class="docutils literal"><span class="pre">asistant</span></code> commands given in this section is incomplete;
+its purpose is only to give a general idea of <code class="docutils literal"><span class="pre">asistant</span></code>&#8216;s capabilities.
+Standard metalanguage is assumed (i.e., &#8216;[<em>construct</em>]&#8217;
+denotes an optional instance of &#8216;<em>construct</em>&#8216;).</p>
+<p><em>Help [(name)]</em></p>
+<blockquote>
+<div><p id="index-5">Outputs the profile of the ASIS query &#8216;<code class="docutils literal"><span class="pre">name</span></code>&#8216;; when called with no argument,
+generates general <code class="docutils literal"><span class="pre">asistant</span></code> help information.</p>
+</div></blockquote>
+<p><em>Set (name)</em></p>
+<blockquote>
+<div><p id="index-6">Creates a (non-initialized) variable &#8216;<code class="docutils literal"><span class="pre">name</span></code>&#8216; of the ASIS <code class="docutils literal"><span class="pre">Context</span></code> type.</p>
+</div></blockquote>
+<dl class="docutils">
+<dt><em>Set (name, expr)</em></dt>
+<dd>Evaluates the expression &#8216;<code class="docutils literal"><span class="pre">expr</span></code>&#8216; (it may be any legal <code class="docutils literal"><span class="pre">asistant</span></code>
+expression; a call to some ASIS query is the most common case in practice)
+and creates the variable &#8216;<code class="docutils literal"><span class="pre">name</span></code>&#8216; of the type and with the value of
+&#8216;<code class="docutils literal"><span class="pre">expr</span></code>&#8216;.</dd>
+</dl>
+<p><em>Print (expr)</em></p>
+<blockquote>
+<div><p id="index-7">Evaluates the expression &#8216;<code class="docutils literal"><span class="pre">expr</span></code>&#8216; and outputs its value (some information may be
+omitted depending on the level specified by the <em>PrintDetail</em> command).</p>
+</div></blockquote>
+<p><em>Run</em> (<code class="file docutils literal"><span class="pre">filename</span></code>)</p>
+<blockquote>
+<div><p id="index-8">Launches the script from a file <code class="file docutils literal"><span class="pre">filename</span></code>, reading further commands from it.</p>
+</div></blockquote>
+<p id="index-9"><em>Pause</em></p>
+<blockquote>
+<div><p id="index-10">Pauses the current script and turns <code class="docutils literal"><span class="pre">asistant</span></code> into interactive mode.</p>
+</div></blockquote>
+<dl class="docutils">
+<dt><em>Run</em></dt>
+<dd>Resumes a previously <code class="docutils literal"><span class="pre">Pause</span></code>d script.</dd>
+</dl>
+<p><em>Browse</em></p>
+<blockquote>
+<div><p id="index-11">Switches <code class="docutils literal"><span class="pre">asistant</span></code> into step-by-step ASIS tree browsing.</p>
+</div></blockquote>
+<p><em>Log</em> (<code class="file docutils literal"><span class="pre">filename</span></code>)</p>
+<blockquote>
+<div><p id="index-12">Opens the file <code class="file docutils literal"><span class="pre">filename</span></code> for session logging.</p>
+</div></blockquote>
+<dl class="docutils">
+<dt><em>Log</em></dt>
+<dd>Closes the current log file.</dd>
+</dl>
+<p><em>PrintDetail</em></p>
+<blockquote>
+<div><p id="index-13">Toggles whether the <em>Print</em> command outputs additional information.</p>
+</div></blockquote>
+<p><em>Quit [(exit-status)]</em></p>
+<blockquote>
+<div><p id="index-14">Quits <code class="docutils literal"><span class="pre">asistant</span></code>.</p>
+</div></blockquote>
+</div>
+<div class="section" id="asistant-variables">
+<h2>6.3. <code class="docutils literal"><span class="pre">asistant</span></code> variables<a class="headerlink" href="#asistant-variables" title="Permalink to this headline">¶</a></h2>
+<p id="index-15">The <code class="docutils literal"><span class="pre">asistant</span></code> tool lets you define variables with Ada-style (simple) names.
+Variables can be of
+any ASIS type and of conventional <code class="docutils literal"><span class="pre">Integer</span></code>, <code class="docutils literal"><span class="pre">Boolean</span></code> and <code class="docutils literal"><span class="pre">String</span></code> type.
+All the variables are created and assigned dynamically by the <code class="docutils literal"><span class="pre">Set</span></code>
+command; there are no predefined variables.</p>
+<p>There is no type checking in <code class="docutils literal"><span class="pre">asistant</span></code>: each call to a <code class="docutils literal"><span class="pre">Set</span></code>
+command may be considered as creating the first argument from scratch and
+initializing it by the value provided by the second argument.</p>
+</div>
+<div class="section" id="browsing-an-asis-tree">
+<h2>6.4. Browsing an ASIS tree<a class="headerlink" href="#browsing-an-asis-tree" title="Permalink to this headline">¶</a></h2>
+<p id="index-16">You perform ASIS tree browsing by invoking the <code class="docutils literal"><span class="pre">asistant</span></code> service function
+<code class="docutils literal"><span class="pre">Browse</span></code>. This will disable the <code class="docutils literal"><span class="pre">asistant</span></code> command interpreter
+and activate the Browser command interpreter. The Browser <code class="docutils literal"><span class="pre">Q</span></code> command
+switches back into the <code class="docutils literal"><span class="pre">asistant</span></code> environment by enabling the <code class="docutils literal"><span class="pre">asistant</span></code>
+command interpreter and disabling the Browser interpreter.</p>
+<p><code class="docutils literal"><span class="pre">Browse</span></code> has a single parameter of <code class="docutils literal"><span class="pre">Element</span></code> type, which establishes
+where the ASIS tree browsing will begin.
+<code class="docutils literal"><span class="pre">Browse</span></code> returns a
+result of type <code class="docutils literal"><span class="pre">Element</span></code>, namely the <code class="docutils literal"><span class="pre">Element</span></code> at which the tree browsing was
+stopped. Thus, if you type:</p>
+<div class="highlight-ada"><div class="highlight"><pre><span class="o">&gt;</span> <span class="n">set</span> <span class="o">(</span><span class="n">e0</span><span class="p">,</span> <span class="n">Browse</span> <span class="o">(</span><span class="n">e1</span><span class="o">))</span>
+</pre></div>
+</div>
+<p>you will start ASIS tree browsing from <code class="docutils literal"><span class="pre">e1</span></code>; when you finish
+browsing, <code class="docutils literal"><span class="pre">e0</span></code> will represent the last <code class="docutils literal"><span class="pre">Element</span></code> visited during the
+browsing.</p>
+<p>If you type:</p>
+<div class="highlight-ada"><div class="highlight"><pre><span class="o">&gt;</span> <span class="n">Browse</span> <span class="o">(</span><span class="n">e1</span><span class="o">)</span>
+</pre></div>
+</div>
+<p>you will be able to browse the ASIS tree, but the last <code class="docutils literal"><span class="pre">Element</span></code> of the
+browsing will be discarded.</p>
+<p>Browser displays the ASIS <code class="docutils literal"><span class="pre">Element</span></code> it currently points at and expects one of
+the following commands:</p>
+<dl class="docutils">
+<dt><em>U</em></dt>
+<dd>Go one step up the ASIS tree (equivalent to calling the ASIS
+<code class="docutils literal"><span class="pre">Enclosing_Element</span></code> query);</dd>
+<dt><em>D</em></dt>
+<dd>Go one step down the ASIS tree, to the left-most component of the current <code class="docutils literal"><span class="pre">Element</span></code></dd>
+<dt><em>N</em></dt>
+<dd>Go to the right sibling (to the next <code class="docutils literal"><span class="pre">Element</span></code> in the ASIS tree hierarchy)</dd>
+<dt><em>P</em></dt>
+<dd>Go to the left sibling (to the previous <code class="docutils literal"><span class="pre">Element</span></code> in the ASIS tree hierarchy)</dd>
+<dt><em>\k1k2</em></dt>
+<dd>where <code class="docutils literal"><span class="pre">k1</span></code> is either <code class="docutils literal"><span class="pre">D</span></code> or <code class="docutils literal"><span class="pre">d</span></code>, and
+<code class="docutils literal"><span class="pre">k2</span></code> is either <code class="docutils literal"><span class="pre">T</span></code> or <code class="docutils literal"><span class="pre">t</span></code>.
+Change the form of displaying the current <code class="docutils literal"><span class="pre">Element</span></code>: <code class="docutils literal"><span class="pre">D</span></code> turns ON displaying the
+debug image, <code class="docutils literal"><span class="pre">d</span></code> turns it OFF. <code class="docutils literal"><span class="pre">T</span></code> turns ON displaying the text image, <code class="docutils literal"><span class="pre">t</span></code>
+turns it OFF.</dd>
+<dt><em>&lt;SPACE&gt;&lt;query&gt;</em></dt>
+<dd>Call the &lt;query&gt; for the current <code class="docutils literal"><span class="pre">Element</span></code>.</dd>
+<dt><em>Q</em></dt>
+<dd>Go back to the <code class="docutils literal"><span class="pre">asistant</span></code> environment; the Browser command interpreter is
+disabled and the <code class="docutils literal"><span class="pre">asistant</span></code> command interpreter is enabled with the
+current <code class="docutils literal"><span class="pre">Element</span></code> returned as a result of the call to <code class="docutils literal"><span class="pre">Browse</span></code>.</dd>
+</dl>
+<p>Browser immediately interprets the keystroke and displays the new current
+<code class="docutils literal"><span class="pre">Element</span></code>. If the message <code class="docutils literal"><span class="pre">&quot;Cannot</span> <span class="pre">go</span> <span class="pre">in</span> <span class="pre">this</span> <span class="pre">direction.&quot;</span></code> appears, this
+means that traversal in this direction from current node is impossible (that
+is, the current node is either a terminal <code class="docutils literal"><span class="pre">Element</span></code> and it is not possible to go
+down, or it is the leftmost or the rightmost component of some <code class="docutils literal"><span class="pre">Element</span></code>, and
+it is not possible to go left or right, or it is the top <code class="docutils literal"><span class="pre">Element</span></code> in its
+enclosing unit structure and it is not possible to go up).</p>
+<p>It is possible to issue some ordinary ASIS queries from inside the Browser
+(for example, semantic queries). These queries should accept one parameter of
+type <code class="docutils literal"><span class="pre">Element</span></code> and return <code class="docutils literal"><span class="pre">Element</span></code> as a result.</p>
+<p>When you press <code class="docutils literal"><span class="pre">&lt;SPACE&gt;</span></code>, you are asked to enter the query name. If the
+query is legal, the current <code class="docutils literal"><span class="pre">Element</span></code> is replaced by the result of the call to
+the given query with the current <code class="docutils literal"><span class="pre">Element</span></code> as a parameter.</p>
+</div>
+<div class="section" id="example">
+<h2>6.5. Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h2>
+<p id="index-18">Suppose we have an ASIS <code class="docutils literal"><span class="pre">Compilation_Unit</span></code> <code class="docutils literal"><span class="pre">Demo</span></code> in the source file <code class="file docutils literal"><span class="pre">demo.adb</span></code>:</p>
+<div class="highlight-ada"><div class="highlight"><pre><span class="k">procedure </span><span class="nf">Demo</span> <span class="kr">is</span><span class="p"></span>
+   <span class="k">function </span><span class="nf">F</span> <span class="o">(</span><span class="n">I</span> <span class="o">:</span> <span class="n">Integer</span><span class="o">)</span> <span class="kr">return</span><span class="p"> </span><span class="n">Integer</span><span class="p">;</span>
+
+   <span class="k">function </span><span class="nf">F</span> <span class="o">(</span><span class="n">I</span> <span class="o">:</span> <span class="n">Integer</span><span class="o">)</span> <span class="kr">return</span><span class="p"> </span><span class="n">Integer</span> <span class="kr">is</span><span class="p"></span>
+   <span class="kr">begin</span><span class="p"></span>
+      <span class="kr">return</span><span class="p"> </span><span class="o">(</span><span class="n">I</span> <span class="o">+</span> <span class="mi">1</span><span class="o">)</span><span class="p">;</span>
+   <span class="k">end </span><span class="nf">F</span><span class="p">;</span>
+
+   <span class="n">N</span> <span class="o">:</span> <span class="n">Integer</span><span class="p">;</span>
+
+<span class="kr">begin</span><span class="p"></span>
+    <span class="n">N</span> <span class="o">:=</span> <span class="n">F</span> <span class="o">(</span><span class="mi">3</span><span class="o">)</span><span class="p">;</span>
+<span class="k">end </span><span class="nf">Demo</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>Suppose also that the tree for this source is created in the current directory.
+Below is a sequence of <code class="docutils literal"><span class="pre">asistant</span></code> commands which does process this
+unit. Explanation is provided via <code class="docutils literal"><span class="pre">asistant</span></code> comments.</p>
+<div class="highlight-ada"><div class="highlight"><pre><span class="n">initialize</span> <span class="o">(</span><span class="s">&quot;&quot;</span><span class="o">)</span>
+
+<span class="c">--  Create and open a Context comprising all the tree files</span>
+<span class="c">--  in the current directory:</span>
+
+<span class="n">Set</span> <span class="o">(</span><span class="n">Cont</span><span class="o">)</span>
+<span class="n">Associate</span> <span class="o">(</span><span class="n">Cont</span><span class="p">,</span> <span class="s">&quot;&quot;</span><span class="p">,</span> <span class="s">&quot;&quot;</span><span class="o">)</span>
+<span class="n">Open</span> <span class="o">(</span><span class="n">Cont</span><span class="o">)</span>
+
+<span class="c">-- Get a Compilation_Unit (body) named &quot;Demo&quot; from this Context:</span>
+
+<span class="n">Set</span> <span class="o">(</span><span class="n">CU</span><span class="p">,</span> <span class="n">Compilation_Unit_Body</span> <span class="o">(</span><span class="s">&quot;Demo&quot;</span><span class="p">,</span> <span class="n">Cont</span><span class="o">))</span>
+
+<span class="c">--  Go into the unit structure and get to the expression</span>
+<span class="c">--  in the right part of the assignment statements in the unit body:</span>
+
+<span class="n">Set</span> <span class="o">(</span><span class="n">Unit</span><span class="p">,</span> <span class="n">Unit_Declaration</span> <span class="o">(</span><span class="n">CU</span><span class="o">))</span>
+<span class="n">Set</span> <span class="o">(</span><span class="n">Stmts</span><span class="p">,</span> <span class="n">Body_Statements</span> <span class="o">(</span><span class="n">Unit</span><span class="p">,</span> <span class="kc">False</span><span class="o">))</span>
+<span class="n">Set</span> <span class="o">(</span><span class="n">Stmt</span><span class="p">,</span> <span class="n">Stmts</span> <span class="o">(</span><span class="mi">1</span><span class="o">))</span>
+<span class="n">Set</span> <span class="o">(</span><span class="n">Expr</span><span class="p">,</span> <span class="n">Assignment_Expression</span> <span class="o">(</span><span class="n">Stmt</span><span class="o">))</span>
+
+<span class="c">-- Output the debug image and the text image of this expression:</span>
+
+<span class="n">Print</span> <span class="o">(</span><span class="n">Expr</span><span class="o">)</span>
+<span class="n">Print</span> <span class="o">(</span><span class="n">Element_Image</span> <span class="o">(</span><span class="n">Expr</span><span class="o">))</span>
+
+<span class="c">--  This expression is of A_Function_Call kind, so it&#39;s possible to ask</span>
+<span class="c">--  for the declaration of the called function:</span>
+
+<span class="n">Set</span> <span class="o">(</span><span class="n">Corr_Called_Fun</span><span class="p">,</span> <span class="n">Corresponding_Called_Function</span> <span class="o">(</span><span class="n">Expr</span><span class="o">))</span>
+
+<span class="c">--  Print the debug and the text image of the declaration of the called</span>
+<span class="c">--  function:</span>
+
+<span class="n">Print</span> <span class="o">(</span><span class="n">Corr_Called_Fun</span><span class="o">)</span>
+<span class="n">Print</span> <span class="o">(</span><span class="n">Element_Image</span> <span class="o">(</span><span class="n">Corr_Called_Fun</span><span class="o">))</span>
+
+<span class="c">-- Close the asistant session:</span>
+
+<span class="n">Quit</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="asis_application_templates.html" title="7. ASIS Application Templates"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="asis_context.html" title="5. ASIS Context"
+             >previous</a> |</li>
+        <li><a href="../asis_ug.html">ASIS-for-GNAT User&#39;s Guide 2017 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2008-2017, AdaCore.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3b2.
+    </div>
+  </body>
+</html>

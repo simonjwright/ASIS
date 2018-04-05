@@ -1,0 +1,99 @@
+This directory contains exercises for building ASIS applications
+based on general traversal of ASIS compilation units. These
+applications are supposed to be built from the set of the ASIS
+Application Templates provided by ASIS-for-GNAT.
+
+We suggest you to build two ASIS tools - a simple style checker and a
+simple metrics collection tool. Both of them are very typical examples
+of ASIS applications. The corresponding tutorial materials are placed
+into subdirectories 'style_checker' and 'metrics' accordingly.
+
+Each of this subdirectories has the following structure:
+
+- readme file - contains the formulation of the problem to solve. The
+                problems is subdivided into two tasks: first -
+                developing a very simple version of the tool; second
+                - enhancing the tool by adding addition
+                functionality.
+
+- task_1      - our solution for the first task and some hints for
+                the second task;
+
+- task_2      - our solution for the second task;
+
+The subdirectory 'test_units' contains a set of Ada components you may
+use to test the ASIS tools.
+
+It may be the case for an ASIS newcomer, that the first task (that
+is, the development of a simple ASIS tool from the set of the ASIS
+application templates) is more complicated, then the second one
+(adding some new functionality to the existing ASIS tool). If so, you
+may study the solution we provide for the first task as an ASIS
+example and work on the second task only.
+
+To start working on the tutorial applications, copy ASIS application
+templates from the ASIS distribution (catalog
+asis-[version3]-src/templates) into your working directory.
+
+The main thing you will have to do to build both style checking and
+metrics tools is replacing the empty bodies of actual Pre- and
+Post-operations in the corresponding subunits with the real code
+(actually, you only need to replace the template for Pre-operation,
+and Post-operation may be empty for both these tools). For the style
+checking tool you can reuse the rest of the code of the ASIS
+application templates. For the metrics tool you will have to modify
+the general unit processing routine (Unit_Processing.Process_Unit) -
+you can output the results only when the whole Element structure of
+the unit has been already processed.
+
+You may also need to provide additional Ada components (for example -
+in case of the metrics tool, you may want to provide the package
+defining the data structures for collecting the metrics information
+and for printing out the metrics values).
+
+Let's assume, that the ASIS tools to be built should process all the
+user-defined units in the Context, and that they do not have any
+parameter.
+
+Our solutions of the tutorial tasks are based on the simplest (and
+the only for the moment) driver provided by the set of the ASIS
+Application Templates - ASIS_Application_Driver_1. To test the
+solution, you have to create the tree files for the Ada units to
+process by the ASIS tool in your current directory.
+
+And here is the general guideline for developing the actual
+Pre-operation for instantiation Asis.Iterator.Traverse_Element.
+Actual Pre-operation processes a single Element, and they do not know
+in advance what is the kind of their argument Element. So, the first
+thing to do is to define the position of the Element being processed
+in the Element classification hierarchy, and then, depending on the
+Element kind, to do this, that or nothing. As a result, the general
+"template" for actual Pre-operation looks like this:
+
+procedure Pre_Operation
+  (Element :        Asis.Element;
+   Control : in out Asis.Traverse_Control;
+   State   : in out Traversal_State)
+is
+   Arg_Kind : Asis.Element_Kinds;
+   ...
+begin
+   Arg_Kind := Asis.Elements.Element_Kind (Element);
+
+   case Arg_Kind is
+      when A_Pragma =>
+	 Process_Pragma;
+      when A_Declaration =>
+	 Process_Declaration;
+      ...
+      when others =>
+	 null;
+   end case;
+   ...
+
+end Pre_Operation;
+
+Very often you have to use nested case statements to define the exact
+position of the argument Element in the Element classification
+hierarchy and to provide the specific processing for specific
+subordinate kinds.

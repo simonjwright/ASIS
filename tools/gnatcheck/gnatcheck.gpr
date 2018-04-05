@@ -1,0 +1,55 @@
+------------------------------------------------------------------------------
+--                                                                          --
+--                          GNATCHECK COMPONENTS                            --
+--                                                                          --
+--                            G N A T C H E C K                             --
+--                                                                          --
+--                                 S p e c                                  --
+--                                                                          --
+--                    Copyright (C) 2004-2016, AdaCore                      --
+--                                                                          --
+-- GNATCHECK  is  free  software;  you can redistribute it and/or modify it --
+-- under terms of the  GNU  General Public License as published by the Free --
+-- Software Foundation;  either version 2, or ( at your option)  any  later --
+-- version.  GNATCHECK  is  distributed in the hope that it will be useful, --
+-- but  WITHOUT  ANY  WARRANTY;   without  even  the  implied  warranty  of --
+-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General --
+-- Public License for more details.  You should have received a copy of the --
+-- GNU  General Public License distributed with GNAT; see file  COPYING. If --
+-- not, go to http://www.gnu.org/licenses for a complete copy of the        --
+-- license                                                                  --
+--                                                                          --
+-- GNATCHECK is maintained by AdaCore (http://www.adacore.com).             --
+--                                                                          --
+------------------------------------------------------------------------------
+
+with "../../asis";
+with "../../common";
+
+project Gnatcheck extends "../tool_utils/tool_utils" is
+    for Main use ("gnatcheck-driver.adb");
+    package Builder is
+      for Default_Switches ("ada") use Common.Builder'Default_Switches ("ada");
+      for Executable ("gnatcheck-driver.adb") use "gnatcheck";
+   end Builder;
+
+   package Compiler renames Common.Compiler;
+   package Binder renames Common.Binder;
+   package Ide renames Common.Ide;
+
+   package Install is
+      for Mode use "usage";
+      for Install_Name use "asistools";
+
+      for Artifacts ("share/doc/gnat/pdf")
+        use ("../../doc/pdf/gnatcheck_rm.pdf");
+      for Artifacts ("share/doc/gnat/txt")
+        use ("../../doc/txt/gnatcheck_rm.txt");
+      for Artifacts ("share/doc/gnat/info")
+        use ("../../doc/info/gnatcheck_rm*.info");
+      for Artifacts ("share/doc/gnat/html/gnatcheck_rm")
+        use ("../../doc/html/gnatcheck_rm/**");
+   end Install;
+
+
+end Gnatcheck;

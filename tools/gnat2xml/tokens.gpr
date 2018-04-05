@@ -1,0 +1,31 @@
+with "xmlada";
+with "../../../../asis";
+--  This gets copied into .../ASIS/tools/gnat2xml/stage/tokens,
+--  and we're referring to .../ASIS/asis.gpr.
+with "../../../../common";
+
+project Tokens extends "../../../tool_utils/tool_utils" is
+   --  And here we're referring to .../ASIS/tool_utils/tool_utils.gpr.
+
+   for Source_Dirs use (".");
+   for Object_Dir use "obj";
+   for Exec_Dir use ".";
+   for Main use ("gnat2xml-gnat2xsd.adb",
+                 "gnat2xml-driver.adb",
+                 "gnat2xml-xml2gnat.adb",
+                 "gnat2xml-strip_comments.adb");
+
+   package Compiler is
+      for Default_Switches ("ada") use
+        ("-O0", "-g", "-gnata", "-gnatyN", "-gnatyM30000", "-gnatws");
+      --  Need to suppress style warnings, because the code is completely
+      --  unformatted.
+   end Compiler;
+
+   package Builder is
+      for Executable ("gnat2xml-gnat2xsd.adb") use "gnat2xsd";
+      for Executable ("gnat2xml-driver.adb") use "gnat2xml";
+      for Executable ("gnat2xml-xml2gnat.adb") use "xml2gnat";
+   end Builder;
+
+end Tokens;

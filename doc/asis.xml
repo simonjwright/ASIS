@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<index>
+   <doc_path>share/doc/asis/html</doc_path>
+   <submenu before="About">
+      <title>/Help/ASIS</title>
+   </submenu>
+   <documentation_file>
+      <name>asis_ug.html</name>
+      <descr>ASIS-for-GNAT User's Guide</descr>
+      <category>ASIS</category>
+      <menu>/Help/ASIS/ASIS-for-GNAT User's Guide</menu>
+   </documentation_file>
+   <documentation_file>
+      <name>asis_ug.html</name>
+      <descr>ASIS-for-GNAT Reference Manual</descr>
+      <category>ASIS</category>
+      <menu>/Help/ASIS/ASIS-for-GNAT Reference Manual</menu>
+   </documentation_file>
+</index>

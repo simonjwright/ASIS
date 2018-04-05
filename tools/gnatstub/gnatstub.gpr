@@ -1,0 +1,55 @@
+------------------------------------------------------------------------------
+--                                                                          --
+--                           GNATSTUB COMPONENTS                            --
+--                                                                          --
+--                              G N A T S T U B                             --
+--                                                                          --
+--                                 S p e c                                  --
+--                                                                          --
+--           Copyright (c) 1997-2015, Free Software Foundation, Inc.        --
+--                                                                          --
+-- Gnatstub  is  free  software;  you  can redistribute it and/or modify it --
+-- under  terms of the  GNU General Public License as published by the Free --
+-- Software  Foundation;  either version 3,  or  (at your option) any later --
+-- version. Gnatstub is distributed in the hope that it will be useful, but --
+-- WITHOUT   ANY   WARRANTY;   without   even   the   implied  warranty  of --
+-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General --
+-- Public License for more details.  You should have received a copy of the --
+-- GNU General Public License  distributed with GNAT; see file COPYING3. If --
+-- not,  go  to  http://www.gnu.org/licenses  for  a  complete  copy of the --
+-- license                                                                  --
+--                                                                          --
+-- Gnatstub is distributed as a part of the ASIS implementation for GNAT    --
+-- (ASIS-for-GNAT).                                                         --
+--                                                                          --
+-- Gnatstub  was  originally  developed  by  Alexei Kuchumov  as a  part of --
+-- collaboration  between  Software  Engineering  Laboratory of  the  Swiss --
+-- Federal  Institute  of  Technology  in  Lausanne, Switzerland,  and  the --
+-- Scientific  Research  Computer  Center  of the  Moscow State University, --
+-- Russia.  This  work  was  supported  by  a grant from the Swiss National --
+-- Science Foundation,  no 7SUPJ048247,  funding a project  "Development of --
+-- ASIS for GNAT with industry quality".                                    --
+--                                                                          --
+-- Gnatstub is now maintained AdaCore (http://www.adacore.com)              --
+------------------------------------------------------------------------------
+
+with "../../asis";
+with "../../common";
+
+project Gnatstub extends "../tool_utils/tool_utils" is
+   for Main use ("gnatstub-driver.adb");
+   package Builder is
+      for Default_Switches ("ada") use Common.Builder'Default_Switches ("ada");
+      for Executable ("gnatstub-driver.adb") use "gnatstub";
+   end Builder;
+
+   package Compiler renames Common.Compiler;
+   package Binder renames Common.Binder;
+   package Ide renames Common.Ide;
+
+   package Install is
+      for Mode use "usage";
+      for Install_Name use "asistools";
+   end Install;
+
+end Gnatstub;

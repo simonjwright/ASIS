@@ -1,0 +1,55 @@
+------------------------------------------------------------------------------
+--                                                                          --
+--             ASIS Tester And iNTerpreter (ASIStant) COMPONENTS            --
+--                                                                          --
+--                             A S I S T A N T                              --
+--                                                                          --
+--          Copyright (C) 2004-2014, Free Software Foundation, Inc.         --
+--                                                                          --
+-- ASIStant  is  free  software;  you can  redistribute it and/or modify it --
+-- under terms of the  GNU General Public License  as published by the Free --
+-- Software  Foundation;  either version 3, or (at your option)  any  later --
+-- version.  ASIStant  is distributed  in the hope  that it will be useful, --
+-- but  WITHOUT  ANY  WARRANTY;  without  even the implied warranty of MER- --
+-- CHANTABILITY  or  FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General --
+-- Public License for more details.  You should have received a copy of the --
+-- GNU General Public License distributed with GNAT;  see file COPYING3. If --
+-- not,  go  to  http://www.gnu.org/licenses  for  a  complete  copy of the --
+-- license.                                                                 --
+--                                                                          --
+-- ASIStant  is  an evolution of  ASIStint tool that was created by Vasiliy --
+-- Fofanov  as  part  of  a  collaboration  between   Software  Engineering --
+-- Laboratory  of  the  Swiss  Federal Institute of Technology in Lausanne, --
+-- Switzerland,  and the  Scientific Research Computer Center of the Moscow --
+-- University, Russia,  supported by the  Swiss National Science Foundation --
+-- grant #7SUPJ048247, "Development of ASIS for GNAT with industry quality" --
+--                                                                          --
+-- ASIStant is distributed as a part of the ASIS implementation for GNAT    --
+-- (ASIS-for-GNAT) and is maintained by AdaCore (http://www.adacore.com).   --
+--                                                                          --
+------------------------------------------------------------------------------
+
+with "../../asis";
+with "../../common";
+
+project Asistant is
+   for Main use ("asistant-driver.adb");
+
+   package Builder is
+      for Executable ("asistant-driver.adb") use "asistant";
+   end Builder;
+
+   package Compiler is
+      for Default_Switches ("ada") use Common.Compiler'Default_Switches ("ada");
+   end Compiler;
+
+   package Binder renames Common.Binder;
+
+   package Ide renames Common.Ide;
+
+   package Install is
+      for Mode use "usage";
+      for Install_Name use "asislib";
+   end Install;
+
+end Asistant;

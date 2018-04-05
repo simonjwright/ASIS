@@ -1,0 +1,230 @@
+---------------------------------------------------------------
+--  This is an ASIStant script which contains a sequence     --
+--  of the ASIS queries doing some black-box processing      --
+--  of ASIS Compilation Units. The task is to add some more  --
+--  steps to this processing to get some more information    --
+--  from the ASIS Context                                    --
+---------------------------------------------------------------
+
+--  defining Cont - variable of Asis.Context Type to work with
+set (Cont)
+
+--  initializing the ASIS implementation
+initialize ("")
+
+--  Associating Cont as having no name and made up by the tree
+--  files contained in the current directory
+associate (Cont, "", "")
+
+--  and opening it
+open (Cont)
+
+--  obtaining the ASIS Compilation Unit named Ex_Proc from our
+--  Context
+set (CU_1, Compilation_Unit_Body ("Ex_Proc", cont))
+
+--  and displaying its full expanded Ada name
+print (Unit_Full_Name (CU_1))
+
+---------------------------------------------------------------
+--  And now, let's come to some exercises                    --
+--                                                           --
+--  resume the script by the parameterless "run" command     --
+--  when you are ready to get the first task                 --
+---------------------------------------------------------------
+pause
+
+---------------------------------------------------------------
+--  The ASIS Context being processed contains some other     --
+--  Compilation Units. Let's try to get some information     --
+--  about them, starting from obtaining some other units     --
+--  from the Context                                         --
+--                                                           --
+--  Before doing the first exercise, have a short look at    --
+--  the beginning of the ASIS package Asis.Compilation_Units --
+--  to see, what queries can be used to obtain Compilation   --
+--  Units from a Context (subclauses 10.6-10.10)             --
+--                                                           --
+--  resume the script when ready                             --
+---------------------------------------------------------------
+pause
+
+
+---------------------------------------------------------------
+--  Task 1: Get the ASIS Compilation Unit containing the     --
+--          declaration of the library package Ex_Pack1      --
+--                                                           --
+--  Hints for the solution:                                  --
+--  1. Find out, what of the queries from 10.6-10.10 you     --
+--     should use for this.                                  --
+--  2. Use the ASIStant command                              --
+--                                                           --
+--        set (CU_2, <Needed_Query> (<arguments>))           --
+--                                                           --
+--     to get the needed unit as the value of the ASIStant   --
+--     variable CU_2                                         --
+--  3. Display the ASIS debug image of CU_2 to see, what     --
+--     have you got:                                         --
+--        print (CU_2)                                       --
+--                                                           --
+--  Type these commands in the interactive mode. Do not be   --
+--  afraid if you do some errors - just see the diagnostic   --
+--  and try again.                                           --
+--                                                           --
+--  When you complete the task, resume the script to see a   --
+--  possible correct solution and to get the next task       --
+---------------------------------------------------------------
+pause
+
+---------------------------------------------------------------
+--  A possible solution for task 1 is:                       --
+--  obtaining the needed unit (Library_Unit_Declaration is   --
+--  the query to use):                                       --
+--                                                           --
+set   (CU_2, Library_Unit_Declaration ("Ex_Pack1", cont))    --
+--                                                           --
+--  and displaying its debug image                           --
+print (CU_2)                                                 --
+---------------------------------------------------------------
+--
+-- resume the script to get the next task
+pause
+
+---------------------------------------------------------------
+--  Task 2: Get all the Compilation Units contained in the   --
+--          given context.                                   --
+--                                                           --
+--  Hints for the solution:                                  --
+--  1. This task duffers from the previous one in two things:--
+--     - you should use another query;                       --
+--     - you should work with the ASIS variable of the type  --
+--       Compilation_Unit_List                               --
+--  2. The required sequence of the ASIS/ASIStant calls      --
+--     is the same, as for the previous task:                --
+--                                                           --
+--        set   (All_Units, <Needed_Query> (<arguments>      --
+--        print (All_Units)                                  --
+--                                                           --
+--     but here the print command will display the list      --
+--     length and the debug images of all the elements of the--
+--     list                                                  --
+--  Type these commands in the interactive mode. When        --
+--  complete, resume the script to see a possible correct    --
+--  solution and to get the next task                        --
+---------------------------------------------------------------
+pause
+
+---------------------------------------------------------------
+--  The solution for task 2 is:                              --
+--  obtaining all the units from a Context (Compilation_Units--
+--  is the query to use):                                    --
+--                                                           --
+set   (All_Units, Compilation_Units (cont))                  --
+--                                                           --
+--  and displaying the result                                --
+print (All_Units)                                            --
+---------------------------------------------------------------
+--
+-- resume the script to get the next task
+pause
+
+---------------------------------------------------------------
+--  Task 3: let's do something more interesting - obtaining  --
+--          some information about semantic dependencies     --
+--          among units. Take the spec of the library package--
+--          Ex_Pack1 and ask for the corresponding body for  --
+--          it                                               --
+--                                                           --
+--  Hints for the solution:                                  --
+--  1. You need to browse the spec of the ASIS package       --
+--     Asis.Compilation_Units some more - have a look at     --
+--     subclauses 10.11-10.14                                --
+--  2. You already have the spec of Ex_Pack1 as the value of --
+--     the variable CU_2.                                    --
+--  3. The required sequence of the ASIS/ASIStant calls is:  --
+--                                                           --
+--        set   (CU_2_Body, <Needed_Query> (CU_2))           --
+--        print (CU_2_Body)                                  --
+--                                                           --
+--  Type these commands in the interactive mode. When        --
+--  complete, resume the script to see a possible correct    --
+--  solution and to get the next task                        --
+---------------------------------------------------------------
+pause
+
+---------------------------------------------------------------
+--  The solution for task 3 is:                              --
+--  obtaining the corresponding body for a unit              --
+--  (Corresponding_Body is the query to use)                  --
+--                                                           --
+set   (CU_2_Body, Corresponding_Body (CU_2))                 --
+--                                                           --
+--  and displaying the result                                --
+ print (CU_2_Body)                                           --
+---------------------------------------------------------------
+--
+-- resume the script to get the last task
+pause
+---------------------------------------------------------------
+--  Task 4: You've probably noticed the package named GNAT   --
+--          when displaying the whole content of the context --
+--          now get its childs and display the result list   --
+--                                                           --
+--  Hints for the solution:                                  --
+--  1. You have to start from obtaining the unit named "GNAT"--
+--     from the Context - you need it as an argument to pass --
+--     to the corresponding query                            --
+--  2. When getting this unit, display its debug image to    --
+--     make sure that you really have got it.                --
+--  3. The required sequence of the calls is                 --
+--                                                           --
+--        set   (CU_GNAT, <Needed_Query1> (<arguments1>))    --
+--        print (CU_GNAT)                                    --
+--                                                           --
+--        set   (GNAT_Childs, <Need_Query2> (<arguments2>))  --
+--        print (GNAT_Childs)                                --
+--                                                           --
+--  4. Pay your attention at the origin of the resulting     --
+--     units.                                                --
+--                                                           --
+--  Type these commands in the interactive mode. When        --
+--  complete, resume the script to see a correct solution    --
+---------------------------------------------------------------
+pause
+
+---------------------------------------------------------------
+--  A solution for task 4 is:                                --
+--  obtaining the library unit declaration for the package   --
+--  named GNAT                                               --
+--                                                           --
+set   (CU_GNAT, Library_Unit_Declaration ("GNAT", cont))     --
+--                                                           --
+--  and displaying it:                                       --
+--                                                           --
+print (CU_GNAT)                                              --
+                                                             --
+--  Resume the script to see the final part of the solution  --
+pause                                                        --
+--                                                           --
+set   (GNAT_Childs, Corresponding_Children (CU_GNAT))        --
+print (GNAT_Childs)                                          --
+---------------------------------------------------------------
+
+--  this is the end of the tasks included in this exercise.
+--  Now ASIStant is in interactive mode and you can play
+--  around with other queries as you want. Then resume the
+--  script for the last time to see the final steps of an
+--  ASIS application cycle and to finish the job
+pause
+
+--  closing the Context
+Close (Cont)
+
+-- breaking its connection with the "external word"
+Dissociate (Cont)
+
+--  and finalizing the ASIS implementation itself
+Finalize ("")
+
+-- and this completes the exercise script
+quit

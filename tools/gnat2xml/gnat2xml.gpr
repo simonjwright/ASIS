@@ -1,0 +1,61 @@
+------------------------------------------------------------------------------
+--                                                                          --
+--                            GNATPP COMPONENTS                             --
+--                                                                          --
+--                              G N A T P P                                 --
+--                                                                          --
+--                                 S p e c                                  --
+--                                                                          --
+--                    Copyright (C) 2001-2015, AdaCore                      --
+--                                                                          --
+-- GNATPP is free software; you can redistribute it  and/or modify it under --
+-- terms of the  GNU General Public License as published  by the Free Soft- --
+-- ware  Foundation;  either version 3,  or (at your option) any later ver- --
+-- sion.  GNATPP is  distributed in the  hope that it will  be  useful, but --
+-- WITHOUT ANY WARRANTY; without even the implied warranty of  MERCHANTABI- --
+-- LITY or  FITNESS  FOR A  PARTICULAR  PURPOSE. See the GNU General Public --
+-- License  for more details. You  should  have  received a copy of the GNU --
+-- General Public License distributed with GNAT; see file COPYING3. If not, --
+-- go to http://www.gnu.org/licenses for a complete copy of the license     --
+--                                                                          --
+-- GNATPP is maintained by AdaCore (http://www.adacore.com).                --
+--                                                                          --
+------------------------------------------------------------------------------
+
+with "xmlada";
+with "../../asis";
+with "../../common";
+
+project Gnat2xml extends "../tool_utils/tool_utils" is
+
+   --  This was derived from avatox_noxsl.gpr. We have no need for xsl here.
+
+   for Source_Dirs use (".", "mckae");
+   for Object_Dir use "obj";
+   for Exec_Dir use ".";
+   for Main use ("gnat2xml-driver.adb",
+                 "gnat2xml-gnat2xsd.adb",
+                 "gnat2xml-xml2gnat.adb");
+
+   case Common.Comps is
+      when "toolsdev" =>
+         for Main use Project'Main
+           & ("gnat2xml-strip_comments.adb",
+              "gnat2xml-gnat2tokens.adb",
+              "pp-buffers-test.adb");
+      when others =>
+         null;
+   end case;
+
+   package Builder is
+      for Default_Switches ("ada") use Common.Builder'Default_Switches ("ada");
+      for Executable ("gnat2xml-gnat2xsd.adb") use "gnat2xsd";
+      for Executable ("gnat2xml-driver.adb") use "gnat2xml";
+      for Executable ("gnat2xml-xml2gnat.adb") use "xml2gnat";
+   end Builder;
+
+   package Compiler renames Common.Compiler;
+   package Binder renames Common.Binder;
+   package Ide renames Common.Ide;
+
+end Gnat2xml;

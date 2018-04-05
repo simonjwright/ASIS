@@ -1,0 +1,163 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>1. About This Manual &mdash; ASIS-for-GNAT Reference Manual 2017 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2017',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="ASIS-for-GNAT Reference Manual 2017 documentation" href="../asis_rm.html" />
+    <link rel="next" title="2. ASIS-for-GNAT and the ASIS Standard" href="asis-for-gnat_and_the_asis_standard.html" />
+    <link rel="prev" title="ASIS-for-GNAT Reference Manual" href="../asis_rm.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="asis-for-gnat_and_the_asis_standard.html" title="2. ASIS-for-GNAT and the ASIS Standard"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../asis_rm.html" title="ASIS-for-GNAT Reference Manual"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../asis_rm.html">ASIS-for-GNAT Reference Manual 2017 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../asis_rm.html">
+              <img class="logo" src="../_static/adacore_transparent.png" alt="Logo"/>
+            </a></p>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../asis_rm.html"
+                        title="previous chapter">ASIS-for-GNAT Reference Manual</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="asis-for-gnat_and_the_asis_standard.html"
+                        title="next chapter">2. ASIS-for-GNAT and the ASIS Standard</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/asis_rm/about_this_manual.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="about-this-manual">
+<h1>1. About This Manual<a class="headerlink" href="#about-this-manual" title="Permalink to this headline">¶</a></h1>
+<p>This Manual contains reference material for developers
+using ASIS-for-GNAT &#8212; GNAT&#8217;s implementation of
+the Ada Semantic Interface Specification (ASIS).
+It provides information about ASIS-for-GNAT&#8217;s implementation-specific
+characteristics and
+current implementation limitations.
+(The term &#8216;implementation-specific&#8217; in ASIS means what is
+called &#8216;implementation-defined&#8217; in the Ada Reference Manual.)</p>
+<p>ASIS has been designed as a portable basis for many kinds of Ada code
+analysis tools. However, for situations where a developer may need to
+exploit the characteristics of a particular Ada compiler,
+ASIS also contains a number of implementation-specific
+features.  These allow interfacing with the underlying Ada implementation, as
+well as exploiting the implementation permissions for particular queries.</p>
+<p>Of course, any ASIS application that uses implementation-specific features
+may be nonportable. You should follow good programming practice and isolate
+and clearly document any sections of your program that make use of such
+features in a nonportable manner.</p>
+<p><strong>What This Manual Contains</strong></p>
+<p>This manual contains the following chapters:</p>
+<ul class="simple">
+<li><a class="reference internal" href="asis-for-gnat_and_the_asis_standard.html#asis-for-gnat-and-the-asis-standard"><em>ASIS-for-GNAT and the ASIS Standard</em></a>, describes the relationship
+between ASIS-for-GNAT and the existing ASIS International Standard.</li>
+<li><a class="reference internal" href="asis_extensions.html#asis-extensions"><em>ASIS Extensions</em></a>, describes the contents of the packages
+<code class="docutils literal"><span class="pre">Asis.Extensions</span></code>, <code class="docutils literal"><span class="pre">Asis.Extensions.Flat_Kinds</span></code> and
+<code class="docutils literal"><span class="pre">Asis.Extensions.Iterator</span></code>.</li>
+<li><a class="reference internal" href="implementation-specific_features_and_implementation_permissions.html#implementation-specific-features-and-implementation-permissions"><em>Implementation-Specific Features and Implementation Permissions</em></a>,
+presents the aspects of the ASIS definition that are
+implementation specific and describes their treatment in ASIS-for-GNAT.</li>
+<li><a class="reference internal" href="debugging_information.html#debugging-information"><em>Debugging Information</em></a>, describes the kinds of debugging information that
+you can generate with ASIS-for-GNAT.</li>
+</ul>
+<p><strong>What You Should Know Before Reading This Manual</strong></p>
+<p>This Reference Manual assumes that you are familiar with Ada 95 language as
+defined by the International Standard ISO/IEC-8652:1995, and
+with ASIS 95 as defined by the
+ASIS 95 International Standard ISO/IEC 15291:1999.</p>
+<p>This Manual supplements the information presented in the
+ASIS-for-GNAT User&#8217;s Guide and uses the terminology introduced there.</p>
+<p><strong>Related Information</strong></p>
+<p>For more information, please refer to the following documents:</p>
+<ul class="simple">
+<li>GNAT User&#8217;s Guide</li>
+<li>ASIS-for-GNAT User&#8217;s Guide</li>
+<li>Ada 95 Reference Manual</li>
+<li>ASIS 95 Standard</li>
+</ul>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="asis-for-gnat_and_the_asis_standard.html" title="2. ASIS-for-GNAT and the ASIS Standard"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../asis_rm.html" title="ASIS-for-GNAT Reference Manual"
+             >previous</a> |</li>
+        <li><a href="../asis_rm.html">ASIS-for-GNAT Reference Manual 2017 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2008-2017, AdaCore.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3b2.
+    </div>
+  </body>
+</html>

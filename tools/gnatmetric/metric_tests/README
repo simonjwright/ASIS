@@ -1,0 +1,12 @@
+This directory contains test examples for the metrics implemented in
+gnatmetric. These examples are organized on per-metric basis, each test example
+is supposed to demonstrate one specific metric.
+
+All the units that make up a test example for a a given metric are organised
+in a hierarchy with the top package that has the same name as the metric
+itself.
+
+In the test units, each construct for which the metric should be computed,
+is marked by the comment
+
+'--  EXPECTED METRIC VALUE: NNN'

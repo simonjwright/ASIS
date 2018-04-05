@@ -1,0 +1,2212 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>8. Predefined Rules &mdash; GNATcheck Reference Manual 2017 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2017',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="GNATcheck Reference Manual 2017 documentation" href="../gnatcheck_rm.html" />
+    <link rel="next" title="9. Example of gnatcheck Usage" href="example_of_gnatcheck_usage.html" />
+    <link rel="prev" title="7. Rule exemption" href="rule_exemption.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="example_of_gnatcheck_usage.html" title="9. Example of gnatcheck Usage"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="rule_exemption.html" title="7. Rule exemption"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../gnatcheck_rm.html">GNATcheck Reference Manual 2017 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../gnatcheck_rm.html">
+              <img class="logo" src="../_static/adacore_transparent.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../gnatcheck_rm.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">8. Predefined Rules</a><ul>
+<li><a class="reference internal" href="#style-related-rules">8.1. Style-Related Rules</a><ul>
+<li><a class="reference internal" href="#tasking">8.1.1. Tasking</a><ul>
+<li><a class="reference internal" href="#multiple-entries-in-protected-definitions">8.1.1.1. <code class="docutils literal"><span class="pre">Multiple_Entries_In_Protected_Definitions</span></code></a></li>
+<li><a class="reference internal" href="#volatile-objects-without-address-clauses">8.1.1.2. <code class="docutils literal"><span class="pre">Volatile_Objects_Without_Address_Clauses</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#object-orientation">8.1.2. Object Orientation</a><ul>
+<li><a class="reference internal" href="#deep-inheritance-hierarchies">8.1.2.1. <code class="docutils literal"><span class="pre">Deep_Inheritance_Hierarchies</span></code></a></li>
+<li><a class="reference internal" href="#direct-calls-to-primitives">8.1.2.2. <code class="docutils literal"><span class="pre">Direct_Calls_To_Primitives</span></code></a></li>
+<li><a class="reference internal" href="#too-many-parents">8.1.2.3. <code class="docutils literal"><span class="pre">Too_Many_Parents</span></code></a></li>
+<li><a class="reference internal" href="#visible-components">8.1.2.4. <code class="docutils literal"><span class="pre">Visible_Components</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#portability">8.1.3. Portability</a><ul>
+<li><a class="reference internal" href="#forbidden-attributes">8.1.3.1. <code class="docutils literal"><span class="pre">Forbidden_Attributes</span></code></a></li>
+<li><a class="reference internal" href="#forbidden-pragmas">8.1.3.2. <code class="docutils literal"><span class="pre">Forbidden_Pragmas</span></code></a></li>
+<li><a class="reference internal" href="#implicit-small-for-fixed-point-types">8.1.3.3. <code class="docutils literal"><span class="pre">Implicit_SMALL_For_Fixed_Point_Types</span></code></a></li>
+<li><a class="reference internal" href="#no-scalar-storage-order-specified">8.1.3.4. <code class="docutils literal"><span class="pre">No_Scalar_Storage_Order_Specified</span></code></a></li>
+<li><a class="reference internal" href="#predefined-numeric-types">8.1.3.5. <code class="docutils literal"><span class="pre">Predefined_Numeric_Types</span></code></a></li>
+<li><a class="reference internal" href="#separate-numeric-error-handlers">8.1.3.6. <code class="docutils literal"><span class="pre">Separate_Numeric_Error_Handlers</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#program-structure">8.1.4. Program Structure</a><ul>
+<li><a class="reference internal" href="#deeply-nested-generics">8.1.4.1. <code class="docutils literal"><span class="pre">Deeply_Nested_Generics</span></code></a></li>
+<li><a class="reference internal" href="#local-packages">8.1.4.2. <code class="docutils literal"><span class="pre">Local_Packages</span></code></a></li>
+<li><a class="reference internal" href="#non-visible-exceptions">8.1.4.3. <code class="docutils literal"><span class="pre">Non_Visible_Exceptions</span></code></a></li>
+<li><a class="reference internal" href="#raising-external-exceptions">8.1.4.4. <code class="docutils literal"><span class="pre">Raising_External_Exceptions</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#programming-practice">8.1.5. Programming Practice</a><ul>
+<li><a class="reference internal" href="#anonymous-arrays">8.1.5.1. <code class="docutils literal"><span class="pre">Anonymous_Arrays</span></code></a></li>
+<li><a class="reference internal" href="#binary-case-statements">8.1.5.2. <code class="docutils literal"><span class="pre">Binary_Case_Statements</span></code></a></li>
+<li><a class="reference internal" href="#default-values-for-record-components">8.1.5.3. <code class="docutils literal"><span class="pre">Default_Values_For_Record_Components</span></code></a></li>
+<li><a class="reference internal" href="#deriving-from-predefined-type">8.1.5.4. <code class="docutils literal"><span class="pre">Deriving_From_Predefined_Type</span></code></a></li>
+<li><a class="reference internal" href="#enumeration-ranges-in-case-statements">8.1.5.5. <code class="docutils literal"><span class="pre">Enumeration_Ranges_In_CASE_Statements</span></code></a></li>
+<li><a class="reference internal" href="#enumeration-representation-clauses">8.1.5.6. <code class="docutils literal"><span class="pre">Enumeration_Representation_Clauses</span></code></a></li>
+<li><a class="reference internal" href="#exceptions-as-control-flow">8.1.5.7. <code class="docutils literal"><span class="pre">Exceptions_As_Control_Flow</span></code></a></li>
+<li><a class="reference internal" href="#exits-from-conditional-loops">8.1.5.8. <code class="docutils literal"><span class="pre">Exits_From_Conditional_Loops</span></code></a></li>
+<li><a class="reference internal" href="#exit-statements-with-no-loop-name">8.1.5.9. <code class="docutils literal"><span class="pre">EXIT_Statements_With_No_Loop_Name</span></code></a></li>
+<li><a class="reference internal" href="#global-variables">8.1.5.10. <code class="docutils literal"><span class="pre">Global_Variables</span></code></a></li>
+<li><a class="reference internal" href="#goto-statements">8.1.5.11. <code class="docutils literal"><span class="pre">GOTO_Statements</span></code></a></li>
+<li><a class="reference internal" href="#improper-returns">8.1.5.12. <code class="docutils literal"><span class="pre">Improper_Returns</span></code></a></li>
+<li><a class="reference internal" href="#maximum-parameters">8.1.5.13. <code class="docutils literal"><span class="pre">Maximum_Parameters</span></code></a></li>
+<li><a class="reference internal" href="#nested-subprograms">8.1.5.14. <code class="docutils literal"><span class="pre">Nested_Subprograms</span></code></a></li>
+<li><a class="reference internal" href="#non-short-circuit-operators">8.1.5.15. <code class="docutils literal"><span class="pre">Non_Short_Circuit_Operators</span></code></a></li>
+<li><a class="reference internal" href="#null-paths">8.1.5.16. <code class="docutils literal"><span class="pre">Null_Paths</span></code></a></li>
+<li><a class="reference internal" href="#objects-of-anonymous-types">8.1.5.17. <code class="docutils literal"><span class="pre">Objects_Of_Anonymous_Types</span></code></a></li>
+<li><a class="reference internal" href="#others-in-aggregates">8.1.5.18. <code class="docutils literal"><span class="pre">OTHERS_In_Aggregates</span></code></a></li>
+<li><a class="reference internal" href="#others-in-case-statements">8.1.5.19. <code class="docutils literal"><span class="pre">OTHERS_In_CASE_Statements</span></code></a></li>
+<li><a class="reference internal" href="#others-in-exception-handlers">8.1.5.20. <code class="docutils literal"><span class="pre">OTHERS_In_Exception_Handlers</span></code></a></li>
+<li><a class="reference internal" href="#overly-nested-control-structures">8.1.5.21. <code class="docutils literal"><span class="pre">Overly_Nested_Control_Structures</span></code></a></li>
+<li><a class="reference internal" href="#pos-on-enumeration-types">8.1.5.22. <code class="docutils literal"><span class="pre">POS_On_Enumeration_Types</span></code></a></li>
+<li><a class="reference internal" href="#positional-actuals-for-defaulted-generic-parameters">8.1.5.23. <code class="docutils literal"><span class="pre">Positional_Actuals_For_Defaulted_Generic_Parameters</span></code></a></li>
+<li><a class="reference internal" href="#positional-actuals-for-defaulted-parameters">8.1.5.24. <code class="docutils literal"><span class="pre">Positional_Actuals_For_Defaulted_Parameters</span></code></a></li>
+<li><a class="reference internal" href="#positional-components">8.1.5.25. <code class="docutils literal"><span class="pre">Positional_Components</span></code></a></li>
+<li><a class="reference internal" href="#positional-generic-parameters">8.1.5.26. <code class="docutils literal"><span class="pre">Positional_Generic_Parameters</span></code></a></li>
+<li><a class="reference internal" href="#positional-parameters">8.1.5.27. <code class="docutils literal"><span class="pre">Positional_Parameters</span></code></a></li>
+<li><a class="reference internal" href="#recursive-subprograms">8.1.5.28. <code class="docutils literal"><span class="pre">Recursive_Subprograms</span></code></a></li>
+<li><a class="reference internal" href="#unchecked-address-conversions">8.1.5.29. <code class="docutils literal"><span class="pre">Unchecked_Address_Conversions</span></code></a></li>
+<li><a class="reference internal" href="#unchecked-conversions-as-actuals">8.1.5.30. <code class="docutils literal"><span class="pre">Unchecked_Conversions_As_Actuals</span></code></a></li>
+<li><a class="reference internal" href="#unconditional-exits">8.1.5.31. <code class="docutils literal"><span class="pre">Unconditional_Exits</span></code></a></li>
+<li><a class="reference internal" href="#uninitialized-global-variables">8.1.5.32. <code class="docutils literal"><span class="pre">Uninitialized_Global_Variables</span></code></a></li>
+<li><a class="reference internal" href="#unnamed-blocks-and-loops">8.1.5.33. <code class="docutils literal"><span class="pre">Unnamed_Blocks_And_Loops</span></code></a></li>
+<li><a class="reference internal" href="#use-package-clauses">8.1.5.34. <code class="docutils literal"><span class="pre">USE_PACKAGE_Clauses</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#readability">8.1.6. Readability</a><ul>
+<li><a class="reference internal" href="#identifier-casing">8.1.6.1. <code class="docutils literal"><span class="pre">Identifier_Casing</span></code></a></li>
+<li><a class="reference internal" href="#identifier-prefixes">8.1.6.2. <code class="docutils literal"><span class="pre">Identifier_Prefixes</span></code></a></li>
+<li><a class="reference internal" href="#identifier-suffixes">8.1.6.3. <code class="docutils literal"><span class="pre">Identifier_Suffixes</span></code></a></li>
+<li><a class="reference internal" href="#misnamed-controlling-parameters">8.1.6.4. <code class="docutils literal"><span class="pre">Misnamed_Controlling_Parameters</span></code></a></li>
+<li><a class="reference internal" href="#name-clashes">8.1.6.5. <code class="docutils literal"><span class="pre">Name_Clashes</span></code></a></li>
+<li><a class="reference internal" href="#uncommented-begin-in-package-bodies">8.1.6.6. <code class="docutils literal"><span class="pre">Uncommented_BEGIN_In_Package_Bodies</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#source-code-presentation">8.1.7. Source Code Presentation</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#feature-usage-rules">8.2. Feature Usage Rules</a><ul>
+<li><a class="reference internal" href="#abstract-type-declarations">8.2.1. <code class="docutils literal"><span class="pre">Abstract_Type_Declarations</span></code></a></li>
+<li><a class="reference internal" href="#anonymous-subtypes">8.2.2. <code class="docutils literal"><span class="pre">Anonymous_Subtypes</span></code></a></li>
+<li><a class="reference internal" href="#blocks">8.2.3. <code class="docutils literal"><span class="pre">Blocks</span></code></a></li>
+<li><a class="reference internal" href="#complex-inlined-subprograms">8.2.4. <code class="docutils literal"><span class="pre">Complex_Inlined_Subprograms</span></code></a></li>
+<li><a class="reference internal" href="#conditional-expressions">8.2.5. <code class="docutils literal"><span class="pre">Conditional_Expressions</span></code></a></li>
+<li><a class="reference internal" href="#controlled-type-declarations">8.2.6. <code class="docutils literal"><span class="pre">Controlled_Type_Declarations</span></code></a></li>
+<li><a class="reference internal" href="#declarations-in-blocks">8.2.7. <code class="docutils literal"><span class="pre">Declarations_In_Blocks</span></code></a></li>
+<li><a class="reference internal" href="#deeply-nested-inlining">8.2.8. <code class="docutils literal"><span class="pre">Deeply_Nested_Inlining</span></code></a></li>
+<li><a class="reference internal" href="#default-parameters">8.2.9. <code class="docutils literal"><span class="pre">Default_Parameters</span></code></a></li>
+<li><a class="reference internal" href="#discriminated-records">8.2.10. <code class="docutils literal"><span class="pre">Discriminated_Records</span></code></a></li>
+<li><a class="reference internal" href="#explicit-full-discrete-ranges">8.2.11. <code class="docutils literal"><span class="pre">Explicit_Full_Discrete_Ranges</span></code></a></li>
+<li><a class="reference internal" href="#fixed-equality-checks">8.2.12. <code class="docutils literal"><span class="pre">Fixed_Equality_Checks</span></code></a></li>
+<li><a class="reference internal" href="#float-equality-checks">8.2.13. <code class="docutils literal"><span class="pre">Float_Equality_Checks</span></code></a></li>
+<li><a class="reference internal" href="#function-style-procedures">8.2.14. <code class="docutils literal"><span class="pre">Function_Style_Procedures</span></code></a></li>
+<li><a class="reference internal" href="#generics-in-subprograms">8.2.15. <code class="docutils literal"><span class="pre">Generics_In_Subprograms</span></code></a></li>
+<li><a class="reference internal" href="#implicit-in-mode-parameters">8.2.16. <code class="docutils literal"><span class="pre">Implicit_IN_Mode_Parameters</span></code></a></li>
+<li><a class="reference internal" href="#improperly-located-instantiations">8.2.17. <code class="docutils literal"><span class="pre">Improperly_Located_Instantiations</span></code></a></li>
+<li><a class="reference internal" href="#library-level-subprograms">8.2.18. <code class="docutils literal"><span class="pre">Library_Level_Subprograms</span></code></a></li>
+<li><a class="reference internal" href="#membership-tests">8.2.19. <code class="docutils literal"><span class="pre">Membership_Tests</span></code></a></li>
+<li><a class="reference internal" href="#non-qualified-aggregates">8.2.20. <code class="docutils literal"><span class="pre">Non_Qualified_Aggregates</span></code></a></li>
+<li><a class="reference internal" href="#numeric-literals">8.2.21. <code class="docutils literal"><span class="pre">Numeric_Literals</span></code></a></li>
+<li><a class="reference internal" href="#parameters-out-of-order">8.2.22. <code class="docutils literal"><span class="pre">Parameters_Out_Of_Order</span></code></a></li>
+<li><a class="reference internal" href="#predicate-testing">8.2.23. <code class="docutils literal"><span class="pre">Predicate_Testing</span></code></a></li>
+<li><a class="reference internal" href="#quantified-expressions">8.2.24. <code class="docutils literal"><span class="pre">Quantified_Expressions</span></code></a></li>
+<li><a class="reference internal" href="#raising-predefined-exceptions">8.2.25. <code class="docutils literal"><span class="pre">Raising_Predefined_Exceptions</span></code></a></li>
+<li><a class="reference internal" href="#unassigned-out-parameters">8.2.26. <code class="docutils literal"><span class="pre">Unassigned_OUT_Parameters</span></code></a></li>
+<li><a class="reference internal" href="#unconstrained-array-returns">8.2.27. <code class="docutils literal"><span class="pre">Unconstrained_Array_Returns</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#metrics-related-rules">8.3. Metrics-Related Rules</a><ul>
+<li><a class="reference internal" href="#metrics-essential-complexity">8.3.1. <code class="docutils literal"><span class="pre">Metrics_Essential_Complexity</span></code></a></li>
+<li><a class="reference internal" href="#metrics-cyclomatic-complexity">8.3.2. <code class="docutils literal"><span class="pre">Metrics_Cyclomatic_Complexity</span></code></a></li>
+<li><a class="reference internal" href="#metrics-lsloc">8.3.3. <code class="docutils literal"><span class="pre">Metrics_LSLOC</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#spark-ada-rules">8.4. SPARK Ada Rules</a><ul>
+<li><a class="reference internal" href="#annotated-comments">8.4.1. <code class="docutils literal"><span class="pre">Annotated_Comments</span></code></a></li>
+<li><a class="reference internal" href="#boolean-relational-operators">8.4.2. <code class="docutils literal"><span class="pre">Boolean_Relational_Operators</span></code></a></li>
+<li><a class="reference internal" href="#expanded-loop-exit-names">8.4.3. <code class="docutils literal"><span class="pre">Expanded_Loop_Exit_Names</span></code></a></li>
+<li><a class="reference internal" href="#non-spark-attributes">8.4.4. <code class="docutils literal"><span class="pre">Non_SPARK_Attributes</span></code></a></li>
+<li><a class="reference internal" href="#non-tagged-derived-types">8.4.5. <code class="docutils literal"><span class="pre">Non_Tagged_Derived_Types</span></code></a></li>
+<li><a class="reference internal" href="#outer-loop-exits">8.4.6. <code class="docutils literal"><span class="pre">Outer_Loop_Exits</span></code></a></li>
+<li><a class="reference internal" href="#overloaded-operators">8.4.7. <code class="docutils literal"><span class="pre">Overloaded_Operators</span></code></a></li>
+<li><a class="reference internal" href="#slices">8.4.8. <code class="docutils literal"><span class="pre">Slices</span></code></a></li>
+<li><a class="reference internal" href="#universal-ranges">8.4.9. <code class="docutils literal"><span class="pre">Universal_Ranges</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="rule_exemption.html"
+                        title="previous chapter">7. Rule exemption</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="example_of_gnatcheck_usage.html"
+                        title="next chapter">9. Example of <em>gnatcheck</em> Usage</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/gnatcheck_rm/predefined_rules.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="predefined-rules">
+<span id="id1"></span><h1>8. Predefined Rules<a class="headerlink" href="#predefined-rules" title="Permalink to this headline">¶</a></h1>
+<p id="index-0">The description of the rules currently implemented in <em>gnatcheck</em> is
+given in this chapter.
+The rule identifier is
+used as a parameter of <em>gnatcheck</em>&#8216;s <code class="docutils literal"><span class="pre">+R</span></code> or <code class="docutils literal"><span class="pre">-R</span></code>
+switches.</p>
+<p>Be aware that most of these rules apply to specialized coding
+requirements developed by individual users and may well not make sense in
+other environments. In particular, there are many rules that conflict
+with one another. Proper usage of gnatcheck involves selecting the rules
+you wish to apply by looking at your independently developed coding
+standards and finding the corresponding gnatcheck rules.</p>
+<p>If not otherwise specified, a rule does not do any check for the
+results of generic instantiations.</p>
+<div class="section" id="style-related-rules">
+<h2>8.1. Style-Related Rules<a class="headerlink" href="#style-related-rules" title="Permalink to this headline">¶</a></h2>
+<p id="index-1">The rules in this section may be used to enforce various feature usages
+consistent with good software engineering, for example
+as described in Ada 95 Quality and Style.</p>
+<div class="section" id="tasking">
+<span id="id2"></span><h3>8.1.1. Tasking<a class="headerlink" href="#tasking" title="Permalink to this headline">¶</a></h3>
+<p id="index-2">The rules in this subsection may be used to enforce various
+feature usages related to concurrency.</p>
+<div class="section" id="multiple-entries-in-protected-definitions">
+<span id="id3"></span><h4>8.1.1.1. <code class="docutils literal"><span class="pre">Multiple_Entries_In_Protected_Definitions</span></code><a class="headerlink" href="#multiple-entries-in-protected-definitions" title="Permalink to this headline">¶</a></h4>
+<p id="index-3">Flag each protected definition (i.e., each protected object/type declaration)
+that declares more than one entry.
+Diagnostic messages are generated for all the entry declarations
+except the first one. An entry family is counted as one entry. Entries from
+the private part of the protected definition are also checked.</p>
+<p>This rule has no parameters.</p>
+</div>
+<div class="section" id="volatile-objects-without-address-clauses">
+<span id="id4"></span><h4>8.1.1.2. <code class="docutils literal"><span class="pre">Volatile_Objects_Without_Address_Clauses</span></code><a class="headerlink" href="#volatile-objects-without-address-clauses" title="Permalink to this headline">¶</a></h4>
+<p id="index-4">Flag each volatile object that does not have an address clause.</p>
+<p>The following check is made: if the pragma <code class="docutils literal"><span class="pre">Volatile</span></code> is applied to a
+data object or to its type, then an address clause must
+be supplied for this object.</p>
+<p>This rule does not check the components of data objects,
+array components that are volatile as a result of the pragma
+<code class="docutils literal"><span class="pre">Volatile_Components</span></code>, or objects that are volatile because
+they are atomic as a result of pragmas <code class="docutils literal"><span class="pre">Atomic</span></code> or
+<code class="docutils literal"><span class="pre">Atomic_Components</span></code>.</p>
+<p>Only variable declarations, and not constant declarations, are checked.</p>
+<p>This rule has no parameters.</p>
+</div>
+</div>
+<div class="section" id="object-orientation">
+<span id="id5"></span><h3>8.1.2. Object Orientation<a class="headerlink" href="#object-orientation" title="Permalink to this headline">¶</a></h3>
+<p id="index-5">The rules in this subsection may be used to enforce various
+feature usages related to Object-Oriented Programming.</p>
+<div class="section" id="deep-inheritance-hierarchies">
+<span id="id6"></span><h4>8.1.2.1. <code class="docutils literal"><span class="pre">Deep_Inheritance_Hierarchies</span></code><a class="headerlink" href="#deep-inheritance-hierarchies" title="Permalink to this headline">¶</a></h4>
+<p id="index-6">Flags a tagged derived type declaration or an interface type declaration if
+its depth (in its inheritance hierarchy) exceeds the value specified by the
+<em>N</em> rule parameter. Types in generic instantiations which violate this
+rule are also flagged; generic formal types are not flagged. This rule also
+does not flag private extension declarations. In the case of a private
+extension, the corresponding full declaration is checked.</p>
+<p>In most cases, the inheritance depth of a tagged type or interface type is
+defined as 0 for a type with no parent and no progenitor, and otherwise as 1 +
+max of the depths of the immediate parent and immediate progenitors. If the
+declaration of a formal derived type has no progenitor, or if the declaration
+of a formal interface type has exactly one progenitor, then the inheritance
+depth of such a formal derived/interface type is equal to the inheritance
+depth of its parent/progenitor type, otherwise the general rule is applied.</p>
+<p>If the rule flags a type declaration inside the generic unit, this means that
+this type declaration will be flagged in any instantiation of the generic
+unit. But if a type is derived from a format type or has a formal progenitor
+and it is not flagged at the place where it is defined in a generic unit, it
+may or may not be flagged in instantiation, this depends of the inheritance
+depth of the actual parameters.</p>
+<p>This rule has the following (mandatory) parameter for the <code class="docutils literal"><span class="pre">+R</span></code> option:</p>
+<dl class="docutils">
+<dt><em>N</em></dt>
+<dd>Integer not less than -1 specifying the maximal allowed depth of any
+inheritance hierarchy. If the rule parameter is set to -1, the rule
+flags all the declarations of tagged and interface types.</dd>
+</dl>
+</div>
+<div class="section" id="direct-calls-to-primitives">
+<span id="id7"></span><h4>8.1.2.2. <code class="docutils literal"><span class="pre">Direct_Calls_To_Primitives</span></code><a class="headerlink" href="#direct-calls-to-primitives" title="Permalink to this headline">¶</a></h4>
+<p id="index-7">Flag any nondispatching call to a dispatching primitive operation, except for:</p>
+<ul class="simple">
+<li>a call to the corresponding primitive of the parent type.  (This
+occurs in the common idiom where a primitive subprogram for a tagged type
+directly calls the same primitive subprogram of the parent type.)</li>
+<li>a call to a primitive of an untagged private type, even though the full type
+may be tagged, when the call is made at a place where the view of the type is
+untagged.</li>
+</ul>
+<p>This rule has the following (optional) parameters for the <code class="docutils literal"><span class="pre">+R</span></code> option:</p>
+<dl class="docutils">
+<dt><em>Except_Constructors</em></dt>
+<dd>Do not flag nondispatching calls to functions if the function has a
+controlling result and no controlling parameters (in a traditional OO sense
+such functions may be considered as constructors).</dd>
+</dl>
+</div>
+<div class="section" id="too-many-parents">
+<span id="id8"></span><h4>8.1.2.3. <code class="docutils literal"><span class="pre">Too_Many_Parents</span></code><a class="headerlink" href="#too-many-parents" title="Permalink to this headline">¶</a></h4>
+<p id="index-8">Flag any tagged type declaration, interface type declaration, single task
+declaration or single protected declaration that has more than <em>N</em>
+<em>parents</em>, where <em>N</em> is a parameter of the rule.
+A <em>parent</em> here is either a (sub)type denoted by the subtype mark from the
+parent_subtype_indication (in case of a derived type declaration), or
+any of the progenitors from the interface list (if any).</p>
+<p>This rule has the following (mandatory) parameters for the <code class="docutils literal"><span class="pre">+R</span></code> option:</p>
+<dl class="docutils">
+<dt><em>N</em></dt>
+<dd>Positive integer specifying the maximal allowed number of parents/progenitors.</dd>
+</dl>
+</div>
+<div class="section" id="visible-components">
+<span id="id9"></span><h4>8.1.2.4. <code class="docutils literal"><span class="pre">Visible_Components</span></code><a class="headerlink" href="#visible-components" title="Permalink to this headline">¶</a></h4>
+<p id="index-9">Flag all the type declarations located in the visible part of a library
+package or a library generic package that can declare a visible component.
+A visible component can be declared in a <em>record definition</em> which appears
+on its own or as part of a record extension.  The <em>record definition</em> is
+flagged even if it contains no components.</p>
+<p><em>Record definitions</em> located in private parts of library (generic) packages
+or in local (generic) packages are not flagged. <em>Record definitions</em> in
+private packages, in package bodies, and in the main subprogram body are not
+flagged.</p>
+<p>This rule has no parameters.</p>
+</div>
+</div>
+<div class="section" id="portability">
+<span id="id10"></span><h3>8.1.3. Portability<a class="headerlink" href="#portability" title="Permalink to this headline">¶</a></h3>
+<p id="index-10">The rules in this subsection may be used to enforce various
+feature usages that support program portability.</p>
+<div class="section" id="forbidden-attributes">
+<span id="id11"></span><h4>8.1.3.1. <code class="docutils literal"><span class="pre">Forbidden_Attributes</span></code><a class="headerlink" href="#forbidden-attributes" title="Permalink to this headline">¶</a></h4>
+<p id="index-11">Flag each use of the specified attributes. The attributes to be detected are
+named in the rule&#8217;s parameters.</p>
+<p>This rule has the following parameters:</p>
+<ul class="simple">
+<li>For the <code class="docutils literal"><span class="pre">+R</span></code> option</li>
+</ul>
+<dl class="docutils">
+<dt><em>Attribute_Designator</em></dt>
+<dd>Adds the specified attribute to the set of attributes to be detected and sets
+the detection checks for all the specified attributes ON.
+If <em>Attribute_Designator</em>
+does not denote any attribute defined in the Ada standard
+or in the GNAT Reference Manual,
+it is treated as the name of unknown attribute.</dd>
+<dt><code class="docutils literal"><span class="pre">GNAT</span></code></dt>
+<dd>All the GNAT-specific attributes are detected; this sets
+the detection checks for all the specified attributes ON.</dd>
+<dt><code class="docutils literal"><span class="pre">ALL</span></code></dt>
+<dd>All attributes are detected; this sets the rule ON.</dd>
+</dl>
+<ul class="simple">
+<li>For the <code class="docutils literal"><span class="pre">-R</span></code> option</li>
+</ul>
+<dl class="docutils">
+<dt><em>Attribute_Designator</em></dt>
+<dd>Removes the specified attribute from the set of attributes to be
+detected without affecting detection checks for
+other attributes. If <em>Attribute_Designator</em> does not correspond to any
+attribute defined in the Ada standard
+or in the GNAT Reference Manual,
+this option is treated as turning OFF detection of all unknown attributes.</dd>
+<dt>GNAT</dt>
+<dd>Turn OFF detection of all GNAT-specific attributes</dd>
+<dt>ALL</dt>
+<dd>Clear the list of the attributes to be detected and
+turn the rule OFF.</dd>
+</dl>
+<p>Parameters are not case sensitive. If <em>Attribute_Designator</em> does not
+have the syntax of an Ada identifier and therefore can not be considered as a
+(part of an) attribute designator, a diagnostic message is generated and the
+corresponding parameter is ignored. (If an attribute allows a static
+expression to be a part of the attribute designator, this expression is
+ignored by this rule.)</p>
+<p>When more than one parameter is given in the same rule option, the parameters
+must be separated by commas.</p>
+<p>If more than one option for this rule is specified for the gnatcheck call, a
+new option overrides the previous one(s).</p>
+<p>The <code class="docutils literal"><span class="pre">+R</span></code> option with no parameters turns the rule ON, with the set of
+attributes to be detected defined by the previous rule options.
+(By default this set is empty, so if the only option specified for the rule is
+<code class="docutils literal"><span class="pre">+RForbidden_Attributes</span></code> (with
+no parameter), then the rule is enabled, but it does not detect anything).
+The <code class="docutils literal"><span class="pre">-R</span></code> option with no parameter turns the rule OFF, but it does not
+affect the set of attributes to be detected.</p>
+<p>The rule allows parametric exemption, the parameters that are allowed in the
+definition of exemption sections are <em>Attribute_Designators</em>. Each
+<em>Attribute_Designator</em> used as a rule exemption parameter should denote
+a predefined or GNAT-specific attribute.</p>
+</div>
+<div class="section" id="forbidden-pragmas">
+<span id="id12"></span><h4>8.1.3.2. <code class="docutils literal"><span class="pre">Forbidden_Pragmas</span></code><a class="headerlink" href="#forbidden-pragmas" title="Permalink to this headline">¶</a></h4>
+<p id="index-12">Flag each use of the specified pragmas.  The pragmas to be detected
+are named in the rule&#8217;s  parameters.</p>
+<p>This rule has the following parameters:</p>
+<ul class="simple">
+<li>For the <code class="docutils literal"><span class="pre">+R</span></code> option</li>
+</ul>
+<dl class="docutils">
+<dt><em>Pragma_Name</em></dt>
+<dd>Adds the specified pragma to the set of pragmas to be
+checked and sets the checks for all the specified pragmas
+ON. <em>Pragma_Name</em> is treated as a name of a pragma. If it
+does not correspond to any pragma name defined in the Ada
+standard or to the name of a GNAT-specific pragma defined
+in the GNAT Reference Manual,
+it is treated as the name of unknown pragma.</dd>
+<dt><code class="docutils literal"><span class="pre">GNAT</span></code></dt>
+<dd>All the GNAT-specific pragmas are detected; this sets
+the checks for all the specified pragmas ON.</dd>
+<dt><code class="docutils literal"><span class="pre">ALL</span></code></dt>
+<dd>All pragmas are detected; this sets the rule ON.</dd>
+</dl>
+<ul class="simple">
+<li>For the <code class="docutils literal"><span class="pre">-R</span></code> option</li>
+</ul>
+<dl class="docutils">
+<dt><em>Pragma_Name</em></dt>
+<dd>Removes the specified pragma from the set of pragmas to be
+checked without affecting checks for
+other pragmas. <em>Pragma_Name</em> is treated as a name
+of a pragma. If it does not correspond to any pragma
+defined in the Ada standard or to any name defined
+in the GNAT Reference Manual,
+this option is treated as turning OFF detection of all unknown pragmas.</dd>
+<dt>GNAT</dt>
+<dd>Turn OFF detection of all GNAT-specific pragmas</dd>
+<dt>ALL</dt>
+<dd>Clear the list of the pragmas to be detected and
+turn the rule OFF.</dd>
+</dl>
+<p>Parameters are not case sensitive. If <em>Pragma_Name</em> does not have
+the syntax of an Ada identifier and therefore can not be considered
+as a pragma name, a diagnostic message is generated and the corresponding
+parameter is ignored.</p>
+<p>When more than one parameter is given in the same rule option, the parameters
+must be separated by a comma.</p>
+<p>If more than one option for this rule is specified for the <em>gnatcheck</em>
+call, a new option overrides the previous one(s).</p>
+<p>The <code class="docutils literal"><span class="pre">+R</span></code> option with no parameters turns the rule ON with the set of
+pragmas to be detected defined by the previous rule options.
+(By default this set is empty, so if the only option specified for the rule is
+<code class="docutils literal"><span class="pre">+RForbidden_Pragmas</span></code> (with
+no parameter), then the rule is enabled, but it does not detect anything).
+The <code class="docutils literal"><span class="pre">-R</span></code> option with no parameter turns the rule OFF, but it does not
+affect the set of pragmas to be detected.</p>
+<p>Note that in case when the rule is enabled with <em>ALL</em> parameter, then
+the rule will flag also pragmas <code class="docutils literal"><span class="pre">Annotate</span></code> used to exempt rules, see
+<a class="reference internal" href="rule_exemption.html#rule-exemption"><em>Rule exemption</em></a>. Even if you exempt this <em>Forbidden_Pragmas</em> rule
+then the pragma <code class="docutils literal"><span class="pre">Annotate</span></code> that closes the exemption section will be
+flagged as non-exempted. To avoid this, turn off the check for pragma
+<code class="docutils literal"><span class="pre">Annotate</span></code> by using <code class="docutils literal"><span class="pre">-RForbidden_Pragmas:Annotate</span></code> rule option.</p>
+<p>The rule allows parametric exemption, the parameters that are allowed in the
+definition of exemption sections are pragma names. Each
+name used as a rule exemption parameter should denote
+a predefined or GNAT-specific pragma.</p>
+</div>
+<div class="section" id="implicit-small-for-fixed-point-types">
+<span id="id13"></span><h4>8.1.3.3. <code class="docutils literal"><span class="pre">Implicit_SMALL_For_Fixed_Point_Types</span></code><a class="headerlink" href="#implicit-small-for-fixed-point-types" title="Permalink to this headline">¶</a></h4>
+<p id="index-13">Flag each fixed point type declaration that lacks an explicit
+representation  clause to define its <code class="docutils literal"><span class="pre">'Small</span></code> value.
+Since <code class="docutils literal"><span class="pre">'Small</span></code> can be  defined only for ordinary fixed point types,
+decimal fixed point type declarations are not checked.</p>
+<p>This rule has no parameters.</p>
+</div>
+<div class="section" id="no-scalar-storage-order-specified">
+<span id="id14"></span><h4>8.1.3.4. <code class="docutils literal"><span class="pre">No_Scalar_Storage_Order_Specified</span></code><a class="headerlink" href="#no-scalar-storage-order-specified" title="Permalink to this headline">¶</a></h4>
+<p id="index-14">Flag each record type declaration, record extension declaration, and
+untagged derived record type declaration if a
+record_representation_clause that has at least one component clause
+applies to it (or an ancestor), but neither the type nor any of its
+ancestors has an explicitly specified Scalar_Storage_Order attribute.</p>
+<p>This rule has no parameters.</p>
+</div>
+<div class="section" id="predefined-numeric-types">
+<span id="id15"></span><h4>8.1.3.5. <code class="docutils literal"><span class="pre">Predefined_Numeric_Types</span></code><a class="headerlink" href="#predefined-numeric-types" title="Permalink to this headline">¶</a></h4>
+<p id="index-15">Flag each explicit use of the name of any numeric type or subtype declared
+in package <code class="docutils literal"><span class="pre">Standard</span></code>.</p>
+<p>The rationale for this rule is to detect when the
+program may depend on platform-specific characteristics of the implementation
+of the predefined numeric types. Note that this rule is overly pessimistic;
+for example, a program that uses <code class="docutils literal"><span class="pre">String</span></code> indexing
+likely needs a variable of type <code class="docutils literal"><span class="pre">Integer</span></code>.
+Another example is the flagging of predefined numeric types with explicit
+constraints:</p>
+<div class="highlight-ada"><div class="highlight"><pre><span class="kr">subtype</span><span class="p"> </span><span class="n">My_Integer</span> <span class="kr">is</span><span class="p"> </span><span class="n">Integer</span> <span class="kr">range</span><span class="p"> </span><span class="n">Left</span> <span class="o">..</span> <span class="n">Right</span><span class="p">;</span>
+<span class="n">Vy_Var</span> <span class="o">:</span> <span class="n">My_Integer</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>This rule detects only numeric types and subtypes declared in package
+<code class="docutils literal"><span class="pre">Standard</span></code>. The use of numeric types and subtypes declared in other
+predefined packages (such as <code class="docutils literal"><span class="pre">System.Any_Priority</span></code> or
+<code class="docutils literal"><span class="pre">Ada.Text_IO.Count</span></code>) is not flagged</p>
+<p>This rule has no parameters.</p>
+</div>
+<div class="section" id="separate-numeric-error-handlers">
+<span id="id16"></span><h4>8.1.3.6. <code class="docutils literal"><span class="pre">Separate_Numeric_Error_Handlers</span></code><a class="headerlink" href="#separate-numeric-error-handlers" title="Permalink to this headline">¶</a></h4>
+<p id="index-16">Flags each exception handler that contains a choice for
+the predefined <code class="docutils literal"><span class="pre">Constraint_Error</span></code> exception, but does not contain
+the choice for the predefined <code class="docutils literal"><span class="pre">Numeric_Error</span></code> exception, or
+that contains the choice for <code class="docutils literal"><span class="pre">Numeric_Error</span></code>, but does not contain the
+choice for <code class="docutils literal"><span class="pre">Constraint_Error</span></code>.</p>
+<p>This rule has no parameters.</p>
+</div>
+</div>
+<div class="section" id="program-structure">
+<span id="id17"></span><h3>8.1.4. Program Structure<a class="headerlink" href="#program-structure" title="Permalink to this headline">¶</a></h3>
+<p id="index-17">The rules in this subsection may be used to enforce feature usages
+related to program structure.</p>
+<div class="section" id="deeply-nested-generics">
+<span id="id18"></span><h4>8.1.4.1. <code class="docutils literal"><span class="pre">Deeply_Nested_Generics</span></code><a class="headerlink" href="#deeply-nested-generics" title="Permalink to this headline">¶</a></h4>
+<p id="index-18">Flag a generic declaration nested in another generic declaration if
+the nesting level of the inner generic exceeds
+the value specified by the <em>N</em> rule parameter.
+The nesting level is the number of generic declarations that enclose the given
+(generic) declaration. Formal packages are not flagged by this rule.</p>
+<p>This rule has the following (mandatory) parameters for the <code class="docutils literal"><span class="pre">+R</span></code> option:</p>
+<dl class="docutils">
+<dt><em>N</em></dt>
+<dd>Positive integer specifying the maximum nesting level for a
+generic declaration.</dd>
+</dl>
+</div>
+<div class="section" id="local-packages">
+<span id="id19"></span><h4>8.1.4.2. <code class="docutils literal"><span class="pre">Local_Packages</span></code><a class="headerlink" href="#local-packages" title="Permalink to this headline">¶</a></h4>
+<p id="index-19">Flag all local packages declared in package and generic package
+specs.
+Local packages in bodies are not flagged.</p>
+<p>This rule has no parameters.</p>
+</div>
+<div class="section" id="non-visible-exceptions">
+<span id="id20"></span><h4>8.1.4.3. <code class="docutils literal"><span class="pre">Non_Visible_Exceptions</span></code><a class="headerlink" href="#non-visible-exceptions" title="Permalink to this headline">¶</a></h4>
+<p id="index-20">Flag constructs leading to the possibility of propagating an exception
+out of the scope in which the exception is declared.
+Two cases are detected:</p>
+<ul class="simple">
+<li>An exception declaration in a subprogram body, task body or block
+statement is flagged if the body or statement does not contain a handler for
+that exception or a handler with an <code class="docutils literal"><span class="pre">others</span></code> choice.</li>
+<li>A <code class="docutils literal"><span class="pre">raise</span></code> statement in an exception handler of a subprogram body,
+task body or block statement is flagged if it (re)raises a locally
+declared exception.  This may occur under the following circumstances:<ul>
+<li>it explicitly raises a locally declared exception, or</li>
+<li>it does not specify an exception name (i.e., it is simply <code class="docutils literal"><span class="pre">raise;</span></code>)
+and the enclosing handler contains a locally declared exception in its
+exception choices.</li>
+</ul>
+</li>
+</ul>
+<p>Renamings of local exceptions are not flagged.</p>
+<p>This rule has no parameters.</p>
+</div>
+<div class="section" id="raising-external-exceptions">
+<span id="id21"></span><h4>8.1.4.4. <code class="docutils literal"><span class="pre">Raising_External_Exceptions</span></code><a class="headerlink" href="#raising-external-exceptions" title="Permalink to this headline">¶</a></h4>
+<p id="index-21">Flag any <code class="docutils literal"><span class="pre">raise</span></code> statement, in a program unit declared in a library
+package or in a generic library package, for an exception that is
+neither a predefined exception nor an exception that is also declared (or
+renamed) in the visible part of the package.</p>
+<p>This rule has no parameters.</p>
+</div>
+</div>
+<div class="section" id="programming-practice">
+<span id="id22"></span><h3>8.1.5. Programming Practice<a class="headerlink" href="#programming-practice" title="Permalink to this headline">¶</a></h3>
+<p id="index-22">The rules in this subsection may be used to enforce feature usages that
+relate to program maintainability.</p>
+<div class="section" id="anonymous-arrays">
+<span id="id23"></span><h4>8.1.5.1. <code class="docutils literal"><span class="pre">Anonymous_Arrays</span></code><a class="headerlink" href="#anonymous-arrays" title="Permalink to this headline">¶</a></h4>
+<p id="index-23">Flag all anonymous array type definitions (by Ada semantics these can only
+occur in object declarations).</p>
+<p>This rule has no parameters.</p>
+</div>
+<div class="section" id="binary-case-statements">
+<span id="id24"></span><h4>8.1.5.2. <code class="docutils literal"><span class="pre">Binary_Case_Statements</span></code><a class="headerlink" href="#binary-case-statements" title="Permalink to this headline">¶</a></h4>
+<p id="index-24">Flag a case statement if this statement has only two alternatives, one
+containing exactly one choice, the other containing exactly one choice
+or the <code class="docutils literal"><span class="pre">OTHERS</span></code> choice.</p>
+<p>This rule has no parameters.</p>
+</div>
+<div class="section" id="default-values-for-record-components">
+<span id="id25"></span><h4>8.1.5.3. <code class="docutils literal"><span class="pre">Default_Values_For_Record_Components</span></code><a class="headerlink" href="#default-values-for-record-components" title="Permalink to this headline">¶</a></h4>
+<p id="index-25">Flag a record component declaration if it contains a default expression.
+Do not flag record component declarations in protected definitions.
+Do not flag discriminant specifications.</p>
+<p>This rule has no parameters.</p>
+</div>
+<div class="section" id="deriving-from-predefined-type">
+<span id="id26"></span><h4>8.1.5.4. <code class="docutils literal"><span class="pre">Deriving_From_Predefined_Type</span></code><a class="headerlink" href="#deriving-from-predefined-type" title="Permalink to this headline">¶</a></h4>
+<p id="index-26">Flag derived type declaration if the ultimate ancestor type is a
+predefined Ada type. Do not flag record extensions and private
+extensions. The rule is checked inside expanded generics.</p>
+<p>This rule has no parameters.</p>
+</div>
+<div class="section" id="enumeration-ranges-in-case-statements">
+<span id="id27"></span><h4>8.1.5.5. <code class="docutils literal"><span class="pre">Enumeration_Ranges_In_CASE_Statements</span></code><a class="headerlink" href="#enumeration-ranges-in-case-statements" title="Permalink to this headline">¶</a></h4>
+<p id="index-27">Flag each use of a range of enumeration literals as a choice in a
+<code class="docutils literal"><span class="pre">case</span></code> statement.
+All forms for specifying a range (explicit ranges
+such as <code class="docutils literal"><span class="pre">A</span> <span class="pre">..</span> <span class="pre">B</span></code>, subtype marks and <code class="docutils literal"><span class="pre">'Range</span></code> attributes) are flagged.
+An enumeration range is
+flagged even if contains exactly one enumeration value or no values at all. A
+type derived from an enumeration type is considered as an enumeration type.</p>
+<p>This rule helps prevent maintenance problems arising from adding an
+enumeration value to a type and having it implicitly handled by an existing
+<code class="docutils literal"><span class="pre">case</span></code> statement with an enumeration range that includes the new literal.</p>
+<p>This rule has no parameters.</p>
+</div>
+<div class="section" id="enumeration-representation-clauses">
+<span id="id28"></span><h4>8.1.5.6. <code class="docutils literal"><span class="pre">Enumeration_Representation_Clauses</span></code><a class="headerlink" href="#enumeration-representation-clauses" title="Permalink to this headline">¶</a></h4>
+<p id="index-28">Flag enumeration representation clauses.</p>
+<p>This rule has no parameters.</p>
+</div>
+<div class="section" id="exceptions-as-control-flow">
+<span id="id29"></span><h4>8.1.5.7. <code class="docutils literal"><span class="pre">Exceptions_As_Control_Flow</span></code><a class="headerlink" href="#exceptions-as-control-flow" title="Permalink to this headline">¶</a></h4>
+<p id="index-29">Flag each place where an exception is explicitly raised and handled in the
+same subprogram body. A <code class="docutils literal"><span class="pre">raise</span></code> statement in an exception handler,
+package body, task body or entry body is not flagged.</p>
+<p>The rule has no parameters.</p>
+</div>
+<div class="section" id="exits-from-conditional-loops">
+<span id="id30"></span><h4>8.1.5.8. <code class="docutils literal"><span class="pre">Exits_From_Conditional_Loops</span></code><a class="headerlink" href="#exits-from-conditional-loops" title="Permalink to this headline">¶</a></h4>
+<p id="index-30">Flag any exit statement if it transfers the control out of a <code class="docutils literal"><span class="pre">for</span></code> loop
+or a <code class="docutils literal"><span class="pre">while</span></code> loop. This includes cases when the <code class="docutils literal"><span class="pre">exit</span></code> statement
+applies to a <code class="docutils literal"><span class="pre">FOR</span></code> or <code class="docutils literal"><span class="pre">while</span></code> loop, and cases when it is enclosed
+in some <code class="docutils literal"><span class="pre">for</span></code> or <code class="docutils literal"><span class="pre">while</span></code> loop, but transfers the control from some
+outer (unconditional) <code class="docutils literal"><span class="pre">loop</span></code> statement.</p>
+<p>The rule has no parameters.</p>
+</div>
+<div class="section" id="exit-statements-with-no-loop-name">
+<span id="id31"></span><h4>8.1.5.9. <code class="docutils literal"><span class="pre">EXIT_Statements_With_No_Loop_Name</span></code><a class="headerlink" href="#exit-statements-with-no-loop-name" title="Permalink to this headline">¶</a></h4>
+<p id="index-31">Flag each <code class="docutils literal"><span class="pre">exit</span></code> statement that does not specify the name of the loop
+being exited.</p>
+<p>The rule has no parameters.</p>
+</div>
+<div class="section" id="global-variables">
+<span id="id32"></span><h4>8.1.5.10. <code class="docutils literal"><span class="pre">Global_Variables</span></code><a class="headerlink" href="#global-variables" title="Permalink to this headline">¶</a></h4>
+<p id="index-32">Flag any variable declaration that appears immediately within the
+specification of a library package or library generic package. Variable
+declarations in nested packages and inside package instantiations are
+not flagged.</p>
+<p>This rule has the following (optional) parameters for the <code class="docutils literal"><span class="pre">+R</span></code> option:</p>
+<dl class="docutils">
+<dt><em>Only_Public</em></dt>
+<dd>Do not flag variable declarations in private library (generic) packages and
+in package privat parts.</dd>
+</dl>
+</div>
+<div class="section" id="goto-statements">
+<span id="id33"></span><h4>8.1.5.11. <code class="docutils literal"><span class="pre">GOTO_Statements</span></code><a class="headerlink" href="#goto-statements" title="Permalink to this headline">¶</a></h4>
+<p id="index-33">Flag each occurrence of a <code class="docutils literal"><span class="pre">goto</span></code> statement.</p>
+<p>This rule has no parameters.</p>
+</div>
+<div class="section" id="improper-returns">
+<span id="id34"></span><h4>8.1.5.12. <code class="docutils literal"><span class="pre">Improper_Returns</span></code><a class="headerlink" href="#improper-returns" title="Permalink to this headline">¶</a></h4>
+<p id="index-34">Flag each explicit <code class="docutils literal"><span class="pre">return</span></code> statement in procedures, and
+multiple <code class="docutils literal"><span class="pre">return</span></code> statements in functions.
+Diagnostic messages are generated for all <code class="docutils literal"><span class="pre">return</span></code> statements
+in a procedure (thus each procedure must be written so that it
+returns implicitly at the end of its statement part),
+and for all <code class="docutils literal"><span class="pre">return</span></code> statements in a function after the first one.
+This rule supports the stylistic convention that each subprogram
+should have no more than one point of normal return.</p>
+<p>This rule has no parameters.</p>
+</div>
+<div class="section" id="maximum-parameters">
+<span id="id35"></span><h4>8.1.5.13. <code class="docutils literal"><span class="pre">Maximum_Parameters</span></code><a class="headerlink" href="#maximum-parameters" title="Permalink to this headline">¶</a></h4>
+<p id="index-35">Flag any subprogram declaration, subprogram body declaration, expression
+function declaration, null procedure declaration, subprogram
+body stub or generic subprogram declaration if the corresponding
+subprogram has more than <em>N</em> formal parameters, where <em>N</em> is a
+parameter of the rule.</p>
+<p>A subprogram body, an expression function, a null procedure or
+a subprogram body stub is flagged only if there is
+no separate declaration for this subprogram. Subprogram renaming
+declarations and subprogram instantiations, as well as declarations
+inside expanded generic instantiations are never flagged.</p>
+<p>This rule has the following (mandatory) parameters for the <code class="docutils literal"><span class="pre">+R</span></code> option:</p>
+<dl class="docutils">
+<dt><em>N</em></dt>
+<dd>Positive integer specifying the maximum allowed total number of
+subprogram formal parameters.</dd>
+</dl>
+</div>
+<div class="section" id="nested-subprograms">
+<span id="id36"></span><h4>8.1.5.14. <code class="docutils literal"><span class="pre">Nested_Subprograms</span></code><a class="headerlink" href="#nested-subprograms" title="Permalink to this headline">¶</a></h4>
+<p id="index-36">Flag any subprogram declaration, subprogram body declaration, subprogram
+instantiation, expression function declaration or subprogram body stub
+that is not a completion of another subprogram declaration and that is
+declared within subprogram body (including bodies of generic
+subprograms), task body or entry body directly or indirectly (that is -
+inside a local nested package). Protected subprograms are not flagged.
+Null procedure declarations are not flagged. Procedure declarations
+completed by null procedure declarations are not flagged.</p>
+<p>This rule has no parameters.</p>
+</div>
+<div class="section" id="non-short-circuit-operators">
+<span id="id37"></span><h4>8.1.5.15. <code class="docutils literal"><span class="pre">Non_Short_Circuit_Operators</span></code><a class="headerlink" href="#non-short-circuit-operators" title="Permalink to this headline">¶</a></h4>
+<p id="index-37">Flag all calls to predefined <code class="docutils literal"><span class="pre">and</span></code> and <code class="docutils literal"><span class="pre">or</span></code> operators for
+any boolean type. Calls to
+user-defined <code class="docutils literal"><span class="pre">and</span></code> and <code class="docutils literal"><span class="pre">or</span></code> and to operators defined by renaming
+declarations are not flagged. Calls to predefined <code class="docutils literal"><span class="pre">and</span></code> and <code class="docutils literal"><span class="pre">or</span></code>
+operators for modular types or boolean array types are not flagged.</p>
+<p>This rule has no parameters.</p>
+</div>
+<div class="section" id="null-paths">
+<span id="id38"></span><h4>8.1.5.16. <code class="docutils literal"><span class="pre">Null_Paths</span></code><a class="headerlink" href="#null-paths" title="Permalink to this headline">¶</a></h4>
+<p id="index-38">Flag a statement sequence that is a component of an IF, CASE or LOOP
+statement if this sequences consists of NULL statements only.</p>
+<p>This rule has no parameters.</p>
+</div>
+<div class="section" id="objects-of-anonymous-types">
+<span id="id39"></span><h4>8.1.5.17. <code class="docutils literal"><span class="pre">Objects_Of_Anonymous_Types</span></code><a class="headerlink" href="#objects-of-anonymous-types" title="Permalink to this headline">¶</a></h4>
+<p id="index-39">Flag any object declaration located immediately within a package
+declaration or a package body (including generic packages) if it uses
+anonymous access or array type definition. Record component definitions
+and parameter specifications are not flagged. Formal object declarations
+defined with anonymous access definitions are flagged.</p>
+<p>This rule has no parameters.</p>
+</div>
+<div class="section" id="others-in-aggregates">
+<span id="id40"></span><h4>8.1.5.18. <code class="docutils literal"><span class="pre">OTHERS_In_Aggregates</span></code><a class="headerlink" href="#others-in-aggregates" title="Permalink to this headline">¶</a></h4>
+<p id="index-40">Flag each use of an <code class="docutils literal"><span class="pre">others</span></code> choice in extension aggregates.
+In record and array aggregates, an <code class="docutils literal"><span class="pre">others</span></code> choice is flagged unless
+it is used to refer to all components, or to all but one component.</p>
+<p>If, in case of a named array aggregate, there are two associations, one
+with an <code class="docutils literal"><span class="pre">others</span></code> choice and another with a discrete range, the
+<code class="docutils literal"><span class="pre">others</span></code> choice is flagged even if the discrete range specifies
+exactly one component; for example, <code class="docutils literal"><span class="pre">(1..1</span> <span class="pre">=&gt;</span> <span class="pre">0,</span> <span class="pre">others</span> <span class="pre">=&gt;</span> <span class="pre">1)</span></code>.</p>
+<p>This rule has no parameters.</p>
+</div>
+<div class="section" id="others-in-case-statements">
+<span id="id41"></span><h4>8.1.5.19. <code class="docutils literal"><span class="pre">OTHERS_In_CASE_Statements</span></code><a class="headerlink" href="#others-in-case-statements" title="Permalink to this headline">¶</a></h4>
+<p id="index-41">Flag any use of an <code class="docutils literal"><span class="pre">others</span></code> choice in a <code class="docutils literal"><span class="pre">case</span></code> statement.</p>
+<p>This rule has no parameters.</p>
+</div>
+<div class="section" id="others-in-exception-handlers">
+<span id="id42"></span><h4>8.1.5.20. <code class="docutils literal"><span class="pre">OTHERS_In_Exception_Handlers</span></code><a class="headerlink" href="#others-in-exception-handlers" title="Permalink to this headline">¶</a></h4>
+<p id="index-42">Flag any use of an <code class="docutils literal"><span class="pre">others</span></code> choice in an exception handler.</p>
+<p>This rule has no parameters.</p>
+</div>
+<div class="section" id="overly-nested-control-structures">
+<span id="id43"></span><h4>8.1.5.21. <code class="docutils literal"><span class="pre">Overly_Nested_Control_Structures</span></code><a class="headerlink" href="#overly-nested-control-structures" title="Permalink to this headline">¶</a></h4>
+<p id="index-43">Flag each control structure whose nesting level exceeds the value provided
+in the rule parameter.</p>
+<p>The control structures checked are the following:</p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">if</span></code> statement</li>
+<li><code class="docutils literal"><span class="pre">case</span></code> statement</li>
+<li><code class="docutils literal"><span class="pre">loop</span></code> statement</li>
+<li>selective accept statement</li>
+<li>timed entry call statement</li>
+<li>conditional entry call statement</li>
+<li>asynchronous select statement</li>
+</ul>
+<p>The rule has the following parameter for the <code class="docutils literal"><span class="pre">+R</span></code> option:</p>
+<dl class="docutils">
+<dt><em>N</em></dt>
+<dd>Positive integer specifying the maximal control structure nesting
+level that is not flagged</dd>
+</dl>
+<p>If the parameter for the <code class="docutils literal"><span class="pre">+R</span></code> option is not specified or
+if it is not a positive integer, <code class="docutils literal"><span class="pre">+R</span></code> option is ignored.</p>
+<p>If more than one  option is specified for the gnatcheck call,
+the later option and new parameter override the previous one(s).</p>
+</div>
+<div class="section" id="pos-on-enumeration-types">
+<span id="id44"></span><h4>8.1.5.22. <code class="docutils literal"><span class="pre">POS_On_Enumeration_Types</span></code><a class="headerlink" href="#pos-on-enumeration-types" title="Permalink to this headline">¶</a></h4>
+<p id="index-44">Flag <code class="docutils literal"><span class="pre">'Pos</span></code> attribute in case if the attribute prefix has an enumeration
+type (including types derived from enumeration types).</p>
+<p>This rule has no parameters.</p>
+</div>
+<div class="section" id="positional-actuals-for-defaulted-generic-parameters">
+<span id="id45"></span><h4>8.1.5.23. <code class="docutils literal"><span class="pre">Positional_Actuals_For_Defaulted_Generic_Parameters</span></code><a class="headerlink" href="#positional-actuals-for-defaulted-generic-parameters" title="Permalink to this headline">¶</a></h4>
+<p id="index-45">Flag each generic actual parameter corresponding to a generic formal
+parameter with a default initialization, if positional notation is used.</p>
+<p>This rule has no parameters.</p>
+</div>
+<div class="section" id="positional-actuals-for-defaulted-parameters">
+<span id="id46"></span><h4>8.1.5.24. <code class="docutils literal"><span class="pre">Positional_Actuals_For_Defaulted_Parameters</span></code><a class="headerlink" href="#positional-actuals-for-defaulted-parameters" title="Permalink to this headline">¶</a></h4>
+<p id="index-46">Flag each actual parameter to a subprogram or entry call where the
+corresponding formal parameter has a default expression, if positional
+notation is used.</p>
+<p>This rule has no parameters.</p>
+</div>
+<div class="section" id="positional-components">
+<span id="id47"></span><h4>8.1.5.25. <code class="docutils literal"><span class="pre">Positional_Components</span></code><a class="headerlink" href="#positional-components" title="Permalink to this headline">¶</a></h4>
+<p id="index-47">Flag each array, record and extension aggregate that includes positional
+notation.</p>
+<p>This rule has no parameters.</p>
+</div>
+<div class="section" id="positional-generic-parameters">
+<span id="id48"></span><h4>8.1.5.26. <code class="docutils literal"><span class="pre">Positional_Generic_Parameters</span></code><a class="headerlink" href="#positional-generic-parameters" title="Permalink to this headline">¶</a></h4>
+<p id="index-48">Flag each positional actual generic parameter except for the case when
+the generic unit being instantiated has exactly one generic formal
+parameter.</p>
+<p>This rule has no parameters.</p>
+</div>
+<div class="section" id="positional-parameters">
+<span id="id49"></span><h4>8.1.5.27. <code class="docutils literal"><span class="pre">Positional_Parameters</span></code><a class="headerlink" href="#positional-parameters" title="Permalink to this headline">¶</a></h4>
+<p id="index-49">Flag each positional parameter notation in a subprogram or entry call,
+except for the following:</p>
+<ul class="simple">
+<li>Parameters of calls to attribute subprograms are not flagged;</li>
+<li>Parameters of prefix or infix calls to operator functions are not flagged;</li>
+<li>If the called subprogram or entry has only one formal parameter,
+the parameter of the call is not flagged;</li>
+<li>If a subprogram call uses the <em>Object.Operation</em> notation, then<ul>
+<li>the first parameter (that is, <em>Object</em>) is not flagged;</li>
+<li>if the called subprogram has only two parameters, the second parameter
+of the call is not flagged;</li>
+</ul>
+</li>
+</ul>
+<p>This rule has the following (optional) parameters for the <code class="docutils literal"><span class="pre">+R</span></code> option:</p>
+<dl class="docutils">
+<dt><em>All</em></dt>
+<dd>if this parameter is specified, all the positional parameter
+associations that can be replaced with named associations
+according to language rules are flagged</dd>
+</dl>
+<p>This rule has no parameters.</p>
+</div>
+<div class="section" id="recursive-subprograms">
+<span id="id50"></span><h4>8.1.5.28. <code class="docutils literal"><span class="pre">Recursive_Subprograms</span></code><a class="headerlink" href="#recursive-subprograms" title="Permalink to this headline">¶</a></h4>
+<p id="index-50">Flags specs (and bodies that act as specs) of recursive subprograms. A
+subprogram is considered as recursive in a given context if there exists
+a chain of direct calls starting from the body of, and ending at
+this subprogram within this context. A context is provided by the set
+of Ada sources specified as arguments of a given gnatcheck call.
+Neither dispatching calls nor calls through access-to-subprograms
+are considered as direct calls by this rule.</p>
+<p>Generic subprograms and subprograms detected in generic units are not
+flagged. Recursive subprograms in expanded generic instantiations
+are flagged.</p>
+<p>This rule has no parameters.</p>
+</div>
+<div class="section" id="unchecked-address-conversions">
+<span id="id51"></span><h4>8.1.5.29. <code class="docutils literal"><span class="pre">Unchecked_Address_Conversions</span></code><a class="headerlink" href="#unchecked-address-conversions" title="Permalink to this headline">¶</a></h4>
+<p id="index-51">Flag instantiations of <code class="docutils literal"><span class="pre">Ada.Unchecked_Conversion</span></code> if the actual for the
+formal type Source is the <code class="docutils literal"><span class="pre">System.Address</span></code> type (or a type derived from
+it), and the actual for the formal type <code class="docutils literal"><span class="pre">Target</span></code> is an access type
+(including types derived from access types). This include cases when the
+actual for <code class="docutils literal"><span class="pre">Source</span></code> is a private type and its full declaration is a type
+derived from <code class="docutils literal"><span class="pre">System.Address</span></code>, and cases when the actual for <code class="docutils literal"><span class="pre">Target</span></code> is
+a private type and its full declaration is an access type. The rule is
+checked inside expanded generics.</p>
+<p>This rule has no parameters.</p>
+</div>
+<div class="section" id="unchecked-conversions-as-actuals">
+<span id="id52"></span><h4>8.1.5.30. <code class="docutils literal"><span class="pre">Unchecked_Conversions_As_Actuals</span></code><a class="headerlink" href="#unchecked-conversions-as-actuals" title="Permalink to this headline">¶</a></h4>
+<p id="index-52">Flag call to instantiation of <code class="docutils literal"><span class="pre">Ada.Unchecked_Conversion</span></code> if it is an actual in
+procedure or entry call or if it is a default value in a subprogram or
+entry parameter specification.</p>
+<p>This rule has no parameters.</p>
+</div>
+<div class="section" id="unconditional-exits">
+<span id="id53"></span><h4>8.1.5.31. <code class="docutils literal"><span class="pre">Unconditional_Exits</span></code><a class="headerlink" href="#unconditional-exits" title="Permalink to this headline">¶</a></h4>
+<p id="index-53">Flag unconditional <code class="docutils literal"><span class="pre">exit</span></code> statements.</p>
+<p>This rule has no parameters.</p>
+</div>
+<div class="section" id="uninitialized-global-variables">
+<span id="id54"></span><h4>8.1.5.32. <code class="docutils literal"><span class="pre">Uninitialized_Global_Variables</span></code><a class="headerlink" href="#uninitialized-global-variables" title="Permalink to this headline">¶</a></h4>
+<p id="index-54">Flag an object declaration located immediately within a package
+declaration, a generic package declaration or a package body, if it does
+not have an explicit initialization. Do not flag deferred constant
+declarations and declarations of objects of limited types.</p>
+<p>This rule has no parameters.</p>
+</div>
+<div class="section" id="unnamed-blocks-and-loops">
+<span id="id55"></span><h4>8.1.5.33. <code class="docutils literal"><span class="pre">Unnamed_Blocks_And_Loops</span></code><a class="headerlink" href="#unnamed-blocks-and-loops" title="Permalink to this headline">¶</a></h4>
+<p id="index-55">Flag each unnamed block statement and loop statement.</p>
+<p>The rule has no parameters.</p>
+</div>
+<div class="section" id="use-package-clauses">
+<span id="id56"></span><h4>8.1.5.34. <code class="docutils literal"><span class="pre">USE_PACKAGE_Clauses</span></code><a class="headerlink" href="#use-package-clauses" title="Permalink to this headline">¶</a></h4>
+<p id="index-56">Flag all <code class="docutils literal"><span class="pre">use</span></code> clauses for packages; <code class="docutils literal"><span class="pre">use</span> <span class="pre">type</span></code> clauses are
+not flagged.</p>
+<p>This rule has no parameters.</p>
+</div>
+</div>
+<div class="section" id="readability">
+<span id="id57"></span><h3>8.1.6. Readability<a class="headerlink" href="#readability" title="Permalink to this headline">¶</a></h3>
+<p id="index-57">The rules described in this subsection may be used to enforce feature usages
+that contribute towards readability.</p>
+<div class="section" id="identifier-casing">
+<span id="id58"></span><h4>8.1.6.1. <code class="docutils literal"><span class="pre">Identifier_Casing</span></code><a class="headerlink" href="#identifier-casing" title="Permalink to this headline">¶</a></h4>
+<p id="index-58">Flag each defining identifier that does not have a casing corresponding to the
+kind of entity being declared. All defining names are checked. For the
+defining names from the following kinds of declarations a special casing scheme
+can be defined:</p>
+<ul class="simple">
+<li>type and subtype declarations;</li>
+<li>enumeration literal specifications (not including character literals)
+and function renaming declarations if the renaming entity is an
+enumeration literal;</li>
+<li>constant and number declarations (including object renaming
+declarations if the renamed object is a constant);</li>
+<li>exception declarations and exception renaming declarations.</li>
+</ul>
+<p>The rule may have the following parameters for <code class="docutils literal"><span class="pre">+R</span></code>:</p>
+<ul>
+<li><p class="first">Type=<em>casing_scheme</em></p>
+<p>Specifies casing for names from type and subtype declarations.</p>
+</li>
+<li><p class="first">Enum=<em>casing_scheme</em></p>
+<p>Specifies the casing of defining enumeration literals and for the
+defining names in a function renaming declarations if the renamed
+entity is an enumeration literal.</p>
+</li>
+<li><p class="first">Constant=<em>casing_scheme</em></p>
+<p>Specifies the casing for defining names from constants and named number
+declarations, including the object renaming declaration if the
+renamed object is a constant</p>
+</li>
+<li><p class="first">Exception=<em>casing_scheme</em></p>
+<p>Specifies the casing for names from exception declarations and exception
+renaming declarations.</p>
+</li>
+<li><p class="first">Others=<em>casing_scheme</em></p>
+<p>Specifies the casing for all defining names for which no special casing
+scheme is specified. If this parameter is not set, the casing for the
+entities that do not correspond to the specified parameters is not checked.</p>
+</li>
+<li><p class="first">Exclude=<em>dictionary_file</em></p>
+<p>Specifies casing exceptions.</p>
+</li>
+</ul>
+<p>Where:</p>
+<div class="highlight-python"><div class="highlight"><pre>casing_scheme ::= upper|lower|mixed
+</pre></div>
+</div>
+<p><em>upper</em> means that the defining identifier should be upper-case.
+<em>lower</em> means that the defining identifier should be lower-case
+<em>mixed</em> means that the first defining identifier letter and the first
+letter after each underscore should be upper-case, and all the other
+letters should be lower-case</p>
+<p>If a defining identifier is from a declaration for which a specific casing
+scheme can be set, but the corresponding parameter is not specified for the
+rule, then the casing scheme defined by <code class="docutils literal"><span class="pre">Others</span></code> parameter is used to
+check this identifier. If <code class="docutils literal"><span class="pre">Others</span></code> parameter also is not set, the
+identifier is not checked.</p>
+<p><em>dictionary_file</em> is the name of the text file that contains casing
+exceptions. The way how this rule is using the casing exception dictionary
+file is consistent with using the casing exception dictionary in the
+GNAT pretty-printer <em>gnatpp</em>, see
+GNAT User&#8217;s Guide.</p>
+<p>There are two kinds of exceptions:</p>
+<dl class="docutils">
+<dt><em>identifier</em></dt>
+<dd>If a dictionary file contains an identifier, then each occurrence of that
+(defining) identifier in the checked source should use the casing specified
+included in <em>dictionary_file</em></dd>
+<dt><em>wildcard</em></dt>
+<dd>A wildcard has the following syntax</dd>
+</dl>
+<div class="highlight-python"><div class="highlight"><pre>wildcard ::= *simple_identifier* |
+                   *simple_identifier |
+                   simple_identifier*
+simple_identifier ::= letter{letter_or_digit}
+</pre></div>
+</div>
+<p><code class="docutils literal"><span class="pre">simple_identifier</span></code> specifies the casing of subwords
+(the term &#8216;subword&#8217;
+is used below to denote the part of a name which is delimited by &#8216;_&#8217; or by
+the beginning or end of the word and which does not contain any &#8216;_&#8217; inside).
+A wildcard of the form <code class="docutils literal"><span class="pre">simple_identifier*</span></code> defines the casing of the
+first subword of a defining name to check, the wildcard of the form
+<code class="docutils literal"><span class="pre">*simple_identifier</span></code> specifies the casing of the last subword, and
+the wildcard of the form <code class="docutils literal"><span class="pre">*simple_identifier*</span></code> specifies the casing of
+any subword.</p>
+<p>If for a defining identifier some of its subwords can be mapped onto
+wildcards, but some other cannot, the casing of the identifier subwords
+that are not mapped onto wildcards from casing exception dictionary
+is checked against the casing scheme defined for the corresponding
+entity.</p>
+<p>If some identifier is included in the exception dictionary both as a whole
+identifier and can be mapped onto some wildcard from the
+dictionary, then it is the identifier and not the wildcard that is used to check
+the identifier casing.</p>
+<p>If more than one dictionary file is specified, or a dictionary file contains
+more than one exception variant for the same identifier, the new casing
+exception overrides the previous one.</p>
+<p>Casing check against dictionary file(s) has a higher priority than checks
+against the casing scheme specified for a given entity/declaration kind.</p>
+<p><code class="docutils literal"><span class="pre">+R</span></code> option should contain at least one parameter.</p>
+<p>There is no parameter for <code class="docutils literal"><span class="pre">-R</span></code> option, it just turns the rule off.</p>
+<p>The rule allows parametric exemption, the parameters that are allowed in
+the definition of exemption sections are:</p>
+<dl class="docutils">
+<dt><em>Type</em></dt>
+<dd>Exempts check for type and subtype name casing</dd>
+<dt><em>Enum</em></dt>
+<dd>Exempts check for enumeration literal name casing</dd>
+<dt><em>Constant</em></dt>
+<dd>Exempts check for constant name casing</dd>
+<dt><em>Exception</em></dt>
+<dd>Exempts check for exception name casing</dd>
+<dt><em>Others</em></dt>
+<dd>Exempts check for defining names for which no special casing scheme is specified.</dd>
+<dt><em>Exclude</em></dt>
+<dd>Exempts check for defining names for which casing schemes are specified in exception
+dictionaries</dd>
+</dl>
+</div>
+<div class="section" id="identifier-prefixes">
+<span id="id59"></span><h4>8.1.6.2. <code class="docutils literal"><span class="pre">Identifier_Prefixes</span></code><a class="headerlink" href="#identifier-prefixes" title="Permalink to this headline">¶</a></h4>
+<p id="index-59">Flag each defining identifier that does not have a prefix corresponding
+to the kind of declaration it is defined by. The defining names in the
+following kinds of declarations are checked:</p>
+<ul class="simple">
+<li>type and subtype declarations (task, protected and access types are treated
+separately);</li>
+<li>enumeration literal specifications (not including character literals)
+and function renaming declarations if the renaming entity is an
+enumeration literal;</li>
+<li>exception declarations and exception renaming declarations;</li>
+<li>constant and number declarations (including object renaming
+declarations if the renamed object is a constant).</li>
+</ul>
+<p>Defining names declared by single task declarations or single protected
+declarations are not checked by this rule.</p>
+<p>The defining name from the full type declaration corresponding to a
+private type declaration or a private extension declaration is never
+flagged. A defining name from an incomplete type declaration is never
+flagged.</p>
+<p>The defining name from a subprogram renaming-as-body declaration is
+never flagged.</p>
+<p>For a deferred constant, the defining name in the corresponding full
+constant declaration is never flagged.</p>
+<p>The defining name from a body that is a completion of a program unit
+declaration or a proper body of a subunit is never flagged.</p>
+<p>The defining name from a body stub that is a completion of a program
+unit declaration is never flagged.</p>
+<p>Note that the rule checks only defining names. Usage name occurrence are
+not checked and are never flagged.</p>
+<p>The rule may have the following parameters:</p>
+<ul>
+<li><p class="first">For the <code class="docutils literal"><span class="pre">+R</span></code> option:</p>
+</li>
+<li><p class="first">Type=<em>string</em></p>
+<blockquote>
+<div><p>Specifies the prefix for a type or subtype name.</p>
+</div></blockquote>
+</li>
+<li><p class="first">Concurrent=<em>string</em></p>
+<blockquote>
+<div><p>Specifies the prefix for a task and protected type/subtype name. If this
+parameter is set, it overrides for task and protected types the prefix set by
+the Type parameter.</p>
+</div></blockquote>
+</li>
+<li><p class="first">Access=<em>string</em></p>
+<blockquote>
+<div><p>Specifies the prefix for an access type/subtype name. If this parameter is
+set, it overrides for access types the prefix set by the <code class="docutils literal"><span class="pre">Type</span></code>
+parameter.</p>
+</div></blockquote>
+</li>
+<li><p class="first">Class_Access=<em>string</em></p>
+<blockquote>
+<div><p>Specifies the prefix for the name of an access type/subtype that points to some
+class-wide type. If this parameter is set, it overrides for such access types
+and subtypes the prefix set by the <code class="docutils literal"><span class="pre">Type</span></code> or <code class="docutils literal"><span class="pre">Access</span></code> parameter.</p>
+</div></blockquote>
+</li>
+<li><p class="first">Subprogram_Access=<em>string</em></p>
+<blockquote>
+<div><p>Specifies the prefix for the name of an access type/subtype that points to a
+subprogram. If this parameter is set, it overrides for such access
+types/subtypes the prefix set by the <code class="docutils literal"><span class="pre">Type</span></code> or <code class="docutils literal"><span class="pre">Access</span></code> parameter.</p>
+</div></blockquote>
+</li>
+<li><p class="first">Derived=<em>string1:string2</em></p>
+<blockquote>
+<div><p>Specifies the prefix for a type that is directly derived from a given type or
+from a subtype thereof. <em>string1</em> should be a full expanded Ada name of the
+ancestor type (starting from the full expanded compilation unit
+name), <em>string2</em> defines the prefix to check. If this
+parameter is set, it overrides for types that are directly derived from the
+given type the prefix set by the <code class="docutils literal"><span class="pre">Type</span></code> parameter.</p>
+</div></blockquote>
+</li>
+<li><p class="first">Constant=<em>string</em></p>
+<blockquote>
+<div><p>Specifies the prefix for defining names from constants and named number
+declarations, including the object renaming declaration if the
+renamed object is a constant</p>
+</div></blockquote>
+</li>
+<li><p class="first">Enum=<em>string</em></p>
+<blockquote>
+<div><p>Specifies the prefix for defining enumeration literals and for the
+defining names in a function renaming declarations if the renamed
+entity is an enumeration literal.</p>
+</div></blockquote>
+</li>
+<li><p class="first">Exception=<em>string</em></p>
+<blockquote>
+<div><p>Specifies the prefix for defining names from exception declarations
+and exception renaming declarations.</p>
+</div></blockquote>
+</li>
+</ul>
+<dl class="docutils">
+<dt><em>Exclusive</em></dt>
+<dd><blockquote class="first">
+<div>Check that only those kinds of names for which specific prefix is defined have
+that prefix (e.g., only type/subtype names have prefix <em>T_</em>, but
+not variable or package names), and flag all defining names that have any
+of the specified prefixes but do not belong to the kind of entities this
+prefix is defined for. By default the exclusive check mode is ON.</div></blockquote>
+<p class="last">For the <code class="docutils literal"><span class="pre">-R</span></code> option:</p>
+</dd>
+<dt><em>All_Prefixes</em></dt>
+<dd>Removes all the prefixes specified for the identifier prefix
+checks, whether by default or as specified by other rule
+parameters and disables the rule.</dd>
+<dt><em>Type</em></dt>
+<dd>Removes the prefix specified for type/subtype names. This does not remove
+prefixes specified for specific type kinds and does not disable checks for
+these specific kinds.</dd>
+<dt><em>Concurrent</em></dt>
+<dd>Removes the prefix specified for task and protected types.</dd>
+<dt><em>Access</em></dt>
+<dd>Removes the prefix specified for access types. This does not remove prefixes
+specified for specific access types (access to subprograms and class-wide
+access)</dd>
+<dt><em>Class_Access</em></dt>
+<dd>Removes the prefix specified for access types pointing to class-wide types.</dd>
+<dt><em>Subprogram_Access</em></dt>
+<dd>Removes the prefix specified for access types pointing to subprograms.</dd>
+<dt><em>Derived</em></dt>
+<dd>Removes prefixes specified for derived types that are directly derived from
+specific types.</dd>
+<dt><em>Constant</em></dt>
+<dd>Removes the prefix specified for constant and number names and turns off the
+check for these names.</dd>
+<dt><em>Exception</em></dt>
+<dd>Removes the prefix specified for exception names and turns off the
+check for exception names.</dd>
+<dt><em>Enum</em></dt>
+<dd>Removes the prefix specified for enumeration literal names and
+turns off the check for them.</dd>
+<dt><em>Exclusive</em></dt>
+<dd>Turns of the check that only names of specific kinds of entities have prefixes
+specified for these kinds.</dd>
+</dl>
+<p>If more than one parameter is used, parameters must be separated by
+commas.</p>
+<p>If more than one option is specified for the gnatcheck invocation, a new
+option overrides the previous one(s).</p>
+<p>The <code class="docutils literal"><span class="pre">+RIdentifier_Prefixes</span></code> option (with no parameter) enables checks
+for all the name prefixes specified by previous options used for this
+rule. If no prefix is specified, the rule is not enabled.</p>
+<p>The <code class="docutils literal"><span class="pre">-RIdentifier_Prefixes</span></code> option (with no parameter) disables all the
+checks but keeps all the prefixes specified by previous options used for
+this rule.</p>
+<p>There is no default prefix setting for this rule. All checks for
+name prefixes are case-sensitive</p>
+<p>If any error is detected in a rule parameter, that parameter is ignored.
+In such a case the options that are set for the rule are not specified.</p>
+<p>The rule allows parametric exemption, the parameters that are allowed in
+the definition of exemption sections are:</p>
+<dl class="docutils">
+<dt><em>Type</em></dt>
+<dd>Exempts check for type and subtype name prefixes</dd>
+<dt><em>Concurrent</em></dt>
+<dd>Exempts check for task and protected type/subtype name prefixes</dd>
+<dt><em>Access</em></dt>
+<dd>Exempts check for access type/subtype name prefixes</dd>
+<dt><em>Class_Access</em></dt>
+<dd>Exempts check for names of access types/subtypes that point to
+some class-wide types</dd>
+<dt><em>Subprogram_Access</em></dt>
+<dd>Exempts check for names of access types/subtypes that point to
+subprograms</dd>
+<dt><em>Derived</em></dt>
+<dd>Exempts check for derived type name prefixes</dd>
+<dt><em>Constant</em></dt>
+<dd>Exempts check for constant and number name prefixes</dd>
+<dt><em>Exception</em></dt>
+<dd>Exempts check for exception name prefixes</dd>
+<dt><em>Enum</em></dt>
+<dd>Exempts check for enumeration literal name prefixes</dd>
+<dt><em>Exclusive</em></dt>
+<dd>Exempts check that only names of specific kinds of entities have prefixes
+specified for these kinds</dd>
+</dl>
+</div>
+<div class="section" id="identifier-suffixes">
+<span id="id60"></span><h4>8.1.6.3. <code class="docutils literal"><span class="pre">Identifier_Suffixes</span></code><a class="headerlink" href="#identifier-suffixes" title="Permalink to this headline">¶</a></h4>
+<p id="index-60">Flag the declaration of each identifier that does not have a suffix
+corresponding to the kind of entity being declared.
+The following declarations are checked:</p>
+<ul class="simple">
+<li>type declarations</li>
+<li>subtype declarations</li>
+<li>object declarations (variable and constant declarations, but not number,
+declarations, record component declarations, parameter specifications,
+extended return object declarations, formal object declarations)</li>
+<li>package renaming declarations (but not generic package renaming
+declarations)</li>
+</ul>
+<p>The default checks (enforced by the <em>Default</em> rule parameter) are:</p>
+<ul class="simple">
+<li>type-defining names end with <code class="docutils literal"><span class="pre">_T</span></code>, unless the type is an access type,
+in which case the suffix must be <code class="docutils literal"><span class="pre">_A</span></code></li>
+<li>constant names end with <code class="docutils literal"><span class="pre">_C</span></code></li>
+<li>names defining package renamings end with <code class="docutils literal"><span class="pre">_R</span></code></li>
+<li>the check for access type objects is not enabled</li>
+</ul>
+<p>Defining identifiers from incomplete type declarations are never flagged.</p>
+<p>For a private type declaration (including private extensions), the defining
+identifier from the private type declaration is checked against the type
+suffix (even if the corresponding full declaration is an access type
+declaration), and the defining identifier from the corresponding full type
+declaration is not checked.</p>
+<p>For a deferred constant, the defining name in the corresponding full constant
+declaration is not checked.</p>
+<p>Defining names of formal types are not checked.</p>
+<p>Check for the suffix of access type data objects is applied to the
+following kinds of declarations:</p>
+<ul class="simple">
+<li>variable and constant declaration</li>
+<li>record component declaration</li>
+<li>return object declaration</li>
+<li>parameter specification</li>
+<li>extended return object declaration</li>
+<li>formal object declaration</li>
+</ul>
+<p>If both checks for constant suffixes and for access object suffixes are
+enabled, and if different suffixes are defined for them, then for constants
+of access type the check for access object suffixes suffixes is applied.</p>
+<p>The rule may have the following parameters:</p>
+<ul class="simple">
+<li>For the <code class="docutils literal"><span class="pre">+R</span></code> option (unless the parameter
+is <code class="docutils literal"><span class="pre">Default</span></code>, then only the explicitly specified
+suffix is checked, and no defaults are used):</li>
+</ul>
+<dl class="docutils">
+<dt><em>Default</em></dt>
+<dd>Sets the default listed above for all the names to be checked.</dd>
+</dl>
+<ul>
+<li><p class="first">Type_Suffix=<em>string</em></p>
+<blockquote>
+<div><p>Specifies the suffix for a type name.</p>
+</div></blockquote>
+</li>
+<li><p class="first">Access_Suffix=<em>string</em></p>
+<blockquote>
+<div><p>Specifies the suffix for an access type name. If
+this parameter is set, it overrides for access
+types the suffix set by the <code class="docutils literal"><span class="pre">Type_Suffix</span></code> parameter.
+For access types, <em>string</em> may have the following format:
+<em>suffix1(suffix2)</em>. That means that an access type name
+should have the <em>suffix1</em> suffix except for the case when
+the designated type is also an access type, in this case the
+type name should have the <em>suffix1 &amp; suffix2</em> suffix.</p>
+</div></blockquote>
+</li>
+<li><p class="first">Class_Access_Suffix=<em>string</em></p>
+<blockquote>
+<div><p>Specifies the suffix for the name of an access type that points to some
+class-wide type.
+If this parameter is set, it overrides for such access
+types the suffix set by the <code class="docutils literal"><span class="pre">Type_Suffix</span></code> or <code class="docutils literal"><span class="pre">Access_Suffix</span></code>
+parameter.</p>
+</div></blockquote>
+</li>
+<li><p class="first">Class_Subtype_Suffix=<em>string</em></p>
+<blockquote>
+<div><p>Specifies the suffix for the name of a subtype that denotes a class-wide type.</p>
+</div></blockquote>
+</li>
+<li><p class="first">Constant_Suffix=<em>string</em></p>
+<blockquote>
+<div><p>Specifies the suffix for a constant name.</p>
+</div></blockquote>
+</li>
+<li><p class="first">Renaming_Suffix=<em>string</em></p>
+<blockquote>
+<div><p>Specifies the suffix for a package renaming name.</p>
+</div></blockquote>
+</li>
+<li><p class="first">Access_Obj_Suffix=<em>string</em></p>
+<blockquote>
+<div><p>Specifies the suffix for objects that have an access type
+(including types derived from access types).</p>
+</div></blockquote>
+</li>
+<li><p class="first">For the <code class="docutils literal"><span class="pre">-R</span></code> option:</p>
+</li>
+</ul>
+<dl class="docutils">
+<dt><em>All_Suffixes</em></dt>
+<dd>Remove all the suffixes specified for the
+identifier suffix checks, whether by default or
+as specified by other rule parameters. All the
+checks for this rule are disabled as a result.</dd>
+<dt><em>Type_Suffix</em></dt>
+<dd>Removes the suffix specified for types. This
+disables checks for types but does not disable
+any other checks for this rule (including the
+check for access type names if <code class="docutils literal"><span class="pre">Access_Suffix</span></code> is
+set).</dd>
+<dt><em>Access_Suffix</em></dt>
+<dd>Removes the suffix specified for access types.
+This disables checks for access type names but
+does not disable any other checks for this rule.
+If <code class="docutils literal"><span class="pre">Type_Suffix</span></code> is set, access type names are
+checked as ordinary type names.</dd>
+<dt><em>Class_Access_Suffix</em></dt>
+<dd>Removes the suffix specified for access types pointing to class-wide
+type. This disables specific checks for names of access types pointing to
+class-wide types but does not disable any other checks for this rule.
+If <code class="docutils literal"><span class="pre">Type_Suffix</span></code> is set, access type names are
+checked as ordinary type names. If <code class="docutils literal"><span class="pre">Access_Suffix</span></code> is set, these
+access types are checked as any other access type name.</dd>
+<dt><em>Class_Subtype_Suffix</em></dt>
+<dd>Removes the suffix specified for subtype names.
+This disables checks for subtype names but
+does not disable any other checks for this rule.</dd>
+<dt><em>Constant_Suffix</em></dt>
+<dd>Removes the suffix specified for constants. This
+disables checks for constant names but does not
+disable any other checks for this rule.</dd>
+<dt><em>Renaming_Suffix</em></dt>
+<dd>Removes the suffix specified for package
+renamings. This disables checks for package
+renamings but does not disable any other checks
+for this rule.</dd>
+<dt><em>Access_Obj_Suffix</em></dt>
+<dd>Removes the suffix specified for objects of access types,
+this disables checks for such objects. It does not disable
+any other checks for this rule</dd>
+</dl>
+<p>If more than one parameter is used, parameters must be separated by commas.</p>
+<p>If more than one  option is specified for the <em>gnatcheck</em> invocation,
+a new option overrides the previous one(s).</p>
+<p>The <code class="docutils literal"><span class="pre">+RIdentifier_Suffixes</span></code> option (with no parameter) enables
+checks for all the
+name suffixes specified by previous options used for this rule.</p>
+<p>The <code class="docutils literal"><span class="pre">-RIdentifier_Suffixes</span></code> option (with no parameter) disables
+all the checks but keeps
+all the suffixes specified by previous options used for this rule.</p>
+<p>The <em>string</em> value must be a valid suffix for an Ada identifier (after
+trimming all the leading and trailing space characters, if any).
+Parameters are not case sensitive, except the <em>string</em> part.</p>
+<p>If any error is detected in a rule parameter, the parameter is ignored.
+In such a case the options that are set for the rule are not
+specified.</p>
+<p>The rule allows parametric exemption, the parameters that are allowed in
+the definition of exemption sections are:</p>
+<dl class="docutils">
+<dt><em>Type</em></dt>
+<dd>Exempts check for type name suffixes</dd>
+<dt><em>Access</em></dt>
+<dd>Exempts check for access type name suffixes</dd>
+<dt><em>Access_Obj</em></dt>
+<dd>Exempts check for access object name suffixes</dd>
+<dt><em>Class_Access</em></dt>
+<dd>Exempts check for names of access types that point to
+some class-wide types</dd>
+<dt><em>Class_Subtype</em></dt>
+<dd>Exempts check for names of subtypes that denote class-wide types</dd>
+<dt><em>Constant</em></dt>
+<dd>Exempts check for constant name suffixes</dd>
+<dt><em>Renaming</em></dt>
+<dd>Exempts check for package renaming name suffixes</dd>
+</dl>
+</div>
+<div class="section" id="misnamed-controlling-parameters">
+<span id="id61"></span><h4>8.1.6.4. <code class="docutils literal"><span class="pre">Misnamed_Controlling_Parameters</span></code><a class="headerlink" href="#misnamed-controlling-parameters" title="Permalink to this headline">¶</a></h4>
+<p id="index-61">Flag a declaration of a dispatching operation, if the first parameter is
+not a controlling one and its name is not <code class="docutils literal"><span class="pre">This</span></code> (the check for
+parameter name is not case-sensitive). Declarations of dispatching functions
+with a controlling result and no controlling parameter are never flagged.</p>
+<p>A subprogram body declaration, subprogram renaming declaration, or subprogram
+body stub is flagged only if it is not a completion of a prior subprogram
+declaration.</p>
+<p>This rule has no parameters.</p>
+</div>
+<div class="section" id="name-clashes">
+<span id="id62"></span><h4>8.1.6.5. <code class="docutils literal"><span class="pre">Name_Clashes</span></code><a class="headerlink" href="#name-clashes" title="Permalink to this headline">¶</a></h4>
+<p id="index-62">Check that certain names are not used as defining identifiers. The names that
+should not be used as identifiers must be listed in a dictionary file that is
+a rule parameter. A defining identifier is flagged if it is included in a
+dictionary file specified as a rule parameter, the check is not case-sensitive.
+More than one dictionary file can be specified as the rule parameter, in this
+case the rule checks defining identifiers against the union of all the
+identifiers from all the dictionary files provided as the rule parameters.</p>
+<p>This rule has the following (mandatory) parameters for the <code class="docutils literal"><span class="pre">+R</span></code> option:</p>
+<dl class="docutils">
+<dt><em>dictionary_file</em></dt>
+<dd>The name of a dictionary file.</dd>
+</dl>
+<p>This rule is enabled by default, but without setting any corresponding
+dictionary file(s); thus the default effect is to do no checks.</p>
+<p>A dictionary file is a plain text file. The maximum line length for this file
+is 1024 characters.  If the line is longer than this limit, extra characters
+are ignored.</p>
+<p>Each line can be either an empty line, a comment line, or a line containing
+a list of identifiers separated by space or HT characters.
+A comment is an Ada-style comment (from <code class="docutils literal"><span class="pre">--</span></code> to end-of-line).
+Identifiers must follow the Ada syntax for identifiers.
+A line containing one or more identifiers may end with a comment.</p>
+</div>
+<div class="section" id="uncommented-begin-in-package-bodies">
+<span id="id63"></span><h4>8.1.6.6. <code class="docutils literal"><span class="pre">Uncommented_BEGIN_In_Package_Bodies</span></code><a class="headerlink" href="#uncommented-begin-in-package-bodies" title="Permalink to this headline">¶</a></h4>
+<p id="index-63">Flags each package body with declarations and a statement part that does not
+include a trailing comment on the line containing the <code class="docutils literal"><span class="pre">begin</span></code> keyword;
+this trailing comment needs to specify the package name and nothing else.
+The <code class="docutils literal"><span class="pre">begin</span></code> is not flagged if the package body does not
+contain any declarations.</p>
+<p>If the <code class="docutils literal"><span class="pre">begin</span></code> keyword is placed on the
+same line as the last declaration or the first statement, it is flagged
+independently of whether the line contains a trailing comment. The
+diagnostic message is attached to the line containing the first statement.</p>
+<p>This rule has no parameters.</p>
+</div>
+</div>
+<div class="section" id="source-code-presentation">
+<span id="id64"></span><h3>8.1.7. Source Code Presentation<a class="headerlink" href="#source-code-presentation" title="Permalink to this headline">¶</a></h3>
+<p id="index-64">This subsection is a placeholder; there are currently no rules
+in this category.</p>
+</div>
+</div>
+<div class="section" id="feature-usage-rules">
+<h2>8.2. Feature Usage Rules<a class="headerlink" href="#feature-usage-rules" title="Permalink to this headline">¶</a></h2>
+<p id="index-65">The rules in this section can be used to enforce specific
+usage patterns for a variety of language features.</p>
+<div class="section" id="abstract-type-declarations">
+<span id="id65"></span><h3>8.2.1. <code class="docutils literal"><span class="pre">Abstract_Type_Declarations</span></code><a class="headerlink" href="#abstract-type-declarations" title="Permalink to this headline">¶</a></h3>
+<p id="index-66">Flag all declarations of abstract types. For an abstract private
+type, both the private and full type declarations are flagged.</p>
+<p>This rule has no parameters.</p>
+</div>
+<div class="section" id="anonymous-subtypes">
+<span id="id66"></span><h3>8.2.2. <code class="docutils literal"><span class="pre">Anonymous_Subtypes</span></code><a class="headerlink" href="#anonymous-subtypes" title="Permalink to this headline">¶</a></h3>
+<p id="index-67">Flag all uses of anonymous subtypes (except cases when subtype indication
+is a part of a record component definition, and this subtype indication
+depends on a discriminant). A use of an anonymous subtype is
+any instance of a subtype indication with a constraint, other than one
+that occurs immediately within a subtype declaration. Any use of a range
+other than as a constraint used immediately within a subtype declaration
+is considered as an anonymous subtype.</p>
+<p>The rule does not flag ranges in the component clauses from a record
+representation clause, because the language rules do not allow to use
+subtype names there.</p>
+<p>An effect of this rule is that <code class="docutils literal"><span class="pre">for</span></code> loops such as the following are
+flagged (since <code class="docutils literal"><span class="pre">1..N</span></code> is formally a &#8216;range&#8217;):</p>
+<div class="highlight-ada"><div class="highlight"><pre><span class="kr">for</span><span class="p"> </span><span class="n">I</span> <span class="kr">in</span><span class="p"> </span><span class="mi">1</span> <span class="o">..</span> <span class="n">N</span> <span class="kr">loop</span><span class="p"></span>
+   <span class="o">...</span>
+<span class="k">end loop</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>Declaring an explicit subtype solves the problem:</p>
+<div class="highlight-ada"><div class="highlight"><pre><span class="kr">subtype</span><span class="p"> </span><span class="n">S</span> <span class="kr">is</span><span class="p"> </span><span class="n">Integer</span> <span class="kr">range</span><span class="p"> </span><span class="mi">1</span><span class="o">..</span><span class="n">N</span><span class="p">;</span>
+<span class="o">...</span>
+<span class="kr">for</span><span class="p"> </span><span class="n">I</span> <span class="kr">in</span><span class="p"> </span><span class="n">S</span> <span class="kr">loop</span><span class="p"></span>
+   <span class="o">...</span>
+<span class="k">end loop</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>This rule has no parameters.</p>
+</div>
+<div class="section" id="blocks">
+<span id="id67"></span><h3>8.2.3. <code class="docutils literal"><span class="pre">Blocks</span></code><a class="headerlink" href="#blocks" title="Permalink to this headline">¶</a></h3>
+<p id="index-68">Flag each block statement.</p>
+<p>This rule has no parameters.</p>
+</div>
+<div class="section" id="complex-inlined-subprograms">
+<span id="id68"></span><h3>8.2.4. <code class="docutils literal"><span class="pre">Complex_Inlined_Subprograms</span></code><a class="headerlink" href="#complex-inlined-subprograms" title="Permalink to this headline">¶</a></h3>
+<p id="index-69">Flag a subprogram (or generic subprogram, or instantiation of a subprogram) if
+pragma Inline is applied to it and at least one of the following
+conditions is met:</p>
+<ul class="simple">
+<li>it contains at least one complex declaration such as a subprogram body,
+package, task, protected declaration, or a generic instantiation
+(except instantiation of <code class="docutils literal"><span class="pre">Ada.Unchecked_Conversion</span></code>);</li>
+<li>it contains at least one complex statement such as a loop, a case
+or an if statement;</li>
+<li>the number of statements exceeds
+a value specified by the <em>N</em> rule parameter;</li>
+</ul>
+<p>Subprogram renamings are also considered.</p>
+<p>This rule has the following (mandatory) parameter for the <code class="docutils literal"><span class="pre">+R</span></code> option:</p>
+<dl class="docutils">
+<dt><em>N</em></dt>
+<dd>Positive integer specifying the maximum allowed total number of statements
+in the subprogram body.</dd>
+</dl>
+</div>
+<div class="section" id="conditional-expressions">
+<span id="id69"></span><h3>8.2.5. <code class="docutils literal"><span class="pre">Conditional_Expressions</span></code><a class="headerlink" href="#conditional-expressions" title="Permalink to this headline">¶</a></h3>
+<p id="index-70">Flag use of conditional expression.</p>
+<p>This rule has the following (optional) parameters for the <code class="docutils literal"><span class="pre">+R</span></code> option:</p>
+<dl class="docutils">
+<dt><em>Except_Assertions</em></dt>
+<dd>Do not flag a conditional expression if it is a subcomponent
+of the following constructs:</dd>
+</dl>
+<p><em>argument of the following pragmas</em></p>
+<p><em>Language-defined</em></p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">Assert</span></code></li>
+</ul>
+<p><em>GNAT-specific</em></p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">Assert_And_Cut</span></code></li>
+<li><code class="docutils literal"><span class="pre">Assume</span></code></li>
+<li><code class="docutils literal"><span class="pre">Contract_Cases</span></code></li>
+<li><code class="docutils literal"><span class="pre">Debug</span></code></li>
+<li><code class="docutils literal"><span class="pre">Invariant</span></code></li>
+<li><code class="docutils literal"><span class="pre">Loop_Invariant</span></code></li>
+<li><code class="docutils literal"><span class="pre">Loop_Variant</span></code></li>
+<li><code class="docutils literal"><span class="pre">Postcondition</span></code></li>
+<li><code class="docutils literal"><span class="pre">Precondition</span></code></li>
+<li><code class="docutils literal"><span class="pre">Predicate</span></code></li>
+<li><code class="docutils literal"><span class="pre">Refined_Post</span></code></li>
+</ul>
+<p><em>definition of the following aspects</em></p>
+<p><em>Language-defined</em></p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">Static_Predicate</span></code></li>
+<li><code class="docutils literal"><span class="pre">Dynamic_Predicate</span></code></li>
+<li><code class="docutils literal"><span class="pre">Pre</span></code></li>
+<li><code class="docutils literal"><span class="pre">Pre'Class</span></code></li>
+<li><code class="docutils literal"><span class="pre">Post</span></code></li>
+<li><code class="docutils literal"><span class="pre">Post'Class</span></code></li>
+<li><code class="docutils literal"><span class="pre">Type_Invariant</span></code></li>
+<li><code class="docutils literal"><span class="pre">Type_Invariant'Class</span></code></li>
+</ul>
+<p><em>GNAT-specific</em></p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">Contract_Cases</span></code></li>
+<li><code class="docutils literal"><span class="pre">Invariant</span></code></li>
+<li><code class="docutils literal"><span class="pre">Invariant'Class</span></code></li>
+<li><code class="docutils literal"><span class="pre">Predicate</span></code></li>
+<li><code class="docutils literal"><span class="pre">Refined_Post</span></code></li>
+</ul>
+</div>
+<div class="section" id="controlled-type-declarations">
+<span id="id70"></span><h3>8.2.6. <code class="docutils literal"><span class="pre">Controlled_Type_Declarations</span></code><a class="headerlink" href="#controlled-type-declarations" title="Permalink to this headline">¶</a></h3>
+<p id="index-71">Flag all declarations of controlled types. A declaration of a private type
+is flagged if its full declaration declares a controlled type. A declaration
+of a derived type is flagged if its ancestor type is controlled. Subtype
+declarations are not checked. A declaration of a type that itself is not a
+descendant of a type declared in <code class="docutils literal"><span class="pre">Ada.Finalization</span></code> but has a controlled
+component is not checked.</p>
+<p>This rule has no parameters.</p>
+</div>
+<div class="section" id="declarations-in-blocks">
+<span id="id71"></span><h3>8.2.7. <code class="docutils literal"><span class="pre">Declarations_In_Blocks</span></code><a class="headerlink" href="#declarations-in-blocks" title="Permalink to this headline">¶</a></h3>
+<p id="index-72">Flag all block statements containing local declarations. A <code class="docutils literal"><span class="pre">declare</span></code>
+block with an empty <em>declarative_part</em> or with a <em>declarative part</em>
+containing only pragmas and/or <code class="docutils literal"><span class="pre">use</span></code> clauses is not flagged.</p>
+<p>This rule has no parameters.</p>
+</div>
+<div class="section" id="deeply-nested-inlining">
+<span id="id72"></span><h3>8.2.8. <code class="docutils literal"><span class="pre">Deeply_Nested_Inlining</span></code><a class="headerlink" href="#deeply-nested-inlining" title="Permalink to this headline">¶</a></h3>
+<p id="index-73">Flag a subprogram (or generic subprogram) if pragma Inline has been applied
+to it, and it calls another subprogram to which pragma Inline applies,
+resulting in potential nested inlining, with a nesting depth exceeding the
+value specified by the <em>N</em> rule parameter.</p>
+<p>This rule requires the global analysis of all the compilation units that
+are <em>gnatcheck</em> arguments; such analysis may affect the tool&#8217;s
+performance.</p>
+<p>This rule has the following (mandatory) parameter for the <code class="docutils literal"><span class="pre">+R</span></code> option:</p>
+<dl class="docutils">
+<dt><em>N</em></dt>
+<dd>Positive integer specifying the maximum level of nested calls to
+subprograms to which pragma Inline has been applied.</dd>
+</dl>
+</div>
+<div class="section" id="default-parameters">
+<span id="id73"></span><h3>8.2.9. <code class="docutils literal"><span class="pre">Default_Parameters</span></code><a class="headerlink" href="#default-parameters" title="Permalink to this headline">¶</a></h3>
+<p id="index-74">Flag all default expressions in parameters specifications. All parameter
+specifications are checked: in subprograms (including formal, generic and
+protected subprograms) and in task and protected entries (including accept
+statements and entry bodies).</p>
+<p>This rule has no parameters.</p>
+</div>
+<div class="section" id="discriminated-records">
+<span id="id74"></span><h3>8.2.10. <code class="docutils literal"><span class="pre">Discriminated_Records</span></code><a class="headerlink" href="#discriminated-records" title="Permalink to this headline">¶</a></h3>
+<p id="index-75">Flag all declarations of record types with discriminants. Only the
+declarations of record and record extension types are checked. Incomplete,
+formal, private, derived and private extension type declarations are not
+checked. Task and protected type declarations also are not checked.</p>
+<p>This rule has no parameters.</p>
+</div>
+<div class="section" id="explicit-full-discrete-ranges">
+<span id="id75"></span><h3>8.2.11. <code class="docutils literal"><span class="pre">Explicit_Full_Discrete_Ranges</span></code><a class="headerlink" href="#explicit-full-discrete-ranges" title="Permalink to this headline">¶</a></h3>
+<p id="index-76">Flag each discrete range that has the form <code class="docutils literal"><span class="pre">A'First</span> <span class="pre">..</span> <span class="pre">A'Last</span></code>.</p>
+<p>This rule has no parameters.</p>
+</div>
+<div class="section" id="fixed-equality-checks">
+<span id="id76"></span><h3>8.2.12. <code class="docutils literal"><span class="pre">Fixed_Equality_Checks</span></code><a class="headerlink" href="#fixed-equality-checks" title="Permalink to this headline">¶</a></h3>
+<p id="index-77">Flag all calls to the predefined equality operations for fixed-point types.
+Both &#8216;<code class="docutils literal"><span class="pre">=</span></code>&#8216; and &#8216;<code class="docutils literal"><span class="pre">/=</span></code>&#8216; operations are checked.
+User-defined equality operations are not flagged, nor are uses of operators
+that are renamings of the predefined equality operations.
+Also, the &#8216;<code class="docutils literal"><span class="pre">=</span></code>&#8216; and &#8216;<code class="docutils literal"><span class="pre">/=</span></code>&#8216; operations for floating-point types
+are not flagged.</p>
+<p>This rule has no parameters.</p>
+</div>
+<div class="section" id="float-equality-checks">
+<span id="id77"></span><h3>8.2.13. <code class="docutils literal"><span class="pre">Float_Equality_Checks</span></code><a class="headerlink" href="#float-equality-checks" title="Permalink to this headline">¶</a></h3>
+<p id="index-78">Flag all calls to the predefined equality operations for floating-point types.
+Both &#8216;<code class="docutils literal"><span class="pre">=</span></code>&#8216; and &#8216;<code class="docutils literal"><span class="pre">/=</span></code>&#8216; operations are checked.
+User-defined equality operations are not flagged, nor are uses of operators
+that are renamings of the predefined equality operations.
+Also, the &#8216;<code class="docutils literal"><span class="pre">=</span></code>&#8216; and &#8216;<code class="docutils literal"><span class="pre">/=</span></code>&#8216; operations for fixed-point types
+are not flagged.</p>
+<p>This rule has no parameters.</p>
+</div>
+<div class="section" id="function-style-procedures">
+<span id="id78"></span><h3>8.2.14. <code class="docutils literal"><span class="pre">Function_Style_Procedures</span></code><a class="headerlink" href="#function-style-procedures" title="Permalink to this headline">¶</a></h3>
+<p id="index-79">Flag each procedure that can be rewritten as a function. A procedure can be
+converted into a function if it has exactly one parameter of mode <code class="docutils literal"><span class="pre">out</span></code>
+and no parameters of mode <code class="docutils literal"><span class="pre">in</span> <span class="pre">out</span></code>. Procedure declarations,
+formal procedure declarations, and generic procedure declarations are always
+checked. Procedure
+bodies and body stubs are flagged only if they do not have corresponding
+separate declarations. Procedure renamings and procedure instantiations are
+not flagged.</p>
+<p>If a procedure can be rewritten as a function, but its <code class="docutils literal"><span class="pre">out</span></code> parameter is
+of a limited type, it is not flagged.</p>
+<p>Protected procedures are not flagged. Null procedures also are not flagged.</p>
+<p>This rule has no parameters.</p>
+</div>
+<div class="section" id="generics-in-subprograms">
+<span id="id79"></span><h3>8.2.15. <code class="docutils literal"><span class="pre">Generics_In_Subprograms</span></code><a class="headerlink" href="#generics-in-subprograms" title="Permalink to this headline">¶</a></h3>
+<p id="index-80">Flag each declaration of a generic unit in a subprogram. Generic
+declarations in the bodies of generic subprograms are also flagged.
+A generic unit nested in another generic unit is not flagged.
+If a generic unit is
+declared in a local package that is declared in a subprogram body, the
+generic unit is flagged.</p>
+<p>This rule has no parameters.</p>
+</div>
+<div class="section" id="implicit-in-mode-parameters">
+<span id="id80"></span><h3>8.2.16. <code class="docutils literal"><span class="pre">Implicit_IN_Mode_Parameters</span></code><a class="headerlink" href="#implicit-in-mode-parameters" title="Permalink to this headline">¶</a></h3>
+<p id="index-81">Flag each occurrence of a formal parameter with an implicit <code class="docutils literal"><span class="pre">in</span></code> mode.
+Note that <code class="docutils literal"><span class="pre">access</span></code> parameters, although they technically behave
+like <code class="docutils literal"><span class="pre">in</span></code> parameters, are not flagged.</p>
+<p>This rule has no parameters.</p>
+</div>
+<div class="section" id="improperly-located-instantiations">
+<span id="id81"></span><h3>8.2.17. <code class="docutils literal"><span class="pre">Improperly_Located_Instantiations</span></code><a class="headerlink" href="#improperly-located-instantiations" title="Permalink to this headline">¶</a></h3>
+<p id="index-82">Flag all generic instantiations in library-level package specs
+(including library generic packages) and in all subprogram bodies.</p>
+<p>Instantiations in task and entry bodies are not flagged. Instantiations in the
+bodies of protected subprograms are flagged.</p>
+<p>This rule has no parameters.</p>
+</div>
+<div class="section" id="library-level-subprograms">
+<span id="id82"></span><h3>8.2.18. <code class="docutils literal"><span class="pre">Library_Level_Subprograms</span></code><a class="headerlink" href="#library-level-subprograms" title="Permalink to this headline">¶</a></h3>
+<p id="index-83">Flag all library-level subprograms (including generic
+subprogram instantiations).</p>
+<p>This rule has no parameters.</p>
+</div>
+<div class="section" id="membership-tests">
+<span id="id83"></span><h3>8.2.19. <code class="docutils literal"><span class="pre">Membership_Tests</span></code><a class="headerlink" href="#membership-tests" title="Permalink to this headline">¶</a></h3>
+<p id="index-84">Flag use of membership test expression.</p>
+<p>This rule has the following (optional) parameters for the <code class="docutils literal"><span class="pre">+R</span></code> option:</p>
+<dl class="docutils">
+<dt><em>Multi_Alternative_Only</em></dt>
+<dd>Flag only those membership test expressions that have more than one
+membership choice in the membership choice list.</dd>
+<dt><em>Except_Assertions</em></dt>
+<dd>Do not flag a membership test expression if it is a subcomponent
+of the following constructs:</dd>
+</dl>
+<p><em>argument of the following pragmas</em></p>
+<p><em>Language-defined</em></p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">Assert</span></code></li>
+</ul>
+<p><em>GNAT-specific</em></p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">Assert_And_Cut</span></code></li>
+<li><code class="docutils literal"><span class="pre">Assume</span></code></li>
+<li><code class="docutils literal"><span class="pre">Contract_Cases</span></code></li>
+<li><code class="docutils literal"><span class="pre">Debug</span></code></li>
+<li><code class="docutils literal"><span class="pre">Invariant</span></code></li>
+<li><code class="docutils literal"><span class="pre">Loop_Invariant</span></code></li>
+<li><code class="docutils literal"><span class="pre">Loop_Variant</span></code></li>
+<li><code class="docutils literal"><span class="pre">Postcondition</span></code></li>
+<li><code class="docutils literal"><span class="pre">Precondition</span></code></li>
+<li><code class="docutils literal"><span class="pre">Predicate</span></code></li>
+<li><code class="docutils literal"><span class="pre">Refined_Post</span></code></li>
+</ul>
+<p><em>definition of the following aspects</em></p>
+<p><em>Language-defined</em></p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">Static_Predicate</span></code></li>
+<li><code class="docutils literal"><span class="pre">Dynamic_Predicate</span></code></li>
+<li><code class="docutils literal"><span class="pre">Pre</span></code></li>
+<li><code class="docutils literal"><span class="pre">Pre'Class</span></code></li>
+<li><code class="docutils literal"><span class="pre">Post</span></code></li>
+<li><code class="docutils literal"><span class="pre">Post'Class</span></code></li>
+<li><code class="docutils literal"><span class="pre">Type_Invariant</span></code></li>
+<li><code class="docutils literal"><span class="pre">Type_Invariant'Class</span></code></li>
+</ul>
+<p><em>GNAT-specific</em></p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">Contract_Cases</span></code></li>
+<li><code class="docutils literal"><span class="pre">Invariant</span></code></li>
+<li><code class="docutils literal"><span class="pre">Invariant'Class</span></code></li>
+<li><code class="docutils literal"><span class="pre">Predicate</span></code></li>
+<li><code class="docutils literal"><span class="pre">Refined_Post</span></code></li>
+</ul>
+<p>These two parameters are independent on each other.</p>
+</div>
+<div class="section" id="non-qualified-aggregates">
+<span id="id84"></span><h3>8.2.20. <code class="docutils literal"><span class="pre">Non_Qualified_Aggregates</span></code><a class="headerlink" href="#non-qualified-aggregates" title="Permalink to this headline">¶</a></h3>
+<p id="index-85">Flag each non-qualified aggregate.
+A non-qualified aggregate is an
+aggregate that is not the expression of a qualified expression. A
+string literal is not considered an aggregate, but an array
+aggregate of a string type is considered as a normal aggregate.
+Aggregates of anonymous array types are not flagged.</p>
+<p>This rule has no parameters.</p>
+</div>
+<div class="section" id="numeric-literals">
+<span id="id85"></span><h3>8.2.21. <code class="docutils literal"><span class="pre">Numeric_Literals</span></code><a class="headerlink" href="#numeric-literals" title="Permalink to this headline">¶</a></h3>
+<p id="index-86">Flag each use of a numeric literal in an index expression, and in any
+circumstance except for the following:</p>
+<ul class="simple">
+<li>a literal occurring in the initialization expression for a constant
+declaration or a named number declaration, or</li>
+<li>a literal occurring in an aspect definition or in an aspect clause, or</li>
+<li>an integer literal that is less than or equal to a value
+specified by the <em>N</em> rule parameter.</li>
+<li>a literal occurring in a declaration in case the <em>Statements_Only</em>
+rule parameter is given</li>
+</ul>
+<p>This rule may have the following parameters for the <code class="docutils literal"><span class="pre">+R</span></code> option:</p>
+<dl class="docutils">
+<dt><em>N</em></dt>
+<dd><em>N</em> is an integer literal used as the maximal value that is not flagged
+(i.e., integer literals not exceeding this value are allowed)</dd>
+<dt><code class="docutils literal"><span class="pre">ALL</span></code></dt>
+<dd>All integer literals are flagged</dd>
+<dt><code class="docutils literal"><span class="pre">Statements_Only</span></code></dt>
+<dd>Numeric literals are flagged only when used in statements</dd>
+</dl>
+<p>If no parameters are set, the maximum unflagged value is 1, and the check for
+literals is not limited by statements only.</p>
+<p>The last specified check limit (or the fact that there is no limit at
+all) is used when multiple <code class="docutils literal"><span class="pre">+R</span></code> options appear.</p>
+<p>The <code class="docutils literal"><span class="pre">-R</span></code> option for this rule has no parameters.
+It disables the rule and restores its default operation mode.
+If the <code class="docutils literal"><span class="pre">+R</span></code> option subsequently appears, will be 1, and the check will
+not be limited by statements only.</p>
+</div>
+<div class="section" id="parameters-out-of-order">
+<span id="id86"></span><h3>8.2.22. <code class="docutils literal"><span class="pre">Parameters_Out_Of_Order</span></code><a class="headerlink" href="#parameters-out-of-order" title="Permalink to this headline">¶</a></h3>
+<p id="index-87">Flag each subprogram and entry declaration whose formal parameters are not
+ordered according to the following scheme:</p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">in</span></code> and <code class="docutils literal"><span class="pre">access</span></code> parameters first,
+then <code class="docutils literal"><span class="pre">in</span> <span class="pre">out</span></code> parameters,
+and then <code class="docutils literal"><span class="pre">out</span></code> parameters;</li>
+<li>for <code class="docutils literal"><span class="pre">in</span></code> mode, parameters with default initialization expressions
+occur last</li>
+</ul>
+<p>Only the first violation of the described order is flagged.</p>
+<p>The following constructs are checked:</p>
+<ul class="simple">
+<li>subprogram declarations (including null procedures);</li>
+<li>generic subprogram declarations;</li>
+<li>formal subprogram declarations;</li>
+<li>entry declarations;</li>
+<li>subprogram bodies and subprogram body stubs that do not
+have separate specifications</li>
+</ul>
+<p>Subprogram renamings are not checked.</p>
+<p>This rule has no parameters.</p>
+</div>
+<div class="section" id="predicate-testing">
+<span id="id87"></span><h3>8.2.23. <code class="docutils literal"><span class="pre">Predicate_Testing</span></code><a class="headerlink" href="#predicate-testing" title="Permalink to this headline">¶</a></h3>
+<p id="index-88">Flag a subtype mark if it denotes a subtype defined with (static or
+dynamic) subtype predicate and is used as a membership choice in a
+membership test expression.</p>
+<p>Flags &#8216;Valid attribute reference if the nominal subtype of the attribute
+prefix has (static or dynamic) subtype predicate.</p>
+<p>This rule has the following (optional) parameters for the <code class="docutils literal"><span class="pre">+R</span></code> option:</p>
+<dl class="docutils">
+<dt><em>Except_Assertions</em></dt>
+<dd>Do not flag a construct described above if it is a subcomponent
+of the following constructs:</dd>
+</dl>
+<p><em>argument of the following pragmas</em></p>
+<p><em>Language-defined</em></p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">Assert</span></code></li>
+</ul>
+<p><em>GNAT-specific</em></p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">Assert_And_Cut</span></code></li>
+<li><code class="docutils literal"><span class="pre">Assume</span></code></li>
+<li><code class="docutils literal"><span class="pre">Contract_Cases</span></code></li>
+<li><code class="docutils literal"><span class="pre">Debug</span></code></li>
+<li><code class="docutils literal"><span class="pre">Invariant</span></code></li>
+<li><code class="docutils literal"><span class="pre">Loop_Invariant</span></code></li>
+<li><code class="docutils literal"><span class="pre">Loop_Variant</span></code></li>
+<li><code class="docutils literal"><span class="pre">Postcondition</span></code></li>
+<li><code class="docutils literal"><span class="pre">Precondition</span></code></li>
+<li><code class="docutils literal"><span class="pre">Predicate</span></code></li>
+<li><code class="docutils literal"><span class="pre">Refined_Post</span></code></li>
+</ul>
+<p><em>definition of the following aspects</em></p>
+<p><em>Language-defined</em></p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">Static_Predicate</span></code></li>
+<li><code class="docutils literal"><span class="pre">Dynamic_Predicate</span></code></li>
+<li><code class="docutils literal"><span class="pre">Pre</span></code></li>
+<li><code class="docutils literal"><span class="pre">Pre'Class</span></code></li>
+<li><code class="docutils literal"><span class="pre">Post</span></code></li>
+<li><code class="docutils literal"><span class="pre">Post'Class</span></code></li>
+<li><code class="docutils literal"><span class="pre">Type_Invariant</span></code></li>
+<li><code class="docutils literal"><span class="pre">Type_Invariant'Class</span></code></li>
+</ul>
+<p><em>GNAT-specific</em></p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">Contract_Cases</span></code></li>
+<li><code class="docutils literal"><span class="pre">Invariant</span></code></li>
+<li><code class="docutils literal"><span class="pre">Invariant'Class</span></code></li>
+<li><code class="docutils literal"><span class="pre">Predicate</span></code></li>
+<li><code class="docutils literal"><span class="pre">Refined_Post</span></code></li>
+</ul>
+</div>
+<div class="section" id="quantified-expressions">
+<span id="id88"></span><h3>8.2.24. <code class="docutils literal"><span class="pre">Quantified_Expressions</span></code><a class="headerlink" href="#quantified-expressions" title="Permalink to this headline">¶</a></h3>
+<p id="index-89">Flag use of quantified expression.</p>
+<p>This rule has the following (optional) parameters for the <code class="docutils literal"><span class="pre">+R</span></code> option:</p>
+<dl class="docutils">
+<dt><em>Except_Assertions</em></dt>
+<dd>Do not flag a conditional expression if it is a subcomponent
+of the following constructs:</dd>
+</dl>
+<p><em>argument of the following pragmas</em></p>
+<p><em>Language-defined</em></p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">Assert</span></code></li>
+</ul>
+<p><em>GNAT-specific</em></p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">Assert_And_Cut</span></code></li>
+<li><code class="docutils literal"><span class="pre">Assume</span></code></li>
+<li><code class="docutils literal"><span class="pre">Contract_Cases</span></code></li>
+<li><code class="docutils literal"><span class="pre">Debug</span></code></li>
+<li><code class="docutils literal"><span class="pre">Invariant</span></code></li>
+<li><code class="docutils literal"><span class="pre">Loop_Invariant</span></code></li>
+<li><code class="docutils literal"><span class="pre">Loop_Variant</span></code></li>
+<li><code class="docutils literal"><span class="pre">Postcondition</span></code></li>
+<li><code class="docutils literal"><span class="pre">Precondition</span></code></li>
+<li><code class="docutils literal"><span class="pre">Predicate</span></code></li>
+<li><code class="docutils literal"><span class="pre">Refined_Post</span></code></li>
+</ul>
+<p><em>definition of the following aspects</em></p>
+<p><em>Language-defined</em></p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">Static_Predicate</span></code></li>
+<li><code class="docutils literal"><span class="pre">Dynamic_Predicate</span></code></li>
+<li><code class="docutils literal"><span class="pre">Pre</span></code></li>
+<li><code class="docutils literal"><span class="pre">Pre'Class</span></code></li>
+<li><code class="docutils literal"><span class="pre">Post</span></code></li>
+<li><code class="docutils literal"><span class="pre">Post'Class</span></code></li>
+<li><code class="docutils literal"><span class="pre">Type_Invariant</span></code></li>
+<li><code class="docutils literal"><span class="pre">Type_Invariant'Class</span></code></li>
+</ul>
+<p><em>GNAT-specific</em></p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">Contract_Cases</span></code></li>
+<li><code class="docutils literal"><span class="pre">Invariant</span></code></li>
+<li><code class="docutils literal"><span class="pre">Invariant'Class</span></code></li>
+<li><code class="docutils literal"><span class="pre">Predicate</span></code></li>
+<li><code class="docutils literal"><span class="pre">Refined_Post</span></code></li>
+</ul>
+</div>
+<div class="section" id="raising-predefined-exceptions">
+<span id="id89"></span><h3>8.2.25. <code class="docutils literal"><span class="pre">Raising_Predefined_Exceptions</span></code><a class="headerlink" href="#raising-predefined-exceptions" title="Permalink to this headline">¶</a></h3>
+<p id="index-90">Flag each <code class="docutils literal"><span class="pre">raise</span></code> statement that raises a predefined exception
+(i.e., one of the exceptions <code class="docutils literal"><span class="pre">Constraint_Error</span></code>, <code class="docutils literal"><span class="pre">Numeric_Error</span></code>,
+<code class="docutils literal"><span class="pre">Program_Error</span></code>, <code class="docutils literal"><span class="pre">Storage_Error</span></code>, or <code class="docutils literal"><span class="pre">Tasking_Error</span></code>).</p>
+<p>This rule has no parameters.</p>
+</div>
+<div class="section" id="unassigned-out-parameters">
+<span id="id90"></span><h3>8.2.26. <code class="docutils literal"><span class="pre">Unassigned_OUT_Parameters</span></code><a class="headerlink" href="#unassigned-out-parameters" title="Permalink to this headline">¶</a></h3>
+<p id="index-91">Flag procedures&#8217; <code class="docutils literal"><span class="pre">out</span></code> parameters that are not assigned.</p>
+<p>An <code class="docutils literal"><span class="pre">out</span></code> parameter is flagged if the <em>sequence of statements</em> of
+the procedure body (before the procedure body&#8217;s exception part, if any)
+contains no assignment to the parameter.</p>
+<p>An <code class="docutils literal"><span class="pre">out</span></code> parameter is flagged in an <em>exception handler</em> in the exception
+part of the procedure body, if the <em>exception handler</em> contains neither an
+assignment to the parameter nor a raise statement.</p>
+<p>Bodies of generic procedures are also considered.</p>
+<p>The following are treated as assignments to an <code class="docutils literal"><span class="pre">out</span></code> parameter:</p>
+<ul class="simple">
+<li>an assignment statement, with the parameter or some component as the target</li>
+<li>passing the parameter (or one of its components) as an <code class="docutils literal"><span class="pre">out</span></code> or
+<code class="docutils literal"><span class="pre">in</span> <span class="pre">out</span></code> parameter, except for the case when it is passed to the
+call of an attribute subprogram.</li>
+</ul>
+<p>This rule has no parameters.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">This rule only detects a trivial case of an unassigned variable
+and doesn&#8217;t provide a guarantee that there is no uninitialized access.
+The rule does not check function parameters (starting from Ada 2012 functions
+can have <code class="docutils literal"><span class="pre">out</span></code> parameters). It is not a replacement for rigorous check for
+uninitialized access provided by advanced static analysis tools.</p>
+</div>
+</div>
+<div class="section" id="unconstrained-array-returns">
+<span id="id91"></span><h3>8.2.27. <code class="docutils literal"><span class="pre">Unconstrained_Array_Returns</span></code><a class="headerlink" href="#unconstrained-array-returns" title="Permalink to this headline">¶</a></h3>
+<p id="index-92">Flag each function returning an unconstrained array. Function declarations,
+function bodies (and body stubs) having no separate specifications,
+and generic function instantiations are flagged.
+Function calls and function renamings are
+not flagged.</p>
+<p>Generic function declarations, and function declarations in generic
+packages, are not flagged.  Instead, this rule flags the results of
+generic instantiations (that is, expanded specification and expanded
+body corresponding to an instantiation).</p>
+<p>This rule has the following (optional) parameters for the <code class="docutils literal"><span class="pre">+R</span></code> option:</p>
+<dl class="docutils">
+<dt><em>Except_String</em></dt>
+<dd>Do not flag functions that return the predefined <code class="docutils literal"><span class="pre">String</span></code> type or a type
+derived from it, directly or indirectly.</dd>
+</dl>
+</div>
+</div>
+<div class="section" id="metrics-related-rules">
+<h2>8.3. Metrics-Related Rules<a class="headerlink" href="#metrics-related-rules" title="Permalink to this headline">¶</a></h2>
+<p id="index-93">The rules in this section can be used to enforce compliance with
+specific code metrics, by checking that the metrics computed for a program
+lie within user-specifiable bounds.
+Depending on the metric, there may be a lower bound, an upper bound, or both.
+A construct is flagged if the value of the metric exceeds the upper bound
+or is less than the lower bound.</p>
+<p>The name of any metrics rule consists of the prefix <code class="docutils literal"><span class="pre">Metrics_</span></code>
+followed by the name of the corresponding metric:
+<code class="docutils literal"><span class="pre">Essential_Complexity</span></code>, <code class="docutils literal"><span class="pre">Cyclomatic_Complexity</span></code>, or
+<code class="docutils literal"><span class="pre">LSLOC</span></code>.
+(The &#8216;LSLOC&#8217; acronym stands for &#8216;Logical Source Lines Of Code&#8217;.)
+The meaning and the computed values of the metrics are
+the same as in <em>gnatmetric</em>.</p>
+<p>For the <code class="docutils literal"><span class="pre">+R</span></code> option, each metrics rule has a numeric parameter
+specifying the bound (integer or real, depending on a metric).
+The <code class="docutils literal"><span class="pre">-R</span></code>
+option for the metrics rules does not have a parameter.</p>
+<p><em>Example:</em> the rule</p>
+<div class="highlight-python"><div class="highlight"><pre>+RMetrics_Cyclomatic_Complexity : 7
+</pre></div>
+</div>
+<p>means that all bodies with cyclomatic complexity exceeding 7 will be flagged.</p>
+<p>To turn OFF the check for cyclomatic complexity metric,
+use the following option:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="o">-</span><span class="n">RMetrics_Cyclomatic_Complexity</span>
+</pre></div>
+</div>
+<div class="section" id="metrics-essential-complexity">
+<span id="id92"></span><h3>8.3.1. <code class="docutils literal"><span class="pre">Metrics_Essential_Complexity</span></code><a class="headerlink" href="#metrics-essential-complexity" title="Permalink to this headline">¶</a></h3>
+<p id="index-94">The <code class="docutils literal"><span class="pre">Metrics_Essential_Complexity</span></code> rule takes a positive integer as
+upper bound.  A program unit that is an executable body exceeding this limit will be flagged.</p>
+<p>The Ada essential complexity metric is a McCabe cyclomatic complexity metric counted
+for the code that is reduced by excluding all the pure structural Ada control statements.</p>
+</div>
+<div class="section" id="metrics-cyclomatic-complexity">
+<span id="id93"></span><h3>8.3.2. <code class="docutils literal"><span class="pre">Metrics_Cyclomatic_Complexity</span></code><a class="headerlink" href="#metrics-cyclomatic-complexity" title="Permalink to this headline">¶</a></h3>
+<p id="index-95">The <code class="docutils literal"><span class="pre">Metrics_Cyclomatic_Complexity</span></code> rule takes a positive integer as
+upper bound.  A program unit that is an executable body exceeding this limit will be flagged.</p>
+<p>The McCabe cyclomatic complexity metric is defined
+in <a class="reference external" href="http://www.mccabe.com/pdf/mccabe-nist235r.pdf">http://www.mccabe.com/pdf/mccabe-nist235r.pdf</a>
+The goal of cyclomatic complexity metric is to estimate the number
+of independent paths in the control flow graph that in turn gives the number
+of tests needed to satisfy paths coverage testing completeness criterion.</p>
+</div>
+<div class="section" id="metrics-lsloc">
+<span id="id94"></span><h3>8.3.3. <code class="docutils literal"><span class="pre">Metrics_LSLOC</span></code><a class="headerlink" href="#metrics-lsloc" title="Permalink to this headline">¶</a></h3>
+<p id="index-96">The <code class="docutils literal"><span class="pre">Metrics_LSLOC</span></code> rule takes a positive integer as
+upper bound.  A program unit declaration or a program unit body exceeding
+this limit will be flagged.</p>
+<p>The metric counts the total number of declarations and the total number of statements.</p>
+</div>
+</div>
+<div class="section" id="spark-ada-rules">
+<h2>8.4. SPARK Ada Rules<a class="headerlink" href="#spark-ada-rules" title="Permalink to this headline">¶</a></h2>
+<p id="index-97">The rules in this section can be used to enforce
+compliance with the Ada subset allowed by the SPARK tools.</p>
+<div class="section" id="annotated-comments">
+<span id="id95"></span><h3>8.4.1. <code class="docutils literal"><span class="pre">Annotated_Comments</span></code><a class="headerlink" href="#annotated-comments" title="Permalink to this headline">¶</a></h3>
+<p id="index-98">Flags comments that are used as annotations or as
+special sentinels/markers. Such comments have the following
+structure</p>
+<div class="highlight-python"><div class="highlight"><pre>--&lt;special_character&gt; &lt;comment_marker&gt;
+</pre></div>
+</div>
+<p>where</p>
+<dl class="docutils">
+<dt><em>&lt;special_character&gt;</em></dt>
+<dd>character (such as &#8216;#&#8217;, &#8216;$&#8217;, &#8216;|&#8217; etc.) indicating that the comment is used
+for a specific purpose</dd>
+<dt><em>&lt;comment_marker&gt;</em></dt>
+<dd>a word identifying the annotation or special usage (word here is any sequence
+of characters except white space)</dd>
+</dl>
+<p>There may be any amount of white space (including none at all) between
+<code class="docutils literal"><span class="pre">&lt;special_character&gt;</span></code> and <code class="docutils literal"><span class="pre">&lt;comment_marker&gt;</span></code>, but no white space
+is permitted between <code class="docutils literal"><span class="pre">'--'</span></code> and <code class="docutils literal"><span class="pre">&lt;special_character&gt;</span></code>. (A
+white space here is either a space character or horizontal tabulation)</p>
+<p><code class="docutils literal"><span class="pre">&lt;comment_marker&gt;</span></code> must not contain any white space.</p>
+<p><code class="docutils literal"><span class="pre">&lt;comment_marker&gt;</span></code> may be empty, in which case the rule
+flags each comment that starts with <code class="docutils literal"><span class="pre">--&lt;special_character&gt;</span></code> and
+that does not contain any other character except white space</p>
+<p>The rule has the following (mandatory) parameter for the <code class="docutils literal"><span class="pre">+R</span></code> option:</p>
+<dl class="docutils">
+<dt><em>S</em></dt>
+<dd>String with the following interpretation: the first character
+is the special comment character, and the rest is
+the comment marker. S must not contain white space.</dd>
+</dl>
+<p>The <code class="docutils literal"><span class="pre">-R</span></code> option erases all definitions of special comment annotations
+specified by the previous +R options.</p>
+<p>The rule is case-sensitive.</p>
+<p>Example:</p>
+<p>The rule</p>
+<div class="highlight-python"><div class="highlight"><pre>+RAnnotated_Comments:#hide
+</pre></div>
+</div>
+<p>will flag the following comment lines</p>
+<div class="highlight-ada"><div class="highlight"><pre><span class="c">--#hide</span>
+<span class="c">--# hide</span>
+<span class="c">--#           hide</span>
+
+   <span class="n">I</span> <span class="o">:=</span> <span class="n">I</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span> <span class="c">--# hide</span>
+</pre></div>
+</div>
+<p>But the line</p>
+<div class="highlight-ada"><div class="highlight"><pre><span class="c">-- # hide</span>
+</pre></div>
+</div>
+<p>will not be flagged, because of the space between &#8216;&#8211;&#8217; and &#8216;#&#8217;.</p>
+<p>The line</p>
+<div class="highlight-ada"><div class="highlight"><pre><span class="c">--#Hide</span>
+</pre></div>
+</div>
+<p>will not be flagged, because the string parameter is case sensitive.</p>
+</div>
+<div class="section" id="boolean-relational-operators">
+<span id="id96"></span><h3>8.4.2. <code class="docutils literal"><span class="pre">Boolean_Relational_Operators</span></code><a class="headerlink" href="#boolean-relational-operators" title="Permalink to this headline">¶</a></h3>
+<p id="index-99">Flag each call to a predefined relational operator (&#8216;&lt;&#8217;, &#8216;&gt;&#8217;, &#8216;&lt;=&#8217;,
+&#8216;&gt;=&#8217;, &#8216;=&#8217; and &#8216;/=&#8217;) for the predefined Boolean type.
+(This rule is useful in enforcing the SPARK language restrictions.)</p>
+<p>Calls to predefined relational operators of any type derived from
+<code class="docutils literal"><span class="pre">Standard.Boolean</span></code> are not detected.  Calls to user-defined functions
+with these designators, and uses of operators that are renamings
+of the predefined relational operators for <code class="docutils literal"><span class="pre">Standard.Boolean</span></code>,
+are likewise not detected.</p>
+<p>This rule has no parameters.</p>
+</div>
+<div class="section" id="expanded-loop-exit-names">
+<span id="id97"></span><h3>8.4.3. <code class="docutils literal"><span class="pre">Expanded_Loop_Exit_Names</span></code><a class="headerlink" href="#expanded-loop-exit-names" title="Permalink to this headline">¶</a></h3>
+<p id="index-100">Flag all expanded loop names in <code class="docutils literal"><span class="pre">exit</span></code> statements.</p>
+<p>This rule has no parameters.</p>
+</div>
+<div class="section" id="non-spark-attributes">
+<span id="id98"></span><h3>8.4.4. <code class="docutils literal"><span class="pre">Non_SPARK_Attributes</span></code><a class="headerlink" href="#non-spark-attributes" title="Permalink to this headline">¶</a></h3>
+<p id="index-101">The SPARK language defines the following subset of Ada 95 attribute
+designators as those that can be used in SPARK programs. The use of
+any other attribute is flagged.</p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">'Adjacent</span></code></li>
+<li><code class="docutils literal"><span class="pre">'Aft</span></code></li>
+<li><code class="docutils literal"><span class="pre">'Base</span></code></li>
+<li><code class="docutils literal"><span class="pre">'Ceiling</span></code></li>
+<li><code class="docutils literal"><span class="pre">'Component_Size</span></code></li>
+<li><code class="docutils literal"><span class="pre">'Compose</span></code></li>
+<li><code class="docutils literal"><span class="pre">'Copy_Sign</span></code></li>
+<li><code class="docutils literal"><span class="pre">'Delta</span></code></li>
+<li><code class="docutils literal"><span class="pre">'Denorm</span></code></li>
+<li><code class="docutils literal"><span class="pre">'Digits</span></code></li>
+<li><code class="docutils literal"><span class="pre">'Exponent</span></code></li>
+<li><code class="docutils literal"><span class="pre">'First</span></code></li>
+<li><code class="docutils literal"><span class="pre">'Floor</span></code></li>
+<li><code class="docutils literal"><span class="pre">'Fore</span></code></li>
+<li><code class="docutils literal"><span class="pre">'Fraction</span></code></li>
+<li><code class="docutils literal"><span class="pre">'Last</span></code></li>
+<li><code class="docutils literal"><span class="pre">'Leading_Part</span></code></li>
+<li><code class="docutils literal"><span class="pre">'Length</span></code></li>
+<li><code class="docutils literal"><span class="pre">'Machine</span></code></li>
+<li><code class="docutils literal"><span class="pre">'Machine_Emax</span></code></li>
+<li><code class="docutils literal"><span class="pre">'Machine_Emin</span></code></li>
+<li><code class="docutils literal"><span class="pre">'Machine_Mantissa</span></code></li>
+<li><code class="docutils literal"><span class="pre">'Machine_Overflows</span></code></li>
+<li><code class="docutils literal"><span class="pre">'Machine_Radix</span></code></li>
+<li><code class="docutils literal"><span class="pre">'Machine_Rounds</span></code></li>
+<li><code class="docutils literal"><span class="pre">'Max</span></code></li>
+<li><code class="docutils literal"><span class="pre">'Min</span></code></li>
+<li><code class="docutils literal"><span class="pre">'Model</span></code></li>
+<li><code class="docutils literal"><span class="pre">'Model_Emin</span></code></li>
+<li><code class="docutils literal"><span class="pre">'Model_Epsilon</span></code></li>
+<li><code class="docutils literal"><span class="pre">'Model_Mantissa</span></code></li>
+<li><code class="docutils literal"><span class="pre">'Model_Small</span></code></li>
+<li><code class="docutils literal"><span class="pre">'Modulus</span></code></li>
+<li><code class="docutils literal"><span class="pre">'Pos</span></code></li>
+<li><code class="docutils literal"><span class="pre">'Pred</span></code></li>
+<li><code class="docutils literal"><span class="pre">'Range</span></code></li>
+<li><code class="docutils literal"><span class="pre">'Remainder</span></code></li>
+<li><code class="docutils literal"><span class="pre">'Rounding</span></code></li>
+<li><code class="docutils literal"><span class="pre">'Safe_First</span></code></li>
+<li><code class="docutils literal"><span class="pre">'Safe_Last</span></code></li>
+<li><code class="docutils literal"><span class="pre">'Scaling</span></code></li>
+<li><code class="docutils literal"><span class="pre">'Signed_Zeros</span></code></li>
+<li><code class="docutils literal"><span class="pre">'Size</span></code></li>
+<li><code class="docutils literal"><span class="pre">'Small</span></code></li>
+<li><code class="docutils literal"><span class="pre">'Succ</span></code></li>
+<li><code class="docutils literal"><span class="pre">'Truncation</span></code></li>
+<li><code class="docutils literal"><span class="pre">'Unbiased_Rounding</span></code></li>
+<li><code class="docutils literal"><span class="pre">'Val</span></code></li>
+<li><code class="docutils literal"><span class="pre">'Valid</span></code></li>
+</ul>
+<p>This rule has no parameters.</p>
+</div>
+<div class="section" id="non-tagged-derived-types">
+<span id="id99"></span><h3>8.4.5. <code class="docutils literal"><span class="pre">Non_Tagged_Derived_Types</span></code><a class="headerlink" href="#non-tagged-derived-types" title="Permalink to this headline">¶</a></h3>
+<p id="index-102">Flag all derived type declarations that do not have a record extension part.</p>
+<p>This rule has no parameters.</p>
+</div>
+<div class="section" id="outer-loop-exits">
+<span id="id100"></span><h3>8.4.6. <code class="docutils literal"><span class="pre">Outer_Loop_Exits</span></code><a class="headerlink" href="#outer-loop-exits" title="Permalink to this headline">¶</a></h3>
+<p id="index-103">Flag each <code class="docutils literal"><span class="pre">exit</span></code> statement containing a loop name that is not the name
+of the immediately enclosing <code class="docutils literal"><span class="pre">loop</span></code> statement.</p>
+<p>This rule has no parameters.</p>
+</div>
+<div class="section" id="overloaded-operators">
+<span id="id101"></span><h3>8.4.7. <code class="docutils literal"><span class="pre">Overloaded_Operators</span></code><a class="headerlink" href="#overloaded-operators" title="Permalink to this headline">¶</a></h3>
+<p id="index-104">Flag each function declaration that overloads an operator symbol.
+A function body is checked only if the body does not have a
+separate spec. Formal functions are also checked. For a
+renaming declaration, only renaming-as-declaration is checked</p>
+<p>This rule has no parameters.</p>
+</div>
+<div class="section" id="slices">
+<span id="id102"></span><h3>8.4.8. <code class="docutils literal"><span class="pre">Slices</span></code><a class="headerlink" href="#slices" title="Permalink to this headline">¶</a></h3>
+<p id="index-105">Flag all uses of array slicing</p>
+<p>This rule has no parameters.</p>
+</div>
+<div class="section" id="universal-ranges">
+<span id="id103"></span><h3>8.4.9. <code class="docutils literal"><span class="pre">Universal_Ranges</span></code><a class="headerlink" href="#universal-ranges" title="Permalink to this headline">¶</a></h3>
+<p id="index-106">Flag discrete ranges that are a part of an index constraint, constrained
+array definition, or <code class="docutils literal"><span class="pre">for</span></code>-loop parameter specification, and whose bounds
+are both of type <em>universal_integer</em>. Ranges that have at least one
+bound of a specific type (such as <code class="docutils literal"><span class="pre">1</span> <span class="pre">..</span> <span class="pre">N</span></code>, where <code class="docutils literal"><span class="pre">N</span></code> is a variable
+or an expression of non-universal type) are not flagged.</p>
+<p>This rule has no parameters.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="example_of_gnatcheck_usage.html" title="9. Example of gnatcheck Usage"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="rule_exemption.html" title="7. Rule exemption"
+             >previous</a> |</li>
+        <li><a href="../gnatcheck_rm.html">GNATcheck Reference Manual 2017 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2008-2017, AdaCore.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3b2.
+    </div>
+  </body>
+</html>

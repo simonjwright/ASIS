@@ -1,0 +1,47 @@
+------------------------------------------------------------------------------
+--                                                                          --
+--                           GNATTEST COMPONENTS                            --
+--                                                                          --
+--                             G N A T T E S T                              --
+--                                                                          --
+--                                 S p e c                                  --
+--                                                                          --
+--                     Copyright (C) 2011-2015, AdaCore                     --
+--                                                                          --
+-- GNATTEST  is  free  software;  you  can redistribute it and/or modify it --
+-- under terms of the  GNU  General Public License as published by the Free --
+-- Software  Foundation;  either  version  2, or (at your option) any later --
+-- version.  AUNITSTUB  is  distributed in the hope that it will be useful, --
+-- but  WITHOUT  ANY  WARRANTY;   without  even  the  implied  warranty  of --
+-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General --
+-- Public License for more details.  You should have received a copy of the --
+-- GNU  General  Public License distributed with GNAT; see file COPYING. If --
+-- not, write to the  Free  Software  Foundation, 51 Franklin Street, Fifth --
+-- Floor, Boston, MA 02110-1301, USA.                                       --
+--                                                                          --
+-- GNATTEST is maintained by AdaCore (http://www.adacore.com).              --
+--                                                                          --
+------------------------------------------------------------------------------
+
+with "../../asis";
+with "../../common";
+with "gnatcoll";
+
+project GNATtest extends "../tool_utils/tool_utils" is
+   for Main use ("gnattest-driver.adb");
+   package Builder is
+      for Default_Switches ("ada") use
+        Common.Builder'Default_Switches ("ada");
+      for Executable ("gnattest-driver.adb") use "gnattest";
+   end Builder;
+
+   package Compiler is
+      for Switches ("gnattest-stub-generator.adb") use
+        ("-fno-strict-aliasing") & Common.Compiler'Default_Switches ("ada");
+      for Default_Switches ("ada") use
+        Common.Compiler'Default_Switches ("ada");
+   end Compiler;
+
+   package Binder renames Common.Binder;
+   package Ide renames Common.Ide;
+end GNATtest;

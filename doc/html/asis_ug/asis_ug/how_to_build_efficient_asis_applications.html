@@ -1,0 +1,282 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>9. How to Build Efficient ASIS Applications &mdash; ASIS-for-GNAT User&#39;s Guide 2017 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2017',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="ASIS-for-GNAT User&#39;s Guide 2017 documentation" href="../asis_ug.html" />
+    <link rel="next" title="10. Processing an Ada Library by an ASIS-Based Tool" href="processing_an_ada_library_by_an_asis-based_tool.html" />
+    <link rel="prev" title="8. ASIS Tutorials" href="asis_tutorials.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="processing_an_ada_library_by_an_asis-based_tool.html" title="10. Processing an Ada Library by an ASIS-Based Tool"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="asis_tutorials.html" title="8. ASIS Tutorials"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../asis_ug.html">ASIS-for-GNAT User&#39;s Guide 2017 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../asis_ug.html">
+              <img class="logo" src="../_static/adacore_transparent.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../asis_ug.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">9. How to Build Efficient ASIS Applications</a><ul>
+<li><a class="reference internal" href="#tree-swapping-as-a-performance-issue">9.1. Tree Swapping as a Performance Issue</a></li>
+<li><a class="reference internal" href="#queries-that-can-cause-tree-swapping">9.2. Queries That Can Cause Tree Swapping</a></li>
+<li><a class="reference internal" href="#how-to-avoid-unnecessary-tree-swapping">9.3. How to Avoid Unnecessary Tree Swapping</a></li>
+<li><a class="reference internal" href="#using-gnatmake-to-create-tree-files">9.4. Using <code class="docutils literal"><span class="pre">gnatmake</span></code> to Create Tree Files</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="asis_tutorials.html"
+                        title="previous chapter">8. ASIS Tutorials</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="processing_an_ada_library_by_an_asis-based_tool.html"
+                        title="next chapter">10. Processing an Ada Library by an ASIS-Based Tool</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/asis_ug/how_to_build_efficient_asis_applications.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="how-to-build-efficient-asis-applications">
+<span id="id1"></span><h1>9. How to Build Efficient ASIS Applications<a class="headerlink" href="#how-to-build-efficient-asis-applications" title="Permalink to this headline">¶</a></h1>
+<p id="index-0">This chapter identifies some potential performance issues with ASIS applications
+and offers some advice on how to address these issues.</p>
+<div class="section" id="tree-swapping-as-a-performance-issue">
+<h2>9.1. Tree Swapping as a Performance Issue<a class="headerlink" href="#tree-swapping-as-a-performance-issue" title="Permalink to this headline">¶</a></h2>
+<p id="index-1">If an ASIS <code class="docutils literal"><span class="pre">Context</span></code> comprises more then one tree, then ASIS may need to switch
+between different trees during an ASIS application run. Switching between
+trees may require ASIS to repeatedly read in the same set of trees, and this may slow
+down an application considerably.</p>
+<p>Basically, there are two causes for tree swapping:</p>
+<ul class="simple">
+<li><em>Processing of semantically independent units.</em> Suppose in <code class="docutils literal"><span class="pre">Context</span></code> <code class="docutils literal"><span class="pre">Cont</span></code> we have
+units <code class="docutils literal"><span class="pre">P</span></code> and <code class="docutils literal"><span class="pre">Q</span></code> that do not depend on each other, and <code class="docutils literal"><span class="pre">Cont</span></code> does
+not contain any third unit depending on both <code class="docutils literal"><span class="pre">P</span></code> and <code class="docutils literal"><span class="pre">Q</span></code>. This
+means that <code class="docutils literal"><span class="pre">P</span></code> and <code class="docutils literal"><span class="pre">Q</span></code> cannot be represented by the same tree. To
+obtain information about <code class="docutils literal"><span class="pre">P</span></code>, ASIS needs to access the tree <code class="file docutils literal"><span class="pre">p.adt</span></code>,
+and to get some information about <code class="docutils literal"><span class="pre">Q</span></code>, ASIS needs
+<code class="file docutils literal"><span class="pre">q.adt</span></code>. Therefore, if an application retrieves some information from
+<code class="docutils literal"><span class="pre">P</span></code>, and then starts processing <code class="docutils literal"><span class="pre">Q</span></code>, ASIS has to read
+<code class="file docutils literal"><span class="pre">q.adt</span></code>.</li>
+<li><em>Processing of information from dependent units.</em>
+A unit <code class="docutils literal"><span class="pre">U</span></code> may be present not only in the tree created for <code class="docutils literal"><span class="pre">U</span></code>, but also in
+all the trees created for units which semantically depend upon <code class="docutils literal"><span class="pre">U</span></code>.
+Suppose we have a library procedure <code class="docutils literal"><span class="pre">Proc</span></code> depending on a
+library package <code class="docutils literal"><span class="pre">Pack</span></code>, and in the set of trees making up our <code class="docutils literal"><span class="pre">Context</span></code> we
+have trees <code class="file docutils literal"><span class="pre">pack.adt</span></code> and <code class="file docutils literal"><span class="pre">proc.adt</span></code>. Suppose we have some
+<code class="docutils literal"><span class="pre">Element</span></code> representing a component of <code class="docutils literal"><span class="pre">Pack</span></code>, when <code class="file docutils literal"><span class="pre">pack.adt</span></code> was
+accessed by ASIS, and suppose that because of some other actions undertaken
+by an application ASIS changed the tree being accessed to <code class="file docutils literal"><span class="pre">proc.adt</span></code>.
+Suppose that now the application wants to do something with the <code class="docutils literal"><span class="pre">Element</span></code>
+representing some component of <code class="docutils literal"><span class="pre">Pack</span></code> and obtained from <code class="file docutils literal"><span class="pre">pack.adt</span></code>. Even
+though the unit <code class="docutils literal"><span class="pre">Pack</span></code> is represented by the currently accessed tree
+<code class="file docutils literal"><span class="pre">proc.adt</span></code>, ASIS has to switch back to <code class="file docutils literal"><span class="pre">pack.adt</span></code>, because all the
+references into the tree structure kept as a part of the value of this
+<code class="docutils literal"><span class="pre">Element</span></code> are valid only for <code class="file docutils literal"><span class="pre">pack.adt</span></code>.</li>
+</ul>
+</div>
+<div class="section" id="queries-that-can-cause-tree-swapping">
+<h2>9.2. Queries That Can Cause Tree Swapping<a class="headerlink" href="#queries-that-can-cause-tree-swapping" title="Permalink to this headline">¶</a></h2>
+<p>In ASIS-for-GNAT, tree swapping can currently take place only when
+processing queries defined in:</p>
+<div class="highlight-ada"><div class="highlight"><pre><span class="n">Asis.Elements</span>
+<span class="n">Asis.Declarations</span>
+<span class="n">Asis.Definitions</span>
+<span class="n">Asis.Statements</span>
+<span class="n">Asis.Clauses</span>
+<span class="n">Asis.Expressions</span>
+<span class="n">Asis.Text</span>
+</pre></div>
+</div>
+<p>but not for those queries in the above packages that return enumeration or boolean results.</p>
+<p id="index-2">For any instantiation of <code class="docutils literal"><span class="pre">Asis.Iterator.Traverse_Element</span></code>,
+the traversal itself
+can cause at most one tree read to get the tree appropriate for processing the
+<code class="docutils literal"><span class="pre">Element</span></code> to be traversed, but procedures provided as actuals for
+<code class="docutils literal"><span class="pre">Pre_Operation</span></code> and <code class="docutils literal"><span class="pre">Post_Operation</span></code> may cause additional tree
+swappings.</p>
+</div>
+<div class="section" id="how-to-avoid-unnecessary-tree-swapping">
+<h2>9.3. How to Avoid Unnecessary Tree Swapping<a class="headerlink" href="#how-to-avoid-unnecessary-tree-swapping" title="Permalink to this headline">¶</a></h2>
+<p id="index-3">To speed up your application, try to avoid unnecessary tree swapping. The
+following guidelines may help:</p>
+<ul>
+<li><p class="first">Try to minimize the set of tree files processed by your application. In
+particular, try to avoid having separate trees created for subunits.</p>
+<p>Minimizing the set of tree files processed by the application also cuts
+down the time needed for opening a <code class="docutils literal"><span class="pre">Context</span></code>. Try to use <code class="docutils literal"><span class="pre">gnatmake</span></code> to create
+a suitable set of tree files covering an Ada program for processing by
+an ASIS application.</p>
+</li>
+<li><p class="first">Choose the <code class="docutils literal"><span class="pre">Context</span></code> definition appropriate to your application. For
+example, use &#8216;one tree&#8217; <code class="docutils literal"><span class="pre">Context</span></code> (<code class="docutils literal"><span class="pre">-C1</span></code>) for applications that are limited
+to processing single units (such as a pretty printer or <code class="docutils literal"><span class="pre">gnatstub</span></code>). By
+processing the tree file created for this unit, ASIS can get all the
+syntactic and semantic information about this unit. Using the &#8216;one tree&#8217; <code class="docutils literal"><span class="pre">Context</span></code>
+definition, an application has only one tree file to read when
+opening a <code class="docutils literal"><span class="pre">Context</span></code>, and no other tree file will be read during the
+application run. An &#8216;N-trees&#8217; <code class="docutils literal"><span class="pre">Context</span></code> is a natural extension of &#8216;one tree&#8217;
+<code class="docutils literal"><span class="pre">Context</span></code> for applications that know in advance which units will be
+processed, but opening a <code class="docutils literal"><span class="pre">Context</span></code> takes longer, and ASIS may switch among
+different tree files during an application run. Use &#8216;all trees&#8217; <code class="docutils literal"><span class="pre">Context</span></code>
+only for applications which are not targeted at processing a specific
+unit or a specific set of units, but are supposed to process all the
+available units, or when an application has to process a large
+system consisting of a many units. When using an
+application based on an &#8216;all trees&#8217; <code class="docutils literal"><span class="pre">Context</span></code>, use the approach for creating
+tree files described above to minimize a set of tree files to be
+processed.</p>
+</li>
+<li><p class="first">In your ASIS application, try to avoid switching between processing units or
+sets of units with no dependencies among them; such a switching will
+cause tree swapping.</p>
+</li>
+<li><p class="first">If you are going to analyze a library unit having both a spec and a body,
+start by obtaining an <code class="docutils literal"><span class="pre">Element</span></code> from the body of this unit. This will set
+the tree created for the body as the tree accessed by ASIS, and this tree
+will allow both the spec and the body of this unit to be processed
+without tree swapping.</p>
+</li>
+<li id="index-4"><p class="first">To see a &#8216;tree swapping profile&#8217; of your application use the <code class="docutils literal"><span class="pre">-dt</span></code> debug flag
+when initializing ASIS (<code class="docutils literal"><span class="pre">Asis.Implementation.Initialize</span> <span class="pre">(&quot;-dt&quot;)</span></code>).
+The
+information returned may give you some hints on
+how to avoid tree swapping.</p>
+</li>
+</ul>
+</div>
+<div class="section" id="using-gnatmake-to-create-tree-files">
+<span id="id2"></span><h2>9.4. Using <code class="docutils literal"><span class="pre">gnatmake</span></code> to Create Tree Files<a class="headerlink" href="#using-gnatmake-to-create-tree-files" title="Permalink to this headline">¶</a></h2>
+<span class="target" id="index-5"></span><p id="index-6">To create a suitable set of tree files, you may use <code class="docutils literal"><span class="pre">gnatmake</span></code>. GNAT
+creates an <code class="file docutils literal"><span class="pre">ALI</span></code> file for every successful compilation, whether or not
+code has been generated. Therefore, it is possible to run <code class="docutils literal"><span class="pre">gnatmake</span></code> with
+the <code class="docutils literal"><span class="pre">-gnatct</span></code> option;
+this will create the set of
+tree files for all the compilation units needed in the resulting program.
+Below we will use
+<code class="docutils literal"><span class="pre">gnatmake</span></code> to create a set of tree files for a complete Ada program
+(partition). You may adapt this approach to an incomplete program or to a
+partition without a main subprogram, applying <code class="docutils literal"><span class="pre">gnatmake</span></code> to some of its
+components.</p>
+<p>Using <code class="docutils literal"><span class="pre">gnatmake</span></code> for creating tree files has another advantage: it will
+keep tree files consistent among themselves and with the sources.</p>
+<p>There are two different ways to use <code class="docutils literal"><span class="pre">gnatmake</span></code> to create a set of tree
+files.</p>
+<p>First, suppose you have object, <code class="file docutils literal"><span class="pre">ALI</span></code> and tree files for your program in the same
+directory, and <code class="file docutils literal"><span class="pre">main_subprogram.adb</span></code> contains the body of the main
+subprogram. If you run <code class="docutils literal"><span class="pre">gnatmake</span></code> as</p>
+<div class="highlight-python"><div class="highlight"><pre>$ gnatmake -f -c -gnatct ... main_subprogram.adb
+</pre></div>
+</div>
+<p>this will create the trees representing the full program for which
+<code class="docutils literal"><span class="pre">main_subprogram</span></code> is the main procedure. The trees will be created &#8216;from scratch&#8217;;
+that is, if some tree files already exist, they will be recreated. This is
+because <code class="docutils literal"><span class="pre">gnatmake</span></code> is being called with the <code class="docutils literal"><span class="pre">-f</span></code> option
+(which means &#8216;force recompilation&#8217;).
+Usng <code class="docutils literal"><span class="pre">gnatmake</span></code> without the <code class="docutils literal"><span class="pre">-f</span></code> option for creating tree files is not reliable
+if your tree files are in the same directory as the object files, because
+object and tree files &#8216;share&#8217; the same set of <code class="file docutils literal"><span class="pre">ALI</span></code> files.
+If the
+object files exist and are consistent with the <code class="file docutils literal"><span class="pre">ALI</span></code> and source
+files, the source will not be recompiled for creating a tree file unless the <code class="docutils literal"><span class="pre">-f</span></code>
+option is set.</p>
+<p>A different approach is to combine the tree files and the associated <code class="file docutils literal"><span class="pre">ALI</span></code> files
+in a separate directory, and to use this directory only for keeping the tree
+files and maintaining their consistency with source files. Thus, the object
+files and their associated <code class="file docutils literal"><span class="pre">ALI</span></code> files should be in another directory.
+In this case, by invoking <code class="docutils literal"><span class="pre">gnatmake</span></code> through:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ gnatmake -c -gnatct ... main_subprogram.adb
+</pre></div>
+</div>
+<p>(that is, without forcing recompilation) you will still obtain a full and
+consistent set of tree files representing your program, but in this case the
+existing tree files will be reused.</p>
+<p>See the next chapter for specific details related to Ada compilation units
+belonging to precompiled Ada libraries.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="processing_an_ada_library_by_an_asis-based_tool.html" title="10. Processing an Ada Library by an ASIS-Based Tool"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="asis_tutorials.html" title="8. ASIS Tutorials"
+             >previous</a> |</li>
+        <li><a href="../asis_ug.html">ASIS-for-GNAT User&#39;s Guide 2017 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2008-2017, AdaCore.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3b2.
+    </div>
+  </body>
+</html>

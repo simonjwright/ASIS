@@ -1,0 +1,188 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>3. ASIS Extensions &mdash; ASIS-for-GNAT Reference Manual 2017 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2017',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="ASIS-for-GNAT Reference Manual 2017 documentation" href="../asis_rm.html" />
+    <link rel="next" title="4. Implementation-Specific Features and Implementation Permissions" href="implementation-specific_features_and_implementation_permissions.html" />
+    <link rel="prev" title="2. ASIS-for-GNAT and the ASIS Standard" href="asis-for-gnat_and_the_asis_standard.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="implementation-specific_features_and_implementation_permissions.html" title="4. Implementation-Specific Features and Implementation Permissions"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="asis-for-gnat_and_the_asis_standard.html" title="2. ASIS-for-GNAT and the ASIS Standard"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../asis_rm.html">ASIS-for-GNAT Reference Manual 2017 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../asis_rm.html">
+              <img class="logo" src="../_static/adacore_transparent.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../asis_rm.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">3. ASIS Extensions</a><ul>
+<li><a class="reference internal" href="#id2">3.1. <code class="docutils literal"><span class="pre">Asis.Extensions</span></code></a></li>
+<li><a class="reference internal" href="#asis-extensions-flat-kinds">3.2. <code class="docutils literal"><span class="pre">Asis.Extensions.Flat_Kinds</span></code></a></li>
+<li><a class="reference internal" href="#asis-extensions-iterator">3.3. <code class="docutils literal"><span class="pre">Asis.Extensions.Iterator</span></code></a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="asis-for-gnat_and_the_asis_standard.html"
+                        title="previous chapter">2. ASIS-for-GNAT and the ASIS Standard</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="implementation-specific_features_and_implementation_permissions.html"
+                        title="next chapter">4. Implementation-Specific Features and Implementation Permissions</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/asis_rm/asis_extensions.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="asis-extensions">
+<span id="id1"></span><h1>3. ASIS Extensions<a class="headerlink" href="#asis-extensions" title="Permalink to this headline">¶</a></h1>
+<p id="index-0">ASIS-for-GNAT provides some additional types and queries as ASIS extensions.
+All these queries are defined and documented in the hierarchy headed by
+package <code class="docutils literal"><span class="pre">Asis.Extensions</span></code>. They are referred as &#8216;ASIS extensions&#8217; or
+&#8216;ASIS extension queries&#8217; below.</p>
+<p id="index-1">All the ASIS extensions obey the general ASIS rules:</p>
+<ul class="simple">
+<li>When using ASIS
+extensions, you have to follow the required sequencing of calls</li>
+<li>Only ASIS-defined exceptions propagate outside ASIS extension
+queries</li>
+</ul>
+<p>If the documentation of an ASIS extension query contains a list of
+&#8216;appropriate&#8217; <code class="docutils literal"><span class="pre">Element</span></code> kinds, then the query can be applied only to
+<code class="docutils literal"><span class="pre">Element</span></code>s from this list, and it raises
+<code class="docutils literal"><span class="pre">ASIS_Inappropriate_Element</span></code>
+with <code class="docutils literal"><span class="pre">Value_Error</span></code>
+status otherwise. If the documentation of an ASIS extension
+query contains a list of &#8216;expected&#8217; element kinds, then the query can be
+applied to an <code class="docutils literal"><span class="pre">Element</span></code> having any kind, but it returns a meaningful
+result only for <code class="docutils literal"><span class="pre">Element</span></code>s from this list.</p>
+<span class="target" id="index-2"></span><p id="index-3">The current set of ASIS extensions originated from the ASIS implementation
+needs and from the development of some ASIS tools inside the ASIS-for-GNAT
+team. The <code class="docutils literal"><span class="pre">Asis.Extensions</span></code> hierarchy is not necessarily
+frozen: some further extension queries may be added,
+and suggestions from ASIS application developers are welcome.</p>
+<p>Note that some of the ASIS extensions are implemented as ASIS <em>secondary
+queries</em> &#8212; that is, the implementation of such a query is a sequence of
+primary ASIS queries. Some other extensions are <em>pure extensions</em>;
+that is, their implementation is based on direct access to GNAT&#8217;s internal
+data structures.</p>
+<div class="section" id="id2">
+<h2>3.1. <code class="docutils literal"><span class="pre">Asis.Extensions</span></code><a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+<p id="index-4">This package, whose spec is located in the file
+<code class="file docutils literal"><span class="pre">asis-extensions.ads</span></code>,
+contains the declarations of various ASIS extensions, including
+dynamic <code class="docutils literal"><span class="pre">Element</span></code> and <code class="docutils literal"><span class="pre">Compilation_Unit</span></code> list types, placeholder
+actual parameters for <code class="docutils literal"><span class="pre">Asis.Iterator.Traverse_Element</span></code>,
+additional <code class="docutils literal"><span class="pre">Element</span></code> structural and
+semantic queries, queries that return information about the status of the
+source file for a <code class="docutils literal"><span class="pre">Compilation_Unit</span></code>, queries returning the (images
+of the) values of static expressions, etc.</p>
+</div>
+<div class="section" id="asis-extensions-flat-kinds">
+<h2>3.2. <code class="docutils literal"><span class="pre">Asis.Extensions.Flat_Kinds</span></code><a class="headerlink" href="#asis-extensions-flat-kinds" title="Permalink to this headline">¶</a></h2>
+<span class="target" id="index-5"></span><p id="index-6">The ASIS <code class="docutils literal"><span class="pre">Element</span></code> classification hierarchy
+is based on a set of Ada enumeration types,
+each corresponding to a &#8216;level&#8217; in the hierarchy.
+The package <code class="docutils literal"><span class="pre">Asis.Extensions.Flat_Kinds</span></code>, whose spec is located in the
+file <code class="file docutils literal"><span class="pre">asis-extensions-flat_kinds.ads</span></code>,
+defines the enumeration type <code class="docutils literal"><span class="pre">Flat_Element_Kinds</span></code>;
+this type combines the values of all these types and thus provides
+a &#8216;flat&#8217; view onto the syntactic <code class="docutils literal"><span class="pre">Element</span></code> classification.</p>
+</div>
+<div class="section" id="asis-extensions-iterator">
+<h2>3.3. <code class="docutils literal"><span class="pre">Asis.Extensions.Iterator</span></code><a class="headerlink" href="#asis-extensions-iterator" title="Permalink to this headline">¶</a></h2>
+<p id="index-7">This package, whose spec is located in the file
+<code class="file docutils literal"><span class="pre">asis-extensions-iterator.ads</span></code>,
+contains the declarations of <code class="docutils literal"><span class="pre">Traverse_Unit</span></code> generic procedure that
+is a generalization of the standard ASIS <code class="docutils literal"><span class="pre">Asis.Iterator.Traverse_Element</span></code>
+iterator. <code class="docutils literal"><span class="pre">Traverse_Unit</span></code> provides the depth-first traversal of the
+whole syntactical structure of the ASIS Compilation Unit.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="implementation-specific_features_and_implementation_permissions.html" title="4. Implementation-Specific Features and Implementation Permissions"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="asis-for-gnat_and_the_asis_standard.html" title="2. ASIS-for-GNAT and the ASIS Standard"
+             >previous</a> |</li>
+        <li><a href="../asis_rm.html">ASIS-for-GNAT Reference Manual 2017 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2008-2017, AdaCore.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3b2.
+    </div>
+  </body>
+</html>

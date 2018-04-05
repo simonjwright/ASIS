@@ -1,0 +1,78 @@
+Task 1:
+======
+The initial version of the metrics tool should compute the
+following metrics for each user-defined unit in the Context:
+
+   - the total number of statements in the code of the unit;
+   - the total number of declarations in the code of the unit;
+
+Task 2:
+======
+Add to the initial version of the metrics tool computation for the
+following metrics:
+
+   - the total number of simple statements (that is, statements
+     which do not contain some other statement as its subcomponent);
+
+   - the total number of compound statements (that is,
+     statements which do contain other some statement as its
+     subcomponent);
+
+   - the total number of all the names explicitly declared in the
+     unit;
+
+The subdirectory 'task_1' contains four files:
+
+- actuals_for_traversing-pre_op.adb - actual Pre-Operation to
+    instantiate Traverse_Element, this file should replace the file
+    with the same name in ASIS Application Templates to get the
+    solution for Task 1.
+
+- unit_processing.adb - the modified version of the
+    unit_processing.adb file from the ASIS Application templates; the
+    modification consists of adding the calls to subprograms which
+    reset and print out the data structures used to collect metrics
+    values. This file is the same for the solutions of Task 1 and
+    Task 2;
+
+- metrics_utilities.ads and metrics_utilities.adb - the package
+    Metrics_Utilities, contains the data structures to
+    collect metrics information and the procedures for printing this
+    information out and to reset these data structures before
+    processing the next unit.
+
+The subdirectory 'task_2' contains three files:
+
+- actuals_for_traversing-pre_op.adb - actual Pre-Operation to
+    instantiate Traverse_Element, this file should replace the file
+    with the same name in ASIS Application Templates to get the
+    solution for Task 2, it is the extended version of the same
+    file from subdirectory 'task_1', and it contains the code for
+    computing new metrics information, as required by Task 2.
+
+- metrics_utilities.ads and metrics_utilities.adb - the package
+    Metrics_Utilities, updated to collect and output the new
+    metrics information as required by Task 2
+
+
+Hints for Task 1
+----------------
+To solve Task 1, you have to provide the real code for actual
+Pre-Operation for Traverse_Element (this code should collect the
+metrics information) and to add the calls to some procedures which
+reset and which output the metrics values to the procedure providing
+the general processing of a Compilation Unit (in the ASIS Application
+Templates this is the Unit_Processing.Process_Unit). You have to
+modify the general unit processing routine because you can only
+collect the metrics information when traversing the unit structure,
+and you have to reset the metrics data structures to the initial
+values before starting the traversal, and you can print out the
+metrics values only when the traversal is over.
+
+The metrics to collect are very simple. In Pre-Operation, you have to
+detect the kind of the Element being visited, and if it is a
+statement or a declaration, you have to add 1 to the corresponding
+metric counter.
+
+Hints for Task 2 are given as comments in the solution for Task 1
+(file task_1/actuals_for_traversing-pre_op.adb).

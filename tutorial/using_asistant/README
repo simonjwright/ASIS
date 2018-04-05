@@ -1,0 +1,97 @@
+For doing this part of the ASIS tutorial, you should have the
+executable of the asistant tool built, and this executable should be
+on your path. asistant is built as a part of the standard ASIS
+installation procedure. (If you do not have asistant built, refer to
+the ASIS-for-GNAT Installation Guide - the top-level README file -
+how to built it yourself).
+
+It would be nice if you would have read the asistant user's guide
+before doing the exercises in this part of the tutorial, but this is
+not really necessary. You can easily guess the meaning of the
+constructions of the asistant command language (more than half of
+this language are ASIS queries), and the asistant scripts making up
+this tutorial contain enough comments to explain what happens. See
+also the quick asistant guide at the end of this readme file.
+
+You should do the following preparation to run these exercises:
+- copy the whole content of this directory in your working
+  directory;
+- create the tree files for the Ada source files. The Ada sources
+  included into this tutorial make up a simple Ada program having the
+  procedure Ex_Proc as its main subprogram, so you can create the
+  tree files with the following command:
+
+> gnatmake -c -gnatc -gnatt ex_proc.adb
+
+Now call asistant with the name of a script file as a parameter. A
+script file is a text file containg the sequence of the asistant
+commands.
+
+  This tutorial contains two scripts:
+
+  black_box.scr - contains tasks for performing some black-box
+                  processing of ASIS Compilation Units;
+
+  white_box.scr - contains tasks for performing some Element-level
+                  (white-box) processing of ASIS Compilation Units;
+
+Both scripts first demonstrate the effect of some ASIS queries and
+then formulate the task to solve. The scripts contain both the hints
+to find the solution and the version of the correct solution.
+
+So, to start doing this part of exercises, you should type in the
+command prompt:
+
+> asistant black_box.scr
+
+or
+
+> asistant white_box.scr
+
+and follow the information the script processing will output into the
+command line window. The general scheme of all the exercises is: when
+a script file is executed, it first performs some sequence of ASIS
+queries, then it outputs the text of a task for you to do and
+switches asistant into interactive mode. When resumed, it outputs the
+solution for the task.
+
+                     Quick asistant guide
+                     ====================
+
+asistant is an interactive ASIS interpreter which allows to "execute"
+ASIS queries without writing the full ASIS application. asistant may
+also interprete a sequence of commands written in a file (called a
+script file), the input from the command line and from a script file
+may be combined.
+
+asistant allows to define and initialize dynamic variables of basic
+ASIS types (Context, Compilation_Unit, Element) and some conventional
+types (integer, string, boolean). The asistant command 'set'
+
+    > set (var, <some_expression>)
+
+defines an asistant variable 'var' and sets its type and initial
+value from the type and initial value of '<some_expression>'. The
+'set' command with a single parameter is used to define variables of
+the ASIS Context type.
+
+The asistant command 'print' outputs values of asistant variables and
+expressions.
+
+The asistant command 'pause', when used in a script file, paused the
+interpretation of the command from the script file. When the script
+is paused, asistant is switched into the interactive mode and a user
+can input commands from the command prompt.
+
+To resume the script, input the 'run' command.
+
+To quit asistant, type the 'quit' command.
+   
+If you make any error when working in the asistant environment,
+asistant does not change any variable, it just generates an error
+message and allows you to try again.
+
+asistant keeps its input in the file input.log, and it keeps the
+track of the session in the file session.log.
+
+Go ahead and enjoy!
