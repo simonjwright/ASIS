@@ -21,6 +21,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with "gnat_util";
+
 abstract project Common is
 
    for Source_Dirs use ();
@@ -44,10 +46,11 @@ abstract project Common is
 
    Ada_Strict_Switches :=
      ("-gnatf",
-      "-gnatwae",
+      "-gnatwa",  -- there are some warnings, so don't make them errors
       "-gnatw.g", -- gnat standard warnings
       "-gnatw.u",
-      "-gnatyg"); -- gnat style checks
+      "-gnatyg",  -- gnat style checks
+      "-gnatqQ");   -- keep ali even if compilation error
    Ada_Relaxed_Switches :=
      ("-gnatf",
       "-gnatws");

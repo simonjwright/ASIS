@@ -28,12 +28,17 @@ toolsdev: setup
 # everything that depends on them. We first generate the files into (e.g.)
 # snames.ns, and then if snames.ns and snames.ads differ, we do "mv snames.ns
 # snames.ads". 'cmp' returns true (i.e. 0) if the files are identical.
+#
+# For FSF GCC 8, use gnat_util which contains these files as generated
+# during the compiler build. See common.gpr.
 
 .PHONY: setup
 setup: setup-snames setup-factory
 
 .PHONY: setup-snames
-setup-snames: gnat/snames.ads-tmpl gnat/snames.adb-tmpl gnat/xutil.ads gnat/xutil.adb
+setup-snames:
+
+xsetup-snames: gnat/snames.ads-tmpl gnat/snames.adb-tmpl gnat/xutil.ads gnat/xutil.adb
 	$(GPRBUILD) -p  -XBLD=$(BLD) $(GPRBUILD_FLAGS) gnat/snames.gpr
 	cd gnat ; ./xsnamest$(exe_ext)
 	if cmp --quiet gnat/snames.ns gnat/snames.ads; then \

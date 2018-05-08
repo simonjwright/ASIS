@@ -62,7 +62,6 @@ package body Asis.Clauses is
    function Clause_Names (Clause : Asis.Element) return Asis.Element_List is
       Arg_Kind     : constant Internal_Element_Kinds := Int_Kind (Clause);
       Arg_Node     : Node_Id;
-      Result_List  : List_Id;
       Result_Len   : Natural := 1;
       Withed_Uname : Node_Id;
    begin
@@ -123,15 +122,22 @@ package body Asis.Clauses is
             return Result_List;
          end;
       else
-
-         if Nkind (Arg_Node) = N_Use_Package_Clause then
-            Result_List := Names (Arg_Node);
-         else
-            Result_List := Subtype_Marks (Arg_Node);
-         end if;
-
-         return  N_To_E_List_New (List             => Result_List,
-                                  Starting_Element => Clause);
+         declare
+            Result_List : Asis.Element_List (1 .. 1);
+         begin
+            if Nkind (Arg_Node) = N_Use_Package_Clause then
+               Result_List (1) :=
+                 Node_To_Element_New
+                   (Node             => Sinfo.Name (Arg_Node),
+                    Starting_Element => Clause);
+            else
+               Result_List (1) :=
+                 Node_To_Element_New
+                   (Node             => Sinfo.Subtype_Mark (Arg_Node),
+                    Starting_Element => Clause);
+            end if;
+            return Result_List;
+         end;
       end if;
 
    exception
