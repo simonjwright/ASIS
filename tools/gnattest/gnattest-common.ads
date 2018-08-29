@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2011-2016, AdaCore                     --
+--                     Copyright (C) 2011-2018, AdaCore                     --
 --                                                                          --
 -- GNATTEST  is  free  software;  you  can redistribute it and/or modify it --
 -- under terms of the  GNU  General Public License as published by the Free --
@@ -36,7 +36,7 @@ with Ada.Exceptions;              use Ada.Exceptions;
 with GNAT.OS_Lib;                 use GNAT.OS_Lib;
 with Ada.Sequential_IO;
 
-with GNATCOLL.Projects;
+with GNATCOLL.Projects;           use GNATCOLL.Projects;
 with GNATCOLL.VFS;                use GNATCOLL.VFS;
 
 with Ada.Containers.Indefinite_Doubly_Linked_Lists;
@@ -82,6 +82,10 @@ package GNATtest.Common is
 
    Tmp_Test_Prj : String_Access := null;
 
+   Temp_Dir : String_Access;
+   --  Contains the name of the temporary directory created by the metric tools
+   --  for the tree files
+
    package Char_Sequential_IO is new Ada.Sequential_IO (Character);
    Output_File : Char_Sequential_IO.File_Type;
 
@@ -104,11 +108,9 @@ package GNATtest.Common is
 
    package List_Of_Strings is new
      Ada.Containers.Indefinite_Doubly_Linked_Lists (String);
-   use List_Of_Strings;
 
    package Asis_Element_List is new
      Ada.Containers.Doubly_Linked_Lists (Asis.Element, Is_Equal);
-   use Asis_Element_List;
 
    package String_Set is new
      Ada.Containers.Indefinite_Ordered_Sets (String);
@@ -116,7 +118,20 @@ package GNATtest.Common is
 
    package String_To_String_Map is new
      Ada.Containers.Indefinite_Ordered_Maps (String, String);
-   use String_To_String_Map;
+
+   -------------
+   -- Closure --
+   -------------
+
+   procedure Update_Closure;
+   --  Update the source table with new entries based on closure recomputation.
+
+   procedure Create_ALI (Source : String; Success : out Boolean);
+   --  Invokes compiler on the given source like regular Create_Tree routines
+   --  in harness and skeleton generators, but deletes the .adt file right
+   --  away, leaving only the ALI behind for further closure updates.
+   --  This is needed for i.e. library procedure declarations that import
+   --  testable packages that are part of the closure.
 
    --------------------
    -- Stub exclusion --
@@ -223,6 +238,8 @@ package GNATtest.Common is
    TD_Prefix_Overriden      : constant String := "VTE_Driver_";
 
    Hash_Version             : constant String := "2.2";
+
+   Closure_Subdir_Name      : constant String := "tmp_gnattest_closure";
 
    GT_Marker_Begin   : constant String := "--  begin read only";
    GT_Marker_End     : constant String := "--  end read only";

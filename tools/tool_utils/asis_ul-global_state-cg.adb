@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                    Copyright (C) 2007-2016, AdaCore                      --
+--                    Copyright (C) 2007-2018, AdaCore                      --
 --                                                                          --
 -- Asis Utility Library (ASIS UL) is free software; you can redistribute it --
 -- and/or  modify  it  under  terms  of  the  GNU General Public License as --
@@ -336,11 +336,6 @@ package body ASIS_UL.Global_State.CG is
    --  where the call takes place. Only one (the first) call from the scope to
    --  the given Element is stored.
 
-   procedure Check_Call_Graph_Completeness;
-   --  Checks if the call information stored in the global data structure is
-   --  complete and allows to construct the full Call Graph. Generates a
-   --  diagnostic message each time when any incompleteness is detected.
-
    procedure Set_Is_Renaming (N : GS_Node_Id; Val : Boolean := True);
    --  Set the flag indicating if the callable entity is a renaming of another
    --  callable entity (only renamings-as-bodies are represented in the call
@@ -641,10 +636,15 @@ package body ASIS_UL.Global_State.CG is
             not Is_Of_No_Interest (Node)
           and then
             not Body_Analyzed (Node)
+          and then
+            not Missing_Body_Reported (Node)
          then
             ASIS_UL.Output.Warning
               ("body is not analyzed for " &
-               Get_String (GS_Node_SLOC (Node)));
+               GS_Node_Name (Node)  & " (" &
+               Get_String (GS_Node_SLOC (Node)) & ")");
+
+            Set_Missing_Body_Reported (Node);
          end if;
 
       end loop;
@@ -696,6 +696,34 @@ package body ASIS_UL.Global_State.CG is
       end if;
 
    end Check_For_Main_Unit;
+
+   -----------------------------
+   -- Check_Node_Completeness --
+   -----------------------------
+
+   procedure Check_Node_Completeness (N : GS_Node_Id) is
+      Next_Call   : Node_Lists.Cursor;
+      Next_Call_N : GS_Node_Id;
+   begin
+      Next_Call := Node_Lists.First (All_Calls (N).all);
+
+      while Node_Lists.Has_Element (Next_Call) loop
+         Next_Call_N := Node_Lists.Element (Next_Call);
+         if not Body_Analyzed (Next_Call_N)
+           and then
+            not Missing_Body_Reported (Next_Call_N)
+         then
+            ASIS_UL.Output.Warning
+              ("body is not analyzed for " &
+               GS_Node_Name (Next_Call_N)  & " (" &
+               Get_String (GS_Node_SLOC (Next_Call_N)) & ")");
+
+            Set_Missing_Body_Reported (Next_Call_N);
+         end if;
+
+         Next_Call := Node_Lists.Next (Next_Call);
+      end loop;
+   end Check_Node_Completeness;
 
    ----------------
    -- Close_Node --
@@ -1059,6 +1087,16 @@ package body ASIS_UL.Global_State.CG is
       end if;
 
    end Mark_Called_Function_Used;
+
+   ---------------------------
+   -- Missing_Body_Reported --
+   ---------------------------
+
+   function Missing_Body_Reported (N : GS_Node_Id) return Boolean is
+   begin
+      pragma Assert (GS_Node_Kind (N) in  Callable_Nodes);
+      return Table (N).Bool_Flag_7;
+   end Missing_Body_Reported;
 
    ------------------------------------------------
    -- Patch_For_Default_Parameter_Initialization --
@@ -2054,6 +2092,19 @@ package body ASIS_UL.Global_State.CG is
       pragma Assert (GS_Node_Kind (N) = A_Task);
       Set_Bool_Flag_3 (N, Val);
    end Set_Is_Task_Type;
+
+   -------------------------------
+   -- Set_Missing_Body_Reported --
+   -------------------------------
+
+   procedure Set_Missing_Body_Reported
+     (N  : GS_Node_Id;
+      Val : Boolean := True)
+   is
+   begin
+      pragma Assert (GS_Node_Kind (N) in  Callable_Nodes);
+      Set_Bool_Flag_7 (N, Val);
+   end Set_Missing_Body_Reported;
 
    ---------------
    -- Store_Arc --

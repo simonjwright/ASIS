@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2006-2015, AdaCore                     --
+--                     Copyright (C) 2006-2018, AdaCore                     --
 --                                                                          --
 -- GNATCHECK  is  free  software;  you can redistribute it and/or modify it --
 -- under terms of the  GNU  General Public License as published by the Free --
@@ -103,6 +103,11 @@ package Gnatcheck.Diagnoses is
    --  Generate the report oriented for using as qualification materials. There
    --  is no parameter to configure this report except
    --  Gnatcheck.Options.Short_Report flag.
+
+   procedure Print_Report_Header;
+   --  Generates the report header, including the date, tool version and
+   --  tool command liner invocation sequence. (We need it in spec because it
+   --  is used by Gnatcheck.Projects.Aggregate_Project_Report_Header.
 
    -------------------------
    -- Exemption mechanism --

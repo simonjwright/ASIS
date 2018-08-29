@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 1995-2013, Free Software Foundation, Inc.       --
+--            Copyright (C) 1995-2017, Free Software Foundation, Inc.       --
 --                                                                          --
 -- ASIS-for-GNAT is free software; you can redistribute it and/or modify it --
 -- under terms of the  GNU General Public License  as published by the Free --
@@ -759,7 +759,10 @@ package body Asis.Data_Decomposition.Aux is
       then
          Result := A_Simple_Static_Model;
 
-      elsif RM_Size (Type_Entity) = Uint_0 or else
+      elsif RM_Size (Type_Entity) = Uint_0       or else
+           (RM_Size (Type_Entity) < Uint_0
+           and then
+            not Has_Discriminants (Type_Entity)) or else
             RM_Size (Type_Entity) = No_Uint
       then
          --  This is the case when the front-end consider the type to be

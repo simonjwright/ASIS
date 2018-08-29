@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2008-2016, AdaCore                     --
+--                     Copyright (C) 2008-2018, AdaCore                     --
 --                                                                          --
 -- GNATCHECK  is  free  software;  you can redistribute it and/or modify it --
 -- under terms of the  GNU  General Public License as published by the Free --
@@ -34,6 +34,7 @@ with Asis.Definitions;               use Asis.Definitions;
 with Asis.Elements;                  use Asis.Elements;
 with Asis.Expressions;               use Asis.Expressions;
 with Asis.Extensions;                use Asis.Extensions;
+with Asis.Extensions.Flat_Kinds;     use Asis.Extensions.Flat_Kinds;
 with Asis.Iterator;                  use Asis.Iterator;
 with Asis.Statements;                use Asis.Statements;
 with Asis.Text;                      use Asis.Text;
@@ -473,6 +474,7 @@ package body Gnatcheck.Rules.Custom_2 is
    is
    begin
       Init_Rule (One_Integer_Parameter_Rule_Template (Rule));
+      Rule.Rule_Bound := 0;
 
       Rule.Name        := new String'("Deeply_Nested_Generics");
       Rule.Rule_Status := Fully_Implemented;
@@ -739,6 +741,7 @@ package body Gnatcheck.Rules.Custom_2 is
       Called_Routine  : Asis.Element;
       Calling_Context : Asis.Element;
       Owner           : Asis.Element;
+      Steps_Up        : Elmt_Idx;
    begin
 
       if (Statement_Kind (Element) = A_Procedure_Call_Statement
@@ -798,13 +801,15 @@ package body Gnatcheck.Rules.Custom_2 is
             --     called in the body of overriding child's primitive.
 
             if State.Detected then
-               Calling_Context := Enclosing_Element (Element);
+               Calling_Context := Get_Enclosing_Element;
+               Steps_Up        := 1;
 
                while not (Is_Nil (Calling_Context)
                    or else
                      Is_Body (Calling_Context))
                loop
-                  Calling_Context := Enclosing_Element (Calling_Context);
+                  Calling_Context := Get_Enclosing_Element (Steps_Up);
+                  Steps_Up        := Steps_Up + 1;
                end loop;
 
                if Declaration_Kind (Calling_Context) in
@@ -1429,6 +1434,7 @@ package body Gnatcheck.Rules.Custom_2 is
       pragma Unreferenced (Control, Rule);
       Type_Def       : Asis.Element;
       Is_Record_Type : Boolean := False;
+      Asp_Mark       : Asis.Element;
    begin
       if Declaration_Kind (Element) = An_Ordinary_Type_Declaration then
          Type_Def := Type_Declaration_View (Element);
@@ -1450,7 +1456,7 @@ package body Gnatcheck.Rules.Custom_2 is
          if Is_Record_Type then
             declare
                CRC : constant Asis.Element_List :=
-                 Corresponding_Representation_Clauses (Element);
+                 Corresponding_Representation_Items (First_Name (Element));
                Rec_Rep_Clause_Found              : Boolean := False;
                Scalar_Storage_Order_Clause_Found : Boolean := False;
                Bit_Order_Low                     : Boolean := False;
@@ -1458,7 +1464,7 @@ package body Gnatcheck.Rules.Custom_2 is
                Attr                              : Asis.Element;
             begin
                for J in CRC'Range loop
-                  case Representation_Clause_Kind (CRC (J)) is
+                  case Flat_Element_Kind (CRC (J)) is
                      when A_Record_Representation_Clause =>
 
                         if  Component_Clauses
@@ -1501,6 +1507,34 @@ package body Gnatcheck.Rules.Custom_2 is
                               Bit_Order_Low := True;
                            end if;
                         end if;
+                     when An_Aspect_Specification =>
+                        Asp_Mark := Aspect_Mark (CRC (J));
+
+                        if To_Lower_Case (Name_Image (Asp_Mark)) =
+                             "scalar_storage_order"
+                        then
+                           Scalar_Storage_Order_Clause_Found := True;
+                           exit when Rec_Rep_Clause_Found
+                                    and then
+                                    (Bit_Order_Low or else Bit_Order_High);
+
+                        elsif To_Lower_Case (Name_Image (Asp_Mark)) =
+                             "bit_order"
+                        then
+                           Attr := Aspect_Definition (CRC (J));
+                           Attr := Normalize_Reference (Attr);
+
+                           if To_Lower_Case (Name_Image (Attr)) =
+                              "high_order_first"
+                           then
+                              Bit_Order_High := True;
+                           elsif To_Lower_Case (Name_Image (Attr)) =
+                              "low_order_first"
+                           then
+                              Bit_Order_Low := True;
+                           end if;
+                        end if;
+
                      when others =>
                         null;
                   end case;

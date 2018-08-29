@@ -165,23 +165,7 @@ package body McKae.XML.EZ_Out.Generic_Medium is
                when Spread_Indented =>
                   Put_Line (F, Value);
             end case;
-         when Start_Tag_Component =>
-            case Current_Format is
-               when Continuous_Stream =>
-                  Put (F, value);
-               when Spread_Indented =>
-                  Put (F, Indentation * ' ');
-                  Put_Line (F, value);
-            end case;
-         when Content_Component =>
-            case Current_Format is
-               when Continuous_Stream =>
-                  Put (F, value);
-               when Spread_Indented =>
-                  Put (F, Indentation * ' ');
-                  Put_Line (F, value);
-            end case;
-         when End_Tag_Component =>
+         when Start_Tag_Component | Content_Component | End_Tag_Component =>
             case Current_Format is
                when Continuous_Stream =>
                   Put (F, value);

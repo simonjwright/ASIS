@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2013-2017, AdaCore                     --
+--                     Copyright (C) 2013-2018, AdaCore                     --
 --                                                                          --
 -- Asis Utility Library (ASIS UL) is free software; you can redistribute it --
 -- and/or  modify  it  under  terms  of  the  GNU General Public License as --
@@ -24,24 +24,31 @@
 ------------------------------------------------------------------------------
 pragma Ada_2012;
 
-with Ada.Characters.Handling;  use Ada.Characters.Handling;
+with Ada.Characters.Handling;    use Ada.Characters.Handling;
 with Ada.Containers.Ordered_Sets;
-with Ada.Strings;              use Ada.Strings;
-with Ada.Strings.Fixed;        use Ada.Strings.Fixed;
+with Ada.Strings;                use Ada.Strings;
+with Ada.Strings.Fixed;          use Ada.Strings.Fixed;
+with Ada.Text_IO;                use Ada.Text_IO;
 
-with GNAT.Directory_Operations;
+with GNAT.Directory_Operations;  use GNAT.Directory_Operations;
 
 with GNATCOLL.Projects.Aux;
 with GNATCOLL.Traces;
 
 with A4G.GNSA_Switch;
 
-with ASIS_UL.Common;           use ASIS_UL.Common;
-with ASIS_UL.Compiler_Options; use ASIS_UL.Compiler_Options;
-with ASIS_UL.Options;          use ASIS_UL.Options;
-with ASIS_UL.Output;           use ASIS_UL.Output;
-with ASIS_UL.Source_Table;     use ASIS_UL.Source_Table;
-with ASIS_UL.String_Utilities; use ASIS_UL.String_Utilities;
+with ASIS_UL.Common;             use ASIS_UL.Common;
+with ASIS_UL.Compiler_Options;   use ASIS_UL.Compiler_Options;
+with ASIS_UL.Environment;        use ASIS_UL.Environment;
+with ASIS_UL.Options;            use ASIS_UL.Options;
+with ASIS_UL.Output;             use ASIS_UL.Output;
+with ASIS_UL.Projects.Aggregate; use ASIS_UL.Projects.Aggregate;
+with ASIS_UL.Source_Table;       use ASIS_UL.Source_Table;
+with ASIS_UL.String_Utilities;   use ASIS_UL.String_Utilities;
+with ASIS_UL.Tree_Creation;
+--  with Ada.Text_IO;
+
+--  with GPR;
 
 package body ASIS_UL.Projects is
 
@@ -59,6 +66,20 @@ package body ASIS_UL.Projects is
    Mapping_File_Occupation : Mapping_File_Occupations_Access;
    --  This array indicates which copies of the mapping file are used in
    --  compilations
+
+   ------------------------
+   --  Closure computing --
+   ------------------------
+
+   Main_Files : GNATCOLL.VFS.File_Array_Access;
+   --  List of units to compute the closure for.
+
+   Closure : Temporary_File_Storages.Set := Temporary_File_Storages.Empty_Set;
+
+   Closure_Subdirs_To_Clean : Temporary_File_Storages.Set :=
+     Temporary_File_Storages.Empty_Set;
+   --  Names of object subdirs created in the argument project - we have to
+   --  remove them when the work is done.
 
    -------------------------------
    --  External variables table --
@@ -84,6 +105,14 @@ package body ASIS_UL.Projects is
    --  Local subprograms --
    ------------------------
 
+   procedure Load_Aggregated_Project
+     (My_Project : in out Arg_Project_Type'Class) with
+        Pre => ASIS_UL.Options.Aggregated_Project;
+   --  Loads My_Project (that is supposed to be an aggregate project), then
+   --  unloads it and loads in the same environment the project passes as a
+   --  parameter of '-A option' (which is supposesd to be a (non-aggregate)
+   --  project aggregated by My_Project
+
    function Needed_For_Tree_Creation (Option : String) return Boolean;
    --  Checks if the argument is the compilation option that is needed for tree
    --  creation. Also gives an error message if there is a preprocessor switch,
@@ -101,15 +130,52 @@ package body ASIS_UL.Projects is
       return Boolean;
    --  Checks if the given source file belongs to an externally build library.
 
-   procedure Recompute_View_Errors (S : String);
-   --  Print out all errors but the warnings about missing directories.
-
    ------------
    --  Debug --
    ------------
 
    procedure Print_Debug_Info (I : File_Info);
    --  Prints out the debug info from the argument
+
+   --------------
+   -- Add_Main --
+   --------------
+
+   procedure Add_Main
+     (My_Project : Arg_Project_Type;
+      Main_Name  : String)
+   is
+      pragma Unreferenced (My_Project);
+      SF : constant SF_Id := File_Find (Main_Name);
+   begin
+      pragma Assert (Present (SF));
+
+      Append (Main_Files, Create (+Main_Name));
+      Set_Source_Status (SF, Waiting);
+
+      if not Closure.Contains (Main_Name) then
+         Closure.Include (Main_Name);
+      end if;
+
+   end Add_Main;
+
+   -------------------------------------
+   -- Aggregate_Project_Report_Header --
+   -------------------------------------
+
+   procedure Aggregate_Project_Report_Header (My_Project : Arg_Project_Type) is
+      pragma Unreferenced (My_Project);
+   begin
+      if Text_Report_ON then
+         Report ("Argument project is an aggregate project");
+         Report ("Aggregated projects are processed separately");
+      end if;
+
+      if XML_Report_ON then
+         XML_Report ("<aggregated-project-reports>",
+                     Indent_Level => 1);
+      end if;
+   end Aggregate_Project_Report_Header;
 
    --------------
    -- Clean_Up --
@@ -141,6 +207,276 @@ package body ASIS_UL.Projects is
          end if;
       end if;
    end Clean_Up;
+
+   ------------------------------------
+   -- Close_Aggregate_Project_Report --
+   ------------------------------------
+
+   procedure Close_Aggregate_Project_Report (My_Project : Arg_Project_Type) is
+      pragma Unreferenced (My_Project);
+   begin
+      if XML_Report_ON then
+         XML_Report ("</aggregated-project-reports>",
+                     Indent_Level => 1);
+      end if;
+   end Close_Aggregate_Project_Report;
+
+   ----------------------
+   -- Closure_Clean_Up --
+   ----------------------
+
+   procedure Closure_Clean_Up (My_Project : in out Arg_Project_Type) is
+      pragma Unreferenced (My_Project);
+   begin
+
+      if not Closure_Subdirs_To_Clean.Is_Empty then
+         declare
+            Cur : Temporary_File_Storages.Cursor :=
+              Closure_Subdirs_To_Clean.First;
+         begin
+            while Temporary_File_Storages.Has_Element (Cur) loop
+               if Is_Directory (Temporary_File_Storages.Element (Cur)) then
+                  begin
+                     Remove_Dir (Temporary_File_Storages.Element (Cur),
+                                 Recursive => True);
+                  exception
+                     when Directory_Error =>
+                        Warning ("cannot delete temp closure dir " &
+                                 Temporary_File_Storages.Element (Cur));
+                  end;
+               end if;
+               Temporary_File_Storages.Next (Cur);
+            end loop;
+         end;
+      end if;
+
+   end Closure_Clean_Up;
+
+   ----------------------
+   -- Closure_Complete --
+   ----------------------
+
+   function Closure_Complete (My_Project : Arg_Project_Type) return Boolean is
+      Result        : Boolean := True;
+      Closure_Files : GNATCOLL.VFS.File_Array_Access;
+      Status        : Status_Type;
+      SF            : SF_Id;
+   begin
+      if Debug_Flag_U then
+         Closure_Debug_Image_Closure;
+      end if;
+
+      Get_Closures
+        (My_Project.Root_Project,
+         Main_Files,
+         Status => Status,
+         Result => Closure_Files);
+
+      if Status = Error then
+         Error ("cannot complete closure");
+         raise Fatal_Error;
+      end if;
+
+      if Debug_Flag_U then
+         Info ("...checking closure completeness");
+      end if;
+
+      if Closure_Files /= null then
+         for I in Closure_Files'Range loop
+            declare
+               F_Name : constant String := Closure_Files (I).Display_Full_Name;
+            begin
+
+               if not Closure.Contains (F_Name) then
+
+                  if Debug_Flag_U then
+                     Info (Ident_String & "adding " & F_Name & " to closure");
+                  end if;
+
+                  Closure.Include (F_Name);
+
+                  SF := File_Find (F_Name);
+
+                  if Present (SF) then
+                     if Source_Status (SF) = Waiting_For_Closure then
+                        Set_Source_Status (SF, Waiting);
+                     end if;
+                  else
+                     Error ("cannot locate " & F_Name &
+                             ", closure incomplete");
+                  end if;
+
+                  Result := False;
+               else
+                  if Debug_Flag_U then
+                     Info (Ident_String & F_Name & " already in closure");
+                  end if;
+               end if;
+            end;
+         end loop;
+      end if;
+
+      return Result;
+   end Closure_Complete;
+
+   -------------------------------
+   -- Closure_Debug_Image_Mains --
+   -------------------------------
+
+   procedure Closure_Debug_Image_Mains is
+   begin
+      Info ("Main Units to compute the closure for:");
+
+      if Main_Files = null
+        or else
+         Main_Files'Length = 0
+      then
+         Info (Ident_String & "no main unit set");
+      else
+         for J in Main_Files'Range loop
+            Info (Ident_String &
+                  String (Filesystem_String'(Full_Name (Main_Files (J)))));
+         end loop;
+      end if;
+   end Closure_Debug_Image_Mains;
+
+   ---------------------------------
+   -- Closure_Debug_Image_Closure --
+   ---------------------------------
+
+   procedure Closure_Debug_Image_Closure is
+      use Temporary_File_Storages;
+
+      procedure Print_Out (C : Cursor);
+
+      procedure Print_Out (C : Cursor) is
+      begin
+         Info (Ident_String & Element (C));
+      end Print_Out;
+   begin
+      Info ("Current state of computed closure:");
+
+      if Closure.Is_Empty then
+         Info (Ident_String & "empty");
+      else
+         Closure.Iterate (Print_Out'Access);
+      end if;
+   end Closure_Debug_Image_Closure;
+
+   -------------------
+   -- Closure_Setup --
+   -------------------
+
+   procedure Closure_Setup (My_Project : in out Arg_Project_Type) is
+      Dummy_Proj_File_Name : constant String :=
+        Tool_Temp_Dir.all & Directory_Separator & "closure.gpr";
+
+      Old_Mapping_Option : constant String :=
+        "-gnatem=" & Get_Mapping_File_Name;
+
+      F : File_Type;
+
+      Success : Boolean;
+   begin
+      Tool_Computes_Closure := True;
+
+      Closure_Object_Subdir :=
+        new String'("TMP_" & Tool_Name.all & "_closure");
+
+      --  * creates a temporary wrapper project file used to compute closure;
+      pragma Assert (Normalize_Pathname (Get_Current_Dir) =
+                      Normalize_Pathname (Tool_Temp_Dir.all));
+
+      Ada.Text_IO.Create (F, Out_File, Dummy_Proj_File_Name);
+
+      Put_Line
+        (F,
+         "project closure extends all """
+         & Source_Prj (My_Project)
+         & """ is");
+      Put_Line (F, "end closure;");
+      Close (F);
+
+      --  * unloads the tool argument project and loads this temporary project
+      --    file;
+      --  We have to delete the mapping and configuration files created for
+      --  the originally loaded argument project
+      GNATCOLL.Projects.Aux.Delete_All_Temp_Files
+        (My_Project.Root_Project);
+      My_Project.Unload;
+
+      Project_Env.Set_Object_Subdir (+Closure_Object_Subdir.all);
+      My_Project.Load (Create (+Dummy_Proj_File_Name), Project_Env);
+
+      --  Storing objects subdirs for closure computation created on the fly
+      --  to delete them at clean-up
+
+      declare
+         Iter : Project_Iterator :=
+           Start (My_Project.Root_Project,
+                  Recursive        => True,
+                  Direct_Only      => False,
+                  Include_Extended => True);
+      begin
+         while Current (Iter) /= No_Project loop
+            Closure_Subdirs_To_Clean.Include
+              (Current (Iter).Object_Dir.Display_Full_Name);
+            Next (Iter);
+         end loop;
+      end;
+
+      Create_Mapping_File (My_Project);
+      Create_Configuration_File (My_Project);
+      --  and we have to correct mapping file option in the argument list used
+      --  to create the trees
+
+      for J in Arg_List'Range loop
+         if Arg_List (J).all = Old_Mapping_Option then
+            Free (Arg_List (J));
+            Arg_List (J) := new String'("-gnatem=" & Get_Mapping_File_Name);
+            exit;
+         end if;
+      end loop;
+
+      --  * stores all the sources from this project into the source table, for
+      --    each sourceexcept the main unit the status is set to
+      --    Waiting_For_Closure
+
+      Get_Sources_From_Project (My_Project, Unconditionally => True);
+
+      Read_Args_From_Temp_Storage
+        (Duplication_Report => False,
+         Arg_Project        => My_Project,
+         Status             => Waiting_For_Closure);
+
+      Set_Individual_Source_Options (My_Project);
+      Total_Sources := Natural (Last_Source);
+      Sources_Left  := Total_Sources;
+
+      --  * parallel tree creation should be disabled if set!
+      if Process_Num /= 1 then
+
+         for J in Mapping_File_Copies'Range loop
+            GNAT.OS_Lib.Delete_File (Get_Mapping_File_Copy_Name (J), Success);
+
+            if not Success then
+               Error ("cannot delete copy of mapping file " &
+                      Get_Mapping_File_Copy_Name (J));
+            end if;
+         end loop;
+
+         GNAT.OS_Lib.Free (Mapping_File_Copies);
+
+         Process_Num := 1;
+         ASIS_UL.Tree_Creation.Set_Max_Processes;
+
+         if not Quiet_Mode then
+            Info ("parallel tree creation disabled because of " &
+                  "closure computing");
+         end if;
+      end if;
+
+   end Closure_Setup;
 
    -------------------------------
    -- Create_Configuration_File --
@@ -451,22 +787,33 @@ package body ASIS_UL.Projects is
    ------------------------------
 
    procedure Get_Sources_From_Project
-     (My_Project : Arg_Project_Type)
+     (My_Project : Arg_Project_Type;
+      Unconditionally : Boolean := False)
    is
       Prj      : Project_Type;
       Files    : File_Array_Access;
       Success  : Boolean := False;
    begin
-      if Compute_Project_Closure (Arg_Project_Type'Class (My_Project))
-        and then
-           (ASIS_UL.Options.No_Argument_File_Specified
-          or else
-            (U_Option_Set and then not File_List_Specified))
+      if Unconditionally
+        or else
+         (Compute_Project_Closure (Arg_Project_Type'Class (My_Project))
+         and then
+            (ASIS_UL.Options.No_Argument_File_Specified
+           or else
+             (U_Option_Set
+             and then
+              (not File_List_Specified
+              or else
+               Index (Tool_Name.all, "gnatelim") /= 0))))
       then
-         if Main_Unit = null then
+         if Unconditionally
+          or else
+            Main_Unit = null
+         then
             Prj := My_Project.Root_Project;
 
-            Files := Prj.Source_Files (Recursive => U_Option_Set);
+            Files := Prj.Source_Files
+              (Recursive => U_Option_Set or else Unconditionally);
 
             for F in Files'Range loop
                if not Is_Externally_Built (Files (F), My_Project)
@@ -478,10 +825,13 @@ package body ASIS_UL.Projects is
                end if;
             end loop;
 
-            if U_Option_Set then
+            if Unconditionally
+              or else
+               U_Option_Set
+            then
                if Files'Length = 0 then
                   Error (My_Project.Source_Prj.all &
-                         "does not contain source files");
+                         " does not contain source files");
                   return;
                end if;
             else
@@ -583,11 +933,67 @@ package body ASIS_UL.Projects is
       return My_Project.Source_Prj /= null;
    end Is_Specified;
 
+   -----------------------------
+   -- Load_Aggregated_Project --
+   -----------------------------
+
+   procedure Load_Aggregated_Project
+     (My_Project : in out Arg_Project_Type'Class)
+   is
+      procedure Errors (S : String);
+      --  ??? needs improvement!
+      procedure Errors (S : String) is
+      begin
+         if Index (S, " not a regular file") /= 0 then
+            Error ("project file " & My_Project.Source_Prj.all & " not found");
+         elsif Index (S, "is illegal for typed string") /= 0 then
+            Error (S);
+            raise Parameter_Error;
+         elsif Index (S, "warning") /= 0
+              and then Index (S, "directory") /= 0
+              and then Index (S, "not found") /= 0
+         then
+            return;
+         else
+            Error (S);
+         end if;
+      end Errors;
+   begin
+      My_Project.Load
+        (GNATCOLL.VFS.Create (+My_Project.Source_Prj.all),
+         Project_Env,
+         Errors              => Errors'Unrestricted_Access,
+         Report_Missing_Dirs => False);
+
+      if My_Project.Root_Project = No_Project then
+         Error ("project not loaded");
+      end if;
+
+      pragma Assert (Is_Aggregate_Project (My_Project.Root_Project));
+
+      My_Project.Unload;
+
+      if Subdir_Name /= null then
+         Set_Object_Subdir (Project_Env.all, +Subdir_Name.all);
+      end if;
+
+      Load
+        (Self                => My_Project,
+         Root_Project_Path   => Create (Filesystem_String
+                                          (Get_Aggregated_Project)),
+         Env                 => Project_Env,
+         Errors              => Errors'Unrestricted_Access,
+         Report_Missing_Dirs => False);
+
+   end Load_Aggregated_Project;
+
    -----------------------
    -- Load_Tool_Project --
    -----------------------
 
    procedure Load_Tool_Project (My_Project : in out Arg_Project_Type) is
+      Aggregated_Prj_Name : Filesystem_String_Access;
+
       procedure Errors (S : String);
       procedure Errors (S : String) is
       begin
@@ -596,6 +1002,11 @@ package body ASIS_UL.Projects is
          elsif Index (S, "is illegal for typed string") /= 0 then
             Error (S);
             raise Parameter_Error;
+         elsif Index (S, "warning") /= 0
+              and then Index (S, "directory") /= 0
+              and then Index (S, "not found") /= 0
+         then
+            return;
          else
             Error (S);
          end if;
@@ -608,17 +1019,65 @@ package body ASIS_UL.Projects is
       My_Project.Load
         (GNATCOLL.VFS.Create (+My_Project.Source_Prj.all),
          Project_Env,
-         Errors         => Errors'Unrestricted_Access,
-         Recompute_View => False,
+         Errors              => Errors'Unrestricted_Access,
          Report_Missing_Dirs => False);
 
       if Is_Aggregate_Project (My_Project.Root_Project) then
-         Error ("aggregate projects are not supported");
-         raise Parameter_Error;
+
+         if My_Project.Root_Project = No_Project then
+            Error ("project not loaded");
+         end if;
+
+         Collect_Aggregated_Projects (My_Project.Root_Project);
+
+         if Debug_Flag_A then
+            Aggregated_Projects_Debug_Image;
+         end if;
+
+         N_Of_Aggregated_Projects := Num_Of_Aggregated_Projects;
+
+         case N_Of_Aggregated_Projects is
+            when 0 =>
+               --  Pathological case, but we need to generate a reasonable
+               --  message
+               Error
+                 ("aggregate project does not contain anything to process");
+               raise Parameter_Error;
+
+            when 1 =>
+               --  Important and useful particular case - exactly one project
+               --  is aggregated, so we load it in the environment that already
+               --  has all the settings from the argument aggregate project:
+
+               Aggregated_Prj_Name := new Filesystem_String'
+                 (Full_Name (Get_Aggregated_Prj_Src));
+
+               My_Project.Unload;
+
+               Load
+                 (Self                => My_Project,
+                  Root_Project_Path   => Create (Aggregated_Prj_Name.all),
+                  Env                 => Project_Env,
+                  Errors              => Errors'Unrestricted_Access,
+                  Report_Missing_Dirs => False);
+               --  Can we reuse My_Project here or should we use another
+               --  Project_Tree variable???
+
+               Free (Aggregated_Prj_Name);
+
+            when others =>
+               --  General case - more than one project is aggregated. We have
+               --  process them one by one spawning gnatcheck for each project.
+
+               if not Has_Suffix (Tool_Name.all, Suffix => "gnatcheck") then
+                  --  Currently full support for aggregate projects is
+                  --  implemented for gnatcheck only
+                  Error ("aggregate projects are not supported");
+                  raise Parameter_Error;
+               end if;
+         end case;
       end if;
 
-      My_Project.Recompute_View
-        (Errors => Recompute_View_Errors'Unrestricted_Access);
    exception
       when Invalid_Project =>
          raise Parameter_Error;
@@ -681,32 +1140,106 @@ package body ASIS_UL.Projects is
          return;
       end if;
 
-      Register_Tool_Attributes       (My_Project);
+      Register_Tool_Attributes (My_Project);
       Initialize_Environment;
       Set_External_Values;
-      Load_Tool_Project              (My_Project);
-      Extract_Compilation_Attributes (My_Project);
-      Extract_Tool_Options           (My_Project);
-      Get_Sources_From_Project       (My_Project);
-      Create_Mapping_File            (My_Project);
-      Create_Configuration_File      (My_Project);
-   end Process_Project_File;
 
-   ---------------------------
-   -- Recompute_View_Errors --
-   ---------------------------
+      if Aggregated_Project then
+         Load_Aggregated_Project (My_Project);
+      else
+         Load_Tool_Project (My_Project);
+      end if;
 
-   procedure Recompute_View_Errors (S : String) is
-   begin
-      if Index (S, "warning") /= 0
-        and then Index (S, "directory") /= 0
-        and then Index (S, "not found") /= 0
-      then
+      if N_Of_Aggregated_Projects > 1 then
+
+         if not No_Argument_File_Specified then
+            Error ("no argument file should be specified if aggregate " &
+                   "project");
+            Error_No_Tool_Name
+              ("aggregates more than one non-aggregate project");
+
+            raise Parameter_Error;
+         end if;
+
+         if Main_Unit /= null then
+            Error ("'-U main' cannot be used if aggregate project");
+            Error_No_Tool_Name
+              ("aggregates more than one non-aggregate project");
+
+            raise Parameter_Error;
+         end if;
+
+         --  No information is extracted from the aggregate project
+         --  itself
+         In_Aggregate_Project := True;
          return;
       else
-         Error_No_Tool_Name (S);
+         Extract_Compilation_Attributes (My_Project);
+         Extract_Tool_Options           (My_Project);
+         Get_Sources_From_Project       (My_Project);
+         Create_Mapping_File            (My_Project);
+         Create_Configuration_File      (My_Project);
       end if;
-   end Recompute_View_Errors;
+
+--      GPR.Current_Verbosity := GPR.High;
+
+   end Process_Project_File;
+
+   -------------------------------
+   -- Report_Aggregated_Project --
+   -------------------------------
+
+   procedure Report_Aggregated_Project
+     (Aggregate_Prj          : Arg_Project_Type;
+      Arrgegated_Prj_Name    : String;
+      Expected_Text_Out_File : String;
+      Expected_XML_Out_File  : String)
+   is
+      pragma Unreferenced (Aggregate_Prj);
+   begin
+
+      if Text_Report_ON then
+         Report ("");
+         Report ("Processing aggregated project " & Arrgegated_Prj_Name);
+         Report ("Expected report file: " & Expected_Text_Out_File);
+      end if;
+
+      if XML_Report_ON then
+         XML_Report ("<aggregated-project>",
+                     Indent_Level => 2);
+
+         XML_Report ("<project-file>" & Arrgegated_Prj_Name &
+                     "</project-file>",
+                     Indent_Level => 3);
+
+         XML_Report ("<report-file>" & Expected_XML_Out_File &
+                     "</report-file>",
+                     Indent_Level => 3);
+      end if;
+   end Report_Aggregated_Project;
+
+   -----------------------------------------
+   -- Report_Aggregated_Project_Exit_Code --
+   -----------------------------------------
+
+   procedure Report_Aggregated_Project_Exit_Code
+     (Aggregate_Prj : Arg_Project_Type;
+      Exit_Code     : Integer)
+   is
+      pragma Unreferenced (Aggregate_Prj);
+   begin
+      if Text_Report_ON then
+         Report ("Exit code is" & Exit_Code'Img);
+      end if;
+
+      if XML_Report_ON then
+         XML_Report ("<exit-code>" & Image (Exit_Code) & "</exit-code>",
+                     Indent_Level => 3);
+
+         XML_Report ("</aggregated-project>",
+                     Indent_Level => 2);
+      end if;
+   end Report_Aggregated_Project_Exit_Code;
 
    --------------------
    -- Scan_Arguments --
@@ -1128,6 +1661,16 @@ package body ASIS_UL.Projects is
       GNSA_Path      : String_Access;
    begin
 
+      if Target = null
+        --  No --target= option
+        and then
+          My_Project.Is_Specified
+      then
+         Target :=
+           new String'(My_Project.Root_Project.Get_Target
+                       (Default_To_Host => False));
+      end if;
+
       if A4G.GNSA_Switch.Use_GNSA then
          --  In this case we do not care about target, we use gcc and gprbuild
          --  from GNSA, and we rely on the fact that the location of these
@@ -1145,12 +1688,14 @@ package body ASIS_UL.Projects is
          --   |   |
          --   |   |
          --   |   -- ...
-         --   -- asis-gnsa
-         --          |
-         --          -- bin
-         --              |
-         --              --- gcc
-         --              --- gprbuild
+         --   libexec
+         --       |
+         --       asis-gnsa
+         --            |
+         --            -- bin
+         --                |
+         --                --- gcc
+         --                --- gprbuild
 
          Idx       := Tool_Dir'Last - 3;
          GNSA_Path := new String'(Tool_Dir (Tool_Dir'First .. Idx) &
@@ -1159,6 +1704,7 @@ package body ASIS_UL.Projects is
 
          if ASIS_UL.Debug.Debug_Flag_C then
             Info ("*** GNSA mode");
+            Info ("GNSA_Path is " & GNSA_Path.all);
          end if;
 
          Gcc_To_Call :=
@@ -1191,16 +1737,6 @@ package body ASIS_UL.Projects is
 
          if ASIS_UL.Debug.Debug_Flag_C then
             Info ("*** Standard GNAT mode");
-         end if;
-
-         if Target = null
-            --  No --target= option
-           and then
-            My_Project.Is_Specified
-         then
-            Target :=
-              new String'(My_Project.Root_Project.Get_Target
-                (Default_To_Host => False));
          end if;
 
          if Target = null
@@ -1339,8 +1875,15 @@ package body ASIS_UL.Projects is
             raise Fatal_Error;
          when Incomplete_Closure =>
             Complete_Closure := False;
-            Error_No_Tool_Name
-              ("could not get complete closure of " & Main_Unit.all);
+
+            if Index (Tool_Name.all, "gnatelim") = 0
+              or else
+               Verbose_Mode
+            then
+               Error_No_Tool_Name
+                 ("could not get complete closure from build of " &
+                  Main_Unit.all);
+            end if;
          when Success =>
             Complete_Closure := True;
       end case;

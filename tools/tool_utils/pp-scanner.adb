@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2012-2016, AdaCore                     --
+--                     Copyright (C) 2012-2017, AdaCore                     --
 --                                                                          --
 -- Gnat2xml is free software; you can redistribute it and/or modify it      --
 -- under terms of the  GNU General Public License  as published by the Free --
@@ -25,6 +25,7 @@ pragma Ada_2012;
 
 with Text_IO;
 
+with Hostparm;
 with Snames;
 with Scans;
 
@@ -85,7 +86,9 @@ package body Pp.Scanner is
       Cur_Line, Cur_Col : Positive := 1;
       Cur_First         : Positive := 1;
 
-      Name_Buffer : Namet.Bounded_String;
+      Name_Buffer : Namet.Bounded_String
+        (Max_Length => 4 * Hostparm.Max_Line_Length);
+      --  Same Max_Length as Global_Name_Buffer
       Name_Len : Natural renames Name_Buffer.Length;
 
       procedure Get;
@@ -903,7 +906,8 @@ package body Pp.Scanner is
       return False;
    end In_Gen_Regions;
 
-   procedure Put_Token (Tok : Token; Index : Token_Index := 1) is
+   procedure Put_Token
+     (Tok : Token; Index : Token_Index := 1; Slocs : Boolean := True) is
    begin
       if Tok.Kind in Comment_Kind then
          Text_IO.Put
@@ -919,14 +923,12 @@ package body Pp.Scanner is
       end loop;
       Text_IO.Put_Line
         (Text_IO.Standard_Output,
-         " -- #" &
-         Image (Integer (Index)) &
+         (if Slocs then " -- #" & Image (Integer (Index)) else "") &
          "  " &
          Capitalize (Tok.Kind'Img) &
-         " at " &
-         Image (Tok.Sloc) &
-         " width = " &
-         Image (Tok.Width) &
+         (if Slocs
+            then " at " & Image (Tok.Sloc) & " width = " & Image (Tok.Width)
+            else "") &
          (if Tok.Is_Special_Comment then " special" else "") &
          (if Tok.Is_Fillable_Comment then " fillable" else ""));
    end Put_Token;
@@ -935,7 +937,8 @@ package body Pp.Scanner is
      (Tokens    : Token_Vectors.Vector;
       First     : Token_Index'Base := 1;
       Last      : Token_Index'Base := Token_Index'Last;
-      Highlight : Token_Index'Base := 0)
+      Highlight : Token_Index'Base := 0;
+      Slocs : Boolean := True)
    is
    begin
       for Index in
@@ -946,7 +949,7 @@ package body Pp.Scanner is
             Text_IO.Put_Line (Text_IO.Standard_Output, "----------------");
          end if;
 
-         Put_Token (Tokens (Index), Index);
+         Put_Token (Tokens (Index), Index, Slocs);
       end loop;
    end Put_Tokens;
 

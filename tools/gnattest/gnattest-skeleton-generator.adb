@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2011-2017, AdaCore                     --
+--                     Copyright (C) 2011-2018, AdaCore                     --
 --                                                                          --
 -- GNATTEST  is  free  software;  you  can redistribute it and/or modify it --
 -- under terms of the  GNU  General Public License as published by the Free --
@@ -44,6 +44,7 @@ with GNAT.Directory_Operations;  use GNAT.Directory_Operations;
 
 with GNATCOLL.VFS;               use GNATCOLL.VFS;
 with GNATCOLL.Traces;            use GNATCOLL.Traces;
+with GNATCOLL.Projects;          use GNATCOLL.Projects;
 
 with Asis;                       use Asis;
 with Asis.Ada_Environments;      use Asis.Ada_Environments;
@@ -343,9 +344,7 @@ package body GNATtest.Skeleton.Generator is
    package Name_Set is new
      Ada.Containers.Indefinite_Ordered_Maps (String, Positive);
 
-   use Element_List;
    use List_Of_Strings;
-   use Name_Set;
 
    type Generic_Tests is record
       Gen_Unit_Full_Name : String_Access;
@@ -786,11 +785,10 @@ package body GNATtest.Skeleton.Generator is
          --  Process simple cases for now. Dispatchings, renamings and parts of
          --  instances are not yet supported.
 
-         if Is_Nil (Decl) then
-            return;
-         end if;
-
-         if Is_Part_Of_Instance (Decl) then
+         if Is_Nil (Decl)
+           or else Is_Part_Of_Instance (Decl)
+           or else Declaration_Kind (Decl) = Not_A_Declaration
+         then
             return;
          end if;
 
@@ -2520,7 +2518,7 @@ package body GNATtest.Skeleton.Generator is
                if Current_Pack.Data_Kind = Declaration_Data
                  and then Current_Pack.Is_Generic
                then
-                     S_Put (6, "X.User_Set_Up;");
+                     S_Put (6, "X.User_Tear_Down;");
                else
                   S_Put
                     (6, "null;");
@@ -5482,7 +5480,8 @@ package body GNATtest.Skeleton.Generator is
          Set_Source_Status (Source_Name, Bad_Content);
 
          Report_Std ("gnattest: " & Source_Name &
-                     " is not a legal Ada source");
+                       " is not a legal Ada source");
+         Source_Compilation_Failed := True;
 
          return False;
 
@@ -6104,7 +6103,8 @@ package body GNATtest.Skeleton.Generator is
          exit when Source_Name.all = "";
 
          if
-           Stub_Mode_ON and then Get_Source_Body (Source_Name.all) /= ""
+           (Stub_Mode_ON or else Main_Unit /= null)
+           and then Get_Source_Body (Source_Name.all) /= ""
          then
             Successful_Initialization :=
               Initialize_Context (Get_Source_Body (Source_Name.all));
@@ -6124,7 +6124,29 @@ package body GNATtest.Skeleton.Generator is
 
          if Successful_Initialization then
 
-            if Stub_Mode_ON then
+            if Main_Unit /= null then
+               declare
+                  Success  : Boolean;
+                  ALI_File : constant String :=
+                    Temp_Dir.all & Directory_Separator
+                    & Get_Source_Suffixless_Name (Source_Name.all) & ".ali";
+                  Subdir   : constant String :=
+                    Temp_Dir.all & Directory_Separator & Closure_Subdir_Name;
+               begin
+                  Copy_File
+                    (ALI_File,
+                     Subdir,
+                     Success);
+                  if not Success then
+                     Trace (Me, "Cannot copy " & ALI_File & " to " & Subdir);
+                     Report_Err ("cannot calculate closure");
+                     raise Fatal_Error;
+                  end if;
+               end;
+               Update_Closure;
+            end if;
+
+            if Stub_Mode_ON or else Main_Unit /= null then
 
                if Get_Source_Body (Source_Name.all) = "" then
                   The_Unit := Main_Unit_In_Current_Tree (The_Context);
@@ -6726,10 +6748,13 @@ package body GNATtest.Skeleton.Generator is
                      Last_Context_Name.all & ".adt");
       end if;
 
-      Delete_File (Last_Context_Name.all & ".ali", Success);
-      if not Success then
-         Report_Std ("gnattest: cannot delete " &
-                     Last_Context_Name.all & ".ali");
+      if Main_Unit = null then
+         --  We need to keep ALI files for incremental closure recomputation.
+         Delete_File (Last_Context_Name.all & ".ali", Success);
+         if not Success then
+            Report_Std ("gnattest: cannot delete " &
+                          Last_Context_Name.all & ".ali");
+         end if;
       end if;
 
       Free (Last_Context_Name);

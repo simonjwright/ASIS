@@ -25,6 +25,7 @@
 
 pragma Ada_2012;
 
+with Ada.Characters.Conversions; use Ada.Characters.Conversions;
 with Ada.Wide_Text_IO;           use Ada.Wide_Text_IO;
 
 with Asis.Clauses;               use Asis.Clauses;
@@ -40,12 +41,15 @@ with Asis.Iterator;              use Asis.Iterator;
 with Asis.Statements;            use Asis.Statements;
 with Asis.Text;                  use Asis.Text;
 
+with ASIS_UL.Debug;
+with ASIS_UL.Misc;               use ASIS_UL.Misc;
 with ASIS_UL.Utilities;          use ASIS_UL.Utilities;
 
 with GNAT.Table;
 
 with Atree;                      use Atree;
 with Einfo;                      use Einfo;
+with Elists;                     use Elists;
 with Namet;                      use Namet;
 with Nlists;                     use Nlists;
 with Sem_Aux;                    use Sem_Aux;
@@ -57,6 +61,7 @@ with Types;                      use Types;
 with Asis.Set_Get;               use Asis.Set_Get;
 
 with A4G.A_Sem;                  use A4G.A_Sem;
+with A4G.Int_Knds;               use A4G.Int_Knds;
 with A4G.Vcheck;                 use A4G.Vcheck;
 
 with Gnatcheck.Traversal_Stack;  use Gnatcheck.Traversal_Stack;
@@ -147,6 +152,109 @@ package body Gnatcheck.ASIS_Utilities is
       Pre_Operation     => Check_For_Discr_Reference,
       Post_Operation    => Empty_Bool_Post_Op);
    --  Checks if Element has a reference to a discriminant
+
+   function Is_Ancestor
+     (Ancestor : Entity_Id;
+      Source   : Entity_Id)
+      return     Boolean;
+   --  Assumes that both arguments are interface type entities. Check if
+   --  Ancestor is indeed an ancestor of Source
+
+   --  The folowing stuff is needed for No_Inherited_Classwide_Pre rule. The
+   --  implementation of the rule is far from being good, so this definitely
+   --  needs revision at some point. At least to eliminate code duplications.
+
+   type List_Of_Nodes is array (Natural range <>) of Node_Id;
+   function Get_Overridden_Ops (Op : Asis.Element) return List_Of_Nodes;
+   function Get_Overridden_Ops (Op : Entity_Id) return List_Of_Nodes;
+   --  Assuming that Op is a declaration of an overridding operation, gets a
+   --  full list of operations (their entity nodes) that are overridden or
+   --  implemented by this declaration.
+   --
+   --  The Get_Overridden_Ops function that works directly on operation entity
+   --  node does NOT include in the result the operation pointed by the
+   --  Overridden_Operation (Op) link
+
+   function Primitive_Owner (Op : Entity_Id) return Entity_Id;
+   --  Assuming that Op is a discpatching operation, returns the type for that
+   --  this operation is defined. In case of private types/extensions a private
+   --  view is returned.
+
+   function Overridden_Interface_Ops
+     (Type_Entity : Entity_Id;
+      Op_Entity   : Entity_Id)
+      return   List_Of_Nodes;
+   --  Assuming that Type_Entity is a tagged type entity node, and Op_Entity
+   --  is an entity node of a primitive of this type, returns the list of
+   --  interface primitibes that are implemented by Op_Entity.
+
+   function Has_Class_Wide_Pre (Op : Entity_Id) return Boolean;
+   --  Checks if Op has an explicitly defined or inherited Pre'Class attribute
+   --  specified for it.
+
+   function Contract_Contains_Pre_Class (C : Node_Id) return Boolean;
+   --  Assuming that C is of N_Contract kind checks if it defines class-wide
+   --  Precondition
+
+   function Add_Scope_Name (El : Asis.Element) return String;
+   --  Assumes that El is an Element where
+   --  Gnatcheck.Rules.Traversing.All_Rules_Pre_Op stands now (needed to apply
+   --  fast Get_Enclosing_Element instead of standard Enclosing_Element query).
+   --  returns the full Ada name of the inermost scope that encloses El.
+   --  Returns an empty string if there is no such scope (library-level
+   --  renaming or instantiation, compilation pragmas etc.)
+
+   function Is_Named_Scope (E : Asis.Element) return Boolean;
+   --  Checks if E is a named scope (in a sense needed to add the scope name
+   --  in the diagnostic message if -dJ is specified).
+
+   function Encl_Scope_Full_Name (El : Asis.Element) return String;
+   --  Returns the full expanded Ada name of a scope that encloses El (not
+   --  counting El itself if El is also a scope) with a dot character appended.
+   --  Return an empty string if El is a library-level declaration
+
+   function Overloading_Index (El : Asis.Element) return String;
+   --  Assuming that Is_Named_Scope (El), and that El is a subprogram body,
+   --  checks if there are other subprograms in the same declarative region
+   --  that overloads this subprogram and precedes this one. If there are some,
+   --  returns string of the forms "#n" where 'n' is a positional number of
+   --  this subprogram in sequence of overloaded subprograms, otherwise an
+   --  empty string is returned. Note, that when computing this chain and
+   --  detecting this number, we do not consider subprogram body/stub/renaming
+   --  declarations that are completions of other declarations, that is we are
+   --  trying to follow the compiler's way of computing this suffix if -gnatdJ
+   --  is set.
+
+   --------------------
+   -- Add_Scope_Name --
+   --------------------
+
+   function Add_Scope_Name (El : Asis.Element) return String is
+      Step_Up         : Elmt_Idx     := 0;
+      Enclosing_Scope : Asis.Element := Nil_Element;
+      EE              : Asis.Element := El;
+   begin
+      while not Is_Nil (EE) loop
+         if Is_Named_Scope (EE) then
+            Enclosing_Scope := EE;
+            exit;
+         end if;
+
+         EE      := Get_Enclosing_Element (Step_Up);
+         Step_Up := Step_Up + 1;
+      end loop;
+
+      if Is_Nil (Enclosing_Scope) then
+         return "";
+      else
+         return Encl_Scope_Full_Name (Enclosing_Scope)                 &
+                To_String
+                  (Defining_Name_Image (First_Name (Enclosing_Scope))) &
+                Overloading_Index (Enclosing_Scope)                    &
+                ":" & Build_GNAT_Location (Enclosing_Scope, 0, 0);
+      end if;
+
+   end Add_Scope_Name;
 
    ---------------------------
    -- Can_Cause_Side_Effect --
@@ -408,6 +516,34 @@ package body Gnatcheck.ASIS_Utilities is
       return Result;
    end Changed_Element;
 
+   -----------------------------------
+   -- Check_Classwide_Pre_Vioaltion --
+   -----------------------------------
+
+   procedure Check_Classwide_Pre_Vioaltion
+     (Op       : Asis.Element;
+      Detected : out Boolean;
+      At_SLOC  : out String_Loc)
+   is
+      Overridden_Ops : constant List_Of_Nodes := Get_Overridden_Ops (Op);
+      Template_El    : Asis.Element := Nil_Element;
+   begin
+      Detected := False;
+      At_SLOC := Nil_String_Loc;
+
+      for J in Overridden_Ops'Range loop
+         if not Has_Class_Wide_Pre (Overridden_Ops (J)) then
+            Detected := True;
+            Set_Encl_Unit_Id (Template_El, Encl_Unit_Id (Op));
+            Set_Node (Template_El, Overridden_Ops (J));
+            At_SLOC :=
+              Enter_String ("%1%" & Build_GNAT_Location (Template_El));
+            exit;
+         end if;
+      end loop;
+
+   end Check_Classwide_Pre_Vioaltion;
+
    -------------------------------
    -- Check_For_Discr_Reference --
    -------------------------------
@@ -455,15 +591,10 @@ package body Gnatcheck.ASIS_Utilities is
    begin
 
       if Constraint_Kind (Constr) in
-           An_Index_Constraint .. A_Discriminant_Constraint
-        and then
-         Definition_Kind (Enclosing_Element (Enclosing_Element (Constr))) =
-           A_Component_Definition
+           An_Index_Constraint | A_Discriminant_Constraint
       then
          Check_For_Discriminant_Reference
-           (Element => Constr,
-            Control => Control,
-            State   => Result);
+           (Element => Constr, Control => Control, State => Result);
       end if;
 
       return Result;
@@ -490,6 +621,34 @@ package body Gnatcheck.ASIS_Utilities is
       return Result;
 
    end Contains_Loop;
+
+   ---------------------------------
+   -- Contract_Contains_Pre_Class --
+   ---------------------------------
+
+   function Contract_Contains_Pre_Class (C : Node_Id) return Boolean is
+      Result   : Boolean := False;
+      N_Pragma : Node_Id;
+   begin
+      pragma Assert (Nkind (C) = N_Contract);
+
+      N_Pragma := Pre_Post_Conditions (C);
+
+      while Present (N_Pragma) loop
+
+         if Chars (Pragma_Identifier (N_Pragma)) = Name_Precondition
+          and then
+            Class_Present (N_Pragma)
+         then
+            Result := True;
+            exit;
+         end if;
+
+         N_Pragma := Next_Pragma (N_Pragma);
+      end loop;
+
+      return Result;
+   end Contract_Contains_Pre_Class;
 
    ------------------------------------
    -- Corresponding_Protected_Object --
@@ -672,6 +831,30 @@ package body Gnatcheck.ASIS_Utilities is
    begin
       null;
    end Empty_Bool_Post_Op;
+
+   --------------------------
+   -- Encl_Scope_Full_Name --
+   --------------------------
+
+   function Encl_Scope_Full_Name (El : Asis.Element) return String is
+      Encl_Scope : Asis.Element := Enclosing_Element (El);
+   begin
+      while not Is_Nil (Encl_Scope)
+          and then
+            not Is_Named_Scope (Encl_Scope)
+      loop
+         Encl_Scope := Enclosing_Element (Encl_Scope);
+      end loop;
+
+      if Is_Nil (Encl_Scope) then
+         return "";
+      else
+         return Encl_Scope_Full_Name (Encl_Scope)                         &
+                To_String (Defining_Name_Image (First_Name (Encl_Scope))) &
+                '.';
+      end if;
+
+   end Encl_Scope_Full_Name;
 
    ---------------------------------
    -- From_Subtype_With_Predicate --
@@ -1072,6 +1255,76 @@ package body Gnatcheck.ASIS_Utilities is
 
       return Result;
    end Get_Name_Definition;
+
+   ------------------------
+   -- Get_Overridden_Ops --
+   ------------------------
+
+   function Get_Overridden_Ops (Op : Entity_Id) return List_Of_Nodes is
+      Type_Entity : Entity_Id := Primitive_Owner (Op);
+   begin
+      if Ekind (Type_Entity) in E_Private_Type         |
+                                E_Limited_Private_Type
+      then
+         Type_Entity := Full_View (Type_Entity);
+      end if;
+
+      return Overridden_Interface_Ops (Type_Entity, Op);
+   end Get_Overridden_Ops;
+
+   function Get_Overridden_Ops (Op : Asis.Element) return List_Of_Nodes is
+      Result : List_Of_Nodes (1 .. 6000);
+      --  6000 looks as infinity here
+      Res_Last : Natural := 0;
+
+      Op_Entity           : constant Entity_Id := R_Node (First_Name (Op));
+      Directly_Overridded :          Entity_Id;
+      Type_Entity         :          Entity_Id;
+
+      Type_Def : Asis.Element;
+
+   begin
+      if not Is_Overriding_Operation (Op) then
+         return Result (1 .. 0);
+      end if;
+
+      if Present (Overridden_Operation (Op_Entity)) then
+         Directly_Overridded := Overridden_Operation (Op_Entity);
+         Res_Last            := Res_Last + 1;
+         Result (Res_Last)   := Directly_Overridded;
+      end if;
+
+      --  Check if we may have multiple inheritance:
+      Type_Def := Primitive_Owner (Op);
+
+      if Definition_Kind (Type_Def) in
+           A_Private_Type_Definition |
+           A_Private_Extension_Definition
+      then
+         Type_Def := Enclosing_Element (Type_Def);
+         Type_Def := Corresponding_Type_Completion (Type_Def);
+         Type_Def := Type_Declaration_View (Type_Def);
+      end if;
+
+      if Int_Kind (Type_Def) not in
+           A_Derived_Record_Extension_Definition |
+           A_Private_Extension_Definition        |
+           Internal_Interface_Kinds              |
+           A_Formal_Derived_Type_Definition      |
+           Internal_Formal_Interface_Kinds
+        or else
+         Is_Nil (Definition_Interface_List (Type_Def))
+      then
+         --  Nothing else to do!
+         return Result (1 .. Res_Last);
+      end if;
+
+      Type_Def    := First_Name (Enclosing_Element (Type_Def));
+      Type_Entity := R_Node (Type_Def);
+
+      return Result (1 .. Res_Last) &
+             Overridden_Interface_Ops (Type_Entity, Op_Entity);
+   end Get_Overridden_Ops;
 
    -------------------
    -- Get_Root_Type --
@@ -1482,6 +1735,46 @@ package body Gnatcheck.ASIS_Utilities is
       return Result;
    end Has_Address_Clause;
 
+   ------------------------
+   -- Has_Class_Wide_Pre --
+   ------------------------
+
+   function Has_Class_Wide_Pre (Op : Entity_Id) return Boolean is
+      Result : Boolean := False;
+      Directly_Overridden_Op : Entity_Id := Empty;
+   begin
+      if Present (Contract (Op)) then
+         Result := Contract_Contains_Pre_Class (Contract (Op));
+      end if;
+
+      if not Result then
+         Directly_Overridden_Op := Overridden_Operation (Op);
+
+         if Present (Directly_Overridden_Op) then
+            Result := Has_Class_Wide_Pre (Directly_Overridden_Op);
+         end if;
+
+      end if;
+
+      if not Result then
+
+         declare
+            Overridden_Ops : constant List_Of_Nodes := Get_Overridden_Ops (Op);
+         begin
+            for J in Overridden_Ops'Range loop
+               if Overridden_Ops (J) /= Directly_Overridden_Op then
+                  Result := Has_Class_Wide_Pre (Overridden_Ops (J));
+               end if;
+
+               exit when Result;
+            end loop;
+         end;
+
+      end if;
+
+      return Result;
+   end Has_Class_Wide_Pre;
+
    -----------------------
    -- Has_One_Parameter --
    -----------------------
@@ -1609,6 +1902,94 @@ package body Gnatcheck.ASIS_Utilities is
 
       return Result;
    end Has_Statements_And_Decls;
+
+   -----------------
+   -- Is_Ancestor --
+   -----------------
+
+   function Is_Ancestor
+     (Ancestor : Entity_Id;
+      Source   : Entity_Id)
+      return     Boolean
+   is
+      Result   : Boolean := False;
+      Type_Def : Node_Id;
+      Next_T   : Entity_Id;
+   begin
+      Result := Source = Ancestor;
+
+      if not Result then
+         --  Starting from source, go to its definition (and it should be an
+         --  interface type definition!) and check Is_Ancestor for all the
+         --  interfaces listed in this definition
+         Next_T := Parent (Source);
+
+         if Nkind (Next_T) = N_Private_Type_Declaration then
+            --  nothing to analyze!
+            return False;
+         end if;
+
+         pragma Assert (Nkind (Next_T) = N_Full_Type_Declaration);
+
+         Type_Def := Sinfo.Type_Definition (Next_T);
+
+         if Nkind (Type_Def) = N_Derived_Type_Definition then
+            --  First element from the interface list can be reached by the
+            --  Subtype_Indication (Type_Def) link, the other (if any) are
+            --  the members of Interface_List (Type_Def) list
+
+            Next_T := Sinfo.Subtype_Indication (Type_Def);
+            Next_T := Entity (Next_T);
+
+            while Present (Next_T)
+                and then
+                  Nkind (Parent (Next_T)) /= N_Full_Type_Declaration
+                and then
+                  Etype (Next_T) /= Next_T
+            loop
+               Next_T := Etype (Next_T);
+            end loop;
+
+            pragma Assert (Nkind (Parent (Next_T)) = N_Full_Type_Declaration);
+
+            Result := Is_Ancestor (Ancestor, Next_T);
+
+            if not Result
+              and then
+               not Is_Empty_List (Interface_List (Type_Def))
+            then
+               Next_T := First (Interface_List (Type_Def));
+
+               while Present (Next_T) loop
+
+                  Next_T := Entity (Next_T);
+
+                  while Present (Next_T)
+                      and then
+                        Nkind (Parent (Next_T)) /= N_Full_Type_Declaration
+                      and then
+                        Etype (Next_T) /= Next_T
+                  loop
+                     Next_T := Etype (Next_T);
+                  end loop;
+
+                  pragma Assert (Nkind (Parent (Next_T)) =
+                                 N_Full_Type_Declaration);
+
+                  Result := Is_Ancestor (Ancestor, Next_T);
+
+                  exit when Result;
+
+                  Next_T := Next (Next_T);
+               end loop;
+            end if;
+
+         end if;
+
+      end if;
+
+      return Result;
+   end Is_Ancestor;
 
    -------------
    -- Is_Body --
@@ -1833,6 +2214,76 @@ package body Gnatcheck.ASIS_Utilities is
       return Result;
    end Is_Constraint_Error;
 
+   --------------------
+   -- Is_Constructor --
+   --------------------
+
+   function Is_Constructor (Element : Asis.Element) return Boolean is
+      Name     : Asis.Element;
+      N        : Node_Id;
+      Result   : Boolean := False;
+
+   begin
+
+      if Declaration_Kind (Element) in
+            A_Function_Declaration             |
+            An_Expression_Function_Declaration |
+            A_Function_Body_Declaration        |
+            A_Function_Renaming_Declaration    |
+            A_Function_Body_Stub
+        and then
+         Is_Dispatching_Operation (Element)
+      then
+         Name := First_Name (Element);
+         N    := Node (Name);
+
+         if Has_Controlling_Result (N) then
+            --  The last thing to check is that we do not have any controlling
+            --  parameter
+            Result := True;
+
+            declare
+               Pars : constant Asis.Element_List :=
+                 Parameter_Profile (Element);
+            begin
+               if Pars'Length > 0 then
+                  --  All we have to check in a legal code is if we have at
+                  --  least one parameter of a tagged type, and this type is
+                  --  not a class-wide type.
+
+                  for J in Pars'Range loop
+                     Name := First_Name (Pars (J));
+                     N    := Node (Name);
+                     N    := Etype (N);
+
+                     if Ekind (N) in
+                          E_Access_Type          |
+                          E_Access_Subtype       |
+                          E_Anonymous_Access_Type
+                     then
+                        N := Directly_Designated_Type (N);
+                     end if;
+
+                     if Is_Tagged_Type (N)
+                       and then
+                        Ekind (N) not in
+                          E_Class_Wide_Type | E_Class_Wide_Subtype
+                     then
+                        --  We already have a controlling result, so in a legal
+                        --  code this type should be the same as the result
+                        --  type. Therefore:
+                        Result := False;
+                        exit;
+                     end if;
+                  end loop;
+               end if;
+            end;
+         end if;
+      end if;
+
+      return Result;
+   end Is_Constructor;
+
    --------------------------
    -- Is_Control_Structure --
    --------------------------
@@ -1858,6 +2309,83 @@ package body Gnatcheck.ASIS_Utilities is
 
       return Result;
    end Is_Control_Structure;
+
+   ---------------------------------
+   -- Is_Downward_View_Conversion --
+   ---------------------------------
+
+   function Is_Downward_View_Conversion
+     (Element : Asis.Element)
+      return    Boolean
+   is
+      Result : Boolean := False;
+      Source : Asis.Element;
+      Target : Asis.Element;
+
+      Source_T : Entity_Id;
+      Target_T : Entity_Id;
+   begin
+      if Expression_Kind (Element) /= A_Type_Conversion then
+         return False;
+      end if;
+
+      Source   := Converted_Or_Qualified_Expression (Element);
+      Source_T := R_Node (Source);
+      Source_T := Etype (Source_T);
+
+      --  We are interested in view conversions in the context of
+      --  Downward_View_Conversions gnatcheck rule, so both source and target
+      --  types should be tagged
+
+      if not Is_Tagged_Type (Source_T) then
+         return False;
+      end if;
+
+      Target   := Converted_Or_Qualified_Subtype_Mark (Element);
+      Target_T := R_Node (Target);
+      Target_T := Etype (Target_T);
+
+      if Ekind (Source_T) = E_Class_Wide_Type then
+         Source_T := Etype (Source_T);
+      end if;
+
+      if Ekind (Target_T) = E_Class_Wide_Type then
+         Target_T := Etype (Target_T);
+      end if;
+
+      --  Conversion of non-interface type into interface type is always OK
+
+      if Is_Interface (Target_T) and then not Is_Interface (Source_T) then
+         return False;
+      end if;
+
+      --  Simple case - both source and target are not interfaces
+
+      if not Is_Interface (Target_T) and then not Is_Interface (Source_T) then
+
+         Result := True;
+
+         loop
+
+            if Source_T = Target_T then
+               Result := False;
+               exit;
+            end if;
+
+            exit when Etype (Source_T) = Source_T;
+
+            Source_T := Etype (Source_T);
+         end loop;
+
+      end if;
+
+      if Is_Interface (Target_T) and then Is_Interface (Source_T) then
+         --  The hardest case - both source and target are interfaces.
+         Result := not Is_Ancestor (Target_T, Source_T);
+      end if;
+
+      return Result;
+   end Is_Downward_View_Conversion;
 
    --------------
    -- Is_Frame --
@@ -2107,6 +2635,47 @@ package body Gnatcheck.ASIS_Utilities is
 
       return Result;
    end Is_Limited;
+
+   --------------------
+   -- Is_Named_Scope --
+   --------------------
+
+   function Is_Named_Scope (E : Asis.Element) return Boolean is
+      Result : Boolean := False;
+   begin
+      case Declaration_Kind (E) is
+         when A_Task_Type_Declaration       |
+              A_Protected_Type_Declaration  |
+              A_Procedure_Body_Declaration  |
+              A_Function_Body_Declaration   |
+              A_Package_Declaration         |
+              A_Package_Body_Declaration    |
+              A_Task_Body_Declaration       |
+              A_Protected_Body_Declaration  |
+              A_Generic_Package_Declaration =>
+            Result := True;
+         when A_Procedure_Declaration                  |
+              A_Function_Declaration                   |
+              A_Package_Renaming_Declaration           |
+              A_Procedure_Renaming_Declaration         |
+              A_Function_Renaming_Declaration          |
+              A_Generic_Package_Renaming_Declaration   |
+              A_Generic_Procedure_Renaming_Declaration |
+              A_Generic_Function_Renaming_Declaration  |
+              A_Generic_Procedure_Declaration          |
+              A_Generic_Function_Declaration           |
+              A_Package_Instantiation                  |
+              A_Procedure_Instantiation                |
+              A_Function_Instantiation                 =>
+            --  This should be considered as a scope only if it is a top-level
+            --  declaration of a compilation unit
+            Result := Is_Nil (Enclosing_Element (E));
+         when others =>
+            null;
+      end case;
+
+      return Result;
+   end Is_Named_Scope;
 
    ------------------------------
    -- Is_Num_Error_Declaration --
@@ -2682,6 +3251,333 @@ package body Gnatcheck.ASIS_Utilities is
       return Result;
    end Needs_Completion;
 
+   -----------------------
+   -- Overloading_Index --
+   -----------------------
+
+   function Overloading_Index (El : Asis.Element) return String is
+      Dcl      : Asis.Element;
+      Dcl_N    : Asis.Element;
+      Dcl_Name : Program_Text_Access;
+
+      Res : Positive := 1;
+
+      Scope     : Asis.Element := Nil_Element;
+      Dcl_Scope : Asis.Element := Nil_Element;
+
+      Detected : Boolean := False;
+
+      procedure Get_Overloding_Index (Dcls : Asis.Element_List);
+      --  Parses its argument and counts in Res declarations that overloads El.
+      --  If founds the declaration that Is_Equal to El, sets Detected ON and
+      --  returns (without increasing Res).
+      procedure Get_Overloding_Index (Dcls : Asis.Element_List) is
+      begin
+         for J in Dcls'Range loop
+            if Is_Equal (Dcls (J), Dcl) then
+               Detected := True;
+               exit;
+            end if;
+
+            if Declaration_Kind (Dcls (J)) in
+                  A_Procedure_Declaration            |
+                  An_Entry_Declaration               |
+                  A_Procedure_Instantiation          |
+                  A_Function_Declaration             |
+                  A_Function_Instantiation
+               or else
+                (Declaration_Kind (Dcls (J)) in
+                   A_Procedure_Body_Declaration       |
+                   A_Null_Procedure_Declaration       |
+                   A_Procedure_Body_Stub              |
+                   A_Function_Body_Declaration        |
+                   A_Function_Body_Stub               |
+                   An_Expression_Function_Declaration
+                 and then
+                Acts_As_Spec (Dcls (J)))
+               or else
+                (Declaration_Kind (Dcls (J)) in
+                  A_Procedure_Renaming_Declaration   |
+                  A_Function_Renaming_Declaration
+                 and then
+                not Is_Renaming_As_Body (Dcls (J)))
+            then
+               if To_Lower_Case (Defining_Name_Image (First_Name (Dcls (J)))) =
+                    Dcl_Name.all
+               then
+                  Res := Res + 1;
+               end if;
+            end if;
+
+         end loop;
+      end Get_Overloding_Index;
+
+   begin
+      if Declaration_Kind (El) in
+           A_Procedure_Body_Declaration |
+           A_Function_Body_Declaration
+      then
+         Dcl := Corresponding_Declaration (El);
+
+         if Is_Nil (Dcl) then
+            if Acts_As_Spec (El) then
+               Dcl := El;
+            elsif Is_Subunit (El) then
+               Dcl := Corresponding_Body_Stub (El);
+
+               if not Acts_As_Spec (Dcl) then
+                  Dcl := Corresponding_Declaration (Dcl);
+               end if;
+            else
+               pragma Assert (False);
+            end if;
+         end if;
+      else
+         return "";
+      end if;
+
+      if Declaration_Kind (Dcl) in
+           A_Generic_Procedure_Declaration |
+           A_Generic_Function_Declaration
+      then
+         return "";
+      end if;
+
+      Dcl_N := First_Name (Dcl);
+
+      if Defining_Name_Kind (Dcl_N) = A_Defining_Expanded_Name
+        or else
+         not Has_Homonym (R_Node (Dcl_N))
+      then
+         return "";
+      end if;
+
+      Scope    := Enclosing_Element (Dcl);
+
+      Dcl_Name := new Program_Text'(To_Lower_Case
+                        (Defining_Name_Image (Dcl_N)));
+
+      if Is_Nil (Scope) then
+         --  We are at the library level
+         return "";
+      end if;
+
+      if Declaration_Kind (Scope) in
+           A_Package_Body_Declaration |
+           A_Protected_Body_Declaration
+      then
+         Dcl_Scope := Corresponding_Declaration (Scope);
+      end if;
+
+      if Declaration_Kind (Dcl_Scope) in
+           A_Protected_Type_Declaration |
+           A_Single_Protected_Declaration
+      then
+         Get_Overloding_Index
+          (Visible_Part_Items (
+             (if Declaration_Kind (Dcl_Scope) =
+                   A_Protected_Type_Declaration
+              then
+                 Type_Declaration_View (Dcl_Scope)
+              else
+                 Object_Declaration_View (Dcl_Scope))));
+         if not Detected then
+            Get_Overloding_Index
+             (Private_Part_Items (
+                (if Declaration_Kind (Dcl_Scope) =
+                      A_Protected_Type_Declaration
+                 then
+                    Type_Declaration_View (Dcl_Scope)
+                 else
+                    Object_Declaration_View (Dcl_Scope))));
+         end if;
+      elsif Declaration_Kind (Dcl_Scope) in
+              A_Package_Declaration |
+              A_Generic_Package_Declaration
+      then
+         Get_Overloding_Index (Visible_Part_Declarative_Items (Dcl_Scope));
+
+         if not Detected then
+            Get_Overloding_Index (Private_Part_Declarative_Items (Dcl_Scope));
+         end if;
+      end if;
+
+      if not Detected then
+
+         if Declaration_Kind (Scope) = A_Protected_Body_Declaration then
+            Get_Overloding_Index (Protected_Operation_Items (Scope));
+
+         elsif Declaration_Kind (Scope) in
+                 A_Package_Declaration |
+                 A_Generic_Package_Declaration
+         then
+            Get_Overloding_Index (Visible_Part_Declarative_Items (Scope));
+
+         elsif Declaration_Kind (Scope) in
+                 A_Procedure_Body_Declaration |
+                 A_Function_Body_Declaration  |
+                 A_Package_Body_Declaration   |
+                 A_Task_Body_Declaration
+         then
+            Get_Overloding_Index (Body_Declarative_Items (Scope));
+
+         elsif Definition_Kind (Scope) = A_Protected_Definition then
+            Get_Overloding_Index (Visible_Part_Items (Scope));
+
+         elsif Statement_Kind (Scope) = A_Block_Statement then
+            Get_Overloding_Index (Block_Declarative_Items (Scope));
+         else
+            pragma Assert (False);
+         end if;
+
+         if not Detected then
+            if Declaration_Kind (Scope) in
+                 A_Package_Declaration |
+                 A_Generic_Package_Declaration
+            then
+               Get_Overloding_Index (Private_Part_Declarative_Items (Scope));
+            elsif Definition_Kind (Scope) = A_Protected_Definition then
+               Get_Overloding_Index (Private_Part_Items (Scope));
+            end if;
+         end if;
+      end if;
+
+      Free (Dcl_Name);
+
+      if Res = 1 then
+         return "";
+      else
+         return '#' & Image (Res);
+      end if;
+   end Overloading_Index;
+
+   ------------------------------
+   -- Overridden_Interface_Ops --
+   ------------------------------
+
+   function Overridden_Interface_Ops
+     (Type_Entity : Entity_Id;
+      Op_Entity   : Entity_Id)
+      return   List_Of_Nodes
+   is
+      Result : List_Of_Nodes (1 .. 6000);
+      --  6000 looks as infinity here
+      Res_Last : Natural := 0;
+
+      Next_El             :          Elmt_Id;
+      Next_Overridden     :          Entity_Id;
+   begin
+      Next_El := First_Elmt (Direct_Primitive_Operations (Type_Entity));
+
+      while Present (Next_El) loop
+         Next_Overridden := Node (Next_El);
+
+         if Present (Interface_Alias (Next_Overridden))
+           and then
+            Alias (Next_Overridden) = Op_Entity
+         then
+            Res_Last            := Res_Last + 1;
+            Result (Res_Last)   := Interface_Alias (Next_Overridden);
+         end if;
+
+         Next_El := Next_Elmt (Next_El);
+      end loop;
+
+      return Result (1 .. Res_Last);
+
+   end Overridden_Interface_Ops;
+
+   ---------------------
+   -- Primitive_Owner --
+   ---------------------
+
+   function Primitive_Owner (Op : Entity_Id) return Entity_Id is
+      Res_Node : Entity_Id := Empty;
+      Op_Def   : Node_Id;
+      Par_Node : Node_Id;
+   begin
+      --  Two cases should be processed separately - explicit and implicit
+      --  primitives
+
+      if Comes_From_Source (Op) then
+         Op_Def := Parent (Op);
+         pragma Assert (Nkind (Op_Def) in
+                        N_Procedure_Specification | N_Function_Specification);
+
+         if Nkind (Op_Def) = N_Function_Specification
+           and then
+            Has_Controlling_Result (Op)
+         then
+            Res_Node := Sinfo.Result_Definition (Op_Def);
+
+            if Nkind (Res_Node) = N_Access_Definition then
+               Res_Node := Sinfo.Subtype_Mark (Res_Node);
+            end if;
+
+            Res_Node := Entity (Res_Node);
+         end if;
+
+         if No (Res_Node) then
+            --  This means that we do not have a function with controlling
+            --  result, so we have to go through the formal parameter list,
+            --  and it can not be No_List or empty
+
+            Par_Node := First (Parameter_Specifications (Op_Def));
+
+            while Present (Par_Node) loop
+
+               if Is_Controlling_Formal
+                    (Defining_Identifier (Par_Node))
+               then
+
+                  if Nkind (Parameter_Type (Par_Node)) =
+                     N_Access_Definition
+                  then
+                     Res_Node :=
+                        Sinfo.Subtype_Mark (Parameter_Type (Par_Node));
+                  else
+                     Res_Node := Defining_Identifier (Par_Node);
+                  end if;
+
+                  Res_Node := Etype (Res_Node);
+
+                  exit;
+               end if;
+
+               Par_Node := Next (Par_Node);
+            end loop;
+
+         end if;
+
+         pragma Assert (Present (Res_Node));
+
+         if Nkind (Original_Node (Parent (Res_Node))) =
+              N_Subtype_Declaration
+         then
+            Res_Node := Etype (Res_Node);
+         end if;
+
+         if Ekind (Res_Node) = E_Incomplete_Type
+           and then
+            Present (Full_View (Res_Node))
+         then
+            Res_Node := Full_View (Res_Node);
+         end if;
+
+      else
+         Res_Node := Parent (Op);
+
+         pragma Assert (Nkind (Res_Node) in
+                          N_Private_Extension_Declaration |
+                          N_Private_Type_Declaration      |
+                          N_Full_Type_Declaration);
+
+         Res_Node := Defining_Identifier (Res_Node);
+      end if;
+
+      return Res_Node;
+   end Primitive_Owner;
+
    ----------------------
    -- Raises_Exception --
    ----------------------
@@ -2767,6 +3663,103 @@ package body Gnatcheck.ASIS_Utilities is
 
       return Result;
    end Raises_Exception;
+
+   ----------------
+   -- Scope_Name --
+   ----------------
+
+   function Scope_Name (El : Asis.Element) return String is
+   begin
+      if not ASIS_UL.Debug.Debug_Flag_JJ
+        or else Is_Nil (El)
+      then
+         return "";
+      else
+         declare
+            Result : constant String := Add_Scope_Name (El);
+         begin
+            if Result = "" then
+               return "";
+            else
+               return Result & ": ";
+            end if;
+         end;
+      end if;
+
+   end Scope_Name;
+
+   -------------------------------
+   -- Self_Ref_Discr_Constraint --
+   -------------------------------
+
+   function Self_Ref_Discr_Constraint
+     (Constr : Asis.Element)
+      return   Boolean
+   is
+      Result    : Boolean := False;
+      Type_Name : Asis.Element;
+   begin
+
+      if Constraint_Kind (Constr) /= A_Discriminant_Constraint then
+         return False;
+      end if;
+
+      Type_Name :=
+        Enclosing_Element (Enclosing_Element (Enclosing_Element (Constr)));
+
+      if Declaration_Kind (Type_Name) /= A_Component_Declaration then
+         return False;
+      end if;
+
+      while Declaration_Kind (Type_Name) /= An_Ordinary_Type_Declaration loop
+         Type_Name := Enclosing_Element (Type_Name);
+      end loop;
+
+      Type_Name := First_Name (Type_Name);
+
+      declare
+         D_Associations : constant Asis.Element_List :=
+           Discriminant_Associations (Constr);
+         D_Value : Asis.Element;
+         Pref    : Asis.Element;
+      begin
+         for J in D_Associations'Range loop
+            D_Value := Discriminant_Expression (D_Associations (J));
+
+            if Is_Access_Attribute (D_Value) then
+               Pref := Prefix (D_Value);
+
+               if Expression_Kind (Pref) = An_Identifier then
+                  Pref := Corresponding_Name_Declaration (Pref);
+
+                  while Declaration_Kind (Pref) in
+                          An_Incomplete_Type_Declaration       |
+                          A_Tagged_Incomplete_Type_Declaration |
+                          A_Private_Type_Declaration            |
+                          A_Private_Extension_Declaration
+                  loop
+                     Pref := Corresponding_Type_Completion (Pref);
+                  end loop;
+
+                  if Declaration_Kind (Pref) =
+                       An_Ordinary_Type_Declaration
+                  then
+                     Pref := First_Name (Pref);
+
+                     if Is_Equal (Pref, Type_Name) then
+                        Result := True;
+                        exit;
+                     end if;
+                  end if;
+
+               end if;
+            end if;
+
+         end loop;
+      end;
+
+      return Result;
+   end Self_Ref_Discr_Constraint;
 
    -------------------------------------
    -- Storage_Order_Defined_By_Pragma --
@@ -2877,3 +3870,4 @@ package body Gnatcheck.ASIS_Utilities is
    end Used_To_Pass_Actual_Subpr;
 
 end Gnatcheck.ASIS_Utilities;
+------------------------------------------------

@@ -1033,9 +1033,9 @@ package body A4G.Contt is
                --
                --     |
                --   bin - here all the GNAT executables are located including
-               --    |    [<traget>-]gcc
-               --    |
-               --   asis-gnsa
+               --     |    [<target>-]gcc
+               --     |
+               --   libexec/asis-gnsa
                Idx := Index (Tree_Builder.all,
                              (1 => Directory_Separator),
                              Backward);
@@ -1043,9 +1043,9 @@ package body A4G.Contt is
                Contexts.Table (Cont).GCC :=
                  new String'(Tree_Builder (Tree_Builder'First .. Idx - 4)     &
                              A4G.GNSA_Switch.GNSA_Dir                         &
-                               Directory_Separator & "bin"                    &
-                               Directory_Separator &
-                             "gcc" & Get_Executable_Suffix.all);
+                             Directory_Separator & "bin"                      &
+                             Directory_Separator & "gcc"                      &
+                             Get_Executable_Suffix.all);
                Free (Tree_Builder);
             else
                Contexts.Table (Cont).GCC := Tree_Builder;

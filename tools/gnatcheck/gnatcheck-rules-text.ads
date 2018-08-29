@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2010-2016, AdaCore                     --
+--                     Copyright (C) 2010-2017, AdaCore                     --
 --                                                                          --
 -- GNATCHECK  is  free  software;  you can redistribute it and/or modify it --
 -- under terms of the  GNU  General Public License as published by the Free --
@@ -74,7 +74,7 @@ package Gnatcheck.Rules.Text is
    --
    --     #hide, #accept, %foo
 
-   procedure Line_Check
+   overriding procedure Line_Check
      (Rule               : in out Annotated_Comments_Rule_Type;
       Line_Num           :        Line_Number_Positive;
       Full_Line_Image    :        Program_Text_Access;
@@ -120,5 +120,34 @@ package Gnatcheck.Rules.Text is
    --  revising.
 
    Annotated_Comments_Rule : aliased Annotated_Comments_Rule_Type;
+
+   ---------------------
+   -- Printable_ASCII --
+   ---------------------
+
+   --  Flag source code text characters that are not part of the printable
+   --  ASCII character set, a line feed, or a carriage return character (i.e.
+   --  values 10, 13 and 32 .. 126 of the ASCII Character set).
+   --
+   --  If a code line contains more than one symbol that does not belong to the
+   --  printable ASCII character set, the generated diagnosis points to the
+   --  firts (leftmost) character and says that there are more in this line
+   --
+   --  This rule has no parameters.
+
+   type Printable_ASCII_Rule_Type is new Text_Rule_Template with null record;
+
+   overriding procedure Line_Check
+     (Rule               : in out Printable_ASCII_Rule_Type;
+      Line_Num           :        Line_Number_Positive;
+      Full_Line_Image    :        Program_Text_Access;
+      Ada_Line_Image     :        Program_Text_Access;
+      Comment_Line_Image :        Program_Text_Access;
+      State              : in out Rule_Traversal_State);
+   --  Checks ???
+
+   overriding procedure Init_Rule (Rule : in out Printable_ASCII_Rule_Type);
+
+   Printable_ASCII_Rule : aliased Printable_ASCII_Rule_Type;
 
 end Gnatcheck.Rules.Text;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2008-2016, AdaCore                     --
+--                     Copyright (C) 2008-2018, AdaCore                     --
 --                                                                          --
 -- GNATCHECK  is  free  software;  you can redistribute it and/or modify it --
 -- under terms of the  GNU  General Public License as published by the Free --
@@ -260,9 +260,9 @@ package Gnatcheck.Rules.Custom_2 is
    --
    --  * for +R option:
    --
-   --      N - N is an positive integer literal, specifies the maximal allowed
-   --          level of generics-in-generics  nesting. This parameter is
-   --          mandatory for +R option.
+   --      N - N is a non-negative integer literal, specifies the maximal
+   --          allowed level of generics-in-generics  nesting. This parameter
+   --          is mandatory for +R option.
 
    type Deeply_Nested_Generics_Rule_Type is new
      One_Integer_Parameter_Rule_Template with null record;
@@ -562,8 +562,8 @@ package Gnatcheck.Rules.Custom_2 is
    --  record_representation_clause that has at least one component clause
    --  applies to it (or an ancestor), but neither the type nor any of its
    --  ancestors has an explicitly specified Scalar_Storage_Order attribute
-   --  (it can be specified by the corresponding attribute definition clause
-   --  or by the Attribute_Definition pragma).
+   --  (it can be specified by the corresponding attribute definition clause,
+   --  by the Attribute_Definition pragma, or by the aspect definition).
    --
    --  This rule has no parameters.
 

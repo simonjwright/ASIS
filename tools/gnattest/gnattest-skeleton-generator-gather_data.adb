@@ -108,8 +108,13 @@ is
      (Subp            :        Subp_Info;
       TR_Info         :        Test_Routine_Info_Wrapper;
       Data            : in out Data_Holder;
-      Suite_Data_List : in out Suites_Data_Type);
-   --  Adds one subprogram-to-test per each test case
+      Suite_Data_List : in out Suites_Data_Type;
+      TC_Found        :    out Boolean);
+   --  Adds one subprogram-to-test per each test case.
+   --  Sets TC_Found if at least one Test_Case aspect or pragma has been found
+   --  for given subprogram.
+
+   procedure Get_Units_To_Stub;
 
    function Corresponding_Non_Generic_Subp
      (Subp : Asis.Declaration) return Asis.Declaration;
@@ -143,6 +148,11 @@ is
 
    procedure Add_Units_To_Stub (The_Unit : Asis.Compilation_Unit);
 
+   Already_Stubbing : String_Set.Set := String_Set.Empty_Set;
+   --  It is generally easier to store units to stub in a list, however
+   --  to avoid duplications we use this local set since it is easier
+   --  and faster to check membership in a set.
+
    -----------------------
    -- Add_Units_To_Stub --
    -----------------------
@@ -154,7 +164,8 @@ is
       for I in Spec_Clause_List'Range loop
          if
            Clause_Kind (Spec_Clause_List (I)) = A_With_Clause
-           and then Trait_Kind (Spec_Clause_List (I)) /= A_Limited_Trait
+           and then Trait_Kind (Spec_Clause_List (I)) not in
+             A_Limited_Trait | A_Limited_Private_Trait
          then
             declare
                With_Names : constant Asis.Name_List :=
@@ -165,20 +176,51 @@ is
                  Enclosing_Element
                    (Corresponding_Name_Definition
                       (Normalize_Reference (With_Names (First_Idx))));
+               Withed_Spec_Image : constant String :=
+                 Base_Name (To_String (Text_Name (Enclosing_Compilation_Unit
+                            (Withed_Spec))));
+
+               Parent_Unit : Compilation_Unit :=
+                 Corresponding_Parent_Declaration (Enclosing_Compilation_Unit
+                                                   (Withed_Spec));
             begin
-               if Good_To_Stub (Withed_Spec) then
+               if Good_To_Stub (Withed_Spec)
+                 and then not Already_Stubbing.Contains (Withed_Spec_Image)
+               then
+                  Already_Stubbing.Include (Withed_Spec_Image);
                   Data.Units_To_Stub.Append (Withed_Spec);
-                  Trace
-                    (Me,
-                     Base_Name
-                       (To_String
-                            (Text_Name
-                                 (Enclosing_Compilation_Unit
-                                    (Withed_Spec)))));
+                  Trace (Me, Withed_Spec_Image);
                end if;
+
+               --  Gathering parent packages
+               while not Is_Nil (Parent_Unit) loop
+                  if
+                    To_Lower
+                      (To_String (Unit_Full_Name (Parent_Unit))) /= "standard"
+                  then
+                     declare
+                        Withed_Spec_Image : constant String :=
+                          Base_Name (To_String (Text_Name (Parent_Unit)));
+                     begin
+                        if Good_To_Stub (Unit_Declaration (Parent_Unit))
+                          and then not Already_Stubbing.Contains
+                            (Withed_Spec_Image)
+                        then
+                           Already_Stubbing.Include (Withed_Spec_Image);
+                           Data.Units_To_Stub.Append
+                             (Unit_Declaration (Parent_Unit));
+                           Trace (Me, Withed_Spec_Image);
+                        end if;
+                     end;
+                  end if;
+                  Parent_Unit :=
+                    Corresponding_Parent_Declaration (Parent_Unit);
+
+               end loop;
             end;
          end if;
       end loop;
+
    end Add_Units_To_Stub;
 
    ---------------------------
@@ -415,14 +457,13 @@ is
       Tmp_Subp        : Subp_Info;
       Dummy_TR_Info   : Test_Routine_Info_Wrapper;
       Tmp_TR          : GNATtest.Harness.Generator.Test_Routine_Info;
+      Dummy_Has_TC    : Boolean;
 
-      use Ada.Containers;
    begin
 
       --  Creating a stub for Subp_Info object
       Tmp_Subp.Nesting          := new String'("");
       Tmp_Subp.Subp_Text_Name   := new String'("");
-      Tmp_Subp.Subp_Name_Image  := new String'("");
       Tmp_Subp.Subp_Full_Hash   := new String'("");
       Tmp_Subp.Subp_Hash_V1     := new String'("");
       Tmp_Subp.Subp_Hash_V2_1   := new String'("");
@@ -459,11 +500,15 @@ is
                     new String'(Get_Subp_Name (ISubp));
                   Tmp_Subp.Subp_Mangle_Name :=
                     new String'(Mangle_Hash (ISubp));
+                  Tmp_Subp.Subp_Name_Image :=
+                    new String'(To_String
+                                (Defining_Name_Image (First_Name (ISubp))));
                   Gather_Test_Cases
                     (Tmp_Subp,
                      Dummy_TR_Info,
                      Tmp_Data,
-                     Tmp_Suites_Data);
+                     Tmp_Suites_Data,
+                     Dummy_Has_TC);
 
                   if Get_Nesting (ISubp) = Unit_D.all then
                      Test_Routine.TR_Rarent_Unit_Name := new String'
@@ -627,7 +672,8 @@ is
      (Subp            :        Subp_Info;
       TR_Info         :        Test_Routine_Info_Wrapper;
       Data            : in out Data_Holder;
-      Suite_Data_List : in out Suites_Data_Type)
+      Suite_Data_List : in out Suites_Data_Type;
+      TC_Found        :    out Boolean)
    is
 
       Me_TC : constant Trace_Handle :=
@@ -1254,7 +1300,7 @@ is
          Idx           :          Integer := Post'First;
 
       begin
-         if F_Name (Idx) = '"' then
+         if F_Name (F_Name'First) = '"' then
             Subp_Is_Operator := True;
          end if;
 
@@ -1352,24 +1398,28 @@ is
    begin
       Trace (Me_TC, "Looking for test cases of " & Subp.Subp_Text_Name.all);
 
+      TC_Found := False;
+
       if Pragma_List'Length = 0 and Aspect_List'Length = 0 then
-         Data.Subp_List.Append (Subp);
-         if not Subp.Is_Abstract then
-            Suite_Data_List.TR_List.Append (TR_Info);
+         if not Test_Case_Only then
+            Data.Subp_List.Append (Subp);
+            if not Subp.Is_Abstract then
+               Suite_Data_List.TR_List.Append (TR_Info);
+            end if;
          end if;
          Trace (Me_TC, "No test case found for " & Subp.Subp_Text_Name.all);
          return;
       end if;
 
       declare
-         TC_Found : Boolean := False;
+         TC_Found_Loc : Boolean := False;
       begin
          for I in Pragma_List'Range loop
             if
               To_Lower (To_String (Pragma_Name_Image (Pragma_List (I)))) =
               "test_case"
             then
-               TC_Found := True;
+               TC_Found_Loc := True;
                exit;
             end if;
          end loop;
@@ -1381,28 +1431,35 @@ is
             if Attribute_Kind (Aspect) /= A_Class_Attribute
               and then To_Lower (To_String (Name_Image (Aspect))) = "test_case"
             then
-               TC_Found := True;
+               TC_Found_Loc := True;
                exit;
             end if;
          end loop;
 
-         if not TC_Found then
+         if not TC_Found_Loc then
             Trace (Me_TC, "No test case found for " & Subp.Subp_Text_Name.all);
-            Data.Subp_List.Append (Subp);
-            if not Subp.Is_Abstract then
-               Suite_Data_List.TR_List.Append (TR_Info);
+            if not Test_Case_Only then
+               Data.Subp_List.Append (Subp);
+               if not Subp.Is_Abstract then
+                  Suite_Data_List.TR_List.Append (TR_Info);
+               end if;
             end if;
             return;
          end if;
       end;
 
       if Subp.Is_Abstract then
-         Data.Subp_List.Append (Subp);
+         if not Test_Case_Only then
+            Data.Subp_List.Append (Subp);
+         end if;
          Trace
            (Me_TC, Subp.Subp_Text_Name.all
             & " is abstract, test cases are not of interest");
          return;
       end if;
+
+      --  At this point we are pretty sure that at least one Test_Case exists.
+      TC_Found := True;
 
       for I in Pragma_List'Range loop
          if
@@ -1957,6 +2014,71 @@ is
       TC.Post.Clear;
    end Gather_Test_Cases;
 
+   -----------------------
+   -- Get_Units_To_Stub --
+   -----------------------
+
+   procedure Get_Units_To_Stub is
+      Body_Unit : constant Compilation_Unit :=
+        Corresponding_Body (The_Unit);
+      Parent_Unit : Compilation_Unit :=
+        Corresponding_Parent_Declaration (The_Unit);
+
+      procedure Iterate_Separates (CU : Asis.Compilation_Unit);
+
+      procedure Iterate_Separates (CU : Asis.Compilation_Unit) is
+         Subs : constant Asis.Compilation_Unit_List := Subunits (CU);
+      begin
+         for I in Subs'Range loop
+            Add_Units_To_Stub (Subs (I));
+            Iterate_Separates (Subs (I));
+         end loop;
+      end Iterate_Separates;
+   begin
+      Trace
+        (Me,
+         "units to stub for "
+         & Base_Name (To_String (Text_Name (The_Unit))));
+      Increase_Indent (Me);
+
+      --  Gathering with clauses from spec
+      Add_Units_To_Stub (The_Unit);
+
+      if not Is_Nil (Body_Unit)
+        and then Unit_Kind (Body_Unit) /= A_Nonexistent_Body
+        and then not Is_Equal (Body_Unit, The_Unit)
+      then
+         --  Gathering with clauses from body and separates
+         Add_Units_To_Stub (Body_Unit);
+         Iterate_Separates (Body_Unit);
+      end if;
+
+      --  Gathering parent packages
+      while not Is_Nil (Parent_Unit) loop
+         if
+           To_Lower (To_String (Unit_Full_Name (Parent_Unit))) /= "standard"
+         then
+            declare
+               Withed_Spec_Image : constant String :=
+                 Base_Name (To_String (Text_Name (Parent_Unit)));
+            begin
+               if Good_To_Stub (Unit_Declaration (Parent_Unit))
+                 and then not Already_Stubbing.Contains (Withed_Spec_Image)
+               then
+                  Already_Stubbing.Include (Withed_Spec_Image);
+                  Data.Units_To_Stub.Append (Unit_Declaration (Parent_Unit));
+                  Trace (Me, Withed_Spec_Image);
+               end if;
+            end;
+         end if;
+         Parent_Unit := Corresponding_Parent_Declaration (Parent_Unit);
+
+      end loop;
+
+      Decrease_Indent (Me);
+      Already_Stubbing.Clear;
+   end Get_Units_To_Stub;
+
    ------------------
    -- Good_To_Stub --
    ------------------
@@ -2459,6 +2581,8 @@ is
 
       Original_Type : Asis.Element;
 
+      Has_TC : Boolean;
+
       procedure Update_Name_Frequency (Subp_Name : String);
 
       ---------------------------
@@ -2920,13 +3044,15 @@ is
                         Original_Subp => Element);
                      Test_Package_Name := null;
 
-                     Update_Name_Frequency (Subp.Subp_Text_Name.all);
-
                      Gather_Test_Cases
                        (Subp,
                         Test_Routine_Wrapper,
                         Data,
-                        Suite_Data_List);
+                        Suite_Data_List,
+                        Has_TC);
+                     if Has_TC or else not Test_Case_Only then
+                        Update_Name_Frequency (Subp.Subp_Text_Name.all);
+                     end if;
                   end if;
                end if;
 
@@ -3241,62 +3367,17 @@ begin
       Tmp_CU := Corresponding_Parent_Declaration (Tmp_CU);
    end loop;
 
+   Trace
+     (Me,
+      "processing " & To_String (Unit_Full_Name (The_Unit))
+      &  " (" & Base_Name (To_String (Text_Name (The_Unit))) & ")");
+
    --  Checking for elaboration pragmas
    Check_For_Elaboration (The_Unit);
 
    --  Setting the list of packages to stub.
    if Stub_Mode_ON then
-      declare
-         Body_Unit : constant Compilation_Unit :=
-           Corresponding_Body (The_Unit);
-         Parent_Unit : Compilation_Unit :=
-           Corresponding_Parent_Declaration (The_Unit);
-
-         procedure Iterate_Separates (CU : Asis.Compilation_Unit);
-
-         procedure Iterate_Separates (CU : Asis.Compilation_Unit) is
-            Subs : constant Asis.Compilation_Unit_List := Subunits (CU);
-         begin
-            for I in Subs'Range loop
-               Add_Units_To_Stub (Subs (I));
-               Iterate_Separates (Subs (I));
-            end loop;
-         end Iterate_Separates;
-      begin
-         Trace
-           (Me,
-            "units to stub for "
-            & Base_Name (To_String (Text_Name (The_Unit))));
-         Increase_Indent (Me);
-
-         --  Gathering with clauses from spec
-         Add_Units_To_Stub (The_Unit);
-
-         if not Is_Nil (Body_Unit)
-           and then Unit_Kind (Body_Unit) /= A_Nonexistent_Body
-           and then not Is_Equal (Body_Unit, The_Unit)
-         then
-            --  Gathering with clauses from body and separates
-            Add_Units_To_Stub (Body_Unit);
-            Iterate_Separates (Body_Unit);
-         end if;
-
-         --  Gathering parent packages
-         while not Is_Nil (Parent_Unit) loop
-            if
-              To_Lower (To_String (Unit_Full_Name (Parent_Unit))) /= "standard"
-            then
-               if Good_To_Stub (Unit_Declaration (Parent_Unit)) then
-                  Data.Units_To_Stub.Append (Unit_Declaration (Parent_Unit));
-                  Trace (Me, Base_Name (To_String (Text_Name (Parent_Unit))));
-               end if;
-            end if;
-            Parent_Unit := Corresponding_Parent_Declaration (Parent_Unit);
-
-         end loop;
-
-         Decrease_Indent (Me);
-      end;
+      Get_Units_To_Stub;
    end if;
 
    Data.Unit           := The_Unit;

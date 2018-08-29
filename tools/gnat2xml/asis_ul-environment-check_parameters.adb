@@ -8,7 +8,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2009-2016, AdaCore                     --
+--                     Copyright (C) 2009-2017, AdaCore                     --
 --                                                                          --
 -- GNATPP is free software; you can redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -65,6 +65,13 @@ begin
       return;
    end if;
 
+   if ASIS_UL.Options.Exempted_Units /= null
+     and then Incremental_Mode
+   then
+      Error ("--ignore option cannot be used in incremental mode");
+      raise Parameter_Error;
+   end if;
+
    if Gnat2xml.Projects.Gnat2xml_Prj.Is_Specified then
       Gnat2xml.Projects.Set_Global_Result_Dirs
         (Gnat2xml.Projects.Gnat2xml_Prj);
@@ -74,7 +81,18 @@ begin
 
    Set_Arg_List;
 
-   Total_Sources := Natural (Last_Source);
+   if ASIS_UL.Options.Exempted_Units /= null then
+      Process_Exemptions (ASIS_UL.Options.Exempted_Units.all);
+   end if;
+
+   Total_Sources := Total_Sources_To_Process;
+
+   if Total_Sources = 0 then
+      Error ("No existing file to process");
+      --  All the rest does not make any sense
+      return;
+   end if;
+
    Sources_Left  := Total_Sources;
 
    if Last_Source = First_SF_Id then
