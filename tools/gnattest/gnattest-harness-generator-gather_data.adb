@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2011-2016, AdaCore                     --
+--                     Copyright (C) 2011-2017, AdaCore                     --
 --                                                                          --
 -- GNATTEST  is  free  software;  you  can redistribute it and/or modify it --
 -- under terms of the  GNU  General Public License as published by the Free --
@@ -307,7 +307,9 @@ procedure Gather_Data
                   & ":"
                   & Trim
                     (Integer'Image (Subp_Span.First_Column), Both)
-                  & ": additional test inherited at "
+                  & ": "
+                  & Test_Routine.TR_Text_Name.all
+                  & " inherited at "
                   & Base_Name
                        (To_String
                           (Text_Name
@@ -463,7 +465,9 @@ procedure Gather_Data
                           ":" &
                           Trim
                           (Integer'Image (Subp_Span.First_Column), Both)
-                        & ": additional test:");
+                        & ": "
+                        & Test_Routine.TR_Text_Name.all
+                        & ":");
                   end;
 
                   Owner_Def := Test_Routine_Owner_Type (Element);

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2012-2017, AdaCore                     --
+--                     Copyright (C) 2012-2018, AdaCore                     --
 --                                                                          --
 -- Gnat2xml is free software; you can redistribute it and/or modify it      --
 -- under terms of the  GNU General Public License  as published by the Free --
@@ -222,7 +222,7 @@ package Ada_Trees is
       Subtrees      => Empty_Tree_Array);
 
    function Nil
-     (Sloc : Asis.Text.Span := Asis.Text.Nil_Span)
+     (Ignored_Sloc : Asis.Text.Span := Asis.Text.Nil_Span)
       return Ada_Tree is
      (The_Nil'Access);
 --   is (new Ada_Tree_Rec'(The_Nil));
@@ -260,7 +260,6 @@ package Ada_Trees is
    package Ada_Tree_Vectors is new ASIS_UL.Vectors
      (Query_Index, Ada_Tree, Ada_Tree_Array);
    subtype Ada_Tree_Vector is Ada_Tree_Vectors.Vector;
-   use Ada_Tree_Vectors;
 
    ----------------
 

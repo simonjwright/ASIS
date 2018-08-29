@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2013-2017, AdaCore                     --
+--                     Copyright (C) 2013-2018, AdaCore                     --
 --                                                                          --
 -- Asis Utility Library (ASIS UL) is free software; you can redistribute it --
 -- and/or  modify  it  under  terms  of  the  GNU General Public License as --
@@ -326,9 +326,13 @@ package ASIS_UL.Projects is
    --  here???
 
    procedure Get_Sources_From_Project
-     (My_Project : Arg_Project_Type);
+     (My_Project      : Arg_Project_Type;
+      Unconditionally : Boolean := False);
    --  Extracts and stores the list of sources of the project to process as
    --  tool arguments.
+   --
+   --  If Unconditionally is ON, this procedure extracts all the project
+   --  sources regradless on all the other options.
    --
    --  More documentation is needed:
    --
@@ -446,6 +450,51 @@ package ASIS_UL.Projects is
    --  line, from the argument project file, from the tool name - in decreasing
    --  priority order, and the value of A4G.GNSA_Switch.Use_GNSA flag.
 
+   -----------------------------------------
+   --  Computing and processing clousures --
+   -----------------------------------------
+
+   procedure Closure_Setup (My_Project : in out Arg_Project_Type);
+   --  Does the general preparations for closure processing (this procedure
+   --  should be called from the tool temporary directory!):
+   --
+   --  * creates a temporary wrapper project file used to compute closure;
+   --
+   --  * unloads the tool argument project and loads this temporary project
+   --    file (mapping and configuration files used for tree creation should be
+   --    updated);
+   --
+   --  * stores all the sources from this project into the source table, for
+   --    each source the status is set to Waiting_For_Closure
+   --
+   --  * for each source stores its specific compilation options;
+   --
+   --  * if parallel tree creation is set it is disabled
+
+   procedure Closure_Clean_Up (My_Project : in out Arg_Project_Type);
+   --  Removes all the temporary stuff created for closure computation. Most
+   --  probably there is no need to redefine this procedure for tools. The
+   --  default version just removes object subdirs created for closure
+   --  computation.
+
+   procedure Add_Main
+     (My_Project : Arg_Project_Type;
+      Main_Name  : String);
+   --  Adds Main_Name to the list of mains to compute the closure for. Also
+   --  sets the status for this source to Waiting in the source table. This
+   --  procedure assumes that the file with main_Name is already stored in
+   --  Source Table.
+   --  This procedure also adds Main_Name to the closure being computed.
+
+   function Closure_Complete (My_Project : Arg_Project_Type) return Boolean;
+   --  Is supposed to be called after creation of at least one new tree file.
+   --  Checks if new sources should be added to the closure being processed.
+   --  if there are such sources, sets their status in the Source Table to
+   --  Waiting and returns False. Otherwise returns True.
+
+   procedure Closure_Debug_Image_Mains;
+   procedure Closure_Debug_Image_Closure;
+
    -------------------------------------------------------------------------
    -- Primitives that will for sure need redefinition for a specific tool --
    -------------------------------------------------------------------------
@@ -478,6 +527,39 @@ package ASIS_UL.Projects is
    --  (this allows the parameters specified in the command line to override
    --  the parameters given in the project file), and when called for this,
    --  the procedure should have First_Pass set OFF.
+
+   procedure Aggregate_Project_Report_Header (My_Project : Arg_Project_Type);
+   --  Prints header in the summary report file created if the argument project
+   --  is an aggregate project. In this case a tool is spawned to run separatly
+   --  for each project being aggregated, and each such run creates its own
+   --  report separate file.
+
+   procedure Close_Aggregate_Project_Report (My_Project : Arg_Project_Type);
+   --  Finalizes in the summary report file created if the argument project
+   --  is an aggregate project. In this case a tool is spawned to run separatly
+   --  for each project being aggregated, and each such run creates its own
+   --  report separate file.
+   --
+   --  The default version of this procedure does nothing except closing the
+   --  aggregated-project-reports tag in summary XML report file (if XML report
+   --  mode is ON).
+
+   procedure Report_Aggregated_Project
+     (Aggregate_Prj          : Arg_Project_Type;
+      Arrgegated_Prj_Name    : String;
+      Expected_Text_Out_File : String;
+      Expected_XML_Out_File  : String);
+   --  Starts a record about processing of an aggregated project in a summary
+   --  report file if the tool argument project is an aggregate project. By
+   --  default, prints out the name of the aggregated project to process and
+   --  the name(s) of the report file(s) that is (are) expected to be created.
+
+   procedure Report_Aggregated_Project_Exit_Code
+     (Aggregate_Prj : Arg_Project_Type;
+      Exit_Code     : Integer);
+   --  Starts a record about processing of an aggregated project in a summary
+   --  report file if the tool argument project is an aggregate project. By
+   --  default prints out the (text image of the) exit code.
 
    ------------------------------
    -- Non-primitive operations --

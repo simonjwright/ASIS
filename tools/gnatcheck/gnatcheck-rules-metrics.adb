@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2008-2016, AdaCore                     --
+--                     Copyright (C) 2008-2017, AdaCore                     --
 --                                                                          --
 -- GNATCHECK  is  free  software;  you can redistribute it and/or modify it --
 -- under terms of the  GNU  General Public License as published by the Free --
@@ -25,9 +25,14 @@
 
 pragma Ada_2012;
 
-with ASIS_UL.Metrics.Compute;        use ASIS_UL.Metrics.Compute;
-with ASIS_UL.Metrics.Definitions;    use ASIS_UL.Metrics.Definitions;
-with ASIS_UL.Utilities;              use ASIS_UL.Utilities;
+with Ada.Characters.Handling;     use Ada.Characters.Handling;
+
+with Asis.Elements;               use Asis.Elements;
+
+with ASIS_UL.Metrics.Compute;     use ASIS_UL.Metrics.Compute;
+with ASIS_UL.Metrics.Definitions; use ASIS_UL.Metrics.Definitions;
+with ASIS_UL.Output;              use ASIS_UL.Output;
+with ASIS_UL.Utilities;           use ASIS_UL.Utilities;
 
 package body Gnatcheck.Rules.Metrics is
 
@@ -141,6 +146,12 @@ package body Gnatcheck.Rules.Metrics is
    -- Metrics_LSLOC --
    -------------------
 
+   function Check_LSLOC_On_This (Element : Asis.Element) return Boolean;
+   --  Checks if Metrics_LSLOC rule should be checked for this Element
+   --  according to rule settings.
+
+   Exceptions_Enabled : Boolean := False;
+
    -------------------------------------------
    -- Activate_In_Test_Mode (Metrics_LSLOC) --
    -------------------------------------------
@@ -155,6 +166,125 @@ package body Gnatcheck.Rules.Metrics is
          Enable     => True,
          Defined_At => "");
    end Activate_In_Test_Mode;
+
+   -----------------------------------------
+   -- Check_LSLOC_On_This (Metrics_LSLOC) --
+   -----------------------------------------
+
+   function Check_LSLOC_On_This (Element : Asis.Element) return Boolean is
+      Result : Boolean := False;
+      Arg_Kind : constant Declaration_Kinds := Declaration_Kind (Element);
+   begin
+      if Exceptions_Enabled then
+         if Metrics_LSLOC_Rule.Subprograms_Only then
+            Result := Arg_Kind in
+              A_Procedure_Body_Declaration |
+              A_Function_Body_Declaration;
+         end if;
+      else
+         Result := Is_Program_Unit (Element);
+      end if;
+
+      return Result;
+   end Check_LSLOC_On_This;
+
+   --------------------------------
+   -- Print_Rule (Metrics_LSLOC) --
+   --------------------------------
+
+   overriding procedure Print_Rule
+     (Rule         : Metrics_LSLOC_Rule_Type;
+      Indent_Level : Natural := 0)
+   is
+   begin
+      Print_Rule (Rule         => One_Integer_Parameter_Rule_Template (Rule),
+                  Indent_Level => Indent_Level);
+
+      if Rule.Subprograms_Only then
+         Report_No_EOL (", Subprograms");
+      end if;
+   end Print_Rule;
+
+   ----------------------------------------
+   -- Print_Rule_To_File (Metrics_LSLOC) --
+   ----------------------------------------
+
+   overriding procedure Print_Rule_To_File
+     (Rule         : Metrics_LSLOC_Rule_Type;
+      Rule_File    : File_Type;
+      Indent_Level : Natural := 0)
+   is
+   begin
+      Print_Rule_To_File
+        (Rule         => One_Integer_Parameter_Rule_Template (Rule),
+         Rule_File    => Rule_File,
+         Indent_Level => Indent_Level);
+
+      if Rule.Subprograms_Only then
+         Put (Rule_File, ", Subprograms");
+      end if;
+   end Print_Rule_To_File;
+
+   --------------------------------------------
+   -- Process_Rule_Parameter (Metrics_LSLOC) --
+   --------------------------------------------
+
+   overriding procedure Process_Rule_Parameter
+     (Rule       : in out Metrics_LSLOC_Rule_Type;
+      Param      :        String;
+      Enable     :        Boolean;
+      Defined_At : String)
+   is
+      Is_Number  : Boolean := True;
+      Norm_Param : String (Param'Range);
+   begin
+      if Param = "" then
+
+         if Enable then
+            Error ("(" & Rule.Name.all & ") parameter is required for +R");
+         else
+            Rule.Rule_State       := Disabled;
+            Rule.Subprograms_Only := False;
+            Exceptions_Enabled    := False;
+         end if;
+
+      else
+
+         if Enable then
+
+            for J in Param'Range loop
+               if not Is_Digit (Param (J)) then
+                  Is_Number := False;
+                  exit;
+               end if;
+            end loop;
+
+            if Is_Number then
+               Process_Rule_Parameter
+                 (Rule       => One_Integer_Parameter_Rule_Template (Rule),
+                  Param      => Param,
+                  Enable     => True,
+                  Defined_At => Defined_At);
+            else
+               --  Note that these parameters do not enable the rule!!!
+               Norm_Param := To_Lower (Param);
+
+               if Norm_Param = "subprograms" then
+                  Exceptions_Enabled    := True;
+                  Rule.Subprograms_Only := True;
+               else
+                  Error ("wrong parameter (" & Param & ") for rule " &
+                         Rule.Name.all);
+
+               end if;
+            end if;
+         else
+            Error ("(" & Rule.Name.all & ") no parameter allowed for -R");
+         end if;
+
+      end if;
+
+   end Process_Rule_Parameter;
 
    ---------------------------------------
    -- Rule_Check_Pre_Op (Metrics_LSLOC) --
@@ -171,7 +301,7 @@ package body Gnatcheck.Rules.Metrics is
       LSLOC     : Metric_Count;
    begin
 
-      if Is_Program_Unit (Element) then
+      if Check_LSLOC_On_This (Element) then
          Compute_Syntaxt_Metrics (Element, Counter);
          LSLOC := Counter.All_Statements + Counter.All_Declarations;
 

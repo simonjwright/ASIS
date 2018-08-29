@@ -7,12 +7,7 @@ INSTALL_DIR = $(dir $(shell which gnatls))..
 prefix=$(INSTALL_DIR)
 
 # System commands
-LN = ln -s
-CP = cp -p
-INSTALL_FILES = cp -p
-MKDIR = mkdir -p
 exe_ext =
-RM = rm -f
 GPRBUILD = gprbuild
 GPRINSTALL = gprinstall
 GPRCLEAN = gprclean
@@ -22,7 +17,6 @@ GPRBUILD_FLAGS = -vl
 OPSYS=default_Unix
 
 ifeq "$(findstring mingw32, $(host))" "mingw32"
-   MKDIR = mkdir -p
    exe_ext= .exe
 endif
 
@@ -34,10 +28,6 @@ endif
 ifeq "$(findstring hppa1.1-hp-hpux, $(host))" "hppa1.1-hp-hpux"
    CFLAGS = -O2 -g -mdisable-indexing
    OPSYS=pa_hpux
-endif
-
-ifeq "$(findstring i386-elf-lynxos, $(host))" "i386-elf-lynxos"
-   MKDIR = mkdir -p -f
 endif
 
 # GPRBUILD specific flags

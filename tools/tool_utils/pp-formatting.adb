@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                    Copyright (C) 2001-2016, AdaCore                      --
+--                    Copyright (C) 2001-2017, AdaCore                      --
 --                                                                          --
 -- GNATPP  is free software; you can redistribute it and/or modify it under --
 -- terms  of  the  GNU  General  Public  License  as  published by the Free --
@@ -2167,6 +2167,7 @@ package body Pp.Formatting is
 
                when Upper_Case =>
                   Scanner.Get_Tokens (Out_Buf, Out_Tokens, Pp_Off_On_Delimiters);
+                  Outer_Loop :
                   for Out_Index in 2 .. Last_Index (Out_Tokens) loop
                      Out_Tok := Out_Tokens (Out_Index);
                      loop
@@ -2174,9 +2175,14 @@ package body Pp.Formatting is
                            Replace_Cur (Out_Buf, To_Upper (Cur (Out_Buf)));
                         end if;
                         Move_Forward (Out_Buf);
+
+                        exit Outer_Loop when At_End (Out_Buf);
+                        --  If there are extra blank lines at the end of file,
+                        --  then we need the At_End test.
+
                         exit when At_Point (Out_Buf, Out_Tok.Sloc.Lastx);
                      end loop;
-                  end loop;
+                  end loop Outer_Loop;
                   Reset (Out_Buf);
             end case;
          end Keyword_Casing;
@@ -2367,6 +2373,8 @@ package body Pp.Formatting is
             Move (Target => Out_Buf, Source => New_Buf);
          end Copy_Pp_Off_Regions;
 
+      --  Start of processing for Post_Tree_Phases
+
       begin
          Split_Lines (First_Time => True);
          Insert_Comments_And_Blank_Lines;
@@ -2452,7 +2460,8 @@ package body Pp.Formatting is
                          Lines => True));
             end;
          end if;
-         raise Token_Mismatch;
+
+         raise Token_Mismatch with Scanner.Sloc_Image (Src_Tok.Sloc);
       end Raise_Token_Mismatch;
 
       procedure Final_Check_Helper

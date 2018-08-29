@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                    Copyright (C) 2013-2017, AdaCore                      --
+--                    Copyright (C) 2013-2018, AdaCore                      --
 --                                                                          --
 -- GNATELIM  is  free software;  you can  redistribute it and/or  modify it --
 -- under the terms of the  GNU  General Public License  as published by the --
@@ -66,7 +66,7 @@ package body Gnatelim.Projects is
       loop
          case GNAT.Command_Line.Getopt
                 (
-                 "P:  X! eL "          &   --  project-specific options
+                 "P: U X! eL "         &   --  project-specific options
                  "-RTS= "              &
                  "-target= "           &
                  "t v q  "             &
@@ -251,6 +251,21 @@ package body Gnatelim.Projects is
                   end if;
                end if;
 
+            when 'U' =>
+               if Full_Switch (Parser => Parser) = "U" then
+                  if First_Pass then
+                     if ASIS_UL.Projects.U_Option_Set then
+                        Error ("-U can be specified only once");
+                        raise Parameter_Error;
+                     end if;
+
+                     ASIS_UL.Projects.U_Option_Set := True;
+                  elsif In_Project_File then
+                     Error ("-U option is not allowed in a project file");
+                     raise Parameter_Error;
+                  end if;
+               end if;
+
             when 'X' =>
                if Full_Switch (Parser => Parser) = "X" then
                   if First_Pass then
@@ -300,7 +315,7 @@ package body Gnatelim.Projects is
                        False;
                   elsif Full_Switch (Parser => Parser) = "-ignore" then
                      if Is_Regular_File (Parameter (Parser => Parser)) then
-                        Gnatelim.Options.Exempted_Units :=
+                        ASIS_UL.Options.Exempted_Units :=
                           new String'(Normalize_Pathname
                                         (Parameter (Parser => Parser)));
                      else

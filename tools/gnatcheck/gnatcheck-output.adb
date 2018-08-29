@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2004-2015, AdaCore                     --
+--                     Copyright (C) 2004-2017, AdaCore                     --
 --                                                                          --
 -- GNATCHECK  is  free  software;  you can redistribute it and/or modify it --
 -- under terms of the  GNU  General Public License as published by the Free --
@@ -69,10 +69,7 @@ package body Gnatcheck.Output is
       Info (" -eL              - follow all symbolic links when processing project files");
       Info ("");
       Info (" -a   - process RTL units");
---      Info (" -d   - debug mode");
---      Info (" -dd  - progress indicator mode (for use in GPS)");
       Info (" -h   - print out the list of the currently implemented rules");
---    Info (" -l             - full source location chains in report file");
       Info (" -mn  - n is the maximal number of diagnoses in Stdout");
 
       Info ("        (n in 0 .. 1000, 0 means no limit)");
@@ -91,10 +88,12 @@ package body Gnatcheck.Output is
       Info (" --show-rule - apend rule names to diagnoses generated");
       Info ("");
 
+      Info (" --check-redefinition - issue warning if a rule parameter is defined");
+      Info ("                        more than once");
+      Info ("");
+
       Info (" --include-file=filename - add the content of filename into generated report");
 
---    Info (" -sn            - include only section n (n in 1 .. 3) in the " &
---          "report file");
       Info ("");
 
       Info (" -o filename   - specify the name of the next report file");
@@ -105,6 +104,7 @@ package body Gnatcheck.Output is
       Info ("                           Wildcards are allowed");
       Info ("-files=filename          - the name of the text file containing a list of Ada");
       Info ("                           source files to analyze");
+      Info ("--ignore=filename        - do not process sources listed in filename");
       Info ("--write-rules=filename   - the name of a template rule file");
       Info ("");
 

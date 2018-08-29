@@ -24,12 +24,19 @@
 ------------------------------------------------------------------------------
 
 with Ada.Characters.Handling; use Ada.Characters.Handling;
+with Ada.Directories;
+with Ada.Strings;             use Ada.Strings;
+with Ada.Strings.Fixed;       use Ada.Strings.Fixed;
 with Ada.Text_IO;             use Ada.Text_IO;
 
 with Asis.Extensions.Strings; use Asis.Extensions.Strings;
 
 with ASIS_UL.Misc;            use ASIS_UL.Misc;
 with ASIS_UL.Output;          use ASIS_UL.Output;
+
+with GNAT.OS_Lib;             use GNAT.OS_Lib;
+
+with Gnatcheck.Rules.Rule_Table;
 
 with GNAT.Table;
 
@@ -166,6 +173,11 @@ package body Gnatcheck.Name_Dictionary is
    ---------------------
 
    procedure Scan_Dictionary (Fname : String) is
+      Dictionary_File_Name : String_Access;
+      Tmp                  : String_Access :=
+        new String'(Gnatcheck.Rules.Rule_Table.Processed_Rule_File_Name);
+      Idx : Natural;
+
       Dictionary_File : File_Type;
 
       Line_Num : Natural := 0;
@@ -305,18 +317,48 @@ package body Gnatcheck.Name_Dictionary is
       end Process_Dictionary_File_Line;
 
    begin
-      --  First trying to open the dictionary file:
+      --  First trying to open the dictionary file. If the option is specified
+      --  in a rule file and Fname does not contain a path information, we
+      --  firts try to locate the dictionaty file in the same directory where
+      --  the rule file is located and if this attempt fails - in the current
+      --  directory
+
+      if Tmp.all = ""
+        or else
+         Fname /= Ada.Directories.Simple_Name (Fname)
+      then
+         Dictionary_File_Name := new String'(Fname);
+      else
+         Idx := Index (Tmp.all, (1 => Directory_Separator), Backward);
+
+         if Idx = 0 then
+            Dictionary_File_Name :=
+              new String'(Tmp.all & Directory_Separator & Fname);
+         else
+            Dictionary_File_Name :=
+              new String'(Tmp (Tmp'First .. Idx) & Fname);
+         end if;
+
+         if not Is_Regular_File (Dictionary_File_Name.all) then
+            Free (Dictionary_File_Name);
+            Dictionary_File_Name := new String'(Fname);
+         end if;
+      end if;
+
+      Free (Tmp);
 
       begin
          Open (File => Dictionary_File,
                Mode => In_File,
-               Name => Fname);
+               Name => Dictionary_File_Name.all);
       exception
          when Name_Error =>
             Error ("dictionary file " & Fname & " does not exit");
+            Free (Dictionary_File_Name);
             return;
          when Status_Error =>
             Error ("can not open  dictionary file " & Fname);
+            Free (Dictionary_File_Name);
             return;
       end;
 
@@ -329,6 +371,7 @@ package body Gnatcheck.Name_Dictionary is
          Close (Dictionary_File);
       end if;
 
+      Free (Dictionary_File_Name);
    end Scan_Dictionary;
 
    --------------------------

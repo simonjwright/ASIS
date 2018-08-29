@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2012-2015, AdaCore                     --
+--                     Copyright (C) 2012-2017, AdaCore                     --
 --                                                                          --
 -- Gnat2xml is free software; you can redistribute it and/or modify it      --
 -- under terms of the  GNU General Public License  as published by the Free --
@@ -180,7 +180,6 @@ package ASIS_UL.String_Utilities is
    package String_Vectors is
       new Ada.Containers.Indefinite_Vectors (Positive, String);
    subtype String_Vector is String_Vectors.Vector;
-   use String_Vectors;
 
    ---------------------
    -- Bounded Strings --

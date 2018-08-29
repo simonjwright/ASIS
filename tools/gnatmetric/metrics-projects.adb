@@ -156,6 +156,8 @@ package body METRICS.Projects is
             "-version -help "                    & --  print version and usage
             "j! t "                              &
             "ne nolocal  "                       &
+            "-ignore= "                          & --  specifies a set of units
+            --  to skip
             "d= o= files= og= ox= x xs nt sfn "  &
             "gnat05 "                            & --  Ada 2005 mode
             "a q v dd debug!",

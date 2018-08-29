@@ -8,7 +8,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2010-2016, AdaCore                     --
+--                     Copyright (C) 2010-2017, AdaCore                     --
 --                                                                          --
 -- GNATMETRIC  is  free software; you can  redistribute it and/or modify it --
 -- under terms of the  GNU  General Public License as published by the Free --
@@ -75,6 +75,16 @@ begin
       GNAT.OS_Lib.OS_Exit (0);
    end if;
 
+   --  '--ignore' cannot be used in incremental mode
+
+   if ASIS_UL.Options.Exempted_Units /= null
+     and then Incremental_Mode
+   then
+      Error ("--ignore option cannot be used in incremental mode");
+      Brief_Help;
+      raise Parameter_Error;
+   end if;
+
    --  First, read all the argument files using all available path information
    if ASIS_UL.Options.No_Argument_File_Specified then
       Error ("No input source file set");
@@ -102,7 +112,18 @@ begin
       Set_Arg_List;
    end if;
 
-   Total_Sources := Natural (Last_Source);
+   if ASIS_UL.Options.Exempted_Units /= null then
+      Process_Exemptions (ASIS_UL.Options.Exempted_Units.all);
+   end if;
+
+   Total_Sources := Total_Sources_To_Process;
+
+   if Total_Sources = 0 then
+      Error ("No existing file to process");
+      --  All the rest does not make any sense
+      return;
+   end if;
+
    Sources_Left  := Total_Sources;
    Set_Source_Metrics_Table;
 

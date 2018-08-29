@@ -28,7 +28,6 @@ pragma Ada_2012;
 with Ada.Strings.Fixed;          use Ada.Strings.Fixed;
 
 with ASIS_UL.Common;
-with ASIS_UL.Debug;
 with ASIS_UL.Global_State.CG.Conditions;
 with ASIS_UL.Misc;               use ASIS_UL.Misc;
 with ASIS_UL.Output;             use ASIS_UL.Output;
@@ -613,7 +612,7 @@ package body Gnatcheck.Rules is
 
          if Enable then
 
-            if ASIS_UL.Debug.Debug_Flag_W
+            if Gnatcheck.Options.Check_Param_Redefinition
               and then
                Rule.Rule_State = Enabled
             then
@@ -687,7 +686,7 @@ package body Gnatcheck.Rules is
                       Param);
                Rule.Rule_State := Disabled;
             else
-               if ASIS_UL.Debug.Debug_Flag_W
+               if Gnatcheck.Options.Check_Param_Redefinition
                  and then
                   Rule.Rule_State = Enabled
                  and then
@@ -815,6 +814,9 @@ package body Gnatcheck.Rules is
       Register_Rule (Rule        => Conditional_Expressions_Rule'Access,
                      In_Category => Feature_Use_Detection'Access);
 
+      Register_Rule (Rule        => Constructors_Rule'Access,
+                     In_Category => Object_Oriented_Features'Access);
+
       Register_Rule (Rule        => Controlled_Type_Declarations_Rule'Access,
                      In_Category => Feature_Use_Detection'Access);
 
@@ -825,6 +827,9 @@ package body Gnatcheck.Rules is
                      In_Category => Object_Oriented_Features'Access);
 
       Register_Rule (Rule        => Deeply_Nested_Generics_Rule'Access,
+                     In_Category => Program_Structure'Access);
+
+      Register_Rule (Rule        => Deep_Library_Hierarchy_Rule'Access,
                      In_Category => Program_Structure'Access);
 
       Register_Rule (Rule        => Deeply_Nested_Inlining_Rule'Access,
@@ -848,6 +853,9 @@ package body Gnatcheck.Rules is
 
       Register_Rule (Rule        => Discriminated_Records_Rule'Access,
                      In_Category => Feature_Use_Detection'Access);
+
+      Register_Rule (Rule        => Downward_View_Conversions_Rule'Access,
+                     In_Category => Object_Oriented_Features'Access);
 
       Register_Rule
         (Rule        => Enumeration_Ranges_In_CASE_Statements_Rule'Access,
@@ -963,6 +971,9 @@ package body Gnatcheck.Rules is
       Register_Rule (Rule        => Nested_Subprograms_Rule'Access,
                      In_Category => Programming_Practices'Access);
 
+      Register_Rule (Rule        => No_Inherited_Classwide_Pre_Rule'Access,
+                     In_Category => Object_Oriented_Features'Access);
+
       Register_Rule
         (Rule        => No_Scalar_Storage_Order_Specified_Rule'Access,
          In_Category => Portability'Access);
@@ -984,6 +995,9 @@ package body Gnatcheck.Rules is
 
       Register_Rule (Rule        => Null_Paths_Rule'Access,
                      In_Category => Programming_Practices'Access);
+
+      Register_Rule (Rule        => Numeric_Indexing_Rule'Access,
+                     In_Category => Feature_Use_Detection'Access);
 
       Register_Rule (Rule        => Numeric_Literals_Rule'Access,
                      In_Category => Feature_Use_Detection'Access);
@@ -1040,6 +1054,9 @@ package body Gnatcheck.Rules is
       Register_Rule (Rule        => Predicate_Testing_Rule'Access,
                      In_Category => Feature_Use_Detection'Access);
 
+      Register_Rule (Rule        => Printable_ASCII_Rule'Access,
+                     In_Category => Portability'Access);
+
       Register_Rule (Rule        => Quantified_Expressions_Rule'Access,
                      In_Category => Feature_Use_Detection'Access);
 
@@ -1065,10 +1082,25 @@ package body Gnatcheck.Rules is
       Register_Rule (Rule        => Slices_Rule'Access,
                      In_Category => Spark'Access);
 
+      Register_Rule (Rule        => Specific_Parent_Type_Invariant_Rule'Access,
+                     In_Category => Object_Oriented_Features'Access);
+
+      Register_Rule (Rule        => Specific_Pre_Post_Rule'Access,
+                     In_Category => Object_Oriented_Features'Access);
+
+      Register_Rule (Rule        => Specific_Type_Invariants_Rule'Access,
+                     In_Category => Object_Oriented_Features'Access);
+
       Register_Rule (Rule        => Subprogram_Access_Rule'Access,
                      In_Category => Feature_Use_Detection'Access);
 
+      Register_Rule (Rule        => Too_Many_Dependencies_Rule'Access,
+                     In_Category => Feature_Use_Detection'Access);
+
       Register_Rule (Rule        => Too_Many_Parents_Rule'Access,
+                     In_Category => Object_Oriented_Features'Access);
+
+      Register_Rule (Rule        => Too_Many_Primitives_Rule'Access,
                      In_Category => Object_Oriented_Features'Access);
 
       Register_Rule (Rule        => Unassigned_OUT_Parameters_Rule'Access,

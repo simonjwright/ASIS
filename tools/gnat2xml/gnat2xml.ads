@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2012-2015, AdaCore                     --
+--                     Copyright (C) 2012-2017, AdaCore                     --
 --                                                                          --
 -- Gnat2xml is free software; you can redistribute it and/or modify it      --
 -- under terms of the  GNU General Public License  as published by the Free --
@@ -46,8 +46,6 @@ with Ada_Trees;
 
 package Gnat2xml is
 
-   use ASIS_UL;
-
    subtype Classes is Ada_Trees.Classes;
    subtype Opt_ASIS_Elems is Ada_Trees.Opt_ASIS_Elems;
 
@@ -73,7 +71,6 @@ package Gnat2xml is
    subtype Unit_Kinds is Asis.Unit_Kinds;
    subtype Unit_Classes is Asis.Unit_Classes;
    subtype Unit_Origins is Asis.Unit_Origins;
-   use all type Unit_Kinds, Unit_Classes, Unit_Origins;
 
    function Is_Leaf
      (E    : Asis.Element)

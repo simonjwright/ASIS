@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2004-2016, AdaCore                     --
+--                     Copyright (C) 2004-2018, AdaCore                     --
 --                                                                          --
 -- Asis Utility Library (ASIS UL) is free software; you can redistribute it --
 -- and/or  modify  it  under  terms  of  the  GNU General Public License as --
@@ -57,7 +57,8 @@ package body ASIS_UL.Source_Table.Processing is
    procedure Process_Sources_From_Table
      (Only_Bodies        : Boolean;
       Need_Semantic_Info : Boolean;
-      Add_Needed_Sources : Boolean);
+      Add_Needed_Sources : Boolean;
+      Keep_ALI           : Boolean := False);
    --  Processes sources stores in the sources table trying to minimize
    --  compilations needed to create the tree files. If Only_Bodies is set ON,
    --  only files with .adb suffixes are compiled for the trees.
@@ -397,7 +398,8 @@ package body ASIS_UL.Source_Table.Processing is
 
    procedure Process_Sources
      (Need_Semantic_Info : Boolean := True;
-      Add_Needed_Sources : Boolean := Mimic_gcc)
+      Add_Needed_Sources : Boolean := Mimic_gcc;
+      Keep_ALI           : Boolean := False)
    is
    begin
       Asis.Implementation.Initialize ("-k -ws -asis05 -sv");
@@ -406,13 +408,15 @@ package body ASIS_UL.Source_Table.Processing is
          Process_Sources_From_Table
            (Only_Bodies        => True,
             Need_Semantic_Info => Need_Semantic_Info,
-            Add_Needed_Sources => Add_Needed_Sources);
+            Add_Needed_Sources => Add_Needed_Sources,
+            Keep_ALI           => Keep_ALI or else Mimic_gcc);
       end if;
 
       Process_Sources_From_Table
         (Only_Bodies        => False,
          Need_Semantic_Info => Need_Semantic_Info,
-         Add_Needed_Sources => Add_Needed_Sources);
+         Add_Needed_Sources => Add_Needed_Sources,
+         Keep_ALI           => Keep_ALI or else Mimic_gcc);
 
       Asis.Implementation.Finalize;
    end Process_Sources;
@@ -424,7 +428,8 @@ package body ASIS_UL.Source_Table.Processing is
    procedure Process_Sources_From_Table
      (Only_Bodies        : Boolean;
       Need_Semantic_Info : Boolean;
-      Add_Needed_Sources : Boolean)
+      Add_Needed_Sources : Boolean;
+      Keep_ALI           : Boolean := False)
    is
       Next_SF : SF_Id;
    begin
@@ -434,8 +439,14 @@ package body ASIS_UL.Source_Table.Processing is
          Next_SF := Next_Non_Processed_Source
            (Only_Bodies, Include_Needed_Sources => Add_Needed_Sources);
          exit when not Present (Next_SF);
+
          Process_Source
-           (Next_SF, Only_Bodies, Need_Semantic_Info, Add_Needed_Sources);
+           (Next_SF,
+            Only_Bodies,
+            Need_Semantic_Info,
+            Add_Needed_Sources,
+            Keep_ALI);
+
          Check_Tree_Creations;
       end loop;
 

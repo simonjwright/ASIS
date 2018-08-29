@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                      Copyright (C) 2013-2016, AdaCore                    --
+--                      Copyright (C) 2013-2017, AdaCore                    --
 --                                                                          --
 -- Gnat2xml is free software; you can redistribute it and/or modify it      --
 -- under terms of the  GNU General Public License  as published by the Free --
@@ -24,6 +24,10 @@
 pragma Ada_2012;
 
 package body ASIS_UL.Slow_Vectors is
+
+   pragma Warnings (Off);  --  possible problem in the compiler ???
+   use all type Vector;
+   pragma Warnings (On);
 
    procedure Free (Container : in out Vector) is
    begin

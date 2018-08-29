@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2013-2017, AdaCore                     --
+--                     Copyright (C) 2013-2018, AdaCore                     --
 --                                                                          --
 -- GNATCHECK  is  free  software;  you can redistribute it and/or modify it --
 -- under terms of the  GNU  General Public License as published by the Free --
@@ -33,17 +33,69 @@ with Asis.Extensions.Strings;
 
 with ASIS_UL.Common;             use ASIS_UL.Common;
 with ASIS_UL.Compiler_Options;
+with ASIS_UL.Debug;
 with ASIS_UL.Environment;        use ASIS_UL.Environment;
+with ASIS_UL.Misc;
 with ASIS_UL.Options;            use ASIS_UL.Options;
 with ASIS_UL.Output;             use ASIS_UL.Output;
+with ASIS_UL.Projects.Aggregate;
 
 with Gnatcheck.Categories;
+with Gnatcheck.Diagnoses;
 with Gnatcheck.Diagnoses_Old;
 with Gnatcheck.Options;          use Gnatcheck.Options;
 with Gnatcheck.Output;           use Gnatcheck.Output;
 with Gnatcheck.Rules.Rule_Table; use Gnatcheck.Rules.Rule_Table;
 
 package body Gnatcheck.Projects is
+
+   -------------------------------------
+   -- Aggregate_Project_Report_Header --
+   -------------------------------------
+
+   procedure Aggregate_Project_Report_Header
+     (My_Project : Gnatcheck_Project_Type)
+   is
+   begin
+      if XML_Report_ON then
+         XML_Report ("<?xml version=""1.0""?>");
+         XML_Report_No_EOL ("<gnatcheck-report");
+
+         if Gnatcheck_Prj.Is_Specified then
+            XML_Report (" project=""" & Gnatcheck_Prj.Source_Prj & """>");
+         else
+            XML_Report (">");
+         end if;
+      end if;
+
+      Gnatcheck.Diagnoses.Print_Report_Header;
+
+      if Text_Report_ON then
+         Report ("");
+      end if;
+
+      Aggregate_Project_Report_Header (Arg_Project_Type (My_Project));
+
+      if Text_Report_ON then
+         Report ("");
+      end if;
+
+   end Aggregate_Project_Report_Header;
+
+   ------------------------------------
+   -- Close_Aggregate_Project_Report --
+   ------------------------------------
+
+   procedure Close_Aggregate_Project_Report
+     (My_Project : Gnatcheck_Project_Type)
+   is
+   begin
+      Close_Aggregate_Project_Report (Arg_Project_Type (My_Project));
+
+      if XML_Report_ON then
+         XML_Report ("</gnatcheck-report>");
+      end if;
+   end Close_Aggregate_Project_Report;
 
    ----------------------
    -- Print_Tool_Usage --
@@ -54,6 +106,36 @@ package body Gnatcheck.Projects is
    begin
       Gnatcheck.Output.Print_Gnatcheck_Usage;
    end Print_Tool_Usage;
+
+   -----------------------------------------
+   -- Report_Aggregated_Project_Exit_Code --
+   -----------------------------------------
+
+   procedure Report_Aggregated_Project_Exit_Code
+     (Aggregate_Prj : Gnatcheck_Project_Type;
+      Exit_Code     : Integer)
+   is
+      pragma Unreferenced (Aggregate_Prj);
+   begin
+      if Text_Report_ON then
+         Report ("Exit code is" & Exit_Code'Img & " (" &
+                 (case Exit_Code is
+                     when 0 => "no rule violation detected",
+                     when 1 => "rule violation(s) detected",
+                     when 2 => "tool failure, results cannot be trusted",
+                     when 3 => "no rule check performed",
+                     when others => "unknown")        & ")");
+      end if;
+
+      if XML_Report_ON then
+         XML_Report ("<exit-code>" & ASIS_UL.Misc.Image (Exit_Code) &
+                     "</exit-code>",
+                     Indent_Level => 3);
+
+         XML_Report ("</aggregated-project>",
+                     Indent_Level => 2);
+      end if;
+   end Report_Aggregated_Project_Exit_Code;
 
    --------------------
    -- Scan_Arguments --
@@ -109,6 +191,10 @@ package body Gnatcheck.Projects is
          --  Processing the 'rules' section
          Goto_Section ("rules", Parser => Parser);
 
+         Gnatcheck.Options.Check_Param_Redefinition :=
+           Gnatcheck.Options.Check_Param_Redefinition or else
+           ASIS_UL.Debug.Debug_Flag_W;
+
          loop
             case GNAT.Command_Line.Getopt ("* from=", Parser => Parser) is
             --  We do not want to depend on the set of the currently
@@ -147,7 +233,7 @@ package body Gnatcheck.Projects is
            GNAT.Command_Line.Getopt
              ("v q t h hc? hx s? "     &
               "l m? files= a "         &
-              "P: U X! vP! eL "        &   --  project-specific options
+              "P: U X! vP! eL A: "     &   --  project-specific options
               "-target= "              &
               "-subdirs= "             &
               "-no_objects_dir "       &
@@ -166,10 +252,13 @@ package body Gnatcheck.Projects is
               --  part of the report file
               "-old-report-format "    &   --  generate report file
               --  using the old format
+             "-check-redefinition "    &
+             --  check if rule parameter is defined more than once
               "-no-column "            &
               "-exemption "            &   --  rule exemption ON
               "-show-rule "            &   --  show rule name in diagnosis
               "-version -help "        &   --  print version and usage
+              "-ignore= "              &   --  specify a set of units to skip
               "-test "                 &   --  test mode (all rules ON)
               "nt xml "                &
               "-write-rules= "         &   --  template rule file name
@@ -192,6 +281,19 @@ package body Gnatcheck.Projects is
                  More_Arguments
                    (Store_Arguments => In_Project_File or else First_Pass,
                     In_Switches     => In_Switches);
+            when 'A' =>
+               if Full_Switch (Parser => Parser) = "A" then
+                  if First_Pass then
+                     Aggregated_Project := True;
+                     ASIS_UL.Projects.Aggregate.Store_Aggregated_Project
+                       (Parameter);
+                  elsif In_Project_File then
+                     Error ("project file should not be specified inside " &
+                            "another project file");
+                     raise Parameter_Error;
+                  end if;
+               end if;
+
             when 'a' =>
 
                if not First_Pass then
@@ -391,6 +493,10 @@ package body Gnatcheck.Projects is
             when '-' =>
                if not First_Pass then
                   if Full_Switch (Parser => Parser) =
+                       "-check-redefinition"
+                  then
+                     Gnatcheck.Options.Check_Param_Redefinition := True;
+                  elsif Full_Switch (Parser => Parser) =
                        "-dump-code-standard"
                   then
                      Coding_Standard_Kind :=

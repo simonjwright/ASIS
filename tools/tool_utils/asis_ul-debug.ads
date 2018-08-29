@@ -6,18 +6,18 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                    Copyright (C) 2009-2016, AdaCore                      --
+--                    Copyright (C) 2009-2017, AdaCore                      --
 --                                                                          --
 -- Asis Utility Library (ASIS UL) is free software; you can redistribute it --
 -- and/or  modify  it  under  terms  of  the  GNU General Public License as --
--- published by the Free Software Foundation; either version 2, or (at your --
+-- published by the Free Software Foundation; either version 3, or (at your --
 -- option)  any later version.  ASIS UL  is distributed in the hope that it --
 -- will  be  useful,  but  WITHOUT  ANY  WARRANTY; without even the implied --
 -- warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the --
 -- GNU  General Public License for more details. You should have received a --
 -- copy of the  GNU General Public License  distributed with GNAT; see file --
--- COPYING.  If  not,  write  to  the Free Software Foundation, 51 Franklin --
--- Street, Fifth Floor, Boston, MA 02110-1301, USA.                         --
+-- COPYING3. If not,  go to http://www.gnu.org/licenses for a complete copy --
+-- of the license.                                                          --
 --                                                                          --
 -- ASIS UL is maintained by AdaCore (http://www.adacore.com).               --
 --                                                                          --
@@ -71,6 +71,34 @@ package ASIS_UL.Debug is
    Debug_Flag_X : Boolean := False;
    Debug_Flag_Y : Boolean := False;
    Debug_Flag_Z : Boolean := False;
+
+   --  -d<upper_case_letter>
+   Debug_Flag_AA : Boolean := False;
+   Debug_Flag_BB : Boolean := False;
+   Debug_Flag_CC : Boolean := False;
+   Debug_Flag_DD : Boolean := False;
+   Debug_Flag_EE : Boolean := False;
+   Debug_Flag_FF : Boolean := False;
+   Debug_Flag_GG : Boolean := False;
+   Debug_Flag_HH : Boolean := False;
+   Debug_Flag_II : Boolean := False;
+   Debug_Flag_JJ : Boolean := False;
+   Debug_Flag_KK : Boolean := False;
+   Debug_Flag_LL : Boolean := False;
+   Debug_Flag_MM : Boolean := False;
+   Debug_Flag_NN : Boolean := False;
+   Debug_Flag_OO : Boolean := False;
+   Debug_Flag_PP : Boolean := False;
+   Debug_Flag_QQ : Boolean := False;
+   Debug_Flag_RR : Boolean := False;
+   Debug_Flag_SS : Boolean := False;
+   Debug_Flag_TT : Boolean := False;
+   Debug_Flag_UU : Boolean := False;
+   Debug_Flag_VV : Boolean := False;
+   Debug_Flag_WW : Boolean := False;
+   Debug_Flag_XX : Boolean := False;
+   Debug_Flag_YY : Boolean := False;
+   Debug_Flag_ZZ : Boolean := False;
 
    --  -d<digit> flags are supposed to use in tool-specific manner, so they
    --   should not be used in the code of ASIS_UL

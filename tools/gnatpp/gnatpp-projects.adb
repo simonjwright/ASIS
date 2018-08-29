@@ -126,6 +126,8 @@ package body GNATPP.Projects is
               "-insert-blank-lines "                 &
               "-preserve-blank-lines "               &
               "-version -help "                      &
+                "-ignore= "                            & --  specify a set of
+                --                                           units to skip
               "-test "                               &
               "-decimal-grouping= -based-grouping= " &
               "-pp-off= -pp-on= ",

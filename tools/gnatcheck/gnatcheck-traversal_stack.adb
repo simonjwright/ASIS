@@ -121,7 +121,9 @@ package body Gnatcheck.Traversal_Stack is
    is
    begin
 
-      if Steps_Up >= Stack_Table.Last then
+      if Steps_Up = 0 and then Is_Empty then
+         return Nil_Element;
+      elsif Steps_Up >= Stack_Table.Last then
          raise Stack_Error;
       else
          return Stack (Stack_Table.Last - Steps_Up).Element;

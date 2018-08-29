@@ -348,7 +348,9 @@ package body GNATtest.Harness.Generator is
                   & Trim
                     (Integer'Image (First_Column_Number (Overridden_Subp)),
                      Both)
-                  & ": additional test overridden at "
+                  & ": "
+                  & Test_Routine.TR_Text_Name.all
+                  & " overridden at "
                   & Base_Name (Data.Test_Unit_File_Name.all)
                   & ":"
                   & Trim
@@ -3670,6 +3672,7 @@ package body GNATtest.Harness.Generator is
 
          Report_Std ("gnattest: " & Source_Name &
                      " is not a legal Ada source");
+         Source_Compilation_Failed := True;
 
          return False;
 
@@ -4651,12 +4654,6 @@ package body GNATtest.Harness.Generator is
          S_Put
            (6,
             "Ada.Command_Line.Set_Exit_Status (Ada.Command_Line.Failure);");
-         Put_New_Line;
-         S_Put (3, "else");
-         Put_New_Line;
-         S_Put
-           (6,
-            "Ada.Command_Line.Set_Exit_Status (Ada.Command_Line.Success);");
          Put_New_Line;
          S_Put (3, "end if;");
       end if;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2004-2016, AdaCore                     --
+--                     Copyright (C) 2004-2018, AdaCore                     --
 --                                                                          --
 -- GNATCHECK  is  free  software;  you can redistribute it and/or modify it --
 -- under terms of the  GNU  General Public License as published by the Free --
@@ -229,7 +229,7 @@ package Gnatcheck.Rules is
    --  All_Rules_Post_Op for more details.
 
    function Allows_Parametrized_Exemption
-     (Rule  : Rule_Template)
+     (Ignored_Rule : Rule_Template)
       return Boolean is (False);
    --  Says if you can specify a rule parameter when defining an exemption
    --  section for Rule. In case if a rule parameter has the form like
@@ -237,9 +237,9 @@ package Gnatcheck.Rules is
    --  only "Param_Name'
 
    function Allowed_As_Exemption_Parameter
-     (Rule  : Rule_Template;
-      Param : String)
-      return  Boolean is (False);
+     (Ignored_Rule  : Rule_Template;
+      Ignored_Param : String)
+      return Boolean is (False);
    --  Checks if Param can be used as a rule parameter when defining an
    --  exemption section for Rule.
 
@@ -261,7 +261,7 @@ package Gnatcheck.Rules is
      (Rule       : in out Rule_Template;
       Param      :        String;
       Enable     :        Boolean;
-      Defined_At : String);
+      Defined_At :        String);
    --  Is supposed to process a single rule parameter of the gnatcheck call.
    --
    --  If the rule parameter string consists of more than one parameter
