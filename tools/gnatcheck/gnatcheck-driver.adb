@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2004-2017, AdaCore                     --
+--                     Copyright (C) 2004-2018, AdaCore                     --
 --                                                                          --
 -- Asis Utility Library (ASIS UL) is free software; you can redistribute it --
 -- and/or  modify  it  under  terms  of  the  GNU General Public License as --
@@ -34,6 +34,7 @@ with ASIS_UL.Environment;
 with ASIS_UL.Global_State;
 with ASIS_UL.Options;
 with ASIS_UL.Output;
+with ASIS_UL.Projects.Aggregate;
 with ASIS_UL.Source_Table;
 with ASIS_UL.Source_Table.Gnatcheck_Processing;
 
@@ -67,11 +68,15 @@ begin
    else
       ASIS_UL.Source_Table.Gnatcheck_Processing.Initialize;
 
-      --  In Incremental_Mode, we invoke the builder instead of doing the
-      --  normal processing. The inner invocations of gnatcheck invoked by
-      --  the builder will do the normal tool processing.
+      if ASIS_UL.Options.In_Aggregate_Project then
+         --  In this case we spawn gnatcheck for each project being aggregated
+         ASIS_UL.Projects.Aggregate.Process_Aggregated_Projects
+           (Gnatcheck.Options.Gnatcheck_Prj);
+      elsif ASIS_UL.Options.Incremental_Mode then
+         --  In Incremental_Mode, we invoke the builder instead of doing the
+         --  normal processing. The inner invocations of gnatcheck invoked by
+         --  the builder will do the normal tool processing.
 
-      if ASIS_UL.Options.Incremental_Mode then
          ASIS_UL.Environment.Call_Builder;
          ASIS_UL.Source_Table.Gnatcheck_Processing.Delete_ALI_Files;
       else
@@ -89,7 +94,9 @@ begin
          ASIS_UL.Output.Info ("Execution time:" & Exect_Time'Img);
       end if;
 
-      ASIS_UL.Global_State.Print_Global_Structure;
+      if not ASIS_UL.Options.In_Aggregate_Project then
+         ASIS_UL.Global_State.Print_Global_Structure;
+      end if;
 
    end if;
 

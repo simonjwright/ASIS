@@ -8,7 +8,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2005-2017, AdaCore                     --
+--                     Copyright (C) 2005-2018, AdaCore                     --
 --                                                                          --
 -- Asis Utility Library (ASIS UL) is free software; you can redistribute it --
 -- and/or  modify  it  under  terms  of  the  GNU General Public License as --
@@ -27,6 +27,7 @@
 
 pragma Ada_2012;
 
+with ASIS_UL.Debug;
 with ASIS_UL.Output;
 with ASIS_UL.Projects;
 with ASIS_UL.Source_Table;
@@ -44,9 +45,12 @@ with Gnatcheck.Rules.Rule_Table; use Gnatcheck.Rules.Rule_Table;
 separate (ASIS_UL.Environment)
 procedure Check_Parameters is
 begin
-   if Verbose_Mode and then not Mimic_gcc then
-      --  In incremental mode, we want Verbose_Mode to print this only in the
-      --  outer invocation.
+   if Verbose_Mode
+     and then
+       not (Mimic_gcc or else Aggregated_Project)
+   then
+      --  In incremental mode or when procrssing aggregated projects one by
+      --  one, we want Verbose_Mode to print this only in the outer invocation.
       Print_Version_Info (2004);
    end if;
 
@@ -63,11 +67,17 @@ begin
    end if;
 
    --  We generate the rule help inconditionally.
-   if Gnatcheck.Options.Generate_Rules_Help then
+   if Gnatcheck.Options.Generate_Rules_Help
+     and then
+      not Aggregated_Project
+   then
       Rules_Help;
    end if;
 
-   if Gnatcheck.Options.Generate_Category_Help then
+   if Gnatcheck.Options.Generate_Category_Help
+     and then
+      not Aggregated_Project
+   then
       Gnatcheck.Categories.Category_Help
         (Category_Name => "", --  Root category
          From_Status   => Gnatcheck.Options.Rule_Report_Status,
@@ -75,12 +85,25 @@ begin
          Level         => 0);
    end if;
 
-   if ASIS_UL.Options.Generate_XML_Help then
+   if ASIS_UL.Options.Generate_XML_Help
+     and then
+      not Aggregated_Project
+   then
       Gnatcheck.Categories.XML_Categories_Help;
    end if;
 
-   if Gnatcheck.Options.Generate_Coding_Standard then
+   if Gnatcheck.Options.Generate_Coding_Standard
+     and then
+      not Aggregated_Project
+   then
       Gnatcheck.Output.Write_Coding_Standard;
+   end if;
+
+   if In_Aggregate_Project then
+      --  We have to skip most of the checks because this gnatcheck call does
+      --  not do anything except spawhing another gnatcheck calls for
+      --  individual projects
+      goto Processing_Aggregate_Project;
    end if;
 
    --  Now check if we have anything to do:
@@ -117,9 +140,15 @@ begin
       return;
    end if;
 
+   if ASIS_UL.Options.Exempted_Units /= null
+     and then Incremental_Mode
+   then
+      Error ("--ignore option cannot be used in incremental mode");
+      Brief_Help;
+      raise Parameter_Error;
+   end if;
+
    if Gnatcheck.Options.Gnatcheck_Prj.Is_Specified then
-      Gnatcheck.Projects.Set_Global_Result_Dirs
-        (Gnatcheck.Options.Gnatcheck_Prj);
       Gnatcheck.Projects.Set_Individual_Source_Options
         (Gnatcheck.Options.Gnatcheck_Prj);
    end if;
@@ -190,6 +219,14 @@ begin
       end if;
    end loop;
 
+   --  If debug flag J is specified, we have to add '-gnatdJ' to the compiler
+   --  call options to have the corresponding diagnoses annotations for
+   --  compiler-based checks:
+
+   if ASIS_UL.Debug.Debug_Flag_JJ then
+      Store_Option ("-gnatdJ");
+   end if;
+
    if not (Gnatcheck.Options.Active_Rule_Present
            or else
              Analyze_Compiler_Output)
@@ -204,10 +241,6 @@ begin
          raise Parameter_Error;
       end if;
    end if;
-
-   --  If we are here - we have sources to check and rules to apply
-   Total_Sources := Natural (Last_Source);
-   Sources_Left  := Total_Sources;
 
    --  Check is the active set of rules requires building the global
    --  structure
@@ -235,12 +268,25 @@ begin
 
    end loop;
 
+   if ASIS_UL.Options.Exempted_Units /= null then
+      Process_Exemptions (ASIS_UL.Options.Exempted_Units.all);
+   end if;
+
+   Total_Sources := Total_Sources_To_Process;
+
+   if Total_Sources = 0 then
+      Error ("No existing file to process");
+      --  All the rest does not make any sense
+      return;
+   end if;
+
+   --  If we are here - we have sources to check and rules to apply
+   Sources_Left  := Total_Sources;
+
    --  We need to reset the argument list, because new warning and style
    --  control options may be extracted from the corresponding rules
 
    Set_Arg_List;
-
-   ASIS_UL.Output.Set_Report_Files;
 
    --  Check for non-documented --no-column option:
 
@@ -253,5 +299,14 @@ begin
    end if;
 
    ASIS_UL.Tree_Creation.Set_Max_Processes;
+
+   <<Processing_Aggregate_Project>>
+
+   if Gnatcheck.Options.Gnatcheck_Prj.Is_Specified then
+      Gnatcheck.Projects.Set_Global_Result_Dirs
+        (Gnatcheck.Options.Gnatcheck_Prj);
+   end if;
+
+   ASIS_UL.Output.Set_Report_Files;
 
 end Check_Parameters;

@@ -79,7 +79,7 @@ package body ASIS_UL.Compiler_Options is
       Idx  : Natural;
 
       gnatls_to_call : constant String :=
-        (if Target.all = ""    then "gnatls"
+        (if Target = null or else Target.all = ""    then "gnatls"
          else                        Target.all & "-gnatls");
    begin
       GNATCOLL.Traces.Parse_Config_File;

@@ -6,25 +6,23 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 1995-2012, Free Software Foundation, Inc.       --
+--            Copyright (C) 1995-2017, Free Software Foundation, Inc.       --
 --                                                                          --
 -- ASIS-for-GNAT is free software; you can redistribute it and/or modify it --
 -- under terms of the  GNU General Public License  as published by the Free --
--- Software Foundation;  either version 2,  or  (at your option)  any later --
--- version. ASIS-for-GNAT is distributed  in the hope  that it will be use- --
--- ful, but WITHOUT ANY WARRANTY; without even the implied warranty of MER- --
--- CHANTABILITY or  FITNESS FOR A PARTICULAR  PURPOSE.  See the GNU General --
--- Public License for more details.  You should have received a copy of the --
--- GNU  General  Public  License  distributed with ASIS-for-GNAT;  see file --
--- COPYING.  If not,  write  to the  Free Software Foundation,  51 Franklin --
--- Street, Fifth Floor, Boston, MA 02110-1301, USA.                         --
+-- Software  Foundation;  either version 3,  or (at your option)  any later --
+-- version.  ASIS-for-GNAT  is  distributed  in  the  hope  that it will be --
+-- useful,  but  WITHOUT ANY WARRANTY; without even the implied warranty of --
+-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                     --
 --                                                                          --
 --                                                                          --
 --                                                                          --
 --                                                                          --
 --                                                                          --
---                                                                          --
---                                                                          --
+-- You should have  received  a copy of the  GNU General Public License and --
+-- a copy of the  GCC Runtime Library Exception  distributed with GNAT; see --
+-- the files COPYING3 and COPYING.RUNTIME respectively.  If not, see        --
+-- <http://www.gnu.org/licenses/>.                                          --
 --                                                                          --
 -- ASIS-for-GNAT was originally developed  by the ASIS-for-GNAT team at the --
 -- Software  Engineering  Laboratory  of  the Swiss  Federal  Institute  of --
@@ -62,9 +60,10 @@ package body Asis.Clauses is
    function Clause_Names (Clause : Asis.Element) return Asis.Element_List is
       Arg_Kind     : constant Internal_Element_Kinds := Int_Kind (Clause);
       Arg_Node     : Node_Id;
-      Result_List  : List_Id;
+      Arg_O_Node   : Node_Id;
       Result_Len   : Natural := 1;
-      Withed_Uname : Node_Id;
+      Clause_Uname : Node_Id;
+      Clause_Sloc  : Source_Ptr;
    begin
       Check_Validity (Clause, Package_Name & "Clause_Names");
 
@@ -78,61 +77,101 @@ package body Asis.Clauses is
             Wrong_Kind => Arg_Kind);
       end if;
 
-      Arg_Node := Node (Clause);
+      Arg_Node   := Node (Clause);
+      Arg_O_Node := Original_Node (Arg_Node);
+
+      --  first, computing the number of names listed in the argument clause.
+      --  Note that we should skip implicit with cleause that may be added
+      --  by front-end
+      --
+      --  We have to take into account the case when a front-end optimizes
+      --  processing of non-needed private with clauses - they are rewritten
+      --  as null statements.
+      --
+      --  The situation with USE clauses is similar, the differences are:
+      --  * another flag is used to check that the end of normalized clauses
+      --    sequence is reached
+      --
+      --  * there is no implicit stuff added by the compiler.
+
+      Arg_Node := R_Node (Clause);
 
       if Arg_Kind = A_With_Clause then
-         --  first, computing the number of names listed in the argument
-         --  with clause
-         --  Note that we should skip implicit with cleause that may be added
-         --  by front-end
-         while not (Comes_From_Source (Arg_Node)
+
+         while not (Comes_From_Source (Arg_O_Node)
                   and then
-                    Last_Name (Arg_Node))
+                    Last_Name (Arg_O_Node))
          loop
-            if Comes_From_Source (Arg_Node) then
+            if Comes_From_Source (Arg_O_Node) then
                Result_Len := Result_Len + 1;
             end if;
 
+            Arg_Node   := Next (Arg_Node);
+            Arg_O_Node := Original_Node (Arg_Node);
+         end loop;
+      elsif Arg_Kind = A_Use_Package_Clause then
+         Arg_Node := Next (Arg_Node);
+
+         while Present (Arg_Node)
+             and then
+               Nkind (Arg_Node) = N_Use_Package_Clause
+             and then
+               Prev_Ids (Arg_Node)
+         loop
+            Result_Len := Result_Len + 1;
             Arg_Node := Next (Arg_Node);
          end loop;
+      elsif Arg_Kind in A_Use_Type_Clause | A_Use_All_Type_Clause then
+         --  ??? N_Use_Type_Clause should be processed exactly in the same
+         --  way as N_Use_Package_Clause but for now More_Ids and Next_Id
+         --  are not definede for them ???
+         Clause_Sloc := Sloc (Arg_Node);
 
-         declare
-            Result_List : Asis.Element_List (1 .. Result_Len);
-         begin
-            Arg_Node := Node (Clause);
+         while Present (Next (Arg_Node))
+            and then
+               Nkind (Next (Arg_Node)) = N_Use_Type_Clause
+            and then
+               Sloc (Next (Arg_Node)) = Clause_Sloc
+         loop
+            Result_Len := Result_Len + 1;
+            Arg_Node := Next (Arg_Node);
+         end loop;
+      else
+         pragma Assert (False);
+      end if;
 
-            for I in 1 .. Result_Len loop
+      declare
+         Result_List : Asis.Element_List (1 .. Result_Len);
+      begin
+         Arg_Node   := R_Node (Clause);
+         Arg_O_Node := Original_Node (Arg_Node);
 
-               Withed_Uname := Sinfo.Name (Arg_Node);
+         for I in 1 .. Result_Len loop
 
-               Result_List (I) := Node_To_Element_New
-                  (Starting_Element => Clause,
-                   Node             => Withed_Uname);
+            Clause_Uname := (if Nkind (Arg_O_Node) = N_Use_Type_Clause then
+                                Sinfo.Subtype_Mark (Arg_O_Node)
+                             else
+                                Sinfo.Name (Arg_O_Node));
 
-               Arg_Node     := Next (Arg_Node);
+            Result_List (I) := Node_To_Element_New
+               (Starting_Element => Clause,
+                Node             => Clause_Uname);
 
-               while Present (Arg_Node)
-                  and then
-                     not Comes_From_Source (Arg_Node)
-               loop
-                  Arg_Node := Next (Arg_Node);
-               end loop;
+            Arg_Node   := Next (Arg_Node);
+            Arg_O_Node := Original_Node (Arg_Node);
 
+            while Present (Arg_Node)
+               and then
+                  not Comes_From_Source (Arg_O_Node)
+            loop
+               Arg_Node   := Next (Arg_Node);
+               Arg_O_Node := Original_Node (Arg_Node);
             end loop;
 
-            return Result_List;
-         end;
-      else
+         end loop;
 
-         if Nkind (Arg_Node) = N_Use_Package_Clause then
-            Result_List := Names (Arg_Node);
-         else
-            Result_List := Subtype_Marks (Arg_Node);
-         end if;
-
-         return  N_To_E_List_New (List             => Result_List,
-                                  Starting_Element => Clause);
-      end if;
+         return Result_List;
+      end;
 
    exception
       when ASIS_Inappropriate_Element =>

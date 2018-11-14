@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2004-2016, AdaCore                     --
+--                     Copyright (C) 2004-2017, AdaCore                     --
 --                                                                          --
 -- GNATCHECK  is  free  software;  you can redistribute it and/or modify it --
 -- under terms of the  GNU  General Public License as published by the Free --
@@ -943,18 +943,12 @@ package Gnatcheck.Rules.Default is
 
    --  A volatile object that does not have an address clause applied to it is
    --  detected
-
-   --  At the moment we check the following. If the pragma Volatile is applied
-   --  to a data object or to the type of this data object, then the address
-   --  clause should be applied to this object.
-
-   --  We do not check this rule for the components of data objects. We do
-   --  not consider the array components that are volatile as a result of the
-   --  pragma Volatile_Components. We also do not consider objects that are
-   --  volatile because they are atomic as a result of pragmas Atomic or
-   --  Atomic_Components.
-
-   --  Only variable declarations, but not constant declarations are detected.
+   --
+   --  Only variable declarations are checked. This rule treats an object as a
+   --  volatile object if pragma or aspect Volatile is applied to the object
+   --  or to its type, if the object is atomic or if the GNAT compiler
+   --  considers this object as volatile because of some code generation
+   --  reasons.
 
    type Volatile_Objects_Without_Address_Clauses_Rule_Type is
      new Rule_Template with null record;
@@ -964,7 +958,6 @@ package Gnatcheck.Rules.Default is
       Element :        Asis.Element;
       Control : in out Traverse_Control;
       State   : in out Rule_Traversal_State);
-   --  ???
 
    procedure Init_Rule
      (Rule : in out Volatile_Objects_Without_Address_Clauses_Rule_Type);

@@ -48,7 +48,6 @@ with Namet;
 with Snames;
 with GNAT.Table;
 
-with ASIS_UL.Debug;
 with ASIS_UL.Misc;                use ASIS_UL.Misc;
 with ASIS_UL.Output;              use ASIS_UL.Output;
 with ASIS_UL.Utilities;           use ASIS_UL.Utilities;
@@ -860,7 +859,6 @@ package body Gnatcheck.Rules.Custom_1 is
    -----------------------------------------------
 
    function Get_Attribute_Kind (S : String) return Attribute_Kinds is
-      use  type Snames.Attribute_Id;
       Result  : Attribute_Kinds := Not_An_Attribute;
       Attr_Id : Snames.Attribute_Id;
       pragma Warnings (Off, Attr_Id);
@@ -3085,15 +3083,13 @@ package body Gnatcheck.Rules.Custom_1 is
 
       case Parameter_Kind is
          when Type_Par =>
-            if ASIS_UL.Debug.Debug_Flag_W
---              and then
---               Rule.Rule_State = Enabled
-               --  This condition is commented out because thedisabled rule
-               --  remembers all the previous settings at the moment
+            if Gnatcheck.Options.Check_Param_Redefinition
               and then
                Rule.Type_Casing /= Not_A_Casing_Scheme
               and then
                Rule.Type_Casing /= Casing_Scheme
+               --  We do not check if Rule.Rule_State = Enabled because the
+               --  disabled rule remembers all the previous settings
             then
                Error
                 ("redefining at " &
@@ -3119,15 +3115,13 @@ package body Gnatcheck.Rules.Custom_1 is
             end if;
 
          when Constant_Par =>
-            if ASIS_UL.Debug.Debug_Flag_W
---              and then
---               Rule.Rule_State = Enabled
-               --  This condition is commented out because thedisabled rule
-               --  remembers all the previous settings at the moment
+            if Gnatcheck.Options.Check_Param_Redefinition
               and then
                Rule.Constant_Casing /= Not_A_Casing_Scheme
               and then
                Rule.Constant_Casing /= Casing_Scheme
+               --  We do not check if Rule.Rule_State = Enabled because the
+               --  disabled rule remembers all the previous settings
             then
                Error
                 ("redefining at " &
@@ -3153,15 +3147,13 @@ package body Gnatcheck.Rules.Custom_1 is
             end if;
 
          when Exception_Par =>
-            if ASIS_UL.Debug.Debug_Flag_W
---              and then
---               Rule.Rule_State = Enabled
-               --  This condition is commented out because thedisabled rule
-               --  remembers all the previous settings at the moment
+            if Gnatcheck.Options.Check_Param_Redefinition
               and then
                Rule.Exception_Casing /= Not_A_Casing_Scheme
               and then
                Rule.Exception_Casing /= Casing_Scheme
+               --  We do not check if Rule.Rule_State = Enabled because the
+               --  disabled rule remembers all the previous settings
             then
                Error
                 ("redefining at " &
@@ -3187,15 +3179,13 @@ package body Gnatcheck.Rules.Custom_1 is
             end if;
 
          when Enum_Par =>
-            if ASIS_UL.Debug.Debug_Flag_W
---              and then
---               Rule.Rule_State = Enabled
-               --  This condition is commented out because thedisabled rule
-               --  remembers all the previous settings at the moment
+            if Gnatcheck.Options.Check_Param_Redefinition
               and then
                Rule.Enum_Casing /= Not_A_Casing_Scheme
               and then
                Rule.Enum_Casing /= Casing_Scheme
+               --  We do not check if Rule.Rule_State = Enabled because the
+               --  disabled rule remembers all the previous settings
             then
                Error
                 ("redefining at " &
@@ -3221,15 +3211,13 @@ package body Gnatcheck.Rules.Custom_1 is
             end if;
 
          when Others_Par =>
-            if ASIS_UL.Debug.Debug_Flag_W
---              and then
---               Rule.Rule_State = Enabled
-               --  This condition is commented out because thedisabled rule
-               --  remembers all the previous settings at the moment
+            if Gnatcheck.Options.Check_Param_Redefinition
               and then
                Rule.Others_Casing /= Not_A_Casing_Scheme
               and then
                Rule.Others_Casing /= Casing_Scheme
+               --  We do not check if Rule.Rule_State = Enabled because the
+               --  disabled rule remembers all the previous settings
             then
                Error
                 ("redefining at " &
@@ -7152,6 +7140,68 @@ package body Gnatcheck.Rules.Custom_1 is
 
    end Rule_Check_Pre_Op;
 
+   ----------------------
+   -- Numeric_Indexing --
+   ----------------------
+
+   ----------------------------------
+   -- Init_Rule (Numeric_Indexing) --
+   ----------------------------------
+
+   procedure Init_Rule (Rule : in out Numeric_Indexing_Rule_Type) is
+   begin
+      Init_Rule (Rule_Template (Rule));
+
+      Rule.Name        := new String'("Numeric_Indexing");
+      Rule.Rule_Status := Fully_Implemented;
+      Rule.Help_Info   := new String'("use integer literals as indexes");
+      Rule.Diagnosis   := new String'("integer literal as index value");
+   end Init_Rule;
+
+   ------------------------------------------
+   -- Rule_Check_Pre_Op (Numeric_Indexing) --
+   ------------------------------------------
+
+   procedure Rule_Check_Pre_Op
+     (Rule    : in out Numeric_Indexing_Rule_Type;
+      Element :        Asis.Element;
+      Control : in out Traverse_Control;
+      State   : in out Rule_Traversal_State)
+   is
+      pragma Unreferenced (Rule, Control);
+      EE   : Asis.Element;
+      Call : Asis.Element;
+      Pref : Asis.Element;
+   begin
+
+      if Expression_Kind (Element) = An_Integer_Literal then
+         EE := Get_Enclosing_Element;
+
+         if Expression_Kind (EE) = An_Indexed_Component then
+            State.Detected := True;
+         elsif Association_Kind (EE) = A_Parameter_Association then
+            Call := Get_Enclosing_Element (1);
+            EE   := Get_Enclosing_Element (2);
+
+            if Expression_Kind (EE) = An_Indexed_Component then
+               --  Check if we have a call to a predefined unary "-"
+
+               Pref := Prefix (Call);
+               Pref := Normalize_Reference (Pref);
+
+               if Operator_Kind (Pref) = A_Unary_Minus_Operator
+                 and then
+                  Is_Predefined_Operator (Pref)
+               then
+                  State.Detected := True;
+               end if;
+            end if;
+         end if;
+
+      end if;
+
+   end Rule_Check_Pre_Op;
+
    ---------------------------------
    -- Non_Short_Circuit_Operators --
    ---------------------------------
@@ -7516,7 +7566,7 @@ package body Gnatcheck.Rules.Custom_1 is
       end if;
 
       if Enable then
-         if ASIS_UL.Debug.Debug_Flag_W
+         if Gnatcheck.Options.Check_Param_Redefinition
            and then
             Rule.Rule_State = Enabled
          then
@@ -7603,8 +7653,10 @@ package body Gnatcheck.Rules.Custom_1 is
 
       if Arg_Kind in An_Integer_Literal .. A_Real_Literal then
 
-         if Arg_Kind = An_Integer_Literal then
-
+         if Arg_Kind = An_Integer_Literal
+           and then
+            Rule.Up_To > 0
+         then
             begin
                Integer_Literal_Value :=
                  Natural'Value (To_String (Value_Image (Element)));
@@ -7612,8 +7664,13 @@ package body Gnatcheck.Rules.Custom_1 is
                when Constraint_Error =>
                   --  The value is definitely too big to be an exception for
                   --  this rule!
-                  return;
+                  Integer_Literal_Value := Natural'Last;
             end;
+
+            if Integer_Literal_Value <= Rule.Up_To then
+               --  Literal is too small to be flagged
+               return;
+            end if;
 
          end if;
 
@@ -7622,76 +7679,64 @@ package body Gnatcheck.Rules.Custom_1 is
             Old_Encl_El : Asis.Element := Element;
             Step_Up     : Elmt_Idx     := 0;
          begin
-            if Arg_Kind = An_Integer_Literal
-              and then
-               Integer_Literal_Value <= Rule.Up_To
-            then
+            while Element_Kind (Encl_El) = An_Expression
+                or else
+                  Path_Kind (Encl_El) in
+                    A_Case_Expression_Path .. An_Else_Expression_Path
+                or else
+                  (Element_Kind (Encl_El) = An_Association
+                  and then
+                   Association_Kind (Encl_El) /=
+                     An_Array_Component_Association)
+                or else
+                   (Association_Kind (Encl_El) =
+                     An_Array_Component_Association
+                   and then
+                     Is_Equal (Old_Encl_El, Component_Expression (Encl_El)))
+                or else
+                  (Definition_Kind (Encl_El) = A_Discrete_Subtype_Definition
+                 and then
+                   Declaration_Kind (Get_Enclosing_Element (Step_Up + 1)) =
+                     A_Loop_Parameter_Specification)
+            loop
+               Step_Up     := Step_Up + 1;
+               Old_Encl_El := Encl_El;
+               Encl_El     := Get_Enclosing_Element (Step_Up);
+            end loop;
 
-               if Expression_Kind (Encl_El) = An_Indexed_Component then
+            if not (Declaration_Kind (Encl_El) = A_Constant_Declaration
+                  or else
+                   Declaration_Kind (Encl_El) in
+                     An_Integer_Number_Declaration ..
+                     A_Real_Number_Declaration
+                  or else
+                   Clause_Kind (Encl_El)  in
+                     A_Representation_Clause | A_Component_Clause
+                  or else
+                   Definition_Kind (Encl_El) = An_Aspect_Specification
+                  or else
+                   (Discrete_Range_Kind (Encl_El) =
+                      A_Discrete_Simple_Expression_Range
+                   and then
+                    Clause_Kind (Get_Enclosing_Element (Step_Up + 1)) =
+                      A_Component_Clause))
+            then
+               if Rule.Statements_Only then
+                  State.Detected :=
+                    Element_Kind (Encl_El) in A_Statement .. A_Path
+                      or else
+                    Declaration_Kind (Encl_El) =
+                      A_Loop_Parameter_Specification;
+               else
                   State.Detected := True;
                end if;
-
-            else
-               while Element_Kind (Encl_El) = An_Expression
-                   or else
-                     Path_Kind (Encl_El) in
-                       A_Case_Expression_Path .. An_Else_Expression_Path
-                   or else
-                     (Element_Kind (Encl_El) = An_Association
-                     and then
-                      Association_Kind (Encl_El) /=
-                        An_Array_Component_Association)
-                   or else
-                      (Association_Kind (Encl_El) =
-                        An_Array_Component_Association
-                      and then
-                        Is_Equal (Old_Encl_El, Component_Expression (Encl_El)))
-                   or else
-                     (Definition_Kind (Encl_El) = A_Discrete_Subtype_Definition
-                    and then
-                      Declaration_Kind (Get_Enclosing_Element (Step_Up + 1)) =
-                        A_Loop_Parameter_Specification)
-               loop
-                  Step_Up     := Step_Up + 1;
-                  Old_Encl_El := Encl_El;
-                  Encl_El     := Get_Enclosing_Element (Step_Up);
-               end loop;
-
-               if not (Declaration_Kind (Encl_El) = A_Constant_Declaration
-                     or else
-                      Declaration_Kind (Encl_El) in
-                        An_Integer_Number_Declaration ..
-                        A_Real_Number_Declaration
-                     or else
-                      Clause_Kind (Encl_El)  in
-                        A_Representation_Clause | A_Component_Clause
-                     or else
-                      Definition_Kind (Encl_El) = An_Aspect_Specification
-                     or else
-                      (Discrete_Range_Kind (Encl_El) =
-                         A_Discrete_Simple_Expression_Range
-                      and then
-                       Clause_Kind (Get_Enclosing_Element (Step_Up + 1)) =
-                         A_Component_Clause))
-               then
-                  if Rule.Statements_Only then
-                     State.Detected :=
-                       Element_Kind (Encl_El) in A_Statement .. A_Path
-                         or else
-                       Declaration_Kind (Encl_El) =
-                         A_Loop_Parameter_Specification;
-                  else
-                     State.Detected := True;
-                  end if;
-               end if;
-
             end if;
+
          end;
 
          if State.Detected then
             State.Diag_Params := Enter_String ("%1%" &
               To_String (Value_Image (Element)));
-
          end if;
 
       end if;

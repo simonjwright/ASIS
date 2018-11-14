@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 1995-2016, Free Software Foundation, Inc.       --
+--            Copyright (C) 1995-2017, Free Software Foundation, Inc.       --
 --                                                                          --
 -- ASIS-for-GNAT is free software; you can redistribute it and/or modify it --
 -- under terms of the  GNU General Public License  as published by the Free --
@@ -52,7 +52,6 @@ with A4G.Mapping;       use A4G.Mapping;
 
 with Aspects;
 with Atree;             use Atree;
-with Namet;             use Namet;
 with Nlists;            use Nlists;
 with Sem_Aux;           use Sem_Aux;
 with Sinfo;             use Sinfo;
@@ -71,6 +70,35 @@ package body A4G.A_Sem is
       return     Boolean;
    --  Checks if N is a node representing Import or Interface pragma that
    --  is applied to the name For_Name
+
+   -------------------------------------------
+   -- Artificial_Aggregate_For_SPARK_Pragma --
+   -------------------------------------------
+
+   function Artificial_Aggregate_For_SPARK_Pragma
+     (N   : Node_Id)
+     return Boolean
+   is
+      Result : Boolean := False;
+      Tmp    : Node_Id;
+   begin
+      Tmp := Sinfo.Expression (N);
+
+      if Nkind (Tmp) = N_Aggregate then
+         if Component_Associations (Tmp) = No_List
+           and then
+            Present (Sinfo.Expressions (Tmp))
+           and then
+            List_Length (Sinfo.Expressions (Tmp)) = 1
+         then
+            Tmp := First (Sinfo.Expressions (Tmp));
+
+            Result := Nkind (Tmp) = N_Identifier;
+         end if;
+      end if;
+
+      return Result;
+   end Artificial_Aggregate_For_SPARK_Pragma;
 
    -----------------------------
    -- Belongs_To_Limited_View --
@@ -1741,6 +1769,57 @@ package body A4G.A_Sem is
       return Result;
    end Is_From_Rewritten_Aggregate;
 
+   --------------------------
+   -- Is_From_SPARK_Aspect --
+   --------------------------
+
+   function Is_From_SPARK_Aspect (N : Node_Id) return Boolean is
+      Result : Boolean := False;
+      Tmp    : Node_Id;
+   begin
+      if Present (N) then
+         Tmp := N;
+
+         loop
+            exit when No (Tmp) or else
+              Nkind (Tmp) in
+                N_Pragma | N_Aspect_Specification |
+                N_Statement_Other_Than_Procedure_Call |
+                N_Procedure_Call_Statement | N_Declaration;
+
+            Tmp := Parent (Tmp);
+         end loop;
+
+         if Nkind (Tmp) = N_Pragma then
+            if Present (Corresponding_Aspect (Tmp)) then
+               Tmp := Corresponding_Aspect (Tmp);
+            end if;
+         end if;
+
+         if Nkind (Tmp) in N_Aspect_Specification | N_Pragma then
+
+            Tmp := (if Nkind (Tmp) = N_Aspect_Specification then
+                     Sinfo.Identifier (Tmp)
+                  else
+                     Pragma_Identifier (Tmp));
+
+            Result := Chars (Tmp) in Name_Abstract_State    |
+                                   Name_Depends             |
+                                   Name_Global              |
+                                   Name_Initial_Condition   |
+                                   Name_Initializes         |
+                                   Name_Refined_Depends     |
+                                   Name_Refined_Global      |
+                                   Name_Refined_Post        |
+                                   Name_Refined_State;
+
+         end if;
+
+      end if;
+
+      return Result;
+   end Is_From_SPARK_Aspect;
+
    ----------------------------
    -- Is_From_Unknown_Pragma --
    ----------------------------
@@ -2077,6 +2156,20 @@ package body A4G.A_Sem is
 
       return Result;
    end Is_Root_Standard_Type;
+
+   ---------------------
+   -- Is_SPARK_Pragma --
+   ---------------------
+
+   function Is_SPARK_Pragma (Pragma_Name : Name_Id) return Boolean is
+     (Pragma_Name = Name_Abstract_State  or else
+      Pragma_Name = Name_Contract_Cases  or else
+      Pragma_Name = Name_Depends         or else
+      Pragma_Name = Name_Global          or else
+      Pragma_Name = Name_Initializes     or else
+      Pragma_Name = Name_Refined_Depends or else
+      Pragma_Name = Name_Refined_Global  or else
+      Pragma_Name = Name_Refined_State);
 
    -----------------------------
    -- Is_Type_Memberchip_Test --

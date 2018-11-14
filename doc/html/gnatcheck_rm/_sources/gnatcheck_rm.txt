@@ -26,6 +26,7 @@ A copy of the license is included in the section entitled
    gnatcheck_rm/general_gnatcheck_switches
    gnatcheck_rm/gnatcheck_rule_options
    gnatcheck_rm/adding_the_results_of_compiler_checks_to_gnatcheck_output
+   gnatcheck_rm/mapping_gnatcheck_rules_onto_coding_standards
    gnatcheck_rm/rule_exemption
    gnatcheck_rm/predefined_rules
    gnatcheck_rm/example_of_gnatcheck_usage

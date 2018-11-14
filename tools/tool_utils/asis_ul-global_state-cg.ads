@@ -6,18 +6,18 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2007-2009, AdaCore                     --
+--                     Copyright (C) 2007-2017, AdaCore                     --
 --                                                                          --
 -- Asis Utility Library (ASIS UL) is free software; you can redistribute it --
 -- and/or  modify  it  under  terms  of  the  GNU General Public License as --
--- published by the Free Software Foundation; either version 2, or (at your --
+-- published by the Free Software Foundation; either version 3, or (at your --
 -- option)  any later version.  ASIS UL  is distributed in the hope that it --
 -- will  be  useful,  but  WITHOUT  ANY  WARRANTY; without even the implied --
 -- warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the --
 -- GNU  General Public License for more details. You should have received a --
 -- copy of the  GNU General Public License  distributed with GNAT; see file --
--- COPYING. If not,  write  to the  Free Software Foundation,  51 Franklin  --
--- Street, Fifth Floor, Boston, MA 02110-1301, USA.                         --
+-- COPYING3. If not,  go to http://www.gnu.org/licenses for a complete copy --
+-- of the license.                                                          --
 --                                                                          --
 -- ASIS UL is maintained by AdaCore (http://www.adacore.com).               --
 --                                                                          --
@@ -205,6 +205,17 @@ package ASIS_UL.Global_State.CG is
    --  Traverse_Renamings even of the corresponding test functions return True,
    --  and these procedures will try to do the job they are for.
 
+   procedure Check_Call_Graph_Completeness;
+   --  Checks if the call information stored in the global data structure is
+   --  complete and allows to construct the full Call Graph. Generates a
+   --  diagnostic message each time when any incompleteness is detected.
+
+   procedure Check_Node_Completeness (N : GS_Node_Id);
+   --  Checks if the call information stored in the global data structure for
+   --  the argument node is complete and allows to construct the full Call
+   --  Graph. Generates a diagnostic message each time when any
+   --  incompleteness is detected.
+
    ----------------------------------------------------------------------
    --  Access and update routines for callable node general properties --
    ----------------------------------------------------------------------
@@ -215,7 +226,13 @@ package ASIS_UL.Global_State.CG is
    function Body_Analyzed (N : GS_Node_Id) return Boolean;
    procedure Set_Body_Analyzed (N : GS_Node_Id; Val : Boolean := True);
    --  Reports and sets the flag indicating if the body of the callable entity
-   --  has been analyzed. Raise Constraint_Error is No (N).
+   --  has been analyzed. Raise Constraint_Error if No (N).
+
+   function Missing_Body_Reported (N : GS_Node_Id) return Boolean;
+   procedure Set_Missing_Body_Reported (N : GS_Node_Id; Val : Boolean := True);
+   --  Reports and sets the flag indicating if for the callable entity the
+   --  warning about missing body has been issued. Raise Constraint_Error if
+   --  No (N).
 
    function GS_Is_Renaming (N : GS_Node_Id) return Boolean;
    --  Tells if the node is a renaming of another node. Raises Constraint_Error

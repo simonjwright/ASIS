@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2004-2016, AdaCore                     --
+--                     Copyright (C) 2004-2017, AdaCore                     --
 --                                                                          --
 -- GNATCHECK  is  free  software;  you can redistribute it and/or modify it --
 -- under terms of the  GNU  General Public License as published by the Free --
@@ -126,6 +126,8 @@ package body Gnatcheck.Rules.Default is
               and then
                not Constraint_Depends_On_Discriminant
                      (Subtype_Constraint (Element))
+              and then
+               not Self_Ref_Discr_Constraint (Subtype_Constraint (Element))
             then
                State.Detected := True;
             end if;

@@ -7,7 +7,7 @@
 --                                 S p e c                                  --
 --                                                                          --
 --                                                                          --
---            Copyright (C) 1995-2016, Free Software Foundation, Inc.       --
+--            Copyright (C) 1995-2017, Free Software Foundation, Inc.       --
 --                                                                          --
 -- ASIS-for-GNAT is free software; you can redistribute it and/or modify it --
 -- under terms of the  GNU General Public License  as published by the Free --
@@ -44,6 +44,7 @@ with Asis;         use Asis;
 with A4G.Int_Knds; use A4G.Int_Knds;
 
 with Einfo;        use Einfo;
+with Namet;        use Namet;
 with Types;        use Types;
 
 package A4G.A_Sem is
@@ -335,5 +336,28 @@ package A4G.A_Sem is
    --  from a universal expression (and, therefore, the corresponding tree
    --  structures are not attributed). At the moment the check is somewhat too
    --  simple-minded, this may need revision.
+
+   function Is_From_SPARK_Aspect (N : Node_Id) return Boolean;
+   --  Checks if the argument is from the aspect specification that is specific
+   --  for SPARK 2014. The code in such aspect specifications is an Ada
+   --  extension, it does not follow the language visibility rules, so it may
+   --  contain names that have no definition and other things that make
+   --  problems for ASIS.
+
+   --------------------------------------------------------------------
+   -- Queies for processing arguments of SPARK-specific pragmas that --
+   -- crerate artificial aggregates as their arguments               --
+   --------------------------------------------------------------------
+
+   function Is_SPARK_Pragma (Pragma_Name : Name_Id) return Boolean;
+   --  Checks if the argument denotes a SPARK-specific pragma for that the
+   --  compiler can do "artificial upgrade" of its single argument to
+   --  aggregate structure.
+
+   function Artificial_Aggregate_For_SPARK_Pragma (N : Node_Id) return Boolean;
+   --  Assuming that N is of N_Pragma_Argument_Association kind and that is
+   --  from a pragma that Is_SPARK_Pragma, checks if this association actually
+   --  is an artificial aggregate created for a single identifier pragma
+   --  parameter.
 
 end A4G.A_Sem;

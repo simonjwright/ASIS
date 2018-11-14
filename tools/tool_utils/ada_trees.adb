@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2012-2016, AdaCore                     --
+--                     Copyright (C) 2012-2017, AdaCore                     --
 --                                                                          --
 -- Gnat2xml is free software; you can redistribute it and/or modify it      --
 -- under terms of the  GNU General Public License  as published by the Free --
@@ -26,9 +26,6 @@ pragma Ada_2012;
 with System.Address_Image;
 
 with ASIS_UL.Formatted_Output;
-with ASIS_UL.Char_Vectors; use ASIS_UL.Char_Vectors;
-use ASIS_UL.Char_Vectors.Char_Vectors;
---  use all type ASIS_UL.Char_Vectors.Char_Vector;
 
 with Asis.Elements;
 with Asis.Set_Get;

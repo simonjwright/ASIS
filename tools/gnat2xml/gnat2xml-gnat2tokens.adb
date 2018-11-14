@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2012-2016, AdaCore                     --
+--                     Copyright (C) 2012-2017, AdaCore                     --
 --                                                                          --
 -- Gnat2xml is free software; you can redistribute it and/or modify it      --
 -- under terms of the  GNU General Public License  as published by the Free --
@@ -30,6 +30,7 @@ with Pp.Buffers;        use Pp.Buffers;
 with Pp.Scanner;        use Pp.Scanner;
 
 procedure Gnat2xml.Gnat2tokens is
+   Slocs : Boolean := True;
 begin
    if Argument_Count = 0 then
       raise Program_Error with "missing arguments";
@@ -38,6 +39,9 @@ begin
    for X in 1 .. Argument_Count loop
       if Argument (X) = "--debug" then
          Debug_Mode := True;
+
+      elsif Argument (X) = "--noslocs" then
+         Slocs := False;
 
       else
          declare
@@ -51,7 +55,7 @@ begin
                            BOM_Seen => BOM_Seen, Expand_Tabs => True);
             pragma Assert (not BOM_Seen);
             Get_Tokens (Buf, Tokens, Pp_Off_On_Delimiters => (others => <>));
-            Put_Tokens (Tokens);
+            Put_Tokens (Tokens, Slocs => Slocs);
             Put ("\n\n\n");
          end;
       end if;

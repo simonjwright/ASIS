@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 1995-2016, Free Software Foundation, Inc.       --
+--            Copyright (C) 1995-2017, Free Software Foundation, Inc.       --
 --                                                                          --
 -- ASIS-for-GNAT is free software; you can redistribute it and/or modify it --
 -- under terms of the  GNU General Public License  as published by the Free --
@@ -89,12 +89,12 @@ package A4G.Encl_El is
    --  compiler
 
    procedure Skip_Normalized_Declarations_Back (Node : in out Node_Id);
-   --  this procedure is applied in case when the compiler may normalize a
-   --  multi-identifier declaration (or multi-name with clause) in a set of
-   --  equivalent one-identifier (one-name) declarations (clauses). It is
-   --  intended to be called for Node representing any  declaration
-   --  (clause) in this normalized sequence, and it resets its parameter
-   --  to point to the first declaration (clause) in this sequence
+   --  This procedure is applied in case when the compiler may normalize a
+   --  multi-identifier declaration (or multi-name with and use clauses) in a
+   --  set of equivalent one-identifier (one-name) declarations (clauses). It
+   --  is intended to be called for Node representing any  declaration (clause)
+   --  in this normalized sequence, and it resets its parameter to point to the
+   --  first declaration (clause) in this sequence
    --
    --  There is no harm to call this procedure for Node which does not
    --  represent a normalized declaration (or even which does not represent

@@ -9,135 +9,150 @@ GNATcheck Reference Manual
 4 General `gnatcheck' Switches
 5 `gnatcheck' Rule Options
 6 Adding the Results of Compiler Checks to `gnatcheck' Output
-7 Rule exemption
-  7.1 Using pragma `Annotate' to Control Rule Exemption
-  7.2 `gnatcheck' Annotations Rules
-8 Predefined Rules
-  8.1 Style-Related Rules
-    8.1.1 Tasking
-      8.1.1.1 `Multiple_Entries_In_Protected_Definitions'
-      8.1.1.2 `Volatile_Objects_Without_Address_Clauses'
-    8.1.2 Object Orientation
-      8.1.2.1 `Deep_Inheritance_Hierarchies'
-      8.1.2.2 `Direct_Calls_To_Primitives'
-      8.1.2.3 `Too_Many_Parents'
-      8.1.2.4 `Visible_Components'
-    8.1.3 Portability
-      8.1.3.1 `Forbidden_Attributes'
-      8.1.3.2 `Forbidden_Pragmas'
-      8.1.3.3 `Implicit_SMALL_For_Fixed_Point_Types'
-      8.1.3.4 `No_Scalar_Storage_Order_Specified'
-      8.1.3.5 `Predefined_Numeric_Types'
-      8.1.3.6 `Separate_Numeric_Error_Handlers'
-    8.1.4 Program Structure
-      8.1.4.1 `Deeply_Nested_Generics'
-      8.1.4.2 `Local_Packages'
-      8.1.4.3 `Non_Visible_Exceptions'
-      8.1.4.4 `Raising_External_Exceptions'
-    8.1.5 Programming Practice
-      8.1.5.1 `Anonymous_Arrays'
-      8.1.5.2 `Binary_Case_Statements'
-      8.1.5.3 `Default_Values_For_Record_Components'
-      8.1.5.4 `Deriving_From_Predefined_Type'
-      8.1.5.5 `Enumeration_Ranges_In_CASE_Statements'
-      8.1.5.6 `Enumeration_Representation_Clauses'
-      8.1.5.7 `Exceptions_As_Control_Flow'
-      8.1.5.8 `Exits_From_Conditional_Loops'
-      8.1.5.9 `EXIT_Statements_With_No_Loop_Name'
-      8.1.5.10 `Global_Variables'
-      8.1.5.11 `GOTO_Statements'
-      8.1.5.12 `Improper_Returns'
-      8.1.5.13 `Maximum_Parameters'
-      8.1.5.14 `Nested_Subprograms'
-      8.1.5.15 `Non_Short_Circuit_Operators'
-      8.1.5.16 `Null_Paths'
-      8.1.5.17 `Objects_Of_Anonymous_Types'
-      8.1.5.18 `OTHERS_In_Aggregates'
-      8.1.5.19 `OTHERS_In_CASE_Statements'
-      8.1.5.20 `OTHERS_In_Exception_Handlers'
-      8.1.5.21 `Overly_Nested_Control_Structures'
-      8.1.5.22 `POS_On_Enumeration_Types'
-      8.1.5.23 `Positional_Actuals_For_Defaulted_Generic_Parameters'
-      8.1.5.24 `Positional_Actuals_For_Defaulted_Parameters'
-      8.1.5.25 `Positional_Components'
-      8.1.5.26 `Positional_Generic_Parameters'
-      8.1.5.27 `Positional_Parameters'
-      8.1.5.28 `Recursive_Subprograms'
-      8.1.5.29 `Unchecked_Address_Conversions'
-      8.1.5.30 `Unchecked_Conversions_As_Actuals'
-      8.1.5.31 `Unconditional_Exits'
-      8.1.5.32 `Uninitialized_Global_Variables'
-      8.1.5.33 `Unnamed_Blocks_And_Loops'
-      8.1.5.34 `USE_PACKAGE_Clauses'
-    8.1.6 Readability
-      8.1.6.1 `Identifier_Casing'
-      8.1.6.2 `Identifier_Prefixes'
-      8.1.6.3 `Identifier_Suffixes'
-      8.1.6.4 `Misnamed_Controlling_Parameters'
-      8.1.6.5 `Name_Clashes'
-      8.1.6.6 `Uncommented_BEGIN_In_Package_Bodies'
-    8.1.7 Source Code Presentation
-  8.2 Feature Usage Rules
-    8.2.1 `Abstract_Type_Declarations'
-    8.2.2 `Anonymous_Subtypes'
-    8.2.3 `Blocks'
-    8.2.4 `Complex_Inlined_Subprograms'
-    8.2.5 `Conditional_Expressions'
-    8.2.6 `Controlled_Type_Declarations'
-    8.2.7 `Declarations_In_Blocks'
-    8.2.8 `Deeply_Nested_Inlining'
-    8.2.9 `Default_Parameters'
-    8.2.10 `Discriminated_Records'
-    8.2.11 `Explicit_Full_Discrete_Ranges'
-    8.2.12 `Fixed_Equality_Checks'
-    8.2.13 `Float_Equality_Checks'
-    8.2.14 `Function_Style_Procedures'
-    8.2.15 `Generics_In_Subprograms'
-    8.2.16 `Implicit_IN_Mode_Parameters'
-    8.2.17 `Improperly_Located_Instantiations'
-    8.2.18 `Library_Level_Subprograms'
-    8.2.19 `Membership_Tests'
-    8.2.20 `Non_Qualified_Aggregates'
-    8.2.21 `Numeric_Literals'
-    8.2.22 `Parameters_Out_Of_Order'
-    8.2.23 `Predicate_Testing'
-    8.2.24 `Quantified_Expressions'
-    8.2.25 `Raising_Predefined_Exceptions'
-    8.2.26 `Unassigned_OUT_Parameters'
-    8.2.27 `Unconstrained_Array_Returns'
-  8.3 Metrics-Related Rules
-    8.3.1 `Metrics_Essential_Complexity'
-    8.3.2 `Metrics_Cyclomatic_Complexity'
-    8.3.3 `Metrics_LSLOC'
-  8.4 SPARK Ada Rules
-    8.4.1 `Annotated_Comments'
-    8.4.2 `Boolean_Relational_Operators'
-    8.4.3 `Expanded_Loop_Exit_Names'
-    8.4.4 `Non_SPARK_Attributes'
-    8.4.5 `Non_Tagged_Derived_Types'
-    8.4.6 `Outer_Loop_Exits'
-    8.4.7 `Overloaded_Operators'
-    8.4.8 `Slices'
-    8.4.9 `Universal_Ranges'
-9 Example of `gnatcheck' Usage
-10 List of Rules
-11 GNU Free Documentation License
+7 Mapping `gnatcheck' Rules Onto Coding Standards
+8 Rule exemption
+  8.1 Using pragma `Annotate' to Control Rule Exemption
+  8.2 `gnatcheck' Annotations Rules
+9 Predefined Rules
+  9.1 Style-Related Rules
+    9.1.1 Tasking
+      9.1.1.1 `Multiple_Entries_In_Protected_Definitions'
+      9.1.1.2 `Volatile_Objects_Without_Address_Clauses'
+    9.1.2 Object Orientation
+      9.1.2.1 `Constructors'
+      9.1.2.2 `Deep_Inheritance_Hierarchies'
+      9.1.2.3 `Direct_Calls_To_Primitives'
+      9.1.2.4 `Downward_View_Conversions'
+      9.1.2.5 `No_Inherited_Classwide_Pre'
+      9.1.2.6 `Specific_Pre_Post'
+      9.1.2.7 `Specific_Parent_Type_Invariant'
+      9.1.2.8 `Specific_Type_Invariants'
+      9.1.2.9 `Too_Many_Parents'
+      9.1.2.10 `Too_Many_Primitives'
+      9.1.2.11 `Visible_Components'
+    9.1.3 Portability
+      9.1.3.1 `Forbidden_Attributes'
+      9.1.3.2 `Forbidden_Pragmas'
+      9.1.3.3 `Implicit_SMALL_For_Fixed_Point_Types'
+      9.1.3.4 `No_Scalar_Storage_Order_Specified'
+      9.1.3.5 `Predefined_Numeric_Types'
+      9.1.3.6 `Printable_ASCII'
+      9.1.3.7 `Separate_Numeric_Error_Handlers'
+    9.1.4 Program Structure
+      9.1.4.1 `Deep_Library_Hierarchy'
+      9.1.4.2 `Deeply_Nested_Generics'
+      9.1.4.3 `Local_Packages'
+      9.1.4.4 `Non_Visible_Exceptions'
+      9.1.4.5 `Raising_External_Exceptions'
+    9.1.5 Programming Practice
+      9.1.5.1 `Anonymous_Arrays'
+      9.1.5.2 `Binary_Case_Statements'
+      9.1.5.3 `Default_Values_For_Record_Components'
+      9.1.5.4 `Deriving_From_Predefined_Type'
+      9.1.5.5 `Enumeration_Ranges_In_CASE_Statements'
+      9.1.5.6 `Enumeration_Representation_Clauses'
+      9.1.5.7 `Exceptions_As_Control_Flow'
+      9.1.5.8 `Exits_From_Conditional_Loops'
+      9.1.5.9 `EXIT_Statements_With_No_Loop_Name'
+      9.1.5.10 `Global_Variables'
+      9.1.5.11 `GOTO_Statements'
+      9.1.5.12 `Improper_Returns'
+      9.1.5.13 `Maximum_Parameters'
+      9.1.5.14 `Nested_Subprograms'
+      9.1.5.15 `Non_Short_Circuit_Operators'
+      9.1.5.16 `Null_Paths'
+      9.1.5.17 `Objects_Of_Anonymous_Types'
+      9.1.5.18 `OTHERS_In_Aggregates'
+      9.1.5.19 `OTHERS_In_CASE_Statements'
+      9.1.5.20 `OTHERS_In_Exception_Handlers'
+      9.1.5.21 `Overly_Nested_Control_Structures'
+      9.1.5.22 `POS_On_Enumeration_Types'
+      9.1.5.23 `Positional_Actuals_For_Defaulted_Generic_Parameters'
+      9.1.5.24 `Positional_Actuals_For_Defaulted_Parameters'
+      9.1.5.25 `Positional_Components'
+      9.1.5.26 `Positional_Generic_Parameters'
+      9.1.5.27 `Positional_Parameters'
+      9.1.5.28 `Recursive_Subprograms'
+      9.1.5.29 `Unchecked_Address_Conversions'
+      9.1.5.30 `Unchecked_Conversions_As_Actuals'
+      9.1.5.31 `Unconditional_Exits'
+      9.1.5.32 `Uninitialized_Global_Variables'
+      9.1.5.33 `Unnamed_Blocks_And_Loops'
+      9.1.5.34 `USE_PACKAGE_Clauses'
+    9.1.6 Readability
+      9.1.6.1 `Identifier_Casing'
+      9.1.6.2 `Identifier_Prefixes'
+      9.1.6.3 `Identifier_Suffixes'
+      9.1.6.4 `Misnamed_Controlling_Parameters'
+      9.1.6.5 `Name_Clashes'
+      9.1.6.6 `Uncommented_BEGIN_In_Package_Bodies'
+    9.1.7 Source Code Presentation
+  9.2 Feature Usage Rules
+    9.2.1 `Abstract_Type_Declarations'
+    9.2.2 `Anonymous_Subtypes'
+    9.2.3 `Blocks'
+    9.2.4 `Complex_Inlined_Subprograms'
+    9.2.5 `Conditional_Expressions'
+    9.2.6 `Controlled_Type_Declarations'
+    9.2.7 `Declarations_In_Blocks'
+    9.2.8 `Deeply_Nested_Inlining'
+    9.2.9 `Default_Parameters'
+    9.2.10 `Discriminated_Records'
+    9.2.11 `Explicit_Full_Discrete_Ranges'
+    9.2.12 `Expression_Functions'
+    9.2.13 `Fixed_Equality_Checks'
+    9.2.14 `Float_Equality_Checks'
+    9.2.15 `Function_Style_Procedures'
+    9.2.16 `Generics_In_Subprograms'
+    9.2.17 `Implicit_IN_Mode_Parameters'
+    9.2.18 `Improperly_Located_Instantiations'
+    9.2.19 `Library_Level_Subprograms'
+    9.2.20 `Membership_Tests'
+    9.2.21 `Non_Qualified_Aggregates'
+    9.2.22 `Numeric_Indexing'
+    9.2.23 `Numeric_Literals'
+    9.2.24 `Parameters_Out_Of_Order'
+    9.2.25 `Predicate_Testing'
+    9.2.26 `Representation_Specifications'
+    9.2.27 `Quantified_Expressions'
+    9.2.28 `Raising_Predefined_Exceptions'
+    9.2.29 `Subprogram_Access'
+    9.2.30 `Too_Many_Dependencies'
+    9.2.31 `Unassigned_OUT_Parameters'
+    9.2.32 `Unconstrained_Array_Returns'
+  9.3 Metrics-Related Rules
+    9.3.1 `Metrics_Essential_Complexity'
+    9.3.2 `Metrics_Cyclomatic_Complexity'
+    9.3.3 `Metrics_LSLOC'
+  9.4 SPARK Ada Rules
+    9.4.1 `Annotated_Comments'
+    9.4.2 `Boolean_Relational_Operators'
+    9.4.3 `Expanded_Loop_Exit_Names'
+    9.4.4 `Non_SPARK_Attributes'
+    9.4.5 `Non_Tagged_Derived_Types'
+    9.4.6 `Outer_Loop_Exits'
+    9.4.7 `Overloaded_Operators'
+    9.4.8 `Slices'
+    9.4.9 `Universal_Ranges'
+10 Example of `gnatcheck' Usage
+11 List of Rules
+12 GNU Free Documentation License
 Index
 
 
 GNATcheck Reference Manual
 **************************
 
-     GNATcheck Reference Manual 2017, May 16, 2017
+     GNATcheck Reference Manual 2018, May 24, 2018
 
      AdaCore
 
-     Copyright (C) 2008-2017, AdaCore
+     Copyright (C) 2008-2018, AdaCore
 
 `GNAT, The GNU Ada Development Environment'
 
     The GNAT Ada Compiler 
-    Version 2017 
+    Version 2018 
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.1 or
@@ -413,9 +428,18 @@ The following switches control the general `gnatcheck' behavior
           more than once in the same call to `gnatcheck'. You also can
           combine this switch with an explicit list of files.
 
+`--ignore=filename'
+          Do not process the sources listed in a specified file. This
+          option cannot be used in incremental mode.
+
 `--show-rule'
      Add the corresponding rule name to the diagnosis generated for its
      violation.
+
+`--check-redefinition'
+     For a parametrized rule check if a rule parameter is defined more
+     than once in the set of rule options specified and issue a warning
+     if parameter redefinition is detected
 
 `--include-file=file'
      Append the content of the specified text file to the report file
@@ -445,20 +469,37 @@ specified (either directly or by means of `-files' option), and no `-U'
 is specified, then the set of processed sources is all the immediate
 units of the argument project.
 
+If the argument project file is defines aggregate project, and it
+aggregates more than one (non-aggregate) project, gnatcheck runs
+separately for each (non-aggregate) project being aggregated by the
+argument project, and a separate report file is created for each of
+these runs. Also such a run creates an umbrella report file that lists
+all the (non-aggregate) projects that are processed separately and for
+each of these projects contains the reference for the corresponding
+report file.
+
+If the argument project file defines an aggregate project but it
+aggregates only one (non-aggregate) project, the gnatcheck behavior is
+the same as for the case of non-aggregate argument project file.
+
 5 `gnatcheck' Rule Options
 **************************
 
 The following options control the processing performed by `gnatcheck'.
 
  
-`+Rrule_id[:param]'
+`+R[:rule_synonym:]rule_id[:param{,param}]'
      Turn on the check for a specified rule with the specified
-     parameter, if any.  `rule_id' must be the identifier of one of the
-     currently implemented rules (use `-h' for the list of implemented
-     rules). Rule identifiers are not case-sensitive. The `param' item
-     must be a string representing a valid parameter(s) for the
-     specified rule.  If it contains any space characters then this
-     string must be enclosed in quotation marks.
+     parameter(s), if any. `rule_id' must be the identifier of one of
+     the currently implemented rules (use `-h' for the list of
+     implemented rules). Rule identifiers are not case-sensitive. Each
+     `param' item must be a non-empty string representing a valid
+     parameter for the specified rule.  If the part of the rule option
+     that follows the colon character contains any space characters
+     then this part must be enclosed in quotation marks.
+
+     `rule_synonym' is a user-defined synonym for a rule name, it can
+     be used to map `gnatcheck' rules onto a user coding standard.
 
 `-Rrule_id[:param]'
      Turn off the check for a specified rule with the specified
@@ -469,6 +510,10 @@ The following options control the processing performed by `gnatcheck'.
      referred to as a 'coding standard file' below.
 
 The default behavior is that all the rule checks are disabled.
+
+If a rule option is given in a rule file, it can contain spaces and
+line breaks.  Otherwise there should be no spaces between the
+components of a rule option.
 
 If more than one rule option is specified for the same rule, these
 options are summed together. If a new option contradicts the rule
@@ -560,7 +605,34 @@ not available for `Style_Checks' and `Warnings' options, to disable
 warnings and style checks, use the corresponding warning and style
 options.
 
-7 Rule exemption
+7 Mapping `gnatcheck' Rules Onto Coding Standards
+*************************************************
+
+If a user would like use `gnatcheck' to check if some code satisfies to
+a given coding standard, the following approach can be used to simplify
+mapping of the coding standard requirements onto `gnatcheck' rules:
+
+   * when specifying rule options, use synonyms for the rule names that
+     are relevant to your coding standard:
+
+         +R :My_Coding_Rule_1: Gnatcheck_Rule_1: param1
+         ...
+         +R :My_Coding_Rule_N: Gnatcheck_Rule_N
+
+   * call `gnatcheck' with `-show-rule' option that adds the rule names
+     to the generated diagnoses. If a synonym is used in the rule
+     option that enables the rule, then this synonym will be used to
+     annotate the diagnosis instead of the rule name:
+
+         foo.adb:2:28: something is wrong here [My_Coding_Rule_1]
+         ...
+         bar.ads:17:3: this is not good [My_Coding_Rule_N]
+
+Currently this approach does not work for compiler-based checks
+integrated in `gnatcheck' (implemented by `Restrictions',
+`Style_Checks' and `Warnings' rules.
+
+8 Rule exemption
 ****************
 
 One of the most useful applications of `gnatcheck' is to automate the
@@ -581,7 +653,7 @@ need to pay attention to known and justified violations. However,
 exempted violations along with their justification are documented in a
 special section of the report file that `gnatcheck' generates.
 
-7.1 Using pragma `Annotate' to Control Rule Exemption
+8.1 Using pragma `Annotate' to Control Rule Exemption
 =====================================================
 
 Rule exemption is controlled by pragma `Annotate' when its first
@@ -638,7 +710,7 @@ exemptions are available for them and what is the format of the rule
 parameters to be used in the corresponding parameters of the `Annotate'
 pragmas.
 
-7.2 `gnatcheck' Annotations Rules
+8.2 `gnatcheck' Annotations Rules
 =================================
 
    * An 'Exempt_Off' annotation can only appear after a corresponding
@@ -672,7 +744,7 @@ pragmas.
      warning is issued and the exemption section is considered to last
      until the end of the compilation unit source.
 
-8 Predefined Rules
+9 Predefined Rules
 ******************
 
 The description of the rules currently implemented in `gnatcheck' is
@@ -689,20 +761,20 @@ standards and finding the corresponding gnatcheck rules.
 If not otherwise specified, a rule does not do any check for the
 results of generic instantiations.
 
-8.1 Style-Related Rules
+9.1 Style-Related Rules
 =======================
 
 The rules in this section may be used to enforce various feature usages
 consistent with good software engineering, for example as described in
 Ada 95 Quality and Style.
 
-8.1.1 Tasking
+9.1.1 Tasking
 -------------
 
 The rules in this subsection may be used to enforce various feature
 usages related to concurrency.
 
-8.1.1.1 `Multiple_Entries_In_Protected_Definitions'
+9.1.1.1 `Multiple_Entries_In_Protected_Definitions'
 ...................................................
 
 Flag each protected definition (i.e., each protected object/type
@@ -713,31 +785,35 @@ the protected definition are also checked.
 
 This rule has no parameters.
 
-8.1.1.2 `Volatile_Objects_Without_Address_Clauses'
+9.1.1.2 `Volatile_Objects_Without_Address_Clauses'
 ..................................................
 
-Flag each volatile object that does not have an address clause.
+Flag each volatile object that does not have an address specification.
+Only variable declarations are checked.
 
-The following check is made: if the pragma `Volatile' is applied to a
-data object or to its type, then an address clause must be supplied for
-this object.
-
-This rule does not check the components of data objects, array
-components that are volatile as a result of the pragma
-`Volatile_Components', or objects that are volatile because they are
-atomic as a result of pragmas `Atomic' or `Atomic_Components'.
-
-Only variable declarations, and not constant declarations, are checked.
+An object is considered as being volatile if a pragma or aspect Volatile
+is applied to the object or to its type, if the object is atomic or if
+the GNAT compiler considers this object as volatile because of some
+code generation reasons.
 
 This rule has no parameters.
 
-8.1.2 Object Orientation
+9.1.2 Object Orientation
 ------------------------
 
 The rules in this subsection may be used to enforce various feature
 usages related to Object-Oriented Programming.
 
-8.1.2.1 `Deep_Inheritance_Hierarchies'
+9.1.2.1 `Constructors'
+......................
+
+Flag any declaration of a primitive function of a tagged type that has a
+controlling result and no controlling parameter. If a declaration is a
+completion of another declaration then it is not flagged.
+
+This rule has no parameters.
+
+9.1.2.2 `Deep_Inheritance_Hierarchies'
 ......................................
 
 Flags a tagged derived type declaration or an interface type
@@ -772,7 +848,7 @@ This rule has the following (mandatory) parameter for the `+R' option:
      any inheritance hierarchy. If the rule parameter is set to -1, the
      rule flags all the declarations of tagged and interface types.
 
-8.1.2.2 `Direct_Calls_To_Primitives'
+9.1.2.3 `Direct_Calls_To_Primitives'
 ....................................
 
 Flag any nondispatching call to a dispatching primitive operation,
@@ -794,7 +870,52 @@ This rule has the following (optional) parameters for the `+R' option:
      controlling result and no controlling parameters (in a traditional
      OO sense such functions may be considered as constructors).
 
-8.1.2.3 `Too_Many_Parents'
+9.1.2.4 `Downward_View_Conversions'
+...................................
+
+Flag downward view conversions.
+
+This rule has no parameters.
+
+9.1.2.5 `No_Inherited_Classwide_Pre'
+....................................
+
+Flag a declaration of an overriding primitive operation of a tagged type
+if at least one of the operations it overrides or implements does not
+have (explicitly defined or inherited) Pre'Class aspect defined for it.
+
+This rule has no parameters.
+
+9.1.2.6 `Specific_Pre_Post'
+...........................
+
+Flag a declaration of a primitive operation of a tagged type if this
+declaration contains specification of Pre or/and Post aspect.
+
+This rule has no parameters.
+
+9.1.2.7 `Specific_Parent_Type_Invariant'
+........................................
+
+Flag any record extension definition or private extension definition if
+a parent type has a Type_Invariant aspect defined for it. A record
+extension definition is not flagged if it is a part of a completion of a
+private extension declaration.
+
+This rule has no parameters.
+
+9.1.2.8 `Specific_Type_Invariants'
+..................................
+
+Flag any definition of (non-class-wide) Type_Invariant aspect that is a
+part of a declaration of a tagged type or a tagged extension.
+Definitions of Type_Invariant'Class aspects are not flagged.
+Definitions of (non-class-wide) Type_Invariant aspect that are parts of
+declarations of non-tagged types are not flagged.
+
+This rule has no parameters.
+
+9.1.2.9 `Too_Many_Parents'
 ..........................
 
 Flag any tagged type declaration, interface type declaration, single
@@ -810,8 +931,23 @@ This rule has the following (mandatory) parameters for the `+R' option:
      Positive integer specifying the maximal allowed number of
      parents/progenitors.
 
-8.1.2.4 `Visible_Components'
-............................
+9.1.2.10 `Too_Many_Primitives'
+..............................
+
+Flag any tagged type declaration that has more than N user-defined
+primitive operations (counting both inherited and not overridden and
+explicitly declared, not counting predefined operators), Do not flag
+type declarations that are completions of private type or extension
+declarations.
+
+This rule has the following (mandatory) parameters for the `+R' option:
+
+`N'
+     Positive integer specifying the maximal number of primitives when
+     the type is not flagged.
+
+9.1.2.11 `Visible_Components'
+.............................
 
 Flag all the type declarations located in the visible part of a library
 package or a library generic package that can declare a visible
@@ -826,13 +962,13 @@ subprogram body are not flagged.
 
 This rule has no parameters.
 
-8.1.3 Portability
+9.1.3 Portability
 -----------------
 
 The rules in this subsection may be used to enforce various feature
 usages that support program portability.
 
-8.1.3.1 `Forbidden_Attributes'
+9.1.3.1 `Forbidden_Attributes'
 ..............................
 
 Flag each use of the specified attributes. The attributes to be
@@ -899,7 +1035,7 @@ in the definition of exemption sections are `Attribute_Designators'.
 Each `Attribute_Designator' used as a rule exemption parameter should
 denote a predefined or GNAT-specific attribute.
 
-8.1.3.2 `Forbidden_Pragmas'
+9.1.3.2 `Forbidden_Pragmas'
 ...........................
 
 Flag each use of the specified pragmas.  The pragmas to be detected are
@@ -971,7 +1107,7 @@ in the definition of exemption sections are pragma names. Each name
 used as a rule exemption parameter should denote a predefined or
 GNAT-specific pragma.
 
-8.1.3.3 `Implicit_SMALL_For_Fixed_Point_Types'
+9.1.3.3 `Implicit_SMALL_For_Fixed_Point_Types'
 ..............................................
 
 Flag each fixed point type declaration that lacks an explicit
@@ -981,7 +1117,7 @@ point type declarations are not checked.
 
 This rule has no parameters.
 
-8.1.3.4 `No_Scalar_Storage_Order_Specified'
+9.1.3.4 `No_Scalar_Storage_Order_Specified'
 ...........................................
 
 Flag each record type declaration, record extension declaration, and
@@ -992,7 +1128,7 @@ ancestors has an explicitly specified Scalar_Storage_Order attribute.
 
 This rule has no parameters.
 
-8.1.3.5 `Predefined_Numeric_Types'
+9.1.3.5 `Predefined_Numeric_Types'
 ..................................
 
 Flag each explicit use of the name of any numeric type or subtype
@@ -1015,7 +1151,20 @@ predefined packages (such as `System.Any_Priority' or
 
 This rule has no parameters.
 
-8.1.3.6 `Separate_Numeric_Error_Handlers'
+9.1.3.6 `Printable_ASCII'
+.........................
+
+Flag source code text characters that are not part of the printable
+ASCII character set, a line feed, or a carriage return character (i.e.
+values 10, 13 and 32 .. 126 of the ASCII Character set).
+
+If a code line contains more than one symbol that does not belong to the
+printable ASCII character set, the generated diagnosis points to the
+first (leftmost) character and says that there are more in this line.
+
+This rule has no parameters.
+
+9.1.3.7 `Separate_Numeric_Error_Handlers'
 .........................................
 
 Flags each exception handler that contains a choice for the predefined
@@ -1025,13 +1174,28 @@ predefined `Numeric_Error' exception, or that contains the choice for
 
 This rule has no parameters.
 
-8.1.4 Program Structure
+9.1.4 Program Structure
 -----------------------
 
 The rules in this subsection may be used to enforce feature usages
 related to program structure.
 
-8.1.4.1 `Deeply_Nested_Generics'
+9.1.4.1 `Deep_Library_Hierarchy'
+................................
+
+Flag any library package declaration, library generic package
+declaration or library package instantiation that has more than N
+parents and grandparents (that is, the name of such a library unit
+contains more than N dots). Child subprograms, generic subprograms
+subprogram instantiations and package bodies are not flagged.
+
+This rule has the following (mandatory) parameters for the `+R' option:
+
+`N'
+     Positive integer specifying the maximal number of ancestors when
+     the unit is not flagged.
+
+9.1.4.2 `Deeply_Nested_Generics'
 ................................
 
 Flag a generic declaration nested in another generic declaration if the
@@ -1043,10 +1207,10 @@ packages are not flagged by this rule.
 This rule has the following (mandatory) parameters for the `+R' option:
 
 `N'
-     Positive integer specifying the maximum nesting level for a
+     Nonnegative integer specifying the maximum nesting level for a
      generic declaration.
 
-8.1.4.2 `Local_Packages'
+9.1.4.3 `Local_Packages'
 ........................
 
 Flag all local packages declared in package and generic package specs.
@@ -1054,7 +1218,7 @@ Local packages in bodies are not flagged.
 
 This rule has no parameters.
 
-8.1.4.3 `Non_Visible_Exceptions'
+9.1.4.4 `Non_Visible_Exceptions'
 ................................
 
 Flag constructs leading to the possibility of propagating an exception
@@ -1080,7 +1244,7 @@ Renamings of local exceptions are not flagged.
 
 This rule has no parameters.
 
-8.1.4.4 `Raising_External_Exceptions'
+9.1.4.5 `Raising_External_Exceptions'
 .....................................
 
 Flag any `raise' statement, in a program unit declared in a library
@@ -1090,13 +1254,13 @@ neither a predefined exception nor an exception that is also declared
 
 This rule has no parameters.
 
-8.1.5 Programming Practice
+9.1.5 Programming Practice
 --------------------------
 
 The rules in this subsection may be used to enforce feature usages that
 relate to program maintainability.
 
-8.1.5.1 `Anonymous_Arrays'
+9.1.5.1 `Anonymous_Arrays'
 ..........................
 
 Flag all anonymous array type definitions (by Ada semantics these can
@@ -1104,7 +1268,7 @@ only occur in object declarations).
 
 This rule has no parameters.
 
-8.1.5.2 `Binary_Case_Statements'
+9.1.5.2 `Binary_Case_Statements'
 ................................
 
 Flag a case statement if this statement has only two alternatives, one
@@ -1113,7 +1277,7 @@ or the `OTHERS' choice.
 
 This rule has no parameters.
 
-8.1.5.3 `Default_Values_For_Record_Components'
+9.1.5.3 `Default_Values_For_Record_Components'
 ..............................................
 
 Flag a record component declaration if it contains a default expression.
@@ -1122,7 +1286,7 @@ not flag discriminant specifications.
 
 This rule has no parameters.
 
-8.1.5.4 `Deriving_From_Predefined_Type'
+9.1.5.4 `Deriving_From_Predefined_Type'
 .......................................
 
 Flag derived type declaration if the ultimate ancestor type is a
@@ -1131,7 +1295,7 @@ extensions. The rule is checked inside expanded generics.
 
 This rule has no parameters.
 
-8.1.5.5 `Enumeration_Ranges_In_CASE_Statements'
+9.1.5.5 `Enumeration_Ranges_In_CASE_Statements'
 ...............................................
 
 Flag each use of a range of enumeration literals as a choice in a
@@ -1148,14 +1312,14 @@ new literal.
 
 This rule has no parameters.
 
-8.1.5.6 `Enumeration_Representation_Clauses'
+9.1.5.6 `Enumeration_Representation_Clauses'
 ............................................
 
 Flag enumeration representation clauses.
 
 This rule has no parameters.
 
-8.1.5.7 `Exceptions_As_Control_Flow'
+9.1.5.7 `Exceptions_As_Control_Flow'
 ....................................
 
 Flag each place where an exception is explicitly raised and handled in
@@ -1164,7 +1328,7 @@ package body, task body or entry body is not flagged.
 
 The rule has no parameters.
 
-8.1.5.8 `Exits_From_Conditional_Loops'
+9.1.5.8 `Exits_From_Conditional_Loops'
 ......................................
 
 Flag any exit statement if it transfers the control out of a `for' loop
@@ -1175,7 +1339,7 @@ some `for' or `while' loop, but transfers the control from some outer
 
 The rule has no parameters.
 
-8.1.5.9 `EXIT_Statements_With_No_Loop_Name'
+9.1.5.9 `EXIT_Statements_With_No_Loop_Name'
 ...........................................
 
 Flag each `exit' statement that does not specify the name of the loop
@@ -1183,7 +1347,7 @@ being exited.
 
 The rule has no parameters.
 
-8.1.5.10 `Global_Variables'
+9.1.5.10 `Global_Variables'
 ...........................
 
 Flag any variable declaration that appears immediately within the
@@ -1195,16 +1359,16 @@ This rule has the following (optional) parameters for the `+R' option:
 
 `Only_Public'
      Do not flag variable declarations in private library (generic)
-     packages and in package privat parts.
+     packages and in package private parts.
 
-8.1.5.11 `GOTO_Statements'
+9.1.5.11 `GOTO_Statements'
 ..........................
 
 Flag each occurrence of a `goto' statement.
 
 This rule has no parameters.
 
-8.1.5.12 `Improper_Returns'
+9.1.5.12 `Improper_Returns'
 ...........................
 
 Flag each explicit `return' statement in procedures, and multiple
@@ -1217,7 +1381,7 @@ have no more than one point of normal return.
 
 This rule has no parameters.
 
-8.1.5.13 `Maximum_Parameters'
+9.1.5.13 `Maximum_Parameters'
 .............................
 
 Flag any subprogram declaration, subprogram body declaration, expression
@@ -1237,7 +1401,7 @@ This rule has the following (mandatory) parameters for the `+R' option:
      Positive integer specifying the maximum allowed total number of
      subprogram formal parameters.
 
-8.1.5.14 `Nested_Subprograms'
+9.1.5.14 `Nested_Subprograms'
 .............................
 
 Flag any subprogram declaration, subprogram body declaration, subprogram
@@ -1251,7 +1415,7 @@ completed by null procedure declarations are not flagged.
 
 This rule has no parameters.
 
-8.1.5.15 `Non_Short_Circuit_Operators'
+9.1.5.15 `Non_Short_Circuit_Operators'
 ......................................
 
 Flag all calls to predefined `and' and `or' operators for any boolean
@@ -1261,7 +1425,7 @@ renaming declarations are not flagged. Calls to predefined `and' and
 
 This rule has no parameters.
 
-8.1.5.16 `Null_Paths'
+9.1.5.16 `Null_Paths'
 .....................
 
 Flag a statement sequence that is a component of an IF, CASE or LOOP
@@ -1269,7 +1433,7 @@ statement if this sequences consists of NULL statements only.
 
 This rule has no parameters.
 
-8.1.5.17 `Objects_Of_Anonymous_Types'
+9.1.5.17 `Objects_Of_Anonymous_Types'
 .....................................
 
 Flag any object declaration located immediately within a package
@@ -1280,7 +1444,7 @@ defined with anonymous access definitions are flagged.
 
 This rule has no parameters.
 
-8.1.5.18 `OTHERS_In_Aggregates'
+9.1.5.18 `OTHERS_In_Aggregates'
 ...............................
 
 Flag each use of an `others' choice in extension aggregates.  In record
@@ -1294,21 +1458,21 @@ component; for example, `(1..1 => 0, others => 1)'.
 
 This rule has no parameters.
 
-8.1.5.19 `OTHERS_In_CASE_Statements'
+9.1.5.19 `OTHERS_In_CASE_Statements'
 ....................................
 
 Flag any use of an `others' choice in a `case' statement.
 
 This rule has no parameters.
 
-8.1.5.20 `OTHERS_In_Exception_Handlers'
+9.1.5.20 `OTHERS_In_Exception_Handlers'
 .......................................
 
 Flag any use of an `others' choice in an exception handler.
 
 This rule has no parameters.
 
-8.1.5.21 `Overly_Nested_Control_Structures'
+9.1.5.21 `Overly_Nested_Control_Structures'
 ...........................................
 
 Flag each control structure whose nesting level exceeds the value
@@ -1342,7 +1506,7 @@ positive integer, `+R' option is ignored.
 If more than one  option is specified for the gnatcheck call, the later
 option and new parameter override the previous one(s).
 
-8.1.5.22 `POS_On_Enumeration_Types'
+9.1.5.22 `POS_On_Enumeration_Types'
 ...................................
 
 Flag `'Pos' attribute in case if the attribute prefix has an enumeration
@@ -1350,7 +1514,7 @@ type (including types derived from enumeration types).
 
 This rule has no parameters.
 
-8.1.5.23 `Positional_Actuals_For_Defaulted_Generic_Parameters'
+9.1.5.23 `Positional_Actuals_For_Defaulted_Generic_Parameters'
 ..............................................................
 
 Flag each generic actual parameter corresponding to a generic formal
@@ -1358,7 +1522,7 @@ parameter with a default initialization, if positional notation is used.
 
 This rule has no parameters.
 
-8.1.5.24 `Positional_Actuals_For_Defaulted_Parameters'
+9.1.5.24 `Positional_Actuals_For_Defaulted_Parameters'
 ......................................................
 
 Flag each actual parameter to a subprogram or entry call where the
@@ -1367,7 +1531,7 @@ notation is used.
 
 This rule has no parameters.
 
-8.1.5.25 `Positional_Components'
+9.1.5.25 `Positional_Components'
 ................................
 
 Flag each array, record and extension aggregate that includes positional
@@ -1375,7 +1539,7 @@ notation.
 
 This rule has no parameters.
 
-8.1.5.26 `Positional_Generic_Parameters'
+9.1.5.26 `Positional_Generic_Parameters'
 ........................................
 
 Flag each positional actual generic parameter except for the case when
@@ -1384,7 +1548,7 @@ parameter.
 
 This rule has no parameters.
 
-8.1.5.27 `Positional_Parameters'
+9.1.5.27 `Positional_Parameters'
 ................................
 
 Flag each positional parameter notation in a subprogram or entry call,
@@ -1414,7 +1578,7 @@ This rule has the following (optional) parameters for the `+R' option:
 
 This rule has no parameters.
 
-8.1.5.28 `Recursive_Subprograms'
+9.1.5.28 `Recursive_Subprograms'
 ................................
 
 Flags specs (and bodies that act as specs) of recursive subprograms. A
@@ -1429,9 +1593,12 @@ Generic subprograms and subprograms detected in generic units are not
 flagged. Recursive subprograms in expanded generic instantiations are
 flagged.
 
+This rule does not take into account subprogram calls in aspect
+definitions.
+
 This rule has no parameters.
 
-8.1.5.29 `Unchecked_Address_Conversions'
+9.1.5.29 `Unchecked_Address_Conversions'
 ........................................
 
 Flag instantiations of `Ada.Unchecked_Conversion' if the actual for the
@@ -1445,7 +1612,7 @@ checked inside expanded generics.
 
 This rule has no parameters.
 
-8.1.5.30 `Unchecked_Conversions_As_Actuals'
+9.1.5.30 `Unchecked_Conversions_As_Actuals'
 ...........................................
 
 Flag call to instantiation of `Ada.Unchecked_Conversion' if it is an
@@ -1454,14 +1621,14 @@ subprogram or entry parameter specification.
 
 This rule has no parameters.
 
-8.1.5.31 `Unconditional_Exits'
+9.1.5.31 `Unconditional_Exits'
 ..............................
 
 Flag unconditional `exit' statements.
 
 This rule has no parameters.
 
-8.1.5.32 `Uninitialized_Global_Variables'
+9.1.5.32 `Uninitialized_Global_Variables'
 .........................................
 
 Flag an object declaration located immediately within a package
@@ -1471,27 +1638,27 @@ declarations and declarations of objects of limited types.
 
 This rule has no parameters.
 
-8.1.5.33 `Unnamed_Blocks_And_Loops'
+9.1.5.33 `Unnamed_Blocks_And_Loops'
 ...................................
 
 Flag each unnamed block statement and loop statement.
 
 The rule has no parameters.
 
-8.1.5.34 `USE_PACKAGE_Clauses'
+9.1.5.34 `USE_PACKAGE_Clauses'
 ..............................
 
 Flag all `use' clauses for packages; `use type' clauses are not flagged.
 
 This rule has no parameters.
 
-8.1.6 Readability
+9.1.6 Readability
 -----------------
 
 The rules described in this subsection may be used to enforce feature
 usages that contribute towards readability.
 
-8.1.6.1 `Identifier_Casing'
+9.1.6.1 `Identifier_Casing'
 ...........................
 
 Flag each defining identifier that does not have a casing corresponding
@@ -1634,7 +1801,7 @@ the definition of exemption sections are:
      Exempts check for defining names for which casing schemes are
      specified in exception dictionaries
 
-8.1.6.2 `Identifier_Prefixes'
+9.1.6.2 `Identifier_Prefixes'
 .............................
 
 Flag each defining identifier that does not have a prefix corresponding
@@ -1850,7 +2017,7 @@ the definition of exemption sections are:
      Exempts check that only names of specific kinds of entities have
      prefixes specified for these kinds
 
-8.1.6.3 `Identifier_Suffixes'
+9.1.6.3 `Identifier_Suffixes'
 .............................
 
 Flag the declaration of each identifier that does not have a suffix
@@ -1911,8 +2078,8 @@ following kinds of declarations:
 
 If both checks for constant suffixes and for access object suffixes are
 enabled, and if different suffixes are defined for them, then for
-constants of access type the check for access object suffixes suffixes
-is applied.
+constants of access type the check for access object suffixes is
+applied.
 
 The rule may have the following parameters:
 
@@ -2056,7 +2223,7 @@ the definition of exemption sections are:
 `Renaming'
      Exempts check for package renaming name suffixes
 
-8.1.6.4 `Misnamed_Controlling_Parameters'
+9.1.6.4 `Misnamed_Controlling_Parameters'
 .........................................
 
 Flag a declaration of a dispatching operation, if the first parameter is
@@ -2071,7 +2238,7 @@ prior subprogram declaration.
 
 This rule has no parameters.
 
-8.1.6.5 `Name_Clashes'
+9.1.6.5 `Name_Clashes'
 ......................
 
 Check that certain names are not used as defining identifiers. The
@@ -2095,13 +2262,19 @@ A dictionary file is a plain text file. The maximum line length for
 this file is 1024 characters.  If the line is longer than this limit,
 extra characters are ignored.
 
+If the name of the dictionary file does not contain any path
+information and the rule option is specifies in a rule file, first the
+tool tries to locate the dictionary file in the same directory where
+the rule file is located, and if the attempt fails - in the current
+directory.
+
 Each line can be either an empty line, a comment line, or a line
 containing a list of identifiers separated by space or HT characters.
 A comment is an Ada-style comment (from `--' to end-of-line).
 Identifiers must follow the Ada syntax for identifiers.  A line
 containing one or more identifiers may end with a comment.
 
-8.1.6.6 `Uncommented_BEGIN_In_Package_Bodies'
+9.1.6.6 `Uncommented_BEGIN_In_Package_Bodies'
 .............................................
 
 Flags each package body with declarations and a statement part that
@@ -2117,19 +2290,19 @@ attached to the line containing the first statement.
 
 This rule has no parameters.
 
-8.1.7 Source Code Presentation
+9.1.7 Source Code Presentation
 ------------------------------
 
 This subsection is a placeholder; there are currently no rules in this
 category.
 
-8.2 Feature Usage Rules
+9.2 Feature Usage Rules
 =======================
 
 The rules in this section can be used to enforce specific usage
 patterns for a variety of language features.
 
-8.2.1 `Abstract_Type_Declarations'
+9.2.1 `Abstract_Type_Declarations'
 ----------------------------------
 
 Flag all declarations of abstract types. For an abstract private type,
@@ -2137,16 +2310,25 @@ both the private and full type declarations are flagged.
 
 This rule has no parameters.
 
-8.2.2 `Anonymous_Subtypes'
+9.2.2 `Anonymous_Subtypes'
 --------------------------
 
-Flag all uses of anonymous subtypes (except cases when subtype
-indication is a part of a record component definition, and this subtype
-indication depends on a discriminant). A use of an anonymous subtype is
-any instance of a subtype indication with a constraint, other than one
-that occurs immediately within a subtype declaration. Any use of a range
-other than as a constraint used immediately within a subtype declaration
-is considered as an anonymous subtype.
+Flag all uses of anonymous subtypes except for the following:
+
+   * when the subtype indication depends on a discriminant, this
+     includes the cases of a record component definitions when a
+     component depends on a discriminant, and using the discriminant of
+     the derived type to constraint the parent type;
+
+   * when a self-referenced data structure is defined, and a
+     discriminant is constrained by the reference to the current
+     instance of a type;
+
+A use of an anonymous subtype is any instance of a subtype indication
+with a constraint, other than one that occurs immediately within a
+subtype declaration. Any use of a range other than as a constraint used
+immediately within a subtype declaration is considered as an anonymous
+subtype.
 
 The rule does not flag ranges in the component clauses from a record
 representation clause, because the language rules do not allow to use
@@ -2169,14 +2351,14 @@ Declaring an explicit subtype solves the problem:
 
 This rule has no parameters.
 
-8.2.3 `Blocks'
+9.2.3 `Blocks'
 --------------
 
 Flag each block statement.
 
 This rule has no parameters.
 
-8.2.4 `Complex_Inlined_Subprograms'
+9.2.4 `Complex_Inlined_Subprograms'
 -----------------------------------
 
 Flag a subprogram (or generic subprogram, or instantiation of a
@@ -2201,7 +2383,7 @@ This rule has the following (mandatory) parameter for the `+R' option:
      Positive integer specifying the maximum allowed total number of
      statements in the subprogram body.
 
-8.2.5 `Conditional_Expressions'
+9.2.5 `Conditional_Expressions'
 -------------------------------
 
 Flag use of conditional expression.
@@ -2274,7 +2456,7 @@ This rule has the following (optional) parameters for the `+R' option:
 
    * `Refined_Post'
 
-8.2.6 `Controlled_Type_Declarations'
+9.2.6 `Controlled_Type_Declarations'
 ------------------------------------
 
 Flag all declarations of controlled types. A declaration of a private
@@ -2286,7 +2468,7 @@ type that itself is not a descendant of a type declared in
 
 This rule has no parameters.
 
-8.2.7 `Declarations_In_Blocks'
+9.2.7 `Declarations_In_Blocks'
 ------------------------------
 
 Flag all block statements containing local declarations. A `declare'
@@ -2295,7 +2477,7 @@ containing only pragmas and/or `use' clauses is not flagged.
 
 This rule has no parameters.
 
-8.2.8 `Deeply_Nested_Inlining'
+9.2.8 `Deeply_Nested_Inlining'
 ------------------------------
 
 Flag a subprogram (or generic subprogram) if pragma Inline has been
@@ -2313,7 +2495,7 @@ This rule has the following (mandatory) parameter for the `+R' option:
      Positive integer specifying the maximum level of nested calls to
      subprograms to which pragma Inline has been applied.
 
-8.2.9 `Default_Parameters'
+9.2.9 `Default_Parameters'
 --------------------------
 
 Flag all default expressions in parameters specifications. All parameter
@@ -2323,7 +2505,7 @@ accept statements and entry bodies).
 
 This rule has no parameters.
 
-8.2.10 `Discriminated_Records'
+9.2.10 `Discriminated_Records'
 ------------------------------
 
 Flag all declarations of record types with discriminants. Only the
@@ -2334,14 +2516,23 @@ are not checked.
 
 This rule has no parameters.
 
-8.2.11 `Explicit_Full_Discrete_Ranges'
+9.2.11 `Explicit_Full_Discrete_Ranges'
 --------------------------------------
 
 Flag each discrete range that has the form `A'First .. A'Last'.
 
 This rule has no parameters.
 
-8.2.12 `Fixed_Equality_Checks'
+9.2.12 `Expression_Functions'
+-----------------------------
+
+Flag each expression function declared in a package specification
+(including specification of local packages and generic package
+specifications).
+
+This rule has no parameters.
+
+9.2.13 `Fixed_Equality_Checks'
 ------------------------------
 
 Flag all calls to the predefined equality operations for fixed-point
@@ -2352,7 +2543,7 @@ renamings of the predefined equality operations.  Also, the '`='' and
 
 This rule has no parameters.
 
-8.2.13 `Float_Equality_Checks'
+9.2.14 `Float_Equality_Checks'
 ------------------------------
 
 Flag all calls to the predefined equality operations for floating-point
@@ -2363,7 +2554,7 @@ renamings of the predefined equality operations.  Also, the '`='' and
 
 This rule has no parameters.
 
-8.2.14 `Function_Style_Procedures'
+9.2.15 `Function_Style_Procedures'
 ----------------------------------
 
 Flag each procedure that can be rewritten as a function. A procedure
@@ -2382,7 +2573,7 @@ flagged.
 
 This rule has no parameters.
 
-8.2.15 `Generics_In_Subprograms'
+9.2.16 `Generics_In_Subprograms'
 --------------------------------
 
 Flag each declaration of a generic unit in a subprogram. Generic
@@ -2393,7 +2584,7 @@ subprogram body, the generic unit is flagged.
 
 This rule has no parameters.
 
-8.2.16 `Implicit_IN_Mode_Parameters'
+9.2.17 `Implicit_IN_Mode_Parameters'
 ------------------------------------
 
 Flag each occurrence of a formal parameter with an implicit `in' mode.
@@ -2402,7 +2593,7 @@ Note that `access' parameters, although they technically behave like
 
 This rule has no parameters.
 
-8.2.17 `Improperly_Located_Instantiations'
+9.2.18 `Improperly_Located_Instantiations'
 ------------------------------------------
 
 Flag all generic instantiations in library-level package specs
@@ -2413,7 +2604,7 @@ in the bodies of protected subprograms are flagged.
 
 This rule has no parameters.
 
-8.2.18 `Library_Level_Subprograms'
+9.2.19 `Library_Level_Subprograms'
 ----------------------------------
 
 Flag all library-level subprograms (including generic subprogram
@@ -2421,7 +2612,7 @@ instantiations).
 
 This rule has no parameters.
 
-8.2.19 `Membership_Tests'
+9.2.20 `Membership_Tests'
 -------------------------
 
 Flag use of membership test expression.
@@ -2500,7 +2691,7 @@ This rule has the following (optional) parameters for the `+R' option:
 
 These two parameters are independent on each other.
 
-8.2.20 `Non_Qualified_Aggregates'
+9.2.21 `Non_Qualified_Aggregates'
 ---------------------------------
 
 Flag each non-qualified aggregate.  A non-qualified aggregate is an
@@ -2511,11 +2702,20 @@ anonymous array types are not flagged.
 
 This rule has no parameters.
 
-8.2.21 `Numeric_Literals'
+9.2.22 `Numeric_Indexing'
 -------------------------
 
-Flag each use of a numeric literal in an index expression, and in any
-circumstance except for the following:
+Flag numeric literals, including those preceded by a predefined unary
+minus, if they are used as index expressions in array components.
+Literals that are subcomponents of index expressions are not flagged
+(other than the aforementioned case of unary minus).
+
+This rule has no parameters.
+
+9.2.23 `Numeric_Literals'
+-------------------------
+
+Flag each use of a numeric literal except for the following:
 
    * a literal occurring in the initialization expression for a constant
      declaration or a named number declaration, or
@@ -2553,7 +2753,7 @@ and restores its default operation mode.  If the `+R' option
 subsequently appears, will be 1, and the check will not be limited by
 statements only.
 
-8.2.22 `Parameters_Out_Of_Order'
+9.2.24 `Parameters_Out_Of_Order'
 --------------------------------
 
 Flag each subprogram and entry declaration whose formal parameters are
@@ -2584,7 +2784,7 @@ Subprogram renamings are not checked.
 
 This rule has no parameters.
 
-8.2.23 `Predicate_Testing'
+9.2.25 `Predicate_Testing'
 --------------------------
 
 Flag a subtype mark if it denotes a subtype defined with (static or
@@ -2662,7 +2862,18 @@ This rule has the following (optional) parameters for the `+R' option:
 
    * `Refined_Post'
 
-8.2.24 `Quantified_Expressions'
+9.2.26 `Representation_Specifications'
+--------------------------------------
+
+Flag each record representation clause, enumeration representation
+clause and representation attribute clause. Flag each aspect definition
+that defines a representation aspect. Also flag any pragma that is
+classifiead by the Ada Standard as a representation pragma, and the
+definition of the corresponding aspects.
+
+This rule has no parameters.
+
+9.2.27 `Quantified_Expressions'
 -------------------------------
 
 Flag use of quantified expression.
@@ -2735,7 +2946,7 @@ This rule has the following (optional) parameters for the `+R' option:
 
    * `Refined_Post'
 
-8.2.25 `Raising_Predefined_Exceptions'
+9.2.28 `Raising_Predefined_Exceptions'
 --------------------------------------
 
 Flag each `raise' statement that raises a predefined exception (i.e.,
@@ -2744,7 +2955,30 @@ one of the exceptions `Constraint_Error', `Numeric_Error',
 
 This rule has no parameters.
 
-8.2.26 `Unassigned_OUT_Parameters'
+9.2.29 `Subprogram_Access'
+--------------------------
+
+Flag all constructs that belong to access_to_subprogram_definition
+syntax category, and all access definitions that define access to
+subprogram.
+
+This rule has no parameters.
+
+9.2.30 `Too_Many_Dependencies'
+------------------------------
+
+Flag a library item or a subunit that immediately depends on more than
+N library units (N is a rule parameter). In case of a dependency on
+child units, implicit or explicit dependencies on all their parents are
+not counted.
+
+This rule has the following (mandatory) parameters for the `+R' option:
+
+`N'
+     Positive integer specifying the maximal number of dependencies when
+     the library item or subunit is not flagged.
+
+9.2.31 `Unassigned_OUT_Parameters'
 ----------------------------------
 
 Flag procedures' `out' parameters that are not assigned.
@@ -2777,7 +3011,7 @@ This rule has no parameters.
      is not a replacement for rigorous check for uninitialized access
      provided by advanced static analysis tools.
 
-8.2.27 `Unconstrained_Array_Returns'
+9.2.32 `Unconstrained_Array_Returns'
 ------------------------------------
 
 Flag each function returning an unconstrained array. Function
@@ -2796,7 +3030,7 @@ This rule has the following (optional) parameters for the `+R' option:
      Do not flag functions that return the predefined `String' type or
      a type derived from it, directly or indirectly.
 
-8.3 Metrics-Related Rules
+9.3 Metrics-Related Rules
 =========================
 
 The rules in this section can be used to enforce compliance with
@@ -2828,7 +3062,7 @@ following option:
 
     -RMetrics_Cyclomatic_Complexity
 
-8.3.1 `Metrics_Essential_Complexity'
+9.3.1 `Metrics_Essential_Complexity'
 ------------------------------------
 
 The `Metrics_Essential_Complexity' rule takes a positive integer as
@@ -2839,7 +3073,7 @@ The Ada essential complexity metric is a McCabe cyclomatic complexity
 metric counted for the code that is reduced by excluding all the pure
 structural Ada control statements.
 
-8.3.2 `Metrics_Cyclomatic_Complexity'
+9.3.2 `Metrics_Cyclomatic_Complexity'
 -------------------------------------
 
 The `Metrics_Cyclomatic_Complexity' rule takes a positive integer as
@@ -2852,7 +3086,7 @@ complexity metric is to estimate the number of independent paths in the
 control flow graph that in turn gives the number of tests needed to
 satisfy paths coverage testing completeness criterion.
 
-8.3.3 `Metrics_LSLOC'
+9.3.3 `Metrics_LSLOC'
 ---------------------
 
 The `Metrics_LSLOC' rule takes a positive integer as upper bound.  A
@@ -2862,13 +3096,19 @@ will be flagged.
 The metric counts the total number of declarations and the total number
 of statements.
 
-8.4 SPARK Ada Rules
+This rule contains optional parameters for `+R' option that allows to
+restrict the rule to specific constructs:
+
+`Subprograms'
+     Check the rule for subprogram bodies only.
+
+9.4 SPARK Ada Rules
 ===================
 
 The rules in this section can be used to enforce compliance with the
 Ada subset allowed by the SPARK tools.
 
-8.4.1 `Annotated_Comments'
+9.4.1 `Annotated_Comments'
 --------------------------
 
 Flags comments that are used as annotations or as special
@@ -2935,7 +3175,7 @@ The line
 
 will not be flagged, because the string parameter is case sensitive.
 
-8.4.2 `Boolean_Relational_Operators'
+9.4.2 `Boolean_Relational_Operators'
 ------------------------------------
 
 Flag each call to a predefined relational operator ('<', '>', '<=',
@@ -2950,14 +3190,14 @@ not detected.
 
 This rule has no parameters.
 
-8.4.3 `Expanded_Loop_Exit_Names'
+9.4.3 `Expanded_Loop_Exit_Names'
 --------------------------------
 
 Flag all expanded loop names in `exit' statements.
 
 This rule has no parameters.
 
-8.4.4 `Non_SPARK_Attributes'
+9.4.4 `Non_SPARK_Attributes'
 ----------------------------
 
 The SPARK language defines the following subset of Ada 95 attribute
@@ -3064,7 +3304,7 @@ other attribute is flagged.
 
 This rule has no parameters.
 
-8.4.5 `Non_Tagged_Derived_Types'
+9.4.5 `Non_Tagged_Derived_Types'
 --------------------------------
 
 Flag all derived type declarations that do not have a record extension
@@ -3072,7 +3312,7 @@ part.
 
 This rule has no parameters.
 
-8.4.6 `Outer_Loop_Exits'
+9.4.6 `Outer_Loop_Exits'
 ------------------------
 
 Flag each `exit' statement containing a loop name that is not the name
@@ -3080,7 +3320,7 @@ of the immediately enclosing `loop' statement.
 
 This rule has no parameters.
 
-8.4.7 `Overloaded_Operators'
+9.4.7 `Overloaded_Operators'
 ----------------------------
 
 Flag each function declaration that overloads an operator symbol.  A
@@ -3090,14 +3330,14 @@ only renaming-as-declaration is checked
 
 This rule has no parameters.
 
-8.4.8 `Slices'
+9.4.8 `Slices'
 --------------
 
 Flag all uses of array slicing
 
 This rule has no parameters.
 
-8.4.9 `Universal_Ranges'
+9.4.9 `Universal_Ranges'
 ------------------------
 
 Flag discrete ranges that are a part of an index constraint, constrained
@@ -3108,8 +3348,8 @@ or an expression of non-universal type) are not flagged.
 
 This rule has no parameters.
 
-9 Example of `gnatcheck' Usage
-******************************
+10 Example of `gnatcheck' Usage
+*******************************
 
 Here is a simple example. Suppose that in the current directory we have
 a project file named `gnatcheck_example.gpr' with the following content:
@@ -3266,193 +3506,219 @@ have the following content:
 
     END OF REPORT
 
-10 List of Rules
+11 List of Rules
 ****************
 
 This section contains an alphabetized list of all the predefined
 GNATcheck rules.
 
-   * *note Abstract_Type_Declarations: a0.
+   * *note Abstract_Type_Declarations: b4.
 
-   * *note Anonymous_Arrays: 4b.
+   * *note Anonymous_Arrays: 60.
 
-   * *note Anonymous_Subtypes: a1.
+   * *note Anonymous_Subtypes: b6.
 
-   * *note Binary_Case_Statements: 4c.
+   * *note Binary_Case_Statements: 61.
 
-   * *note Blocks: a4.
+   * *note Blocks: b9.
 
-   * *note Boolean_Relational_Operators: e0.
+   * *note Boolean_Relational_Operators: ff.
 
-   * *note Complex_Inlined_Subprograms: a5.
+   * *note Complex_Inlined_Subprograms: ba.
 
-   * *note Conditional_Expressions: a8.
+   * *note Conditional_Expressions: bd.
 
-   * *note Controlled_Type_Declarations: aa.
+   * *note Constructors: 2c.
 
-   * *note Declarations_In_Blocks: ac.
+   * *note Controlled_Type_Declarations: bf.
 
-   * *note Deep_Inheritance_Hierarchies: 29.
+   * *note Declarations_In_Blocks: c1.
 
-   * *note Deeply_Nested_Generics: 41.
+   * *note Deep_Inheritance_Hierarchies: 2e.
 
-   * *note Deeply_Nested_Inlining: ae.
+   * *note Deep_Library_Hierarchy: 53.
 
-   * *note Default_Parameters: b0.
+   * *note Deeply_Nested_Generics: 56.
 
-   * *note Default_Values_For_Record_Components: 4f.
+   * *note Deeply_Nested_Inlining: c3.
 
-   * *note Deriving_From_Predefined_Type: 50.
+   * *note Default_Parameters: c5.
 
-   * *note Direct_Calls_To_Primitives: 2b.
+   * *note Default_Values_For_Record_Components: 64.
 
-   * *note Discriminated_Records: b1.
+   * *note Deriving_From_Predefined_Type: 66.
 
-   * *note Enumeration_Ranges_In_CASE_Statements: 52.
+   * *note Direct_Calls_To_Primitives: 2f.
 
-   * *note Enumeration_Representation_Clauses: 55.
+   * *note Discriminated_Records: c7.
 
-   * *note Exceptions_As_Control_Flow: 57.
+   * *note Downward_View_Conversions: 31.
 
-   * *note Exits_From_Conditional_Loops: 58.
+   * *note Enumeration_Ranges_In_CASE_Statements: 68.
 
-   * *note EXIT_Statements_With_No_Loop_Name: 5a.
+   * *note Enumeration_Representation_Clauses: 6a.
 
-   * *note Expanded_Loop_Exit_Names: e1.
+   * *note Exceptions_As_Control_Flow: 6c.
 
-   * *note Explicit_Full_Discrete_Ranges: b3.
+   * *note Exits_From_Conditional_Loops: 6d.
 
-   * *note Fixed_Equality_Checks: b5.
+   * *note EXIT_Statements_With_No_Loop_Name: 6f.
 
-   * *note Float_Equality_Checks: b7.
+   * *note Expanded_Loop_Exit_Names: 100.
 
-   * *note Forbidden_Attributes: 33.
+   * *note Explicit_Full_Discrete_Ranges: c8.
 
-   * *note Forbidden_Pragmas: 35.
+   * *note Expression_Functions: cb.
 
-   * *note Function_Style_Procedures: ba.
+   * *note Fixed_Equality_Checks: cc.
 
-   * *note Generics_In_Subprograms: bc.
+   * *note Float_Equality_Checks: ce.
 
-   * *note GOTO_Statements: 5f.
+   * *note Forbidden_Attributes: 44.
 
-   * *note Implicit_IN_Mode_Parameters: bd.
+   * *note Forbidden_Pragmas: 46.
 
-   * *note Implicit_SMALL_For_Fixed_Point_Types: 36.
+   * *note Function_Style_Procedures: d1.
 
-   * *note Improperly_Located_Instantiations: bf.
+   * *note Generics_In_Subprograms: d3.
 
-   * *note Improper_Returns: 61.
+   * *note GOTO_Statements: 74.
 
-   * *note Maximum_Parameters: 63.
+   * *note Implicit_IN_Mode_Parameters: d5.
 
-   * *note Library_Level_Subprograms: c2.
+   * *note Implicit_SMALL_For_Fixed_Point_Types: 47.
 
-   * *note Local_Packages: 43.
+   * *note Improperly_Located_Instantiations: d7.
 
-   * *note Metrics_Cyclomatic_Complexity: d8.
+   * *note Improper_Returns: 76.
 
-   * *note Metrics_Essential_Complexity: d6.
+   * *note Maximum_Parameters: 78.
 
-   * *note Metrics_LSLOC: da.
+   * *note Library_Level_Subprograms: d9.
 
-   * *note Misnamed_Controlling_Parameters: 96.
+   * *note Local_Packages: 58.
 
-   * *note Identifier_Suffixes: 95.
+   * *note Metrics_Cyclomatic_Complexity: f7.
 
-   * *note Membership_Tests: c3.
+   * *note Metrics_Essential_Complexity: f5.
 
-   * *note Multiple_Entries_In_Protected_Definitions: 22.
+   * *note Metrics_LSLOC: fa.
 
-   * *note Name_Clashes: 98.
+   * *note Misnamed_Controlling_Parameters: ab.
 
-   * *note Nested_Subprograms: 65.
+   * *note Identifier_Suffixes: aa.
 
-   * *note Non_Qualified_Aggregates: c5.
+   * *note Membership_Tests: da.
 
-   * *note Non_Short_Circuit_Operators: 67.
+   * *note Multiple_Entries_In_Protected_Definitions: 25.
 
-   * *note Non_SPARK_Attributes: e4.
+   * *note Name_Clashes: ad.
 
-   * *note Non_Tagged_Derived_Types: e6.
+   * *note Nested_Subprograms: 7a.
 
-   * *note Non_Visible_Exceptions: 44.
+   * *note No_Inherited_Classwide_Pre: 33.
 
-   * *note Null_Paths: 69.
+   * *note Non_Qualified_Aggregates: dd.
 
-   * *note Numeric_Literals: c7.
+   * *note Non_Short_Circuit_Operators: 7c.
 
-   * *note Objects_Of_Anonymous_Types: 6a.
+   * *note Non_SPARK_Attributes: 103.
 
-   * *note OTHERS_In_Aggregates: 6c.
+   * *note Non_Tagged_Derived_Types: 105.
 
-   * *note OTHERS_In_CASE_Statements: 6e.
+   * *note Non_Visible_Exceptions: 5a.
 
-   * *note OTHERS_In_Exception_Handlers: 71.
+   * *note Null_Paths: 7e.
 
-   * *note Outer_Loop_Exits: e8.
+   * *note Numeric_Literals: e0.
 
-   * *note Overloaded_Operators: ea.
+   * *note Objects_Of_Anonymous_Types: 7f.
 
-   * *note Overly_Nested_Control_Structures: 72.
+   * *note OTHERS_In_Aggregates: 81.
 
-   * *note Parameters_Out_Of_Order: c9.
+   * *note OTHERS_In_CASE_Statements: 83.
 
-   * *note POS_On_Enumeration_Types: 75.
+   * *note OTHERS_In_Exception_Handlers: 86.
 
-   * *note Positional_Actuals_For_Defaulted_Generic_Parameters: 76.
+   * *note Outer_Loop_Exits: 106.
 
-   * *note Positional_Actuals_For_Defaulted_Parameters: 78.
+   * *note Overloaded_Operators: 108.
 
-   * *note Positional_Components: 7b.
+   * *note Overly_Nested_Control_Structures: 87.
 
-   * *note Positional_Generic_Parameters: 7c.
+   * *note Parameters_Out_Of_Order: e2.
 
-   * *note Positional_Parameters: 7e.
+   * *note POS_On_Enumeration_Types: 89.
 
-   * *note Predicate_Testing: cb.
+   * *note Positional_Actuals_For_Defaulted_Generic_Parameters: 8c.
 
-   * *note Predefined_Numeric_Types: 3a.
+   * *note Positional_Actuals_For_Defaulted_Parameters: 8d.
 
-   * *note Quantified_Expressions: ce.
+   * *note Positional_Components: 8f.
 
-   * *note Raising_External_Exceptions: 47.
+   * *note Positional_Generic_Parameters: 91.
 
-   * *note Raising_Predefined_Exceptions: cf.
+   * *note Positional_Parameters: 93.
 
-   * *note Separate_Numeric_Error_Handlers: 3c.
+   * *note Predicate_Testing: e5.
 
-   * *note Slices: ec.
+   * *note Predefined_Numeric_Types: 4b.
 
-   * *note Too_Many_Parents: 2d.
+   * *note Printable_ASCII: 4e.
 
-   * *note Unassigned_OUT_Parameters: d2.
+   * *note Representation_Specifications: e7.
 
-   * *note Uncommented_BEGIN_In_Package_Bodies: 9a.
+   * *note Quantified_Expressions: e9.
 
-   * *note Recursive_Subprograms: 81.
+   * *note Raising_External_Exceptions: 5b.
 
-   * *note Unchecked_Address_Conversions: 82.
+   * *note Raising_Predefined_Exceptions: eb.
 
-   * *note Unchecked_Conversions_As_Actuals: 85.
+   * *note Separate_Numeric_Error_Handlers: 4f.
 
-   * *note Unconditional_Exits: 86.
+   * *note Slices: 10b.
 
-   * *note Unconstrained_Array_Returns: d4.
+   * *note Specific_Parent_Type_Invariant: 38.
 
-   * *note Uninitialized_Global_Variables: 89.
+   * *note Specific_Pre_Post: 36.
 
-   * *note Universal_Ranges: ed.
+   * *note Specific_Type_Invariants: 39.
 
-   * *note Unnamed_Blocks_And_Loops: 8a.
+   * *note Subprogram_Access: ec.
 
-   * *note USE_PACKAGE_Clauses: 8c.
+   * *note Too_Many_Dependencies: ef.
 
-   * *note Visible_Components: 2e.
+   * *note Too_Many_Primitives: 3e.
 
-   * *note Volatile_Objects_Without_Address_Clauses: 25.
+   * *note Too_Many_Parents: 3c.
 
-11 GNU Free Documentation License
+   * *note Unassigned_OUT_Parameters: f1.
+
+   * *note Uncommented_BEGIN_In_Package_Bodies: b0.
+
+   * *note Recursive_Subprograms: 96.
+
+   * *note Unchecked_Address_Conversions: 97.
+
+   * *note Unchecked_Conversions_As_Actuals: 9a.
+
+   * *note Unconditional_Exits: 9b.
+
+   * *note Unconstrained_Array_Returns: f3.
+
+   * *note Uninitialized_Global_Variables: 9d.
+
+   * *note Universal_Ranges: 10c.
+
+   * *note Unnamed_Blocks_And_Loops: 9f.
+
+   * *note USE_PACKAGE_Clauses: a1.
+
+   * *note Visible_Components: 3f.
+
+   * *note Volatile_Objects_Without_Address_Clauses: 28.
+
+12 GNU Free Documentation License
 *********************************
 
 Version 1.3, 3 November 2008
@@ -3908,151 +4174,167 @@ permit their use in free software.
 Index
 *****
 
-+R (gnatcheck):                                See 5.        (line  453)
--a:                                            See 4.        (line  349)
--files:                                        See 4.        (line  409)
--from (gnatcheck):                             See 5.        (line  467)
--h:                                            See 4.        (line  363)
--help:                                         See 4.        (line  309)
--include-file=file:                            See 4.        (line  420)
--incremental gnatpp:                           See 4.        (line  354)
--j:                                            See 4.        (line  366)
--l:                                            See 4.        (line  373)
--log:                                          See 4.        (line  379)
--m:                                            See 4.        (line  386)
--no_objects_dir:                               See 4.        (line  341)
--nt:                                           See 4.        (line  405)
--o:                                            See 4.        (line  430)
--ox:                                           See 4.        (line  433)
--P file:                                       See 4.        (line  312)
--q:                                            See 4.        (line  392)
--R (gnatcheck):                                See 5.        (line  463)
--RTS=rts-path:                                 See 4.        (line  345)
--s:                                            See 4.        (line  397)
--show-rule:                                    See 4.        (line  416)
--subdirs=dir:                                  See 4.        (line  334)
--t:                                            See 4.        (line  423)
--U:                                            See 4.        (line  317)
--U main_unit:                                  See 4.        (line  323)
--v:                                            See 4.        (line  426)
--version:                                      See 4.        (line  304)
--write-rules:                                  See 4.        (line  437)
--xml:                                          See 4.        (line  401)
--Xname=value:                                  See 4.        (line  329)
-Abstract_Type_Declarations:                    See 8.2.1.    (line 2135)
-Annotated_Comments:                            See 8.4.1.    (line 2874)
-Anonymous_Arrays:                              See 8.1.5.1.  (line 1102)
-Anonymous_Subtypes:                            See 8.2.2.    (line 2143)
-ASIS:                                          See 2.        (line  204)
-Binary_Case_Statements:                        See 8.1.5.2.  (line 1110)
-Blocks:                                        See 8.2.3.    (line 2175)
-Boolean_Relational_Operators:                  See 8.4.2.    (line 2941)
-Coding standard file (for gnatcheck):          See 5.        (line  481)
-Complex_Inlined_Subprograms:                   See 8.2.4.    (line 2182)
-Conditional_Expressions:                       See 8.2.5.    (line 2207)
-Controlled_Type_Declarations:                  See 8.2.6.    (line 2280)
-Declarations_In_Blocks:                        See 8.2.7.    (line 2292)
-Deep_Inheritance_Hierarchies:                  See 8.1.2.1.  (line  743)
-Deeply_Nested_Generics:                        See 8.1.4.1.  (line 1037)
-Deeply_Nested_Inlining:                        See 8.2.8.    (line 2301)
-Default_Parameters:                            See 8.2.9.    (line 2319)
-Default_Values_For_Record_Components:          See 8.1.5.3.  (line 1119)
-Deriving_From_Predefined_Type:                 See 8.1.5.4.  (line 1128)
-Direct_Calls_To_Primitives:                    See 8.1.2.2.  (line  778)
-Discriminated_Records:                         See 8.2.10.   (line 2329)
-Enumeration_Ranges_In_CASE_Statements:         See 8.1.5.5.  (line 1137)
-Enumeration_Representation_Clauses:            See 8.1.5.6.  (line 1154)
-Exceptions_As_Control_Flow:                    See 8.1.5.7.  (line 1161)
-EXIT_Statements_With_No_Loop_Name:             See 8.1.5.9.  (line 1181)
-Exits_From_Conditional_Loops:                  See 8.1.5.8.  (line 1170)
-Expanded_Loop_Exit_Names:                      See 8.4.3.    (line 2956)
-Explicit_Full_Discrete_Ranges:                 See 8.2.11.   (line 2340)
-Feature usage related rules:                   See 8.2.      (line 2129)
-Fixed_Equality_Checks:                         See 8.2.12.   (line 2347)
-Float_Equality_Checks:                         See 8.2.13.   (line 2358)
-Forbidden_Attributes:                          See 8.1.3.1.  (line  838)
-Forbidden_Pragmas:                             See 8.1.3.2.  (line  905)
-Format of the Report File:                     See 3.        (line  258)
-Function_Style_Procedures:                     See 8.2.14.   (line 2369)
-Generics_In_Subprograms:                       See 8.2.15.   (line 2388)
-Global_Variables:                              See 8.1.5.10. (line 1189)
-gnatcheck annotations rules:                   See 7.2.      (line  644)
-GOTO_Statements:                               See 8.1.5.11. (line 1203)
-Identifier_Casing:                             See 8.1.6.1.  (line 1497)
-Identifier_Prefixes:                           See 8.1.6.2.  (line 1640)
-Identifier_Suffixes:                           See 8.1.6.3.  (line 1856)
-Implicit_IN_Mode_Parameters:                   See 8.2.16.   (line 2399)
-Implicit_SMALL_For_Fixed_Point_Types:          See 8.1.3.3.  (line  977)
-Improper_Returns:                              See 8.1.5.12. (line 1210)
-Improperly_Located_Instantiations:             See 8.2.17.   (line 2408)
-Library_Level_Subprograms:                     See 8.2.18.   (line 2419)
-Local_Packages:                                See 8.1.4.2.  (line 1052)
-Maximum_Parameters:                            See 8.1.5.13. (line 1223)
-Membership_Tests:                              See 8.2.19.   (line 2427)
-Metrics-related rules:                         See 8.3.      (line 2802)
-Metrics_Cyclomatic_Complexity:                 See 8.3.2.    (line 2845)
-Metrics_Essential_Complexity:                  See 8.3.1.    (line 2834)
-Metrics_LSLOC:                                 See 8.3.3.    (line 2858)
-Misnamed_Controlling_Parameters:               See 8.1.6.4.  (line 2062)
-Multiple_Entries_In_Protected_Definitions:     See 8.1.1.1.  (line  708)
-Name_Clashes:                                  See 8.1.6.5.  (line 2077)
-Nested_Subprograms:                            See 8.1.5.14. (line 1243)
-No_Scalar_Storage_Order_Specified:             See 8.1.3.4.  (line  987)
-Non_Qualified_Aggregates:                      See 8.2.20.   (line 2506)
-Non_Short_Circuit_Operators:                   See 8.1.5.15. (line 1257)
-Non_SPARK_Attributes:                          See 8.4.4.    (line 2963)
-Non_Tagged_Derived_Types:                      See 8.4.5.    (line 3070)
-Non_Visible_Exceptions rule:                   See 8.1.4.3.  (line 1060)
-Null_Paths:                                    See 8.1.5.16. (line 1267)
-Numeric_Literals:                              See 8.2.21.   (line 2517)
-Object-Orientation related rules:              See 8.1.2.    (line  737)
-Objects_Of_Anonymous_Types:                    See 8.1.5.17. (line 1275)
-OTHERS_In_Aggregates:                          See 8.1.5.18. (line 1286)
-OTHERS_In_CASE_Statements:                     See 8.1.5.19. (line 1300)
-OTHERS_In_Exception_Handlers:                  See 8.1.5.20. (line 1307)
-Outer_Loop_Exits:                              See 8.4.6.    (line 3078)
-Overloaded_Operators:                          See 8.4.7.    (line 3086)
-Overly_Nested_Control_Structures:              See 8.1.5.21. (line 1314)
-Parameters_Out_Of_Order:                       See 8.2.22.   (line 2559)
-Portability-related rules:                     See 8.1.3.    (line  832)
-POS_On_Enumeration_Types:                      See 8.1.5.22. (line 1348)
-Positional_Actuals_For_Defaulted_Generic_Parameters:See 8.1.5.23.
-                                                             (line 1356)
-Positional_Actuals_For_Defaulted_Parameters:   See 8.1.5.24. (line 1364)
-Positional_Components:                         See 8.1.5.25. (line 1373)
-Positional_Generic_Parameters:                 See 8.1.5.26. (line 1381)
-Positional_Parameters:                         See 8.1.5.27. (line 1390)
-Predefined Rules:                              See 8.        (line  678)
-Predefined_Numeric_Types:                      See 8.1.3.5.  (line  998)
-Predicate_Testing:                             See 8.2.23.   (line 2590)
-Program Structure related rules:               See 8.1.4.    (line 1031)
-Programming Practice related rules:            See 8.1.5.    (line 1096)
-Quantified_Expressions:                        See 8.2.24.   (line 2668)
-Raising_External_Exceptions:                   See 8.1.4.4.  (line 1086)
-Raising_Predefined_Exceptions:                 See 8.2.25.   (line 2741)
-Readability-related rules:                     See 8.1.6.    (line 1491)
-Recursive_Subprograms:                         See 8.1.5.28. (line 1420)
-Rule exemption:                                See 7.        (line  566)
-Separate_Numeric_Error_Handlers:               See 8.1.3.6.  (line 1021)
-Slices:                                        See 8.4.8.    (line 3096)
-Source code presentation related rules:        See 8.1.7.    (line 2123)
-SPARK Ada related rules:                       See 8.4.      (line 2868)
-Style-related rules:                           See 8.1.      (line  695)
-Tasking-related rules:                         See 8.1.1.    (line  702)
-Too_Many_Parents:                              See 8.1.2.3.  (line  800)
-Unassigned_OUT_Parameters:                     See 8.2.26.   (line 2750)
-Unchecked_Address_Conversions:                 See 8.1.5.29. (line 1437)
-Unchecked_Conversions_As_Actuals:              See 8.1.5.30. (line 1451)
-Uncommented_BEGIN_In_Package_Bodies:           See 8.1.6.6.  (line 2107)
-Unconditional_Exits:                           See 8.1.5.31. (line 1460)
-Unconstrained_Array_Returns:                   See 8.2.27.   (line 2783)
-Uninitialized_Global_Variables:                See 8.1.5.32. (line 1467)
-Universal_Ranges rule:                         See 8.4.9.    (line 3103)
-Unnamed_Blocks_And_Loops:                      See 8.1.5.33. (line 1477)
-USE_PACKAGE_Clauses:                           See 8.1.5.34. (line 1484)
-Using pragma Annotate to control rule exemption:See 7.1.     (line  587)
-Visible_Components:                            See 8.1.2.4.  (line  816)
-Volatile_Objects_Without_Address_Clauses:      See 8.1.1.2.  (line  719)
++R (gnatcheck):                                See 5.        (line  490)
+-a:                                            See 4.        (line  364)
+-check-redefinition:                           See 4.        (line  439)
+-files:                                        See 4.        (line  424)
+-from (gnatcheck):                             See 5.        (line  508)
+-h:                                            See 4.        (line  378)
+-help:                                         See 4.        (line  324)
+-ignore:                                       See 4.        (line  431)
+-include-file=file:                            See 4.        (line  444)
+-incremental gnatpp:                           See 4.        (line  369)
+-j:                                            See 4.        (line  381)
+-l:                                            See 4.        (line  388)
+-log:                                          See 4.        (line  394)
+-m:                                            See 4.        (line  401)
+-no_objects_dir:                               See 4.        (line  356)
+-nt:                                           See 4.        (line  420)
+-o:                                            See 4.        (line  454)
+-ox:                                           See 4.        (line  457)
+-P file:                                       See 4.        (line  327)
+-q:                                            See 4.        (line  407)
+-R (gnatcheck):                                See 5.        (line  504)
+-RTS=rts-path:                                 See 4.        (line  360)
+-s:                                            See 4.        (line  412)
+-show-rule:                                    See 4.        (line  435)
+-subdirs=dir:                                  See 4.        (line  349)
+-t:                                            See 4.        (line  447)
+-U:                                            See 4.        (line  332)
+-U main_unit:                                  See 4.        (line  338)
+-v:                                            See 4.        (line  450)
+-version:                                      See 4.        (line  319)
+-write-rules:                                  See 4.        (line  461)
+-xml:                                          See 4.        (line  416)
+-Xname=value:                                  See 4.        (line  344)
+Abstract_Type_Declarations:                    See 9.2.1.    (line 2308)
+Annotated_Comments:                            See 9.4.1.    (line 3114)
+Anonymous_Arrays:                              See 9.1.5.1.  (line 1266)
+Anonymous_Subtypes:                            See 9.2.2.    (line 2316)
+ASIS:                                          See 2.        (line  219)
+Binary_Case_Statements:                        See 9.1.5.2.  (line 1274)
+Blocks:                                        See 9.2.3.    (line 2357)
+Boolean_Relational_Operators:                  See 9.4.2.    (line 3181)
+Coding standard file (for gnatcheck):          See 5.        (line  526)
+Complex_Inlined_Subprograms:                   See 9.2.4.    (line 2364)
+Conditional_Expressions:                       See 9.2.5.    (line 2389)
+Constructors:                                  See 9.1.2.1.  (line  810)
+Controlled_Type_Declarations:                  See 9.2.6.    (line 2462)
+Declarations_In_Blocks:                        See 9.2.7.    (line 2474)
+Deep_Inheritance_Hierarchies:                  See 9.1.2.2.  (line  819)
+Deep_Library_Hierarchy:                        See 9.1.4.1.  (line 1186)
+Deeply_Nested_Generics:                        See 9.1.4.2.  (line 1201)
+Deeply_Nested_Inlining:                        See 9.2.8.    (line 2483)
+Default_Parameters:                            See 9.2.9.    (line 2501)
+Default_Values_For_Record_Components:          See 9.1.5.3.  (line 1283)
+Deriving_From_Predefined_Type:                 See 9.1.5.4.  (line 1292)
+Direct_Calls_To_Primitives:                    See 9.1.2.3.  (line  854)
+Discriminated_Records:                         See 9.2.10.   (line 2511)
+Downward_View_Conversions:                     See 9.1.2.4.  (line  876)
+Enumeration_Ranges_In_CASE_Statements:         See 9.1.5.5.  (line 1301)
+Enumeration_Representation_Clauses:            See 9.1.5.6.  (line 1318)
+Exceptions_As_Control_Flow:                    See 9.1.5.7.  (line 1325)
+EXIT_Statements_With_No_Loop_Name:             See 9.1.5.9.  (line 1345)
+Exits_From_Conditional_Loops:                  See 9.1.5.8.  (line 1334)
+Expanded_Loop_Exit_Names:                      See 9.4.3.    (line 3196)
+Explicit_Full_Discrete_Ranges:                 See 9.2.11.   (line 2522)
+Expression_Functions:                          See 9.2.12.   (line 2529)
+Feature usage related rules:                   See 9.2.      (line 2302)
+Fixed_Equality_Checks:                         See 9.2.13.   (line 2538)
+Float_Equality_Checks:                         See 9.2.14.   (line 2549)
+Forbidden_Attributes:                          See 9.1.3.1.  (line  974)
+Forbidden_Pragmas:                             See 9.1.3.2.  (line 1041)
+Format of the Report File:                     See 3.        (line  273)
+Function_Style_Procedures:                     See 9.2.15.   (line 2560)
+Generics_In_Subprograms:                       See 9.2.16.   (line 2579)
+Global_Variables:                              See 9.1.5.10. (line 1353)
+gnatcheck annotations rules:                   See 8.2.      (line  716)
+GOTO_Statements:                               See 9.1.5.11. (line 1367)
+Identifier_Casing:                             See 9.1.6.1.  (line 1664)
+Identifier_Prefixes:                           See 9.1.6.2.  (line 1807)
+Identifier_Suffixes:                           See 9.1.6.3.  (line 2023)
+Implicit_IN_Mode_Parameters:                   See 9.2.17.   (line 2590)
+Implicit_SMALL_For_Fixed_Point_Types:          See 9.1.3.3.  (line 1113)
+Improper_Returns:                              See 9.1.5.12. (line 1374)
+Improperly_Located_Instantiations:             See 9.2.18.   (line 2599)
+Library_Level_Subprograms:                     See 9.2.19.   (line 2610)
+Local_Packages:                                See 9.1.4.3.  (line 1216)
+Maximum_Parameters:                            See 9.1.5.13. (line 1387)
+Membership_Tests:                              See 9.2.20.   (line 2618)
+Metrics-related rules:                         See 9.3.      (line 3036)
+Metrics_Cyclomatic_Complexity:                 See 9.3.2.    (line 3079)
+Metrics_Essential_Complexity:                  See 9.3.1.    (line 3068)
+Metrics_LSLOC:                                 See 9.3.3.    (line 3092)
+Misnamed_Controlling_Parameters:               See 9.1.6.4.  (line 2229)
+Multiple_Entries_In_Protected_Definitions:     See 9.1.1.1.  (line  780)
+Name_Clashes:                                  See 9.1.6.5.  (line 2244)
+Nested_Subprograms:                            See 9.1.5.14. (line 1407)
+No_Inherited_Classwide_Pre:                    See 9.1.2.5.  (line  883)
+No_Scalar_Storage_Order_Specified:             See 9.1.3.4.  (line 1123)
+Non_Qualified_Aggregates:                      See 9.2.21.   (line 2697)
+Non_Short_Circuit_Operators:                   See 9.1.5.15. (line 1421)
+Non_SPARK_Attributes:                          See 9.4.4.    (line 3203)
+Non_Tagged_Derived_Types:                      See 9.4.5.    (line 3310)
+Non_Visible_Exceptions rule:                   See 9.1.4.4.  (line 1224)
+Null_Paths:                                    See 9.1.5.16. (line 1431)
+Numeric_Indexing:                              See 9.2.22.   (line 2708)
+Numeric_Literals:                              See 9.2.23.   (line 2718)
+Object-Orientation related rules:              See 9.1.2.    (line  804)
+Objects_Of_Anonymous_Types:                    See 9.1.5.17. (line 1439)
+OTHERS_In_Aggregates:                          See 9.1.5.18. (line 1450)
+OTHERS_In_CASE_Statements:                     See 9.1.5.19. (line 1464)
+OTHERS_In_Exception_Handlers:                  See 9.1.5.20. (line 1471)
+Outer_Loop_Exits:                              See 9.4.6.    (line 3318)
+Overloaded_Operators:                          See 9.4.7.    (line 3326)
+Overly_Nested_Control_Structures:              See 9.1.5.21. (line 1478)
+Parameters_Out_Of_Order:                       See 9.2.24.   (line 2759)
+Portability-related rules:                     See 9.1.3.    (line  968)
+POS_On_Enumeration_Types:                      See 9.1.5.22. (line 1512)
+Positional_Actuals_For_Defaulted_Generic_Parameters:See 9.1.5.23.
+                                                             (line 1520)
+Positional_Actuals_For_Defaulted_Parameters:   See 9.1.5.24. (line 1528)
+Positional_Components:                         See 9.1.5.25. (line 1537)
+Positional_Generic_Parameters:                 See 9.1.5.26. (line 1545)
+Positional_Parameters:                         See 9.1.5.27. (line 1554)
+Predefined Rules:                              See 9.        (line  750)
+Predefined_Numeric_Types:                      See 9.1.3.5.  (line 1134)
+Predicate_Testing:                             See 9.2.25.   (line 2790)
+Printable_ASCII:                               See 9.1.3.6.  (line 1157)
+Program Structure related rules:               See 9.1.4.    (line 1180)
+Programming Practice related rules:            See 9.1.5.    (line 1260)
+Quantified_Expressions:                        See 9.2.27.   (line 2879)
+Raising_External_Exceptions:                   See 9.1.4.5.  (line 1250)
+Raising_Predefined_Exceptions:                 See 9.2.28.   (line 2952)
+Readability-related rules:                     See 9.1.6.    (line 1658)
+Recursive_Subprograms:                         See 9.1.5.28. (line 1584)
+Representation_Specifications:                 See 9.2.26.   (line 2868)
+Rule exemption:                                See 8.        (line  638)
+Separate_Numeric_Error_Handlers:               See 9.1.3.7.  (line 1170)
+Slices:                                        See 9.4.8.    (line 3336)
+Source code presentation related rules:        See 9.1.7.    (line 2296)
+SPARK Ada related rules:                       See 9.4.      (line 3108)
+Specific_Parent_Type_Invariant:                See 9.1.2.7.  (line  900)
+Specific_Pre_Post:                             See 9.1.2.6.  (line  892)
+Specific_Type_Invariants:                      See 9.1.2.8.  (line  910)
+Style-related rules:                           See 9.1.      (line  767)
+Subprogram_Access:                             See 9.2.29.   (line 2961)
+Tasking-related rules:                         See 9.1.1.    (line  774)
+Too_Many_Dependencies:                         See 9.2.30.   (line 2970)
+Too_Many_Parents:                              See 9.1.2.9.  (line  921)
+Too_Many_Primitives:                           See 9.1.2.10. (line  937)
+Unassigned_OUT_Parameters:                     See 9.2.31.   (line 2984)
+Unchecked_Address_Conversions:                 See 9.1.5.29. (line 1604)
+Unchecked_Conversions_As_Actuals:              See 9.1.5.30. (line 1618)
+Uncommented_BEGIN_In_Package_Bodies:           See 9.1.6.6.  (line 2280)
+Unconditional_Exits:                           See 9.1.5.31. (line 1627)
+Unconstrained_Array_Returns:                   See 9.2.32.   (line 3017)
+Uninitialized_Global_Variables:                See 9.1.5.32. (line 1634)
+Universal_Ranges rule:                         See 9.4.9.    (line 3343)
+Unnamed_Blocks_And_Loops:                      See 9.1.5.33. (line 1644)
+USE_PACKAGE_Clauses:                           See 9.1.5.34. (line 1651)
+Using pragma Annotate to control rule exemption:See 8.1.     (line  659)
+Visible_Components:                            See 9.1.2.11. (line  952)
+Volatile_Objects_Without_Address_Clauses:      See 9.1.1.2.  (line  791)
 
 
 Local Variables:

@@ -303,7 +303,7 @@ package body Gnatcheck.Compiler is
 
       procedure Analyze_Warning (Msg : String) is
          SF       : SF_Id;
-         Line_Num : Natural;
+         Line_Num : Positive;
          Col_Num  : Natural;
          --  Coordinates of the warning message
 
@@ -315,82 +315,64 @@ package body Gnatcheck.Compiler is
          Compiler_Message_Kind : Compiler_Message_Kinds :=
            Not_A_Compiler_Nessage;
 
-         Idx      : Positive := Msg'First;
-         Last_Idx : Natural := Msg'Last;
-         Word_End : Natural  := 0;
+         First_Idx : constant Natural := Msg'First;
+         Last_Idx  : Natural  := Msg'Last;
+         Idx       : Natural := First_Idx;
+         Word_End  : Natural  := 0;
+
       begin
          if Last_Idx = 0 then
             --  An empty line?
             return;
          end if;
 
-         --  We assume the following compiler warning format:
+         --  We assume the following format of the message:
          --
-         --   file_name:line_num:column_num: message
+         --   filename:line:column: <message body>
          --
-         --  What about instantiation chains????
+         --  If -dJ is set, <message body> has the following structure
+         --
+         --    [warning] scopename: line:col: text
+         --
+         --  So the first thing we have to do is to skip 3 colons and to define
+         --  the source the message is siiued for, and the line and column
+         --  numbers:
 
-         for J in Idx .. Last_Idx loop
-            if Msg (J) = ':' then
-               Word_End := J - 1;
-               exit;
-            end if;
-         end loop;
+         Idx := Index (Msg (Idx .. Last_Idx), ":");
 
-         if Word_End = 0 then
-            --  the line does not have expected format
+         if Idx = 0 then
+            Error ("Unexpected format of compiler message for " &
+                   Short_Source_Name (For_File) & ":");
+
+            Error_No_Tool_Name (Msg);
+
+            Success := False;
             return;
          end if;
 
-         SF := File_Find (Msg (Idx .. Word_End), Use_Short_Name => True);
+         SF := File_Find (Msg (First_Idx .. Idx - 1), Use_Short_Name => True);
 
-         if not Is_Argument_Source (SF)
---           or else
---            SF /= For_File
-         then
+         if not Is_Argument_Source (SF) then
             --  This source is not an argument of this check
             return;
          end if;
 
-         Idx := Word_End + 2;
-         Line_Num := 0;
+         Word_End := Index (Msg (Idx + 1 .. Last_Idx), ":");
 
-         while Msg (Idx) /= ':' loop
-            Line_Num :=
-              Line_Num * 10 +
-                (Character'Pos (Msg (Idx)) - Character'Pos ('0'));
-            Idx := Idx + 1;
-         end loop;
+         if Word_End = 0 then
+            Error ("Unexpected format of compiler message for " &
+                   Short_Source_Name (For_File) & ":");
 
-         Idx := Idx + 1;
+            Error_No_Tool_Name (Msg);
 
-         Col_Num := 0;
+            Success := False;
+            return;
+         end if;
 
-         while Msg (Idx) /= ':' loop
-            Col_Num :=
-              Col_Num * 10 + (Character'Pos (Msg (Idx)) - Character'Pos ('0'));
-            Idx := Idx + 1;
-         end loop;
-
-         Idx := Idx + 2;
-         --  Now Idx should point to the first character of the warning message
-
-         case Msg (Idx) is
-            when  '(' =>
-               --  (style)
-               Compiler_Message_Kind := Style;
-            when  'w' =>
-               --  warning, plain warning or restriction warning?
-               Compiler_Message_Kind := General_Warning;
-
-               if Idx + 32 < Last_Idx
-                 and then
-                  Msg (Idx + 7 .. Idx + 32) = ": violation of restriction"
-               then
-                  Compiler_Message_Kind := Restriction;
-               end if;
-
-            when  others =>
+         begin
+            Line_Num := Positive'Value (Msg (Idx + 1 .. Word_End - 1));
+         exception
+            when others =>
                Error ("Unexpected format of compiler message for " &
                       Short_Source_Name (For_File) & ":");
 
@@ -398,7 +380,57 @@ package body Gnatcheck.Compiler is
 
                Success := False;
                return;
-         end case;
+         end;
+
+         Idx := Word_End;
+
+         Word_End := Index (Msg (Idx + 1 .. Last_Idx), ":");
+
+         if Word_End = 0 then
+            Error ("Unexpected format of compiler message for " &
+                   Short_Source_Name (For_File) & ":");
+
+            Error_No_Tool_Name (Msg);
+
+            Success := False;
+            return;
+         end if;
+
+         begin
+            Col_Num := Positive'Value (Msg (Idx + 1 .. Word_End - 1));
+         exception
+            when others =>
+               Error ("Unexpected format of compiler message for " &
+                      Short_Source_Name (For_File) & ":");
+
+               Error_No_Tool_Name (Msg);
+
+               Success := False;
+               return;
+         end;
+
+         Idx := Word_End + 2;
+
+         if Msg (Idx .. Idx + 8) = "warning: " then
+
+            if Index (Msg (Idx .. Last_Idx), ": violation of restriction") /= 0
+            then
+               Compiler_Message_Kind := Restriction;
+            else
+               Compiler_Message_Kind := General_Warning;
+            end if;
+
+         elsif Index (Msg (Idx .. Last_Idx), "(style)") /= 0 then
+            Compiler_Message_Kind := Style;
+         else
+            Error ("Unexpected format of compiler message for " &
+                   Short_Source_Name (For_File) & ":");
+
+            Error_No_Tool_Name (Msg);
+
+            Success := False;
+            return;
+         end if;
 
          if Compiler_Message_Kind = Restriction then
             Last_Idx := Index (Msg, Gnatcheck_Config_File);
@@ -912,10 +944,23 @@ package body Gnatcheck.Compiler is
                     Option_Parameter'Value
                       (Trim (Param (Last_Idx .. Param'Last), Both));
 
-                  if Restriction_Setting (R_Id).Param /= null then
+                  if Restriction_Setting (R_Id).Param /= null
+                    and then
+                     Gnatcheck.Options.Check_Param_Redefinition
+                  then
                      Free (Restriction_Setting (R_Id).Param);
+                     Last_Idx := Index (Param, "=", Backward) - 1;
+
+                     for J in reverse First_Idx .. Last_Idx loop
+                        if Param (J) /= ' ' then
+                           Last_Idx := J;
+                           exit;
+                        end if;
+                     end loop;
+
                      Error ("expression for RESTRICTIONS rule parameter: " &
-                            Param & " is specified more than once");
+                            Param (First_Idx .. Last_Idx) &
+                            " is specified more than once");
                   end if;
 
                   Restriction_Setting (R_Id).Param  :=

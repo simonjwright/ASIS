@@ -2,11 +2,11 @@
 --                                                                          --
 --                 ASIS-for-GNAT IMPLEMENTATION COMPONENTS                  --
 --                                                                          --
---                            A 4 G . C O N T T                             --
+--                       A 4 G . G N S A _ S W I T C H                      --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 2016, Free Software Foundation, Inc.       --
+--            Copyright (C) 2016-2017, Free Software Foundation, Inc.       --
 --                                                                          --
 -- ASIS-for-GNAT is free software; you can redistribute it and/or modify it --
 -- under terms of the  GNU General Public License  as published by the Free --
@@ -35,11 +35,13 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with System.OS_Lib; use System.OS_Lib;
+
 package A4G.GNSA_Switch is
 
    Use_GNSA : constant Boolean := True;
 
-   GNSA_Dir : String := "asis-gnsa";
+   GNSA_Dir : String := "libexec" & Directory_Separator & "asis-gnsa";
    --  Name of the directory where GNSA to be used for ASIS tree creation is
    --  supposed to be located
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2008-2016, AdaCore                     --
+--                     Copyright (C) 2008-2017, AdaCore                     --
 --                                                                          --
 -- GNATCHECK  is  free  software;  you can redistribute it and/or modify it --
 -- under terms of the  GNU  General Public License as published by the Free --
@@ -80,13 +80,53 @@ package Gnatcheck.Rules.Metrics is
    -- Metrics_LSLOC --
    -------------------
 
+   --  Unlike other metrics rules, this rule has additional parameters (at the
+   --  moment this is only one parameter) that define for which particular
+   --  constructs the rule should be checked. Note, that to enable a rule you
+   --  have to specify the metric value, that is, +R option with optional
+   --  parameter does not enable the rule.
+   --  So, the rule has one mandatory parameter for +R option that specify
+   --  the upper bound for LSLOC metric under which constructs are not flagged
+   --  and the following optional parameters that impose filters on the rule by
+   --  specify constructs for that the rule should be checked:
+   --
+   --    Subprograms - check the rule for subprogram bodies only;
+   --
+   --    to be extended if needed
+   --
+   --  -R option does not have any parameter, it removes all the filters that
+   --   may be imposed in +R options.
+
    type Metrics_LSLOC_Rule_Type is new One_Integer_Parameter_Rule_Template
-     with null record;
+     with record
+        --  If one of the fields below is set ON by parameter processing
+        --  then the rule is checked only for the constructs specified
+
+        Subprograms_Only : Boolean := False;
+        --  Check rule on subprogram bodies only;
+
+      --  to be extended if needed;
+     end record;
 
    overriding procedure Activate_In_Test_Mode
      (Rule : in out Metrics_LSLOC_Rule_Type);
    --  Activates the rule with the parameter equals to 30 (the default 4 is
    --  too small for this rule).
+
+   overriding procedure Print_Rule
+     (Rule         : Metrics_LSLOC_Rule_Type;
+      Indent_Level : Natural := 0);
+
+   overriding procedure Print_Rule_To_File
+     (Rule         : Metrics_LSLOC_Rule_Type;
+      Rule_File    : File_Type;
+      Indent_Level : Natural := 0);
+
+   overriding procedure Process_Rule_Parameter
+     (Rule       : in out Metrics_LSLOC_Rule_Type;
+      Param      :        String;
+      Enable     :        Boolean;
+      Defined_At : String);
 
    procedure Rule_Check_Pre_Op
      (Rule    : in out Metrics_LSLOC_Rule_Type;

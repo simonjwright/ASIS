@@ -32,6 +32,9 @@ GNATcheck rules.
   :ref:`Conditional_Expressions`
 
 *
+  :ref:`Constructors`
+
+*
   :ref:`Controlled_Type_Declarations`
 
 *
@@ -39,6 +42,9 @@ GNATcheck rules.
 
 *
   :ref:`Deep_Inheritance_Hierarchies`
+
+*
+  :ref:`Deep_Library_Hierarchy`
 
 *
   :ref:`Deeply_Nested_Generics`
@@ -62,6 +68,9 @@ GNATcheck rules.
   :ref:`Discriminated_Records`
 
 *
+  :ref:`Downward_View_Conversions`
+
+*
   :ref:`Enumeration_Ranges_In_CASE_Statements`
 
 *
@@ -81,6 +90,9 @@ GNATcheck rules.
 
 *
   :ref:`Explicit_Full_Discrete_Ranges`
+
+*
+  :ref:`Expression_Functions`
 
 *
   :ref:`Fixed_Equality_Checks`
@@ -152,6 +164,9 @@ GNATcheck rules.
   :ref:`Nested_Subprograms`
 
 *
+  :ref:`No_Inherited_Classwide_Pre`
+
+*
   :ref:`Non_Qualified_Aggregates`
 
 *
@@ -221,6 +236,12 @@ GNATcheck rules.
   :ref:`Predefined_Numeric_Types`
 
 *
+  :ref:`Printable_ASCII`
+
+*
+  :ref:`Representation_Specifications`
+
+*
   :ref:`Quantified_Expressions`
 
 *
@@ -234,6 +255,24 @@ GNATcheck rules.
 
 *
   :ref:`Slices`
+
+*
+  :ref:`Specific_Parent_Type_Invariant`
+
+*
+  :ref:`Specific_Pre_Post`
+
+*
+  :ref:`Specific_Type_Invariants`
+
+*
+  :ref:`Subprogram_Access`
+
+*
+  :ref:`Too_Many_Dependencies`
+
+*
+  :ref:`Too_Many_Primitives`
 
 *
   :ref:`Too_Many_Parents`
