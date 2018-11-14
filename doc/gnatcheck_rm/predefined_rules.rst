@@ -63,19 +63,13 @@ This rule has no parameters.
 
 .. index:: Volatile_Objects_Without_Address_Clauses
 
-Flag each volatile object that does not have an address clause.
+Flag each volatile object that does not have an address specification.
+Only variable declarations are checked.
 
-The following check is made: if the pragma ``Volatile`` is applied to a
-data object or to its type, then an address clause must
-be supplied for this object.
-
-This rule does not check the components of data objects,
-array components that are volatile as a result of the pragma
-``Volatile_Components``, or objects that are volatile because
-they are atomic as a result of pragmas ``Atomic`` or
-``Atomic_Components``.
-
-Only variable declarations, and not constant declarations, are checked.
+An object is considered as being volatile if a pragma or aspect Volatile
+is applied to the object or to its type, if the object is atomic or
+if the GNAT compiler considers this object as volatile because of some
+code generation reasons.
 
 This rule has no parameters.
 
@@ -88,6 +82,21 @@ Object Orientation
 
 The rules in this subsection may be used to enforce various
 feature usages related to Object-Oriented Programming.
+
+
+.. _Constructors:
+
+``Constructors``
+^^^^^^^^^^^^^^^^
+
+.. index:: Constructors
+
+Flag any declaration of a primitive function of a tagged type that has a
+controlling result and no controlling parameter. If a declaration is a
+completion of another declaration then it is not flagged.
+
+This rule has no parameters.
+
 
 .. _Deep_Inheritance_Hierarchies:
 
@@ -157,6 +166,78 @@ This rule has the following (optional) parameters for the ``+R`` option:
   controlling result and no controlling parameters (in a traditional OO sense
   such functions may be considered as constructors).
 
+
+.. _Downward_View_Conversions:
+
+``Downward_View_Conversions``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. index:: Downward_View_Conversions
+
+Flag downward view conversions.
+
+This rule has no parameters.
+
+
+.. _No_Inherited_Classwide_Pre:
+
+``No_Inherited_Classwide_Pre``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. index:: No_Inherited_Classwide_Pre
+
+Flag a declaration of an overriding primitive operation of a tagged type
+if at least one of the operations it overrides or implements does not
+have (explicitly defined or inherited) Pre'Class aspect defined for
+it.
+
+This rule has no parameters.
+
+
+.. _Specific_Pre_Post:
+
+``Specific_Pre_Post``
+^^^^^^^^^^^^^^^^^^^^^
+
+.. index:: Specific_Pre_Post
+
+Flag a declaration of a primitive operation of a tagged type if this
+declaration contains specification of Pre or/and Post aspect.
+
+This rule has no parameters.
+
+
+.. _Specific_Parent_Type_Invariant:
+
+``Specific_Parent_Type_Invariant``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. index:: Specific_Parent_Type_Invariant
+
+Flag any record extension definition or private extension definition if
+a parent type has a Type_Invariant aspect defined for it. A record
+extension definition is not flagged if it is a part of a completion of a
+private extension declaration.
+
+This rule has no parameters.
+
+
+.. _Specific_Type_Invariants:
+
+``Specific_Type_Invariants``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. index:: Specific_Type_Invariants
+
+Flag any definition of (non-class-wide) Type_Invariant aspect that is
+a part of a declaration of a tagged type or a tagged extension. Definitions
+of Type_Invariant'Class aspects are not flagged. Definitions of (non-class-wide)
+Type_Invariant aspect that are parts of declarations of non-tagged types
+are not flagged.
+
+This rule has no parameters.
+
+
 .. _Too_Many_Parents:
 
 ``Too_Many_Parents``
@@ -177,6 +258,32 @@ This rule has the following (mandatory) parameters for the ``+R`` option:
 
 *N*
   Positive integer specifying the maximal allowed number of parents/progenitors.
+
+
+
+
+.. _Too_Many_Primitives:
+
+``Too_Many_Primitives``
+^^^^^^^^^^^^^^^^^^^^^^^
+
+.. index:: Too_Many_Primitives
+
+Flag any tagged type declaration that has more than N user-defined
+primitive operations (counting both inherited and not overridden and
+explicitly declared, not counting predefined operators), Do not flag
+type declarations that are completions of private type or extension
+declarations.
+
+This rule has the following (mandatory) parameters for the ``+R`` option:
+
+
+
+*N*
+  Positive integer specifying the maximal number of primitives when
+  the type is not flagged.
+
+
 
 .. _Visible_Components:
 
@@ -434,6 +541,25 @@ predefined packages (such as ``System.Any_Priority`` or
 
 This rule has no parameters.
 
+
+.. _Printable_ASCII:
+
+``Printable_ASCII``
+^^^^^^^^^^^^^^^^^
+
+.. index:: Printable_ASCII
+
+Flag source code text characters that are not part of the printable
+ASCII character set, a line feed, or a carriage return character (i.e.
+values 10, 13 and 32 .. 126 of the ASCII Character set).
+
+If a code line contains more than one symbol that does not belong to the
+printable ASCII character set, the generated diagnosis points to the
+first (leftmost) character and says that there are more in this line.
+
+This rule has no parameters.
+
+
 .. _Separate_Numeric_Error_Handlers:
 
 ``Separate_Numeric_Error_Handlers``
@@ -459,6 +585,29 @@ Program Structure
 The rules in this subsection may be used to enforce feature usages
 related to program structure.
 
+
+
+
+.. _Deep_Library_Hierarchy:
+
+``Deep_Library_Hierarchy``
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. index:: Deep_Library_Hierarchy
+
+Flag any library package declaration, library generic package
+declaration or library package instantiation that has more than N
+parents and grandparents (that is, the name of such a library unit
+contains more than N dots). Child subprograms, generic subprograms
+subprogram instantiations and package bodies are not flagged.
+
+This rule has the following (mandatory) parameters for the ``+R`` option:
+
+*N*
+  Positive integer specifying the maximal number of ancestors when
+  the unit is not flagged.
+
+
 .. _Deeply_Nested_Generics:
 
 ``Deeply_Nested_Generics``
@@ -477,7 +626,7 @@ This rule has the following (mandatory) parameters for the ``+R`` option:
 
 
 *N*
-  Positive integer specifying the maximum nesting level for a
+  Nonnegative integer specifying the maximum nesting level for a
   generic declaration.
 
 .. _Local_Packages:
@@ -690,7 +839,7 @@ This rule has the following (optional) parameters for the ``+R`` option:
 
 *Only_Public*
   Do not flag variable declarations in private library (generic) packages and
-  in package privat parts.
+  in package private parts.
 
 .. _GOTO_Statements:
 
@@ -999,6 +1148,9 @@ are considered as direct calls by this rule.
 Generic subprograms and subprograms detected in generic units are not
 flagged. Recursive subprograms in expanded generic instantiations
 are flagged.
+
+This rule does not take into account subprogram calls in aspect
+definitions.
 
 This rule has no parameters.
 
@@ -1608,7 +1760,7 @@ following kinds of declarations:
 
 If both checks for constant suffixes and for access object suffixes are
 enabled, and if different suffixes are defined for them, then for constants
-of access type the check for access object suffixes suffixes is applied.
+of access type the check for access object suffixes is applied.
 
 The rule may have the following parameters:
 
@@ -1837,6 +1989,11 @@ A dictionary file is a plain text file. The maximum line length for this file
 is 1024 characters.  If the line is longer than this limit, extra characters
 are ignored.
 
+If the name of the dictionary file does not contain any path information and
+the rule option is specifies in a rule file, first the tool tries to locate
+the dictionary file in the same directory where the rule file is located, and
+if the attempt fails - in the current directory.
+
 Each line can be either an empty line, a comment line, or a line containing
 a list of identifiers separated by space or HT characters.
 A comment is an Ada-style comment (from ``--`` to end-of-line).
@@ -1900,9 +2057,19 @@ This rule has no parameters.
 
 .. index:: Anonymous_Subtypes
 
-Flag all uses of anonymous subtypes (except cases when subtype indication
-is a part of a record component definition, and this subtype indication
-depends on a discriminant). A use of an anonymous subtype is
+Flag all uses of anonymous subtypes except for the following:
+
+*
+  when the subtype indication depends on a discriminant, this includes the
+  cases of a record component definitions when a component depends on a
+  discriminant, and using the discriminant of the derived type to
+  constraint the parent type;
+
+*
+  when a self-referenced data structure is defined, and a discriminant
+  is constrained by the reference to the current instance of a type;
+
+A use of an anonymous subtype is
 any instance of a subtype indication with a constraint, other than one
 that occurs immediately within a subtype declaration. Any use of a range
 other than as a constraint used immediately within a subtype declaration
@@ -2189,6 +2356,21 @@ Flag each discrete range that has the form ``A'First .. A'Last``.
 
 This rule has no parameters.
 
+
+.. _Expression_Functions:
+
+``Expression_Functions``
+---------------------------------
+
+.. index:: Expression_Functions
+
+Flag each expression function declared in a package specification
+(including specification of local packages and generic package
+specifications).
+
+This rule has no parameters.
+
+
 .. _Fixed_Equality_Checks:
 
 ``Fixed_Equality_Checks``
@@ -2436,6 +2618,22 @@ Aggregates of anonymous array types are not flagged.
 
 This rule has no parameters.
 
+.. _Numeric_Indexing:
+
+``Numeric_Indexing``
+--------------------
+
+.. index:: Numeric_Indexing
+
+Flag numeric literals, including those preceded by a predefined unary minus,
+if they are used as index expressions in array components.
+Literals that are subcomponents of index expressions are not flagged
+(other than the aforementioned case of unary minus).
+
+
+This rule has no parameters.
+
+
 .. _Numeric_Literals:
 
 ``Numeric_Literals``
@@ -2443,8 +2641,7 @@ This rule has no parameters.
 
 .. index:: Numeric_Literals
 
-Flag each use of a numeric literal in an index expression, and in any
-circumstance except for the following:
+Flag each use of a numeric literal except for the following:
 
 *
   a literal occurring in the initialization expression for a constant
@@ -2641,6 +2838,22 @@ This rule has the following (optional) parameters for the ``+R`` option:
   ``Refined_Post``
 
 
+.. _Representation_Specifications:
+
+``Representation_Specifications``
+----------------------------------
+
+.. index:: Representation_Specifications
+
+Flag each record representation clause, enumeration representation
+clause and representation attribute clause. Flag each aspect definition
+that defines a representation aspect. Also flag any pragma that is
+classifiead by the Ada Standard as a representation pragma, and the
+definition of the corresponding aspects.
+
+This rule has no parameters.
+
+
 .. _Quantified_Expressions:
 
 ``Quantified_Expressions``
@@ -2768,6 +2981,39 @@ Flag each ``raise`` statement that raises a predefined exception
 ``Program_Error``, ``Storage_Error``, or ``Tasking_Error``).
 
 This rule has no parameters.
+
+.. _Subprogram_Access:
+
+``Subprogram_Access``
+---------------------
+
+.. index:: Subprogram_Access
+
+Flag all constructs that belong to access_to_subprogram_definition
+syntax category, and all access definitions that define access to
+subprogram.
+
+This rule has no parameters.
+
+
+.. _Too_Many_Dependencies:
+
+``Too_Many_Dependencies``
+-------------------------
+
+.. index:: Too_Many_Dependencies
+
+Flag a library item or a subunit that immediately depends on more than
+N library units (N is a rule parameter). In case of a dependency on
+child units, implicit or explicit dependencies on all their parents are
+not counted.
+
+This rule has the following (mandatory) parameters for the ``+R`` option:
+
+*N*
+  Positive integer specifying the maximal number of dependencies when
+  the library item or subunit is not flagged.
+
 
 .. _Unassigned_OUT_Parameters:
 
@@ -2915,6 +3161,12 @@ upper bound.  A program unit declaration or a program unit body exceeding
 this limit will be flagged.
 
 The metric counts the total number of declarations and the total number of statements.
+
+This rule contains optional parameters for ``+R`` option that allows to restrict the
+rule to specific constructs:
+
+*Subprograms*
+   Check the rule for subprogram bodies only.
 
 SPARK Ada Rules
 ===============

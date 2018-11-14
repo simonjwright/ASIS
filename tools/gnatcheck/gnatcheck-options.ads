@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2004-2016, AdaCore                     --
+--                     Copyright (C) 2004-2017, AdaCore                     --
 --                                                                          --
 -- GNATCHECK  is  free  software;  you can redistribute it and/or modify it --
 -- under terms of the  GNU  General Public License as published by the Free --
@@ -57,6 +57,13 @@ package Gnatcheck.Options is
    --  Generate the rule categories help information (note, that we can do it
    --  only after registering the rules). Depending on the flag Recursive_Help,
    --  help information may or may not contain full details for each category.
+
+   Check_Param_Redefinition : Boolean := False;
+   --  '--check-redefinition'
+   --  Check if for parametrized rule the rule parameter is defined more than
+   --  once (may happen if gnatcheck has several rule files as parameters, or
+   --  when a rule is activated both in the command line and in the rule file.
+   --  Currently the debug option '-dw' also sets this flag ON.
 
    Recursive_Help : Boolean := False;
    --  '-hcr'

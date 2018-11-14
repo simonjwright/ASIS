@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                    Copyright (C) 2004-2016, AdaCore                      --
+--                    Copyright (C) 2004-2018, AdaCore                      --
 --                                                                          --
 -- Asis Utility Library (ASIS UL) is free software; you can redistribute it --
 -- and/or  modify  it  under  terms  of  the  GNU General Public License as --
@@ -144,6 +144,9 @@ package ASIS_UL.Output is
    --  Returns the full normalized name of the tool (XML) report file in
    --  absolute form. Return empty string if the tool report file name is
    --  not set.
+
+   function Get_Number return String;
+   --  Gets numeric index from the report file name.
 
    procedure Set_Pipe_Mode (On : Boolean := True);
    --  Turns ON (if On => True) or OFF (otherwise) the pipe mode. In the pipe

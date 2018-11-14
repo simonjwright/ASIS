@@ -1107,7 +1107,8 @@ package body ASIS_UL.Global_State is
          Node_List_3        => Node_Lists.Empty_Set, --  Directly impl spbs
          Node_List_4        => Node_Lists.Empty_Set, --  All impl spbs
          Node_List_5        => Node_Lists.Empty_Set, --  Indirect reads
-         Node_List_6        => Node_Lists.Empty_Set  --  Indirect writes
+         Node_List_6        => Node_Lists.Empty_Set, --  Indirect writes
+         Bool_Flag_7               => False          --  Missing_Body_Reported
          );
 
       pragma Assert (New_Node.Node_Kind /= Not_A_Node);
@@ -1459,6 +1460,7 @@ package body ASIS_UL.Global_State is
    procedure Set_Bool_Flag_4        (For_Node_Rec : in out GS_Node_Record);
    procedure Set_Bool_Flag_5        (For_Node_Rec : in out GS_Node_Record);
    procedure Set_Bool_Flag_6        (For_Node_Rec : in out GS_Node_Record);
+   procedure Set_Bool_Flag_7        (For_Node_Rec : in out GS_Node_Record);
    procedure Set_Application_Flag_1 (For_Node_Rec : in out GS_Node_Record);
    --  Procedures for updating the node record fields.
 
@@ -1543,6 +1545,11 @@ package body ASIS_UL.Global_State is
    begin
       For_Node_Rec.Bool_Flag_6 := Bool_Tmp;
    end Set_Bool_Flag_6;
+
+   procedure Set_Bool_Flag_7 (For_Node_Rec : in out GS_Node_Record) is
+   begin
+      For_Node_Rec.Bool_Flag_7 := Bool_Tmp;
+   end Set_Bool_Flag_7;
 
    procedure Set_Application_Flag_1 (For_Node_Rec : in out GS_Node_Record) is
    begin
@@ -1642,6 +1649,16 @@ package body ASIS_UL.Global_State is
          Process   => Set_Bool_Flag_6'Access);
    end Set_Bool_Flag_6;
 
+   procedure Set_Bool_Flag_7 (N : GS_Node_Id; Val : Boolean) is
+   begin
+      Bool_Tmp := Val;
+
+      GS_Nodes_Container.Update_Element
+        (Container => GS_Nodes_Table,
+         Index     => N,
+         Process   => Set_Bool_Flag_7'Access);
+   end Set_Bool_Flag_7;
+
    procedure Set_Application_Flag_1 (N : GS_Node_Id; Val : Boolean) is
    begin
       Bool_Tmp := Val;
@@ -1704,6 +1721,7 @@ begin
       Bool_Flag_4               => False,          --  Is_Dispatching_Operation
       Bool_Flag_5               => False,          --  Is_Abstract_Subprogram
       Bool_Flag_6               => False,          --  Is_Implicit_Subprogram
+      Bool_Flag_7               => False,          --  Missing_Body_Reported
       Application_Flag_1        => False,
       SLOC_Node_List_1          => SLOC_Node_Lists.Empty_Set, --  Direct_Calls
       SLOC_Node_List_2          => SLOC_Node_Lists.Empty_Set, --  Direct reads

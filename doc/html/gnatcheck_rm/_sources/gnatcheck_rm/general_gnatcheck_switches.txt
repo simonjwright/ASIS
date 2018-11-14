@@ -180,6 +180,13 @@ The following switches control the general *gnatcheck* behavior
     an explicit list of files.
 
 
+  .. index:: --ignore
+
+
+``--ignore=filename``
+    Do not process the sources listed in a specified file. This option cannot
+    be used in incremental mode.
+
 
   .. index:: --show-rule
 
@@ -187,6 +194,14 @@ The following switches control the general *gnatcheck* behavior
 ``--show-rule``
   Add the corresponding rule name to the diagnosis generated for its
   violation.
+
+  .. index:: --check-redefinition
+
+
+``--check-redefinition``
+  For a parametrized rule check if a rule parameter is defined more than once
+  in the set of rule options specified and issue a warning if parameter redefinition
+  is detected
 
   .. index:: --include-file=file
 
@@ -233,3 +248,15 @@ If a project file is specified and no argument source is explicitly
 specified (either directly or by means of ``-files`` option), and no
 ``-U`` is specified, then the set of processed sources is
 all the immediate units of the argument project.
+
+If the argument project file is defines aggregate project, and it aggregates
+more than one (non-aggregate) project, gnatcheck runs separately for each
+(non-aggregate) project being aggregated by the argument project, and a
+separate report file is created for each of these runs. Also such a run
+creates an umbrella report file that lists all the (non-aggregate)
+projects that are processed separately and for each of these projects
+contains the reference for the corresponding report file.
+
+If the argument project file defines an aggregate project but it aggregates only
+one (non-aggregate) project, the gnatcheck behavior is the same as for the
+case of non-aggregate argument project file.

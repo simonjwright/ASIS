@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2012-2016, AdaCore                     --
+--                     Copyright (C) 2012-2017, AdaCore                     --
 --                                                                          --
 -- Gnat2xml is free software; you can redistribute it and/or modify it      --
 -- under terms of the  GNU General Public License  as published by the Free --
@@ -78,10 +78,11 @@ package body Gnat2xml.Command_Line is
       Put ("       Note that this version does not validate.\n");
       Put (" --rep-clauses      - generate representation clauses\n");
       Put ("\n");
-      Put (" -files=filename - the name of a text file containing a list\n");
-      Put ("                    of Ada source files to process\n");
-      Put (" -jn             - n is the maximal number of processes\n");
-      Put (" --RTS=<dir>     - the same as gcc --RTS option\n");
+      Put (" -files=filename   - the name of a text file containing a list\n");
+      Put ("                     of Ada source files to process\n");
+      Put (" --ignore=filename - do not process sources listed in filename\n");
+      Put (" -jn               - n is the maximal number of processes\n");
+      Put (" --RTS=<dir>       - the same as gcc --RTS option\n");
       Put ("\n");
       Put (" -q        - quiet\n");
       Put (" -v        - verbose\n");

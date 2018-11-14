@@ -61,8 +61,6 @@ package body ASIS_UL.Common is
    -------------------
 
    function Detect_Target return String is
-      use GNAT.Directory_Operations;
-
       Tgt_Last : constant Natural :=
         Index (Tool_Name.all, "-", Ada.Strings.Backward);
       AAMP_Idx : constant Natural := Index (Tool_Name.all, "gnaamp");

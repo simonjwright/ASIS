@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -87,7 +87,7 @@ package body Gnatvsn is
          when Gnatpro_Devel =>
             return "Pro Developer " & Gnat_Static_Version_String;
          when GPL =>
-            return "GPL " & Gnat_Static_Version_String;
+            return "Community " & Gnat_Static_Version_String;
          when FSF =>
             return Gnat_Static_Version_String;
       end case;

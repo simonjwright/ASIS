@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                    Copyright (C) 2004-2016, AdaCore                      --
+--                    Copyright (C) 2004-2017, AdaCore                      --
 --                                                                          --
 -- Asis Utility Library (ASIS UL) is free software; you can redistribute it --
 -- and/or  modify  it  under  terms  of  the  GNU General Public License as --
@@ -34,5 +34,9 @@ project Tool_Utils is
    package Compiler renames Common.Compiler;
    package Binder renames Common.Binder;
    package Ide renames Common.Ide;
+
+   package Install is
+      for Mode use "usage";
+   end Install;
 
 end Tool_Utils;

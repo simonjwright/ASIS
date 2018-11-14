@@ -24,6 +24,7 @@
 pragma Ada_2012;
 
 with Ada.Characters.Handling; use Ada.Characters.Handling;
+with Ada.Exceptions;
 with Ada.Wide_Text_IO;
 with Unchecked_Deallocation;
 with System.WCh_Con;
@@ -81,6 +82,7 @@ is
    Name_Q_Not : constant Name_Id := Name_Find ("""not""");
 
    Name_Depends : constant Name_Id := Name_Find ("Depends");
+   Name_Refined_Depends : constant Name_Id := Name_Find ("Refined_Depends");
 
    Name_Tab_Insertion_Point : constant Name_Id :=
      Name_Find ("tab insertion point");
@@ -1718,6 +1720,8 @@ is
                An_If_Path | --???look up to If_Statement, then up to list.
                An_Elsif_Path |
                An_Else_Path |
+               A_Case_Statement |
+               A_Variant_Part |
                A_Case_Path |
                A_Record_Representation_Clause
 --           An_Exception_Handler |???
@@ -2244,15 +2248,17 @@ is
          Op       : constant Ada_Tree       := Make_Op (Expr);
          Arg1     : constant Ada_Tree       := Get_Arg (Expr, 1);
       begin
-         --  First we have a special case for the Depends aspect specification.
-         --  We want to pretend that "=>+" is an operator, so we print:
-         --   "Depends => (A =>+ B)" instead of "Depends => (A => +B)".
-         --  We don't bother with this for pragma Depends, because that's
-         --  mainly for the compiler's implementation of the aspect, so we
-         --  don't expect it to be used much.
+         --  First we have a special case for the Depends and Refined_Depends
+         --  aspect specifications. We want to pretend that "=>+" is an
+         --  operator, so we print: "Depends => (A =>+ B)" instead of
+         --  "Depends => (A => +B)". We don't bother with this for pragma
+         --  [Refined_]Depends, because that's mainly for the compiler's
+         --  implementation of the aspect, so we don't expect it to be used
+         --  much.
 
          if Ancestor_Tree (4).Kind = An_Aspect_Specification
-           and then Ancestor_Tree (4).Subtrees (1).Ref_Name = Name_Depends
+           and then Ancestor_Tree (4).Subtrees (1).Ref_Name in
+                      Name_Depends | Name_Refined_Depends
          then
             pragma Assert (Expr.Subtrees (1).Kind = A_Unary_Plus_Operator);
             pragma Assert
@@ -2265,8 +2271,8 @@ is
                Interpret_Template (" !", Subtrees);
             end;
 
-         --  No special "Depends" case. Put a space after the operator,
-         --  except for "+" and "-".
+         --  No special "[Refined_]Depends" case. Put a space after the
+         --  operator, except for "+" and "-".
 
          else
             declare
@@ -2878,6 +2884,7 @@ is
             Do_Compilation_Unit;
 
          when A_Comment =>
+            pragma Assert (False); -- not used
             Do_Comment;
 
          when Def_Names =>
@@ -3248,7 +3255,6 @@ is
    end Init_Template_Table;
 
    procedure Init_Pp_Off_And_On is
-      use Scanner;
    begin
       if Options.Pp_Off_String /= null then
          pragma Assert (Options.Pp_Off_String.all /= "");
@@ -3320,13 +3326,25 @@ exception
    when Common.Fatal_Error =>
       raise;
 
-   when others =>
+   when X : others =>
       --  In order to avoid damaging the user's source code, if there is a bug
       --  (like a token mismatch in Final_Check), we avoid writing the output
       --  file in Do_Diff mode; otherwise, we write the input to the output
       --  unchanged. This happens only in production builds.
+      --
+      --  Raise_Token_Mismatch includes the file name and source location in
+      --  the message; include that if available.
 
-      Output.Error ("pretty-printing failed; unable to format " & Source_Name);
+      declare
+         use Ada.Exceptions;
+         Loc : constant String :=
+           (if Exception_Identity (X) = Token_Mismatch'Identity
+              then Exception_Message (X) else "");
+      begin
+         Output.Error
+           (Source_Name & ":" & Loc &
+              ": pretty-printing failed; unable to format");
+      end;
 
       if Enable_Token_Mismatch then
          raise;

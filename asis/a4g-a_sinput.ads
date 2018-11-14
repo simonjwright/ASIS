@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 1995-2008, Free Software Foundation, Inc.       --
+--            Copyright (C) 1995-2017, Free Software Foundation, Inc.       --
 --                                                                          --
 -- ASIS-for-GNAT is free software; you can redistribute it and/or modify it --
 -- under terms of the  GNU General Public License  as published by the Free --
@@ -266,7 +266,8 @@ package A4G.A_Sinput is
    --  Checks if Ch is a character defining an end of line. According to RM05
    --  2.2(2/2), "a sequence of one or more format_effectors other than the
    --  character whose code position is 16#09# (CHARACTER TABULATION) signifies
-   --  at least one end of line."
+   --  at least one end of line." In GNAT ASCII.VT does not actually work
+   --  as a line break, so it is not considered as EOL by this fucntion.
 
    function Get_Wide_Ch (S : Source_Ptr) return Wide_Character;
    --  Provided that S points to the first character of the internal

@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>4. General gnatcheck Switches &mdash; GNATcheck Reference Manual 2017 documentation</title>
+    <title>4. General gnatcheck Switches &mdash; GNATcheck Reference Manual 2018 documentation</title>
     
     <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '2017',
+        VERSION:     '2018',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
-    <link rel="top" title="GNATcheck Reference Manual 2017 documentation" href="../gnatcheck_rm.html" />
+    <link rel="top" title="GNATcheck Reference Manual 2018 documentation" href="../gnatcheck_rm.html" />
     <link rel="next" title="5. gnatcheck Rule Options" href="gnatcheck_rule_options.html" />
     <link rel="prev" title="3. Format of the Report File" href="format_of_the_report_file.html" /> 
   </head>
@@ -41,7 +41,7 @@
         <li class="right" >
           <a href="format_of_the_report_file.html" title="3. Format of the Report File"
              accesskey="P">previous</a> |</li>
-        <li><a href="../gnatcheck_rm.html">GNATcheck Reference Manual 2017 documentation</a> &raquo;</li> 
+        <li><a href="../gnatcheck_rm.html">GNATcheck Reference Manual 2018 documentation</a> &raquo;</li> 
       </ul>
     </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -179,9 +179,18 @@ line breaks. You can use this switch more than once in the same call to
 <em>gnatcheck</em>. You also can combine this switch with
 an explicit list of files.</div></blockquote>
 </dd>
+<dt><code class="docutils literal"><span class="pre">--ignore=filename</span></code></dt>
+<dd><blockquote class="first last">
+<div>Do not process the sources listed in a specified file. This option cannot
+be used in incremental mode.</div></blockquote>
+</dd>
 <dt><code class="docutils literal"><span class="pre">--show-rule</span></code></dt>
 <dd>Add the corresponding rule name to the diagnosis generated for its
 violation.</dd>
+<dt><code class="docutils literal"><span class="pre">--check-redefinition</span></code></dt>
+<dd>For a parametrized rule check if a rule parameter is defined more than once
+in the set of rule options specified and issue a warning if parameter redefinition
+is detected</dd>
 <dt><code class="docutils literal"><span class="pre">--include-file=file</span></code></dt>
 <dd>Append the content of the specified text file to the report file</dd>
 <dt><code class="docutils literal"><span class="pre">-t</span></code></dt>
@@ -203,6 +212,16 @@ template file manually to get his own coding standard file.</dd>
 specified (either directly or by means of <code class="docutils literal"><span class="pre">-files</span></code> option), and no
 <code class="docutils literal"><span class="pre">-U</span></code> is specified, then the set of processed sources is
 all the immediate units of the argument project.</p>
+<p>If the argument project file is defines aggregate project, and it aggregates
+more than one (non-aggregate) project, gnatcheck runs separately for each
+(non-aggregate) project being aggregated by the argument project, and a
+separate report file is created for each of these runs. Also such a run
+creates an umbrella report file that lists all the (non-aggregate)
+projects that are processed separately and for each of these projects
+contains the reference for the corresponding report file.</p>
+<p>If the argument project file defines an aggregate project but it aggregates only
+one (non-aggregate) project, the gnatcheck behavior is the same as for the
+case of non-aggregate argument project file.</p>
 </div>
 
 
@@ -223,11 +242,11 @@ all the immediate units of the argument project.</p>
         <li class="right" >
           <a href="format_of_the_report_file.html" title="3. Format of the Report File"
              >previous</a> |</li>
-        <li><a href="../gnatcheck_rm.html">GNATcheck Reference Manual 2017 documentation</a> &raquo;</li> 
+        <li><a href="../gnatcheck_rm.html">GNATcheck Reference Manual 2018 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2008-2017, AdaCore.
+        &copy; Copyright 2008-2018, AdaCore.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3b2.
     </div>
   </body>

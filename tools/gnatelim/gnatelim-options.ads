@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                    Copyright (C) 2009-2016, AdaCore                      --
+--                    Copyright (C) 2009-2017, AdaCore                      --
 --                                                                          --
 -- GNATELIM  is  free software;  you can  redistribute it and/or  modify it --
 -- under the terms of the  GNU  General Public License  as published by the --
@@ -25,9 +25,7 @@
 
 --  This package contains definitions of gnatelim-specific options
 
-with GNAT.OS_Lib;
 with ASIS_UL.Options;
-with ASIS_UL.Source_Table;
 
 with Gnatelim.Projects;
 
@@ -42,13 +40,6 @@ package Gnatelim.Options is
    --  If this flag is ON, gnatelim itself computes the set of units that
    --   make up a closure of the main unit. This flag is computed by gnatelim
    --  itself by analyzing its parameters.
-
-   Exempted_Units : GNAT.OS_Lib.String_Access := null;
-   --  '--ignore=<filename>
-   --  File containing a list of units not to generate pragmas for
-
-   Ignore_Unit : constant ASIS_UL.Source_Table.SF_Info := 1;
-   --  Used to mark units to be ignored in the sourcve table.
 
    Long_Pragma_Format : Boolean := True;
    --  If this flag is ON, gnatelim adds the UNIT_NAME parameter to the

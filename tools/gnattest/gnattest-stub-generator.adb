@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2014-2017, AdaCore                     --
+--                     Copyright (C) 2014-2018, AdaCore                     --
 --                                                                          --
 -- GNATTEST  is  free  software;  you  can redistribute it and/or modify it --
 -- under terms of the  GNU  General Public License as published by the Free --
@@ -99,6 +99,10 @@ package body GNATtest.Stub.Generator is
    type Data_Holder is record
       Elem_Tree : Element_Node_Trees.Tree;
       Flat_List : Element_Node_Lists.List;
+
+      Limited_Withed_Units : String_Set.Set;
+      --  All limited withed units from the spec should have a cooresponding
+      --  regular with clause in the body.
    end record;
 
    function Requires_Body (El : Asis.Element) return Boolean;
@@ -212,7 +216,7 @@ package body GNATtest.Stub.Generator is
 
    package Markered_Data_Maps is new
      Ada.Containers.Indefinite_Ordered_Maps
-       (Markered_Data_Id, Markered_Data_Type);
+       (Markered_Data_Id, Markered_Data_Type, "<");
    use Markered_Data_Maps;
 
    Markered_Data : Markered_Data_Maps.Map;
@@ -248,7 +252,10 @@ package body GNATtest.Stub.Generator is
       Data                : Data_Holder);
    --  Generates Stub_Data package which contains setters
 
-   procedure Put_Stub_Header (Unit_Name : String; Stub_Data : Boolean := True);
+   procedure Put_Stub_Header
+     (Unit_Name      : String;
+      Stub_Data      : Boolean := True;
+      Limited_Withed : String_Set.Set);
    --  Puts header of generated stub explaining where user code should be put.
 
    procedure Put_Import_Section
@@ -348,12 +355,12 @@ package body GNATtest.Stub.Generator is
             return True;
          end if;
 
-         if L.Self_Hash = R.Self_Hash then
+         if L.Self_Hash.all = R.Self_Hash.all then
             if L.Nesting_Hash.all < R.Nesting_Hash.all then
                return True;
             end if;
 
-            if L.Nesting_Hash = R.Nesting_Hash then
+            if L.Nesting_Hash.all = R.Nesting_Hash.all then
                if L.Hash_Version.all < R.Hash_Version.all then
                   return True;
                end if;
@@ -476,6 +483,10 @@ package body GNATtest.Stub.Generator is
       Local_Stub_Unit_Mapping.Entities.Clear;
       Local_Stub_Unit_Mapping.D_Setters.Clear;
       Local_Stub_Unit_Mapping.D_Bodies.Clear;
+
+      Data.Elem_Tree.Clear;
+      Data.Flat_List.Clear;
+      Data.Limited_Withed_Units.Clear;
    end Process_Unit;
 
    ---------------------------
@@ -682,8 +693,13 @@ package body GNATtest.Stub.Generator is
    -- Put_Stub_Header --
    ---------------------
 
-   procedure Put_Stub_Header (Unit_Name : String; Stub_Data : Boolean := True)
+   procedure Put_Stub_Header
+     (Unit_Name      : String;
+      Stub_Data      : Boolean := True;
+      Limited_Withed : String_Set.Set)
    is
+      Cur : String_Set.Cursor := Limited_Withed.First;
+      use String_Set;
    begin
       S_Put
         (0,
@@ -726,6 +742,15 @@ package body GNATtest.Stub.Generator is
             & ";");
       end if;
       New_Line_Count;
+
+      --  We need to put a regular with into the body for every limited with
+      --  from the spec.
+      while Cur /= String_Set.No_Element loop
+         S_Put (0, "with " & String_Set.Element (Cur) & ";");
+         New_Line_Count;
+         Next (Cur);
+      end loop;
+
       S_Put (0, GT_Marker_End);
       New_Line_Count;
       New_Line_Count;
@@ -990,7 +1015,8 @@ package body GNATtest.Stub.Generator is
       Put_Stub_Header
         (Element_Node_Trees.Element
            (First_Child (Data.Elem_Tree.Root)).Spec_Name.all,
-         not Data.Flat_List.Is_Empty);
+         not Data.Flat_List.Is_Empty,
+         Data.Limited_Withed_Units);
       Put_Import_Section (Markered_Data, Add_Import => True);
 
       Process_Siblings (First_Child (Data.Elem_Tree.Root));

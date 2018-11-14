@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 1995-2017, Free Software Foundation, Inc.       --
+--            Copyright (C) 1995-2018, Free Software Foundation, Inc.       --
 --                                                                          --
 -- ASIS-for-GNAT is free software; you can redistribute it and/or modify it --
 -- under terms of the  GNU General Public License  as published by the Free --
@@ -1238,7 +1238,10 @@ package body Asis.Expressions is
             Set_Normalization_Case (Result, Is_Not_Normalized);
          else
 
-            if Is_Predefined_Operator (Reference) then
+            if Is_Predefined_Operator (Reference)
+              or else
+                Is_Shift_Operation (Reference)
+            then
                Result := Nil_Element;
             else
                --  First, process a special case when  Reference is a label
@@ -2338,35 +2341,29 @@ package body Asis.Expressions is
       Named_Associations := Component_Associations (Arg_Node);
       Pos_Associations   := Sinfo.Expressions (Arg_Node);
 
-      declare
-         Result : constant Asis.Element_List :=
-           (if Arg_Kind = A_Named_Array_Aggregate then
-               N_To_E_List_New
-                 (List             => Named_Associations,
-                  Internal_Kind    => An_Array_Component_Association,
-                  Starting_Element => Expression)
-            elsif No (Named_Associations) then
-            --  that is, no "others" choice in a positional array aggregate
-               N_To_E_List_New
-                 (List             => Pos_Associations,
-                  Internal_Kind    => An_Array_Component_Association,
-                  Starting_Element => Expression)
-            else
-            --  a positional array aggregate with "others"
-                N_To_E_List_New
-                  (List          => Pos_Associations,
-                   Internal_Kind => An_Array_Component_Association,
-                   Starting_Element => Expression)
-              &
-                Node_To_Element_New
-                  (Node             => First (Named_Associations),
+      if Arg_Kind = A_Named_Array_Aggregate then
+         return N_To_E_List_New
+                  (List             => Named_Associations,
                    Internal_Kind    => An_Array_Component_Association,
-                   Starting_Element => Expression));
-      begin
-         Store_Enclosing_Element (Expression, Result);
-
-         return Result;
-      end;
+                   Starting_Element => Expression);
+      elsif No (Named_Associations) then
+         --  that is, no "others" choice in a positional array aggregate
+         return N_To_E_List_New
+                  (List             => Pos_Associations,
+                   Internal_Kind    => An_Array_Component_Association,
+                   Starting_Element => Expression);
+      else
+         --  a positional array aggregate with "others"
+         return N_To_E_List_New
+                   (List          => Pos_Associations,
+                    Internal_Kind => An_Array_Component_Association,
+                    Starting_Element => Expression)
+               &
+                 Node_To_Element_New
+                   (Node             => First (Named_Associations),
+                    Internal_Kind    => An_Array_Component_Association,
+                    Starting_Element => Expression);
+      end if;
 
    exception
       when ASIS_Inappropriate_Element =>
@@ -2838,12 +2835,18 @@ package body Asis.Expressions is
                end if;
             end if;
 
-            return Node_To_Element_New (Node          => Result_Node,
-                                        Internal_Kind => Result_Kind,
-                                        Node_Field_1  => Subprogram_Entity,
-                                        Inherited     => Is_Inherited,
-                                        In_Unit       => Result_Unit,
-                                        Spec_Case     => Spec_Case);
+            Result :=
+              Node_To_Element_New (Node          => Result_Node,
+                                   Internal_Kind => Result_Kind,
+                                   Node_Field_1  => Subprogram_Entity,
+                                   Inherited     => Is_Inherited,
+                                   In_Unit       => Result_Unit,
+                                   Spec_Case     => Spec_Case);
+
+            if Present (Subprogram_Entity) then
+               Set_From_Instance
+                 (Result, Is_From_Instance (Subprogram_Entity));
+            end if;
          else
             Not_Implemented_Yet (Diagnosis =>
                 Package_Name & "Formal_Parameter: "
@@ -2908,11 +2911,11 @@ package body Asis.Expressions is
 
             Store_Enclosing_Element (Association, Result);
 
-            return Result;
          end if;
 
       end if;
 
+      return Result;
    exception
       when ASIS_Inappropriate_Element =>
          raise;
@@ -3150,7 +3153,7 @@ package body Asis.Expressions is
          else
             --  Arg_Kind = A_Pragma_Argument_Association
             --  Special processing is needed for a Debug pragma:
-            Pragma_Chars := Pragma_Name (Original_Node (Parent (Arg_Node)));
+               Pragma_Chars := Pragma_Name (Original_Node (Parent (Arg_Node)));
 
             if Pragma_Chars = Name_Debug
               and then
@@ -3196,6 +3199,15 @@ package body Asis.Expressions is
                end loop;
 
                Result_Kind := A_Function_Call;
+
+            elsif Is_SPARK_Pragma (Pragma_Chars)
+                 and then
+                  Artificial_Aggregate_For_SPARK_Pragma (Arg_Node)
+            then
+               Result_Node := Sinfo.Expression (Arg_Node);
+               pragma Assert (Nkind (Result_Node) = N_Aggregate);
+               Result_Node := First (Sinfo.Expressions (Result_Node));
+               Result_Kind := An_Identifier;
             else
                Result_Node := Sinfo.Expression (Arg_Node);
             end if;

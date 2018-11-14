@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2011-2016, AdaCore                     --
+--                     Copyright (C) 2011-2017, AdaCore                     --
 --                                                                          --
 -- GNATTEST  is  free  software;  you  can redistribute it and/or modify it --
 -- under terms of the  GNU  General Public License as published by the Free --
@@ -164,6 +164,18 @@ package body GNATtest.Skeleton.Source_Table is
            Resolve_Links  => False,
              Case_Sensitive => False));
 
+      if
+        Source_Present (Full_Source_Name_String.all) and then
+        Get_Source_Status (Full_Source_Name_String.all) = Body_Reference
+      then
+         Trace (Me, "...replacing body reference");
+         New_SF_Record := SF_Table.Element (Full_Source_Name_String.all);
+         SF_Table.Delete (Full_Source_Name_String.all);
+         New_SF_Record.Status := Waiting;
+         Insert (SF_Table, Full_Source_Name_String.all, New_SF_Record);
+         return;
+      end if;
+
       --  Making the new SF_Record
       New_SF_Record.Full_Source_Name :=
         new String'(Full_Source_Name_String.all);
@@ -316,6 +328,8 @@ package body GNATtest.Skeleton.Source_Table is
 
       New_SF_Record : SF_Record;
    begin
+      Trace (Me, "adding source (as reference): " & Fname);
+
       if not Is_Regular_File (Fname) then
          Report_Std ("gnattest: " & Fname & " not found");
          return;
@@ -403,6 +417,11 @@ package body GNATtest.Skeleton.Source_Table is
       end;
 
       Insert (SF_Table, Full_Source_Name_String.all, New_SF_Record);
+
+      if Main_Unit /= null then
+         Sources_Left  := Sources_Left + 1;
+         Total_Sources := Total_Sources + 1;
+      end if;
 
       Free (Short_Source_Name_String);
       Free (Full_Source_Name_String);

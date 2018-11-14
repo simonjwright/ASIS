@@ -26,7 +26,8 @@
 --  This package defines various ASIS secondary and extension queries for
 --  gnatcheck
 
-with Asis; use Asis;
+with Asis;                       use Asis;
+with Asis.Extensions.Strings;    use Asis.Extensions.Strings;
 
 package Gnatcheck.ASIS_Utilities is
 
@@ -393,6 +394,20 @@ package Gnatcheck.ASIS_Utilities is
    --     An_Index_Constraint
    --     A_Discriminant_Constraint
 
+   function Self_Ref_Discr_Constraint
+     (Constr : Asis.Element)
+      return   Boolean;
+   --  Checks if the argument is a discriminant constraint from a record
+   --  component definition and if at least one value provided for a
+   --  discriminant is an access attribute (including 'Access,
+   --  'Unchecked_Access and 'Unrestricted_Access) and the prefix of the
+   --  attribute denotes the type this component belongs to. Returns False in
+   --  any other case.
+   --
+   --  Expected Constraint_Kinds:
+   --     An_Index_Constraint
+   --     A_Discriminant_Constraint
+
    function Is_Constant (E : Asis.Element) return Boolean;
    --  For Identifier_Casing, Identifier_Prefixes.
    --  Checks if E is a defining name that defines a constant object. This
@@ -422,7 +437,7 @@ package Gnatcheck.ASIS_Utilities is
      (E    : Asis.Element)
       return Boolean;
    --  Assumes that E is a prefix of 'Valid attribute. Checks if E has type,
-   --  and if it does, if the nomunal subtype of E is efined with a dynamic
+   --  and if it does, if the nominal subtype of E is defined with a dynamic
    --  predicate.
 
    function Is_Limited (SM : Asis.Element) return Boolean;
@@ -433,6 +448,26 @@ package Gnatcheck.ASIS_Utilities is
    --       An_Identifier
    --       A_Selected_Component
    --       An_Attribute_Reference
+
+   procedure Check_Classwide_Pre_Vioaltion
+     (Op       : Asis.Element;
+      Detected : out Boolean;
+      At_SLOC  : out String_Loc);
+   --  Assuming that Op is a declaration of overriding dispatching operation
+   --  this procedure checks if all the operations that are
+   --  overridden/implemented by this declaration have class-wide precondition
+   --  (either explicitly specified or inherited). If this is the case,
+   --  the OUT parameter Detected is set True, and At_SLOC points to the string
+   --  that is a concatenation of "%1%" and standard GNAT reference to the
+   --  (explicit) declaration of implemented/inherited operation that does not
+   --  have a class-wide Pre-condition. If there is more than one
+   --  implemented/inherited with no Class-Wide precondition, there is
+   --  non-determinated which one is indicated by At_SLOC parameter. Otherwise
+   --  Detected is set to False, and At_SLOCK to Nil_String_Loc.
+   --
+   --  Unfortunately ASIS has not been properly updated for multiple
+   --  inheritance introduced in Ada 2012, so the functionality described above
+   --  cannot be implemented in ASIS and we have to use direct tree traversing.
 
    ----------------------------------------------------------------------
    -- Routines used for creating and analyzing of the global structure --
@@ -446,6 +481,15 @@ package Gnatcheck.ASIS_Utilities is
    --
    --  Expected Expression_Kinds:
    --     A_Function_Call
+
+   -------------------------------------------------
+   --  Utilities used to form diagnostic messages --
+   -------------------------------------------------
+
+   function Scope_Name (El : Asis.Element) return String;
+   --  If not Is_Nil (El) and Debug_Flag_JJ is ON (-dJ debug option is
+   --  specified) returns the full Ada name of the innermost scope that
+   --  encloses El.
 
    --------------------------------------------------------------
    -- Utilities that are not used at the moment (see G523-016) --
@@ -576,6 +620,17 @@ package Gnatcheck.ASIS_Utilities is
    function Is_Body (El : Asis.Element) return Boolean;
    --  Checks if the argument element is a body element from the point of view
    --  of the call graph
+
+   function Is_Constructor (Element : Asis.Element) return Boolean;
+   --  Checks if El is a declaration of a constructor function (that is, a
+   --  primitive function of a tagged type that has a controlling result and no
+   --  controlling parameter). Returns False if El is a completion of another
+   --  declaration.
+
+   function Is_Downward_View_Conversion
+     (Element : Asis.Element)
+      return    Boolean;
+   --  Checks if El is a downward vew conversion.
 
    function Is_Enum_Literal_Renaming (El : Asis.Element) return Boolean;
    --  Checks if the argument element is a renaming declaration and the renamed

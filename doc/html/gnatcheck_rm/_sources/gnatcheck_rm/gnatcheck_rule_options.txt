@@ -11,14 +11,17 @@ The following options control the processing performed by
   .. index:: +R (gnatcheck)
 
 
-``+Rrule_id[:param]``
-  Turn on the check for a specified rule with the specified parameter, if any.
-  `rule_id` must be the identifier of one of the currently implemented rules
-  (use ``-h`` for the list of implemented rules). Rule identifiers
-  are not case-sensitive. The `param` item must
-  be a string representing a valid parameter(s) for the specified rule.
-  If it contains any space characters then this string must be enclosed in
-  quotation marks.
+``+R[:rule_synonym:]rule_id[:param{,param}]``
+  Turn on the check for a specified rule with the specified parameter(s), if
+  any. `rule_id` must be the identifier of one of the currently implemented
+  rules (use ``-h`` for the list of implemented rules). Rule identifiers
+  are not case-sensitive. Each `param` item must
+  be a non-empty string representing a valid parameter for the specified rule.
+  If the part of the rule option that follows the colon character contains any
+  space characters then this part must be enclosed in quotation marks.
+
+  `rule_synonym` is a user-defined synonym for a rule name, it can be used
+  to map *gnatcheck* rules onto a user coding standard.
 
   .. index:: -R (gnatcheck)
 
@@ -35,6 +38,9 @@ The following options control the processing performed by
 
 
 The default behavior is that all the rule checks are disabled.
+
+If a rule option is given in a rule file, it can contain spaces and line breaks.
+Otherwise there should be no spaces between the components of a rule option.
 
 If more than one rule option
 is specified for the same rule, these options are summed together. If a new option contradicts

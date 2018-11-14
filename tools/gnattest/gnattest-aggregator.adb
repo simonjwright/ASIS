@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2014-2016, AdaCore                     --
+--                     Copyright (C) 2014-2018, AdaCore                     --
 --                                                                          --
 -- GNATTEST  is  free  software;  you  can redistribute it and/or modify it --
 -- under terms of the  GNU  General Public License as published by the Free --
@@ -27,6 +27,7 @@ pragma Ada_2012;
 
 with Ada.Containers.Indefinite_Ordered_Maps;
 
+with Ada.Characters.Handling;    use Ada.Characters.Handling;
 with Ada.Strings;                use Ada.Strings;
 with Ada.Strings.Fixed;          use Ada.Strings.Fixed;
 with Ada.Text_IO;                use Ada.Text_IO;
@@ -499,6 +500,7 @@ package body GNATtest.Aggregator is
       TD_List_File : File_Type;
 
       Tmp : String_Access;
+      Idx : Integer;
 
       Cur : List_Of_Strings.Cursor;
 
@@ -514,7 +516,26 @@ package body GNATtest.Aggregator is
       while not End_Of_File (TD_List_File) loop
          Tmp := new String'(Get_Line (TD_List_File));
          if Not_A_Comment (Tmp.all) and then Tmp.all /= "" then
-            TD_Table.Include (Tmp.all, Waiting);
+            if Aggregate_Subdir_Name.all /= "" then
+               Idx :=
+                 Index (Tmp.all, (1 => Directory_Separator), Backward);
+               if Idx /= 0 then
+                  TD_Table.Include
+                    (Tmp (Tmp.all'First .. Idx)
+                     & Aggregate_Subdir_Name.all
+                     & Directory_Separator
+                     & Tmp (Idx + 1 .. Tmp.all'Last),
+                     Waiting);
+               else
+                  TD_Table.Include
+                    (Aggregate_Subdir_Name.all
+                     & Directory_Separator
+                     & Tmp.all,
+                     Waiting);
+               end if;
+            else
+               TD_Table.Include (Tmp.all, Waiting);
+            end if;
          end if;
          Free (Tmp);
       end loop;
@@ -536,6 +557,27 @@ package body GNATtest.Aggregator is
                & Trim (Positive'Image (I), Both))));
       end loop;
       Create_Dirs (Target_Dirs);
+
+      --  Copy environment
+      if Environment_Dir /= null then
+         declare
+            Success : Boolean;
+         begin
+            for J in Target_Dirs'Range loop
+               Copy
+                 (Create (+Environment_Dir.all),
+                  Target_Dirs (J).Full_Name.all,
+                  Success);
+               if not Success then
+                  Report_Err
+                    ("gnattest: cannot copy contents of "
+                     & Environment_Dir.all
+                     & " to temp dir");
+                  raise Fatal_Error;
+               end if;
+            end loop;
+         end;
+      end if;
 
       --  Initialise Driver Process Table
       Driver_Process_Table := new
@@ -632,6 +674,9 @@ package body GNATtest.Aggregator is
 
          --  We need to spawn it at the right place.
          Change_Dir (Get_Corresponding_Dir (Idx));
+         Trace
+           (Me,
+            "switching dir: " & Get_Current_Dir);
          Next_Process :=
            Non_Blocking_Spawn
              (Tmp.all,

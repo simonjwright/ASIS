@@ -116,7 +116,12 @@ package body Ada_Trees.PP is
       for Clause of Context_Clause_Elements (CU) loop
          if Ekind (Clause) = A_With_Clause then
             for Name of Clause_Names (Clause) loop
-               Action (Enclosing_Compilation_Unit (Denotation (Name)));
+               --  Hide errors in Corresponding_Name_Definition by calling
+               --  Is_Uniquely_Defined.
+
+               if Is_Uniquely_Defined (Name) then
+                  Action (Enclosing_Compilation_Unit (Denotation (Name)));
+               end if;
             end loop;
          end if;
       end loop;

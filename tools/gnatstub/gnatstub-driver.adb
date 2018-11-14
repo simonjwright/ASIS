@@ -37,17 +37,12 @@ with Ada.Command_Line;
 with Ada.Exceptions;          use Ada.Exceptions;
 with Ada.Text_IO;             use Ada.Text_IO;
 
-with Asis.Errors;
-with Asis.Exceptions;
-with Asis.Implementation;
-
 with ASIS_UL.Common;          use ASIS_UL.Common;
 
 with Gnatstub.Sampler;        use Gnatstub.Sampler;
 with Gnatstub.Options;        use Gnatstub.Options;
 
 procedure Gnatstub.Driver is
-   use type Asis.Errors.Error_Kinds;
 begin
    Initialize;
 
@@ -73,18 +68,7 @@ exception
          Set_Output (Standard_Error);
          New_Line;
 
-         if Exception_Identity (Ex) = Asis.Exceptions.ASIS_Failed'Identity
-           and then
-            Asis.Implementation.Status = Asis.Errors.Use_Error
-           and then
-            Asis.Implementation.Diagnosis =
-            "Cannot process Ada sources compiled with -gnat05"
-         then
-            --  EC12-013: This path should be removed when ASIS 2005 is
-            --  implemented
-            Put_Line ("gnatstub: Ada 2005 not supported yet, exiting");
-
-         elsif Exception_Identity (Ex) = Program_Error'Identity and then
+         if Exception_Identity (Ex) = Program_Error'Identity and then
             Exception_Message (Ex) = "Inconsistent versions of GNAT and ASIS"
          then
             Put ("gnatstub is inconsistent with the GNAT version");

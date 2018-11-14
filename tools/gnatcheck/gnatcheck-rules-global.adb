@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2009-2016, AdaCore                     --
+--                     Copyright (C) 2009-2017, AdaCore                     --
 --                                                                          --
 -- GNATCHECK  is  free  software;  you can redistribute it and/or modify it --
 -- under terms of the  GNU  General Public License as published by the Free --
@@ -26,20 +26,11 @@
 pragma Ada_2012;
 
 with Ada.Strings.Fixed;          use Ada.Strings.Fixed;
---   with Ada.Characters.Handling;        use Ada.Characters.Handling;
 
---   with Asis.Declarations;              use Asis.Declarations;
---   with Asis.Definitions;               use Asis.Definitions;
 with Asis.Elements;                  use Asis.Elements;
---   with Asis.Expressions;               use Asis.Expressions;
---   with Asis.Extensions;                use Asis.Extensions;
---   with Asis.Iterator;                  use Asis.Iterator;
---   with Asis.Statements;                use Asis.Statements;
---   with Asis.Text;                      use Asis.Text;
 
 with Ada.Containers;                 use Ada.Containers;
 
-with ASIS_UL.Debug;
 with ASIS_UL.Global_State;           use ASIS_UL.Global_State;
 with ASIS_UL.Global_State.CG;        use ASIS_UL.Global_State.CG;
 with ASIS_UL.Global_State.CG.Conditions;
@@ -179,7 +170,7 @@ package body Gnatcheck.Rules.Global is
 
          if Enable then
 
-            if ASIS_UL.Debug.Debug_Flag_W
+            if Gnatcheck.Options.Check_Param_Redefinition
               and then
                Rule.Rule_State = Enabled
             then
@@ -304,6 +295,11 @@ package body Gnatcheck.Rules.Global is
                 Success    => Detected);
          end if;
 
+         if not Detected then
+            --  Check if the call graph info for this node is complete:
+            --  to be continued...
+            Check_Node_Completeness (N);
+         end if;
       end if;
 
    end Check_Global_Structure_Node;
@@ -331,7 +327,6 @@ package body Gnatcheck.Rules.Global is
       Length     :        Positive;
       Success    : in out Boolean)
    is
-      use Node_Lists;
       Next_Call : SLOC_Node_Lists.Cursor;
    begin
 

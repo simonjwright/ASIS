@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2007-2016, AdaCore                     --
+--                     Copyright (C) 2007-2017, AdaCore                     --
 --                                                                          --
 -- Asis Utility Library (ASIS UL) is free software; you can redistribute it --
 -- and/or  modify  it  under  terms  of  the  GNU General Public License as --
@@ -511,8 +511,8 @@ private
       --  Callable_Node -> Is_Implicit_Subprogram_Node;
       --  Data_Node     -> ???
 
---      Bool_Flag_7 : Boolean;
-      --  Callable_Node -> Is_Called_Dispatching_Root;
+      Bool_Flag_7 : Boolean;
+      --  Callable_Node -> Is the missing body reported;
       --  Data_Node     -> ???
 
       Application_Flag_1 : Boolean;
@@ -611,5 +611,6 @@ private
    procedure Set_Bool_Flag_4 (N : GS_Node_Id; Val : Boolean);
    procedure Set_Bool_Flag_5 (N : GS_Node_Id; Val : Boolean);
    procedure Set_Bool_Flag_6 (N : GS_Node_Id; Val : Boolean);
+   procedure Set_Bool_Flag_7 (N : GS_Node_Id; Val : Boolean);
 
 end ASIS_UL.Global_State;

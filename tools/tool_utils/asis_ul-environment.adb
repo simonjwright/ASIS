@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                    Copyright (C) 2004-2017, AdaCore                      --
+--                    Copyright (C) 2004-2018, AdaCore                      --
 --                                                                          --
 -- Asis Utility Library (ASIS UL) is free software; you can redistribute it --
 -- and/or  modify  it  under  terms  of  the  GNU General Public License as --
@@ -29,7 +29,6 @@ with Ada.Command_Line;
 with Ada.Directories;             use Ada.Directories;
 with Ada.Text_IO;                 use Ada.Text_IO;
 with System.Multiprocessors;
-with System.OS_Lib;               use System.OS_Lib;
 
 with GNATCOLL.Projects;           use GNATCOLL.Projects;
 
@@ -96,7 +95,7 @@ package body ASIS_UL.Environment is
 
    procedure GNSA_GNATLS_Workaround;
    --  A temporary and very simple-minded workaround for GNSA mode. Currently
-   --  for progect file processing routines from GNATCOLL.Projects need
+   --  for project file processing routines from GNATCOLL.Projects need
    --  calls to gnatls. To be sure that we have gnatls on the path we
    --  just appends asis-gnsa/bin to the value of the PATH environment
    --  variable.
@@ -780,7 +779,10 @@ package body ASIS_UL.Environment is
       pragma Assert (Get_Current_Dir = Tool_Current_Dir.all &
                           Directory_Separator);
 
-      if not Incremental_Mode then
+      if not Incremental_Mode
+        and then
+         not In_Aggregate_Project
+      then
          Change_Dir (Tool_Temp_Dir.all);
          Store_I_Options;
       end if;
@@ -1144,6 +1146,18 @@ package body ASIS_UL.Environment is
                end if;
 
                Print_Version := True;
+
+            elsif Full_Switch (Parser => Parser) = "-ignore" then
+               Result := Arg_Processed;
+
+               if Is_Regular_File (Parameter (Parser => Parser)) then
+                  ASIS_UL.Options.Exempted_Units :=
+                    new String'(Normalize_Pathname
+                                  (Parameter (Parser => Parser)));
+               else
+                  Error (Parameter (Parser => Parser) & " not found");
+                  raise Parameter_Error;
+               end if;
 
             elsif Full_Switch (Parser => Parser) = "-incremental" then
                Result := Arg_Processed;

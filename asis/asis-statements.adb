@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 1995-2015, Free Software Foundation, Inc.       --
+--            Copyright (C) 1995-2018, Free Software Foundation, Inc.       --
 --                                                                          --
 -- ASIS-for-GNAT is free software; you can redistribute it and/or modify it --
 -- under terms of the  GNU General Public License  as published by the Free --
@@ -1151,6 +1151,19 @@ package body Asis.Statements is
             Res_Node := Condition (Arg_Node);
          when An_If_Expression_Path    |
               An_Elsif_Expression_Path =>
+            --  Arg_Node may be wrapped by an implicit type conversion added
+            --  by the compiler. For example this may happen if Arg_Node
+            --  represents a function call in prefixed form
+
+            if not Is_List_Member (Arg_Node)
+              and then
+               Nkind (Parent (Arg_Node)) = N_Type_Conversion
+              and then
+               not Comes_From_Source (Parent (Arg_Node))
+            then
+               Arg_Node := Parent (Arg_Node);
+            end if;
+
             Res_Node := Prev (Arg_Node);
          when others =>
             null;

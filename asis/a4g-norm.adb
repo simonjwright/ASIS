@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 1995-2017, Free Software Foundation, Inc.       --
+--            Copyright (C) 1995-2018, Free Software Foundation, Inc.       --
 --                                                                          --
 -- ASIS-for-GNAT is free software; you can redistribute it and/or modify it --
 -- under terms of the  GNU General Public License  as published by the Free --
@@ -887,6 +887,15 @@ package body A4G.Norm is
 
          Next_Renaming_In_Instance :=
            Next_Non_Pragma (Next_Renaming_In_Instance);
+
+         while Present (Next_Renaming_In_Instance)
+             and then
+               Nkind (Next_Renaming_In_Instance) = N_Freeze_Entity
+         loop
+            Next_Renaming_In_Instance :=
+              Next_Non_Pragma (Next_Renaming_In_Instance);
+         end loop;
+
       end loop;
 
       return Asis.Association_List
@@ -1282,6 +1291,15 @@ package body A4G.Norm is
 
                   Tmp := R_Node (Call_Elem);
 
+                  if Is_Rewrite_Substitution (Tmp)
+                    and then
+                     Nkind (Tmp) = N_Type_Conversion
+                    and then
+                     Nkind (Original_Node (Tmp)) = N_Function_Call
+                  then
+                     Tmp := Sinfo.Expression (Tmp);
+                  end if;
+
                   if Nkind (Tmp) in
                        N_Function_Call           |
                        N_Procedure_Call_Statement
@@ -1299,6 +1317,13 @@ package body A4G.Norm is
                     and then
                      Pass_Generic_Actual (Parent (Tmp))
                   then
+
+                     while Nkind (Parent (Called_Subpr)) not in
+                             N_Procedure_Specification |
+                             N_Function_Specification
+                     loop
+                        Called_Subpr := Alias (Called_Subpr);
+                     end loop;
 
                      Called_Subpr := Parent (Parent (Called_Subpr));
                      Called_Subpr := Specification (Called_Subpr);
@@ -1347,7 +1372,27 @@ package body A4G.Norm is
          if Nkind (Tmp) in N_Has_Entity then
             Tmp := Entity (Tmp);
 
-            if Nkind (Parent (Tmp)) = N_Subtype_Declaration
+            if not Comes_From_Source (Tmp)
+              and then
+                Present (Alias (Tmp))
+                 and then
+                  not (Is_Intrinsic_Subprogram (Tmp))
+                 and then
+                  Pass_Generic_Actual (Parent (Tmp))
+            then
+               --  This means that we have an operation of an actual that
+               --  corresponds to the generic formal derived type. In the tree,
+               --  these operations are "(re)defined" for the artificial
+               --  subtype declaration used to pass the actual type into
+               --  expanded template. We go one step up the aliases chain to
+               --  get to the proper declaration of the type operation
+
+               Tmp := Alias (Tmp);
+            end if;
+
+            if Nkind (Parent (Tmp)) in
+                 N_Subtype_Declaration |
+                 N_Full_Type_Declaration
               and then
                not (Present (Alias (Tmp))
                    and then

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 1995-2017, Free Software Foundation, Inc.       --
+--            Copyright (C) 1995-2018, Free Software Foundation, Inc.       --
 --                                                                          --
 -- ASIS-for-GNAT is free software; you can redistribute it and/or modify it --
 -- under terms of the  GNU General Public License  as published by the Free --
@@ -393,8 +393,8 @@ package body A4G.Mapping is
 
    procedure Skip_Normalized_Declarations (Node : in out Node_Id);
    --  This procedure is applied in case when the compiler normalizes a
-   --  multi-identifier declaration (or multi-name with clause) in a set of
-   --  equivalent one-identifier (one-name) declarations (clauses). It is
+   --  multi-identifier declaration (or multi-name with or use clause) in a set
+   --  of equivalent one-identifier (one-name) declarations (clauses). It is
    --  intended to be called for Node representing the first declaration
    --  (clause) in this normalized sequence, and it resets its parameter
    --  to point to the last declaration (clause) in this sequence
@@ -1501,7 +1501,9 @@ package body A4G.Mapping is
            and then
             (Nkind (Parent (Node)) = N_Pragma_Argument_Association
             or else
-             Nkind (Parent (Node)) = N_Aspect_Specification)
+             Nkind (Parent (Node)) = N_Aspect_Specification
+            or else
+             Is_From_SPARK_Aspect (Node))
          then
             return A_Record_Aggregate;
          end if;
@@ -2193,6 +2195,13 @@ package body A4G.Mapping is
                --  from the declaration of the corresponding generic
                --  function
                Parent_Node := Parent (Entity (Sinfo.Name (Parent_Node)));
+
+               while Nkind (Parent_Node) =
+                       N_Generic_Function_Renaming_Declaration
+               loop
+                  Parent_Node := Sinfo.Name (Parent_Node);
+                  Parent_Node := Parent (Entity (Parent_Node));
+               end loop;
 
                if Nkind (Parent_Node) = N_Defining_Program_Unit_Name then
                   Parent_Node := Parent (Parent_Node);
@@ -4513,14 +4522,25 @@ package body A4G.Mapping is
                   Norm_Case        => Norm_Case,
                   In_Unit          => In_Unit));
 
-            if List_El_Kind = N_Object_Declaration         or else
-               List_El_Kind = N_Number_Declaration         or else
-               List_El_Kind = N_Discriminant_Specification or else
-               List_El_Kind = N_Component_Declaration      or else
-               List_El_Kind = N_Parameter_Specification    or else
-               List_El_Kind = N_Exception_Declaration      or else
-               List_El_Kind = N_Formal_Object_Declaration  or else
-               List_El_Kind = N_With_Clause
+            if List_El_Kind in
+                 N_Object_Declaration         |
+                 N_Number_Declaration         |
+                 N_Discriminant_Specification |
+                 N_Component_Declaration      |
+                 N_Parameter_Specification    |
+                 N_Exception_Declaration      |
+                 N_Formal_Object_Declaration  |
+                 N_With_Clause                |
+                 N_Use_Package_Clause         |
+                 N_Use_Type_Clause
+              or else
+               (List_El_Kind = N_Null_Statement
+               and then
+                Is_Rewrite_Substitution (List_El)
+               and then
+                Nkind (Original_Node (List_El)) = N_With_Clause)
+               --  non-needed private with clause optimized out by the
+               --  front-end
             then
                Skip_Normalized_Declarations (List_El);
             end if;
@@ -4699,7 +4719,9 @@ package body A4G.Mapping is
    ----------------------------------
 
    procedure Skip_Normalized_Declarations (Node : in out Node_Id) is
-      Arg_Kind : constant Node_Kind := Nkind (Node);
+      O_Node      :          Node_Id   := Original_Node (Node);
+      Arg_Kind    : constant Node_Kind := Nkind (O_Node);
+      Clause_Sloc : Source_Ptr;
    begin
       loop
 
@@ -4725,14 +4747,38 @@ package body A4G.Mapping is
                return;
             end if;
 
+         elsif Arg_Kind = N_Use_Package_Clause  then
+            while More_Ids (Node) loop
+               Node := Next (Node);
+            end loop;
+
+            return;
+         elsif Arg_Kind = N_Use_Type_Clause then
+            --  ??? N_Use_Type_Clause should be processed exactly in the same
+            --  way as N_Use_Package_Clause but for now More_Ids and Next_Id
+            --  are not definede for them ???
+            Clause_Sloc := Sloc (Node);
+
+            while Present (Next (Node))
+               and then
+                  Sloc (Next (Node)) = Clause_Sloc
+            loop
+               Node := Next (Node);
+            end loop;
+
+            return;
          else
-            --  Arg_Kind = N_With_Clause.
+            --  Arg_Kind = N_With_Clause or N_Null_Statement in case of
+            --  non-needed private with clause optimized out by the
+            --  front-end.
+            --
             --  Note that we should skip implicit clauses that can be added by
             --  front-end.
-            if Comes_From_Source (Node) and then Last_Name (Node) then
+            if Comes_From_Source (O_Node) and then Last_Name (O_Node) then
                return;
             else
-               Node := Next (Node);
+               Node   := Next (Node);
+               O_Node := Original_Node (Node);
             end if;
 
          end if;

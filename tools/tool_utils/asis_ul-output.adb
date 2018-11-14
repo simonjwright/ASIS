@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                    Copyright (C) 2004-2016, AdaCore                      --
+--                    Copyright (C) 2004-2018, AdaCore                      --
 --                                                                          --
 -- Asis Utility Library (ASIS UL) is free software; you can redistribute it --
 -- and/or  modify  it  under  terms  of  the  GNU General Public License as --
@@ -27,6 +27,7 @@ pragma Ada_2012;
 
 with Ada.Characters.Handling; use Ada.Characters.Handling;
 with Ada.Finalization;
+with Ada.Strings;             use Ada.Strings;
 with Ada.Strings.Fixed;       use Ada.Strings.Fixed;
 with Ada.Text_IO;             use Ada.Text_IO;
 
@@ -190,6 +191,32 @@ package body ASIS_UL.Output is
    begin
       return Indent_String;
    end Get_Indent_String;
+
+   ----------------
+   -- Get_Number --
+   ----------------
+
+   function Get_Number return String is
+      Report_File_Name : constant String := (if Text_Report_ON then
+                                                Get_Report_File_Name
+                                             else
+                                                Get_XML_Report_File_Name);
+
+      Idx_1, Idx_2 : Natural;
+   begin
+      if not Aggregated_Project then
+         return "";
+      end if;
+
+      Idx_1 := Index (Report_File_Name, "_", Backward);
+      Idx_2 := Index (Report_File_Name, ".", Backward);
+
+      pragma Assert (Idx_1 > 0);
+      pragma Assert (Idx_2 > 0);
+      pragma Assert (Idx_1 < Idx_2 - 1);
+
+      return Report_File_Name (Idx_1 .. Idx_2 - 1);
+   end Get_Number;
 
    -------------------------
    -- Get_Out_File_Format --

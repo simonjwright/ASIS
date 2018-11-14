@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2004-2017, AdaCore                     --
+--                     Copyright (C) 2004-2018, AdaCore                     --
 --                                                                          --
 -- Asis Utility Library (ASIS UL) is free software; you can redistribute it --
 -- and/or  modify  it  under  terms  of  the  GNU General Public License as --
@@ -26,7 +26,6 @@
 pragma Ada_2012;
 
 with Ada.Characters.Handling;     use  Ada.Characters.Handling;
-with Ada.Containers.Indefinite_Ordered_Sets;
 with Ada.Directories;
 with Ada.Strings;                 use Ada.Strings;
 with Ada.Strings.Fixed;           use Ada.Strings.Fixed;
@@ -56,29 +55,6 @@ package body ASIS_UL.Source_Table is
    More_Then_One_Arg_File_Specified : Boolean := False;
    Arg_File_Name                    : String_Access;
 
-   -----------------------------
-   --  Temporary file storage --
-   -----------------------------
-
-   --  We use an ordered set for temporary file storage to ensure as much
-   --  determinism in the tool output as possible (in case if a tool prints out
-   --  the results and/or diagnoses on per-file basis).
-
-   function File_Name_Is_Less_Than (L, R : String) return Boolean;
-   --  Assuming that L and R are file names compares them as follows:
-   --
-   --  * if L and/or R contains a directory separator, compares
-   --    lexicographicaly parts that follow the rightmost directory separator.
-   --    If these parts are equal, compares L and R lexicographicaly
-   --
-   --  * otherwise compares L and R lexicographicaly
-   --
-   --  Comparisons are case-sensitive.
-
-   package Temporary_File_Storages is new
-     Ada.Containers.Indefinite_Ordered_Sets
-       (Element_Type => String,
-        "<"          => File_Name_Is_Less_Than);
    use Temporary_File_Storages;
 
    Temporary_File_Storage : Temporary_File_Storages.Set;
@@ -301,7 +277,8 @@ package body ASIS_UL.Source_Table is
    procedure Add_Source_To_Process
      (Fname              : String;
       Arg_Project        : Arg_Project_Type'Class;
-      Duplication_Report : Boolean := True)
+      Duplication_Report : Boolean := True;
+      Status             : SF_Status := Waiting)
    is
       Old_SF : SF_Id;
       New_SF : SF_Id;
@@ -434,6 +411,7 @@ package body ASIS_UL.Source_Table is
       end if;
 
       Set_Short_Source_Name (New_SF, Short_Source_Name_String.all);
+      Set_Source_Status     (New_SF, Status);
 
       First_Idx := Short_Source_Name_String'First;
       Last_Idx  := Short_Source_Name_String'Last;
@@ -597,6 +575,22 @@ package body ASIS_UL.Source_Table is
    begin
       return Get_String (Source_Table (SF).CU_Name);
    end CU_Name;
+
+   ----------------------
+   -- Exempted_Sources --
+   ----------------------
+
+   function Exempted_Sources return Natural is
+      Result : Natural := 0;
+   begin
+      for J in First_SF_Id .. Last_Source loop
+         if Source_Info (J) = Ignore_Unit then
+            Result := Result + 1;
+         end if;
+      end loop;
+
+      return Result;
+   end Exempted_Sources;
 
    ---------------
    -- File_Find --
@@ -968,10 +962,12 @@ package body ASIS_UL.Source_Table is
       Include_Needed_Sources : Boolean := False)
       return                  SF_Id
    is
-      Up_To            : SF_Id   := Last_Argument_Source;
-      New_Source_Found : Boolean := False;
-      Move_Next_Source : Boolean := True;
-      Result           : SF_Id;
+      Up_To            :          SF_Id   := Last_Argument_Source;
+      New_Source_Found :          Boolean := False;
+      Move_Next_Source :          Boolean := True;
+      Result           :          SF_Id;
+      In_Gnatcheck     : constant Boolean :=
+        Index (Tool_Name.all, "gnatcheck") /= 0;
    begin
 
       if Include_Needed_Sources then
@@ -984,7 +980,12 @@ package body ASIS_UL.Source_Table is
               Waiting       |
               Tree_Is_Ready |
               Not_A_Legal_Source_Needs_Listing_Processing
-           and then (if Only_Bodies then Is_A_Body (J))
+           and then
+            (if Only_Bodies then Is_A_Body (J))
+           and then
+            ((Buld_Call_Graph and then not In_Gnatcheck)
+            or else
+             Source_Info (J) /= Ignore_Unit)
          then
             Result           := J;
             New_Source_Found := True;
@@ -1260,7 +1261,8 @@ package body ASIS_UL.Source_Table is
 
    procedure Read_Args_From_Temp_Storage
      (Duplication_Report : Boolean;
-      Arg_Project        : Arg_Project_Type'Class)
+      Arg_Project        : Arg_Project_Type'Class;
+      Status             : SF_Status := Waiting)
    is
       procedure Action (File_Name : String);
       procedure Action (File_Name : String) is
@@ -1268,7 +1270,8 @@ package body ASIS_UL.Source_Table is
          Add_Source_To_Process
            (Fname              => File_Name,
             Arg_Project        => Arg_Project,
-            Duplication_Report => Duplication_Report);
+            Duplication_Report => Duplication_Report,
+            Status             => Status);
       end Action;
    begin
       Temp_Storage_Iterate (Action'Access);
@@ -1363,6 +1366,20 @@ package body ASIS_UL.Source_Table is
    begin
       return Source_Table (SF).Info;
    end Source_Info;
+
+   -------------------
+   -- Set_Exemption --
+   -------------------
+
+   procedure Set_Exemption (Fname : String) is
+      SF : constant SF_Id := File_Find (Fname, Use_Short_Name => True);
+   begin
+      if Present (SF) then
+         Set_Source_Info (SF, ASIS_UL.Source_Table.Ignore_Unit);
+      else
+         ASIS_UL.Output.Warning ("exemption: source " & Fname & " not found");
+      end if;
+   end Set_Exemption;
 
    -----------------------
    -- Set_Source_Status --
@@ -1563,5 +1580,21 @@ package body ASIS_UL.Source_Table is
    begin
       return Get_String (Source_Table (SF).Suffixless_Name);
    end Suffixless_Name;
+
+   ------------------------------
+   -- Total_Sources_To_Process --
+   ------------------------------
+
+   function Total_Sources_To_Process return Natural is
+      Result : Natural := 0;
+   begin
+      for J in First_SF_Id .. Last_Source loop
+         if Source_Info (J) /= Ignore_Unit then
+            Result := Result + 1;
+         end if;
+      end loop;
+
+      return Result;
+   end Total_Sources_To_Process;
 
 end ASIS_UL.Source_Table;

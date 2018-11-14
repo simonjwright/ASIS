@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2011-2016, AdaCore                     --
+--                     Copyright (C) 2011-2017, AdaCore                     --
 --                                                                          --
 -- GNATTEST  is  free  software;  you  can redistribute it and/or modify it --
 -- under terms of the  GNU  General Public License as published by the Free --
@@ -49,7 +49,13 @@ begin
          GNATtest.Aggregator.Process_Drivers_List;
    end case;
    GNATtest.Environment.Clean_Up;
-   Ada.Command_Line.Set_Exit_Status (Ada.Command_Line.Success);
+   if GNATtest.Options.Strict_Execution
+     and then GNATtest.Environment.Source_Compilation_Failed
+   then
+      Ada.Command_Line.Set_Exit_Status (Ada.Command_Line.Failure);
+   else
+      Ada.Command_Line.Set_Exit_Status (Ada.Command_Line.Success);
+   end if;
 exception
    when GNATtest.Common.Fatal_Error =>
       --  Just a trap; all the diagnostic messages should already

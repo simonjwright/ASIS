@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2016-2017, AdaCore                     --
+--                     Copyright (C) 2016-2018, AdaCore                     --
 --                                                                          --
 -- GNATCHECK  is  free  software;  you can redistribute it and/or modify it --
 -- under terms of the  GNU  General Public License as published by the Free --
@@ -26,17 +26,24 @@
 pragma Ada_2012;
 
 with Ada.Characters.Handling;      use Ada.Characters.Handling;
+with Ada.Containers.Indefinite_Ordered_Sets;
+with Ada.Strings;                  use Ada.Strings;
+with Ada.Strings.Wide_Fixed;       use Ada.Strings.Wide_Fixed;
 with Ada.Wide_Characters.Handling; use Ada.Wide_Characters.Handling;
 
 with Asis;                         use Asis;
+with Asis.Clauses;                 use Asis.Clauses;
 with Asis.Compilation_Units;       use Asis.Compilation_Units;
 with Asis.Declarations;            use Asis.Declarations;
 with Asis.Definitions;             use Asis.Definitions;
 with Asis.Elements;                use Asis.Elements;
 with Asis.Expressions;             use Asis.Expressions;
+with Asis.Extensions;              use Asis.Extensions;
+with Asis.Extensions.Flat_Kinds;   use Asis.Extensions.Flat_Kinds;
 with Asis.Statements;              use Asis.Statements;
 with Asis.Text;                    use Asis.Text;
 
+with ASIS_UL.Misc;
 with ASIS_UL.Utilities;            use ASIS_UL.Utilities;
 
 with Gnatcheck.ASIS_Utilities;     use Gnatcheck.ASIS_Utilities;
@@ -59,7 +66,7 @@ package body Gnatcheck.Rules.Custom_3 is
 
       Rule.Name        := new String'("Binary_Case_Statements");
       Rule.Rule_Status := Fully_Implemented;
-      Rule.Help_Info   := new String'("CASE statements tnat can be " &
+      Rule.Help_Info   := new String'("CASE statements that can be " &
                                       "replaced with IF statements");
       Rule.Diagnosis   := new String'("CASE statement can be replaced with " &
                                       "IF statement");
@@ -96,6 +103,103 @@ package body Gnatcheck.Rules.Custom_3 is
                State.Detected := True;
             end if;
          end;
+      end if;
+
+   end Rule_Check_Pre_Op;
+
+   ------------------
+   -- Constructors --
+   ------------------
+
+   ------------------------------
+   -- Init_Rule (Constructors) --
+   ------------------------------
+
+   procedure Init_Rule (Rule : in out Constructors_Rule_Type) is
+   begin
+      Init_Rule (Rule_Template (Rule));
+
+      Rule.Name        := new String'("Constructors");
+      Rule.Rule_Status := Fully_Implemented;
+      Rule.Help_Info   := new String'("constructors");
+      Rule.Diagnosis   := new String'("declaration of constructor function");
+   end Init_Rule;
+
+   --------------------------------------
+   -- Rule_Check_Pre_Op (Constructors) --
+   --------------------------------------
+
+   procedure Rule_Check_Pre_Op
+     (Rule    : in out Constructors_Rule_Type;
+      Element :        Asis.Element;
+      Control : in out Traverse_Control;
+      State   : in out Rule_Traversal_State)
+   is
+
+      pragma Unreferenced (Rule, Control);
+   begin
+      State.Detected := Is_Constructor (Element);
+   end Rule_Check_Pre_Op;
+
+   ----------------------------
+   -- Deep_Library_Hierarchy --
+   ----------------------------
+
+   ----------------------------------------
+   -- Init_Rule (Deep_Library_Hierarchy) --
+   ----------------------------------------
+
+   procedure Init_Rule (Rule : in out Deep_Library_Hierarchy_Rule_Type) is
+   begin
+      Init_Rule (Rule_Template (Rule));
+
+      Rule.Name        := new String'("Deep_Library_Hierarchy");
+      Rule.Rule_Status := Fully_Implemented;
+      Rule.Help_Info   := new String'("deep library hierarchy");
+      Rule.Diagnosis   := new String'("unit has too many ancestors (%1%)");
+   end Init_Rule;
+
+   ------------------------------------------------
+   -- Rule_Check_Pre_Op (Deep_Library_Hierarchy) --
+   ------------------------------------------------
+
+   procedure Rule_Check_Pre_Op
+     (Rule    : in out Deep_Library_Hierarchy_Rule_Type;
+      Element :        Asis.Element;
+      Control : in out Traverse_Control;
+      State   : in out Rule_Traversal_State)
+   is
+      Def_Name  : Asis.Element;
+      Ansestors : Natural := 0;
+
+      pragma Unreferenced (Control);
+   begin
+      if Declaration_Kind (Element) in
+           A_Package_Declaration         |
+           A_Generic_Package_Declaration |
+           A_Package_Instantiation
+        and then
+         Is_Nil (Get_Enclosing_Element)
+      then
+         Def_Name := First_Name (Element);
+
+         declare
+            Def_Name_Img : constant Program_Text :=
+              Defining_Name_Image (Def_Name);
+         begin
+            for J in Def_Name_Img'Range loop
+               if Def_Name_Img  (J) = '.' then
+                  Ansestors := Ansestors + 1;
+
+               end if;
+            end loop;
+         end;
+
+         if Ansestors > Rule.Rule_Limit then
+            State.Detected := True;
+            State.Diag_Params :=
+              Enter_String ("%1%" & ASIS_UL.Misc.Image (Ansestors));
+         end if;
       end if;
 
    end Rule_Check_Pre_Op;
@@ -198,6 +302,40 @@ package body Gnatcheck.Rules.Custom_3 is
          end if;
       end if;
 
+   end Rule_Check_Pre_Op;
+
+   -------------------------------
+   -- Downward_View_Conversions --
+   -------------------------------
+
+   -------------------------------------------
+   -- Init_Rule (Downward_View_Conversions) --
+   -------------------------------------------
+
+   procedure Init_Rule (Rule : in out Downward_View_Conversions_Rule_Type) is
+   begin
+      Init_Rule (Rule_Template (Rule));
+
+      Rule.Name        := new String'("Downward_View_Conversions");
+      Rule.Rule_Status := Fully_Implemented;
+      Rule.Help_Info   := new String'("downward view conversions");
+      Rule.Diagnosis   := new String'("downward view conversion");
+   end Init_Rule;
+
+   ---------------------------------------------------
+   -- Rule_Check_Pre_Op (Downward_View_Conversions) --
+   ---------------------------------------------------
+
+   procedure Rule_Check_Pre_Op
+     (Rule    : in out Downward_View_Conversions_Rule_Type;
+      Element :        Asis.Element;
+      Control : in out Traverse_Control;
+      State   : in out Rule_Traversal_State)
+   is
+
+      pragma Unreferenced (Rule, Control);
+   begin
+      State.Detected := Is_Downward_View_Conversion (Element);
    end Rule_Check_Pre_Op;
 
    ----------------------------------------
@@ -421,6 +559,64 @@ package body Gnatcheck.Rules.Custom_3 is
 
    end Rule_Check_Pre_Op;
 
+   --------------------------------
+   -- No_Inherited_Classwide_Pre --
+   --------------------------------
+
+   --------------------------------------------
+   -- Init_Rule (No_Inherited_Classwide_Pre) --
+   --------------------------------------------
+
+   procedure Init_Rule (Rule : in out No_Inherited_Classwide_Pre_Rule_Type) is
+   begin
+      Init_Rule (Rule_Template (Rule));
+      Rule.Name        := new String'("No_Inherited_Classwide_Pre");
+      Rule.Rule_Status := Fully_Implemented;
+      Rule.Help_Info   := new String'("overridden operation has no Pre'Class");
+      Rule.Diagnosis   := new String'("overriding operation that does not " &
+                                      "inherit Pre'Class (%1%)");
+   end Init_Rule;
+
+   ----------------------------------------------------
+   -- Rule_Check_Pre_Op (No_Inherited_Classwide_Pre) --
+   ----------------------------------------------------
+
+   procedure Rule_Check_Pre_Op
+     (Rule    : in out No_Inherited_Classwide_Pre_Rule_Type;
+      Element :        Asis.Element;
+      Control : in out Traverse_Control;
+      State   : in out Rule_Traversal_State)
+   is
+      pragma Unreferenced (Rule);
+      pragma Unreferenced (Control);
+
+      LSP_Violation_Detected : Boolean;
+      LSP_Violation_SLOC     : String_Loc;
+   begin
+      if Is_Dispatching_Operation (Element)
+        and then
+         not Is_Not_Overriding_Declaration (Element)
+        and then
+         (Is_Overriding_Declaration (Element)
+         or else
+          Is_Overriding_Operation (Element))
+      then
+         --  All the processing in the implementation of this rule is based on
+         --  direct tree traversing and analysis, so it is encapsulated in
+         --  an utility procedure
+         Check_Classwide_Pre_Vioaltion
+           (Element,
+            LSP_Violation_Detected,
+            LSP_Violation_SLOC);
+
+         if LSP_Violation_Detected then
+            State.Detected    := True;
+            State.Diag_Params := LSP_Violation_SLOC;
+         end if;
+      end if;
+
+   end Rule_Check_Pre_Op;
+
    ----------------
    -- Null_Paths --
    ----------------
@@ -612,7 +808,7 @@ package body Gnatcheck.Rules.Custom_3 is
       Rule.Name        := new String'("Representation_Specifications");
       Rule.Rule_Status := Fully_Implemented;
       Rule.Help_Info   := new String'("representation specification " &
-                                      "(clause or aspect)");
+                                      "(clause, aspect or pragma)");
       Rule.Diagnosis   := new String'("representation specification");
    end Init_Rule;
 
@@ -648,6 +844,23 @@ package body Gnatcheck.Rules.Custom_3 is
                --    Size
                --    Component_Size
                --    External_Tag
+               --
+               --  We have also flag aspects that corresponds to representation
+               --  pragmas:
+               --   Asynchronous   J.15.13(1/3)
+               --   Atomic   J.15.8(9/3)
+               --   Atomic_Components   J.15.8(9/3)
+               --   Convention   J.15.5(1/3)
+               --   Discard_Names   C.5(6)
+               --   Export   J.15.5(1/3)
+               --   Import   J.15.5(1/3)
+               --   Independent   J.15.8(9/3)
+               --   Independent_Components   J.15.8(9/3)
+               --   No_Return   J.15.2(1/3)
+               --   Pack   J.15.3(1/3)
+               --   Unchecked_Union   J.15.6(1/3)
+               --   Volatile   J.15.8(9/3)
+               --   Volatile_Components   J.15.8(9/3)
 
                if A_Mark_Img = "address"
                  or else
@@ -658,11 +871,352 @@ package body Gnatcheck.Rules.Custom_3 is
                   A_Mark_Img = "component_size"
                  or else
                   A_Mark_Img = "external_tag"
+                 or else
+                  A_Mark_Img = "asynchronous"
+                 or else
+                  A_Mark_Img = "atomic"
+                 or else
+                  A_Mark_Img = "atomic_components"
+                 or else
+                  A_Mark_Img = "convention"
+                 or else
+                  A_Mark_Img = "import"
+                 or else
+                  A_Mark_Img = "discard_names"
+                 or else
+                  A_Mark_Img = "export"
+                 or else
+                  A_Mark_Img = "independent"
+                 or else
+                  A_Mark_Img = "independent_components"
+                 or else
+                  A_Mark_Img = "no_return"
+                 or else
+                  A_Mark_Img = "pack"
+                 or else
+                  A_Mark_Img = "unchecked_union"
+                 or else
+                  A_Mark_Img = "volatile"
+                 or else
+                  A_Mark_Img = "volatile_components"
                then
                   State.Detected  := True;
                end if;
             end;
 
+         end if;
+      elsif Element_Kind (Element) = A_Pragma then
+         declare
+            Pragme_Name_Img : constant String :=
+              To_Lower (To_String (Pragma_Name_Image (Element)));
+         begin
+            if Pragme_Name_Img = "asynchronous"
+              or else
+               Pragme_Name_Img =  "atomic"
+              or else
+               Pragme_Name_Img = "atomic_components"
+              or else
+               Pragme_Name_Img = "convention"
+              or else
+               Pragme_Name_Img = "import"
+              or else
+               Pragme_Name_Img = "discard_names"
+              or else
+               Pragme_Name_Img = "export"
+              or else
+               Pragme_Name_Img = "independent"
+              or else
+               Pragme_Name_Img = "independent_components"
+              or else
+               Pragme_Name_Img = "no_return"
+              or else
+               Pragme_Name_Img = "pack"
+              or else
+               Pragme_Name_Img = "unchecked_union"
+              or else
+               Pragme_Name_Img = "volatile"
+              or else
+               Pragme_Name_Img = "volatile_components"
+            then
+               State.Detected  := True;
+            end if;
+         end;
+      end if;
+
+   end Rule_Check_Pre_Op;
+
+   ------------------------------------
+   -- Specific_Parent_Type_Invariant --
+   ------------------------------------
+
+   function Has_Specific_Type_Invariant
+     (Type_Decl : Asis.Element)
+      return      Boolean;
+   --  Checks if Type_Decl has a specification of Type_Invariant aspect.
+   --  Returns False for any unexpected element.
+   --
+   --  Expected Declaration_Kinds
+   --    A_Private_Type_Declaration
+   --    A_Private_Extension_Declaration
+   --    An_Ordinary_Type_Declaration
+
+   ------------------------------------------------------------------
+   -- Has_Specific_Type_Invariant (Specific_Parent_Type_Invariant) --
+   ------------------------------------------------------------------
+
+   function Has_Specific_Type_Invariant
+     (Type_Decl : Asis.Element)
+      return      Boolean
+   is
+      Result : Boolean := False;
+   begin
+      if Declaration_Kind (Type_Decl) in
+           A_Private_Type_Declaration      |
+           A_Private_Extension_Declaration |
+           An_Ordinary_Type_Declaration
+      then
+
+         declare
+            Asp_Defs : constant Asis.Element_List :=
+              Aspect_Specifications (Type_Decl);
+
+            Asp_Mark : Asis.Element;
+         begin
+
+            for J in Asp_Defs'Range loop
+               Asp_Mark := Aspect_Mark (Asp_Defs (J));
+
+               if Expression_Kind (Asp_Mark) = An_Identifier
+                 and then
+                  To_Lower (Name_Image (Asp_Mark)) = "type_invariant"
+               then
+                  Result := True;
+                  exit;
+               end if;
+
+            end loop;
+
+         end;
+
+      end if;
+
+      return Result;
+   end Has_Specific_Type_Invariant;
+
+   ------------------------------------------------
+   -- Init_Rule (Specific_Parent_Type_Invariant) --
+   ------------------------------------------------
+
+   procedure Init_Rule
+     (Rule : in out Specific_Parent_Type_Invariant_Rule_Type)
+   is
+   begin
+      Init_Rule (Rule_Template (Rule));
+
+      Rule.Name        := new String'("Specific_Parent_Type_Invariant");
+      Rule.Rule_Status := Fully_Implemented;
+      Rule.Help_Info   := new String'("derivation from a type with " &
+                                      "specific Type_Invariant aspect");
+      Rule.Diagnosis   := new String'("parent type has specific " &
+                                      "Type_Invariant aspect (%1%)");
+   end Init_Rule;
+
+   --------------------------------------------------------
+   -- Rule_Check_Pre_Op (Specific_Parent_Type_Invariant) --
+   --------------------------------------------------------
+
+   procedure Rule_Check_Pre_Op
+     (Rule    : in out Specific_Parent_Type_Invariant_Rule_Type;
+      Element :        Asis.Element;
+      Control : in out Traverse_Control;
+      State   : in out Rule_Traversal_State)
+   is
+      pragma Unreferenced (Rule, Control);
+      Parent : Asis.Element;
+   begin
+      if Definition_Kind (Element) = A_Private_Extension_Definition then
+         Parent := Ancestor_Subtype_Indication (Element);
+      elsif Type_Kind (Element) = A_Derived_Record_Extension_Definition
+          and then
+            Declaration_Kind
+              (Corresponding_Type_Partial_View (Get_Enclosing_Element)) /=
+              A_Private_Extension_Declaration
+      then
+         Parent := Parent_Subtype_Indication (Element);
+      else
+         return;
+      end if;
+
+      Parent := Asis.Definitions.Subtype_Mark (Parent);
+      Parent := Normalize_Reference (Parent);
+      Parent := Corresponding_Name_Declaration (Parent);
+      Parent := Corresponding_First_Subtype (Parent);
+
+      if Has_Specific_Type_Invariant (Parent) then
+         State.Detected := True;
+         State.Diag_Params :=
+           Enter_String ("%1%" & Build_GNAT_Location (Parent));
+      else
+         if Declaration_Kind (Parent) in
+              A_Private_Type_Declaration |
+              A_Private_Extension_Declaration
+         then
+            Parent := Corresponding_Type_Completion (Parent);
+         elsif Declaration_Kind (Parent) = An_Ordinary_Type_Declaration then
+            Parent := Corresponding_Type_Partial_View (Parent);
+         else
+            return;
+         end if;
+
+         if Declaration_Kind (Parent) not in
+              An_Incomplete_Type_Declaration |
+              A_Tagged_Incomplete_Type_Declaration
+           and then
+            Has_Specific_Type_Invariant (Parent)
+         then
+            State.Detected := True;
+            State.Diag_Params :=
+              Enter_String ("%1%" & Build_GNAT_Location (Parent));
+         end if;
+
+      end if;
+
+   end Rule_Check_Pre_Op;
+
+   -----------------------
+   -- Specific_Pre_Post --
+   -----------------------
+
+   -----------------------------------
+   -- Init_Rule (Specific_Pre_Post) --
+   -----------------------------------
+
+   procedure Init_Rule (Rule : in out Specific_Pre_Post_Rule_Type) is
+   begin
+      Init_Rule (Rule_Template (Rule));
+
+      Rule.Name        := new String'("Specific_Pre_Post");
+      Rule.Rule_Status := Fully_Implemented;
+      Rule.Help_Info   := new String'("definition of non class-wide Pre " &
+                                      "and Post aspects for tagged type " &
+                                      "primitives");
+      Rule.Diagnosis   := new String'("#1#definition of non class-wide " &
+                                      "Pre aspect"                       &
+                                      "#2#definition of non class-wide " &
+                                      "Post aspect"                      &
+                                      "#3#definition of non class-wide " &
+                                      "Pre and Post aspects");
+   end Init_Rule;
+
+   -------------------------------------------
+   -- Rule_Check_Pre_Op (Specific_Pre_Post) --
+   -------------------------------------------
+
+   procedure Rule_Check_Pre_Op
+     (Rule    : in out Specific_Pre_Post_Rule_Type;
+      Element :        Asis.Element;
+      Control : in out Traverse_Control;
+      State   : in out Rule_Traversal_State)
+   is
+      pragma Unreferenced (Rule, Control);
+   begin
+      if Is_Dispatching_Operation (Element) then
+         declare
+            Asp_Defs : constant Asis.Element_List :=
+              Aspect_Specifications (Element);
+
+            Pre_Detected  : Boolean := False;
+            Post_Detected : Boolean := False;
+            Asp_Mark      : Asis.Element;
+         begin
+            for J in Asp_Defs'Range loop
+               Asp_Mark := Aspect_Mark (Asp_Defs (J));
+
+               if Expression_Kind (Asp_Mark) = An_Identifier then
+                  if To_Lower (Name_Image (Asp_Mark)) = "pre" then
+                     Pre_Detected := True;
+                  elsif To_Lower (Name_Image (Asp_Mark)) = "post" then
+                     Post_Detected := True;
+                  end if;
+               end if;
+
+               exit when Pre_Detected and then Post_Detected;
+
+            end loop;
+
+            if Pre_Detected or else Post_Detected then
+               State.Detected  := True;
+
+               State.Diagnosis :=
+                 (if Pre_Detected and then Post_Detected then 3
+                  elsif Pre_Detected                     then 1
+                  else                                        2);
+
+            end if;
+         end;
+      end if;
+
+   end Rule_Check_Pre_Op;
+
+   ------------------------------------------
+   -- Init_Rule (Specific_Type_Invariants) --
+   ------------------------------------------
+
+   procedure Init_Rule (Rule : in out Specific_Type_Invariants_Rule_Type) is
+   begin
+      Init_Rule (Rule_Template (Rule));
+
+      Rule.Name        := new String'("Specific_Type_Invariants");
+      Rule.Rule_Status := Fully_Implemented;
+      Rule.Help_Info   := new String'("non class-wide Type_Invariant aspect");
+      Rule.Diagnosis   := new String'("definition of non class-wide " &
+                                      "Type_Invariant aspect");
+   end Init_Rule;
+
+   --------------------------------------------------
+   -- Rule_Check_Pre_Op (Specific_Type_Invariants) --
+   --------------------------------------------------
+
+   procedure Rule_Check_Pre_Op
+     (Rule    : in out Specific_Type_Invariants_Rule_Type;
+      Element :        Asis.Element;
+      Control : in out Traverse_Control;
+      State   : in out Rule_Traversal_State)
+   is
+      A_Mark : Asis.Element;
+      pragma Unreferenced (Rule, Control);
+   begin
+      if Definition_Kind (Element) = An_Aspect_Specification then
+
+         if Declaration_Kind (Get_Enclosing_Element) =
+              A_Private_Extension_Declaration
+           or else
+             (Declaration_Kind (Get_Enclosing_Element) =
+                     A_Private_Type_Declaration
+              and then
+                Flat_Element_Kind (Type_Declaration_View
+                                    (Get_Enclosing_Element)) =
+                  A_Tagged_Private_Type_Definition)
+           or else
+             (Declaration_Kind (Get_Enclosing_Element) =
+                An_Ordinary_Type_Declaration
+              and then
+                Flat_Element_Kind (Type_Declaration_View
+                                    (Get_Enclosing_Element)) in
+                  A_Tagged_Record_Type_Definition  |
+                  A_Derived_Record_Extension_Definition)
+         then
+
+            A_Mark := Aspect_Mark (Element);
+
+            if Expression_Kind (A_Mark) = An_Identifier then
+               declare
+                  A_Mark_Img : constant String :=
+                    To_Lower (To_String (Name_Image (A_Mark)));
+               begin
+                  State.Detected  := A_Mark_Img = "type_invariant";
+               end;
+            end if;
          end if;
       end if;
 
@@ -709,6 +1263,347 @@ package body Gnatcheck.Rules.Custom_3 is
          State.Detected  := True;
       end if;
 
+   end Rule_Check_Pre_Op;
+
+   ---------------------------
+   -- Too_Many_Dependencies --
+   ---------------------------
+
+   package Dependency_Sets is new
+     Ada.Containers.Indefinite_Ordered_Sets (Element_Type => Program_Text);
+
+   use Dependency_Sets;
+
+   Dependencies : Dependency_Sets.Set;
+
+   procedure Collect_Dependencies (CU : Asis.Compilation_Unit);
+   --  Collect all the dependencies for CU in a way as it is required by the
+   --  rule. That is, in case of a body, the dependencies on the corresponding
+   --  spec unit is not collected, but the dependencies introduced by the with
+   --  clauses applied to the spec are collected. In case of a subunit, the
+   --  dependencies on proper body (proper bodies in case of nested subunits)
+   --  and the corresponding spec (if any) are not collected, but the
+   --  dependencies introduced by the with clauses applied to the proper body
+   --  (bodies) and spec are collected.
+
+   procedure Store_Dependencies (CU : Asis.Compilation_Unit);
+   --  Stores in Dependencies the names of the rule (folded to lower case) the
+   --  unit under test depends upon it a way needed for this rule. That is, if
+   --  a child unit is stored that all its parent and all the grandparent
+   --  units are removed, if any
+
+   --------------------------------------------------
+   -- Collect_Dependencies (Too_Many_Dependencies) --
+   --------------------------------------------------
+
+   procedure Collect_Dependencies (CU : Asis.Compilation_Unit) is
+      Next_CU : Asis.Compilation_Unit;
+   begin
+      Store_Dependencies (CU);
+
+      case Unit_Kind (CU) is
+         when A_Library_Unit_Body =>
+            Next_CU := Corresponding_Declaration (CU);
+
+            if not Is_Nil (Next_CU) then
+               Collect_Dependencies (Next_CU);
+            end if;
+
+         when A_Subunit =>
+            Next_CU := Corresponding_Subunit_Parent_Body (CU);
+            Collect_Dependencies (Next_CU);
+         when others =>
+            null;
+      end case;
+
+   end Collect_Dependencies;
+
+   --------------------------------------------------
+   -- Init_Rule (Too_Many_Dependencies) --
+   --------------------------------------------------
+
+   procedure Init_Rule (Rule : in out Too_Many_Dependencies_Rule_Type) is
+   begin
+      Init_Rule (Rule_Template (Rule));
+
+      Rule.Name        := new String'("Too_Many_Dependencies");
+      Rule.Rule_Status := Fully_Implemented;
+      Rule.Help_Info   := new String'("compilation unit has too many " &
+                                      "dependencies");
+      Rule.Diagnosis   := new String'("unit has too many dependencies (%1%)");
+   end Init_Rule;
+
+   -----------------------------------------------
+   -- Rule_Check_Pre_Op (Too_Many_Dependencies) --
+   -----------------------------------------------
+
+   procedure Rule_Check_Pre_Op
+     (Rule    : in out Too_Many_Dependencies_Rule_Type;
+      Element :        Asis.Element;
+      Control : in out Traverse_Control;
+      State   : in out Rule_Traversal_State)
+   is
+      CU                : Asis.Compilation_Unit;
+      N_Of_Dependencies : Natural;
+
+      pragma Unreferenced (Control);
+   begin
+      if Element_Kind (Element) = A_Declaration
+        and then
+         Is_Nil (Get_Enclosing_Element)
+      then
+         CU := Enclosing_Compilation_Unit (Element);
+      else
+         return;
+      end if;
+
+      Dependencies.Clear;
+
+      Collect_Dependencies (CU);
+
+      N_Of_Dependencies := Natural (Dependencies.Length);
+
+      if N_Of_Dependencies > Rule.Rule_Limit then
+            State.Detected := True;
+            State.Diag_Params :=
+              Enter_String ("%1%" & ASIS_UL.Misc.Image (N_Of_Dependencies));
+      end if;
+
+   end Rule_Check_Pre_Op;
+
+   ------------------------------------------------
+   -- Store_Dependencies (Too_Many_Dependencies) --
+   ------------------------------------------------
+
+   procedure Store_Dependencies (CU : Asis.Compilation_Unit) is
+      Cont_Clauses : constant Asis.Element_List :=
+        Context_Clause_Elements (CU);
+
+      Name_Img        : Program_Text_Access;
+      First_Idx       : Positive;
+      Dot_Idx         : Natural;
+      Inserted        : Boolean;
+      C               : Cursor;
+   begin
+
+      for J in Cont_Clauses'Range loop
+
+         if Clause_Kind (Cont_Clauses (J)) = A_With_Clause then
+
+            declare
+               Nms : constant Asis.Element_List :=
+                 Clause_Names (Cont_Clauses (J));
+            begin
+
+               for K in Nms'Range loop
+                  Name_Img := new Program_Text'
+                                    (To_Lower (Full_Name_Image (Nms (K))));
+
+                  --  Check if we have already collected some child of this
+                  --  unit:
+
+                  Inserted := False;
+
+                  C := Dependencies.First;
+
+                  while Has_Element (C) loop
+                     if Index (Dependency_Sets.Element (C), Name_Img.all) > 0
+                     then
+                        Inserted := True;
+                        exit;
+                     end if;
+
+                     C := Next (C);
+                  end loop;
+
+                  if Inserted then
+                     goto Next_Iteration;
+                  end if;
+
+                  Insert (Container => Dependencies,
+                          New_Item  => Name_Img.all,
+                          Position  => C,
+                          Inserted  => Inserted);
+
+                  if Inserted then
+                     First_Idx := Name_Img'First;
+                     Dot_Idx   := Index (Name_Img.all, ".", Backward);
+
+                     while Dot_Idx > 0 loop
+                        C := Find
+                          (Dependencies, Name_Img (First_Idx .. Dot_Idx - 1));
+
+                        if Has_Element (C) then
+                           Delete (Dependencies, C);
+                        end if;
+
+                        Dot_Idx := Index (Name_Img (First_Idx .. Dot_Idx - 1),
+                                          ".",
+                                          Backward);
+                     end loop;
+
+                  end if;
+
+                  <<Next_Iteration>> null;
+               end loop;
+
+            end;
+
+         end if;
+
+      end loop;
+
+      Free (Name_Img);
+
+   end Store_Dependencies;
+
+   -------------------------
+   -- Too_Many_Primitives --
+   -------------------------
+
+   -------------------------------------
+   -- Init_Rule (Too_Many_Primitives) --
+   -------------------------------------
+
+   procedure Init_Rule (Rule : in out Too_Many_Primitives_Rule_Type) is
+   begin
+      Init_Rule (Rule_Template (Rule));
+
+      Rule.Name        := new String'("Too_Many_Primitives");
+      Rule.Rule_Status := Fully_Implemented;
+      Rule.Help_Info   := new String'("tagged type has too many primitives");
+      Rule.Diagnosis   := new String'("tagged type has too many " &
+                                      "primitives (%1%)");
+   end Init_Rule;
+
+   ---------------------------------------------
+   -- Rule_Check_Pre_Op (Too_Many_Primitives) --
+   ---------------------------------------------
+
+   procedure Rule_Check_Pre_Op
+     (Rule    : in out Too_Many_Primitives_Rule_Type;
+      Element :        Asis.Element;
+      Control : in out Traverse_Control;
+      State   : in out Rule_Traversal_State)
+   is
+      Arg_Kind : constant Declaration_Kinds := Declaration_Kind (Element);
+      Type_Def :          Asis.Element;
+      EE       :          Asis.Element;
+
+      Num_Of_Primitives : Natural := 0;
+
+      pragma Unreferenced (Control);
+   begin
+      if Arg_Kind in
+           An_Ordinary_Type_Declaration    |
+           A_Private_Type_Declaration      |
+           A_Private_Extension_Declaration
+      then
+         Type_Def := Type_Declaration_View (Element);
+
+         --  First, check if we have a tagged type
+         if Arg_Kind = A_Private_Type_Declaration
+           and then
+            Definition_Kind (Type_Def) /= A_Tagged_Private_Type_Definition
+         then
+            return;
+         end if;
+
+         if Arg_Kind = An_Ordinary_Type_Declaration
+           and then
+            Type_Kind (Type_Def) not in
+              A_Derived_Record_Extension_Definition |
+              A_Tagged_Record_Type_Definition       |
+              An_Interface_Type_Definition
+         then
+            return;
+         end if;
+
+         --  Then, skip full views of private types.
+         if Arg_Kind = An_Ordinary_Type_Declaration
+           and then
+            Declaration_Kind (Corresponding_Type_Partial_View (Element)) in
+              A_Private_Type_Declaration |
+              A_Private_Extension_Declaration
+         then
+            return;
+         end if;
+
+         if Arg_Kind = A_Private_Extension_Declaration
+           or else
+            Type_Kind (Type_Def) in
+              A_Derived_Record_Extension_Definition |
+              An_Interface_Type_Definition
+         then
+            Num_Of_Primitives :=
+              Implicit_Inherited_Subprograms (Type_Def)'Length;
+         end if;
+
+         --  Now, counting explicit primitives
+
+         EE := Get_Enclosing_Element;
+
+         if Flat_Element_Kind (EE) in
+              A_Procedure_Body_Declaration |
+              A_Function_Body_Declaration  |
+              A_Package_Body_Declaration   |
+              A_Task_Body_Declaration      |
+              An_Entry_Body_Declaration    |
+              A_Block_Statement
+         then
+            --  New explicit primitives may be added to a type in
+            --  a package spec only, here we can only override an existing
+            --  primitive
+            return;
+         end if;
+
+         declare
+            Dcls : constant Asis.Element_List :=
+              (case Flat_Element_Kind (EE) is
+                  when A_Package_Declaration         |
+                       A_Generic_Package_Declaration =>
+                     Visible_Part_Declarative_Items (EE),
+                  when others => Nil_Element_List);
+
+            Idx      :          Natural := 0;
+            Last_Idx : constant Natural := Dcls'Last;
+         begin
+            if Is_Nil (Dcls) then
+               --  A visible part may be empty
+               return;
+            end if;
+
+            for J in Dcls'Range loop
+               if Is_Equal (Element, Dcls (J)) then
+                  Idx := J;
+                  exit;
+               end if;
+            end loop;
+
+            if Idx = 0 then
+               --  Type is declared in a private part
+               return;
+            end if;
+
+            for J in Idx + 1 .. Last_Idx loop
+               if Is_Dispatching_Operation (Dcls (J))
+                 and then
+                  Is_Equal (Primitive_Owner (Dcls (J)), Type_Def)
+               then
+                  Num_Of_Primitives := Num_Of_Primitives + 1;
+               end if;
+
+            end loop;
+
+         end;
+
+         if Num_Of_Primitives > Rule.Rule_Limit then
+            State.Detected := True;
+            State.Diag_Params :=
+              Enter_String ("%1%" & ASIS_UL.Misc.Image (Num_Of_Primitives));
+         end if;
+
+      end if;
    end Rule_Check_Pre_Op;
 
    ------------------------------------
@@ -758,7 +1653,7 @@ package body Gnatcheck.Rules.Custom_3 is
       --  Set to True in case if the instantiation of UC uses named
       --  associations and they are in reverse order:
       --
-      --   ... is new Unchecked_Conversion (Tagget => T1, Source => T2)
+      --   ... is new Unchecked_Conversion (Target => T1, Source => T2)
       --
       --  very unlikely but possible.
 
@@ -1004,7 +1899,7 @@ package body Gnatcheck.Rules.Custom_3 is
       Rule.Name        := new String'("Uninitialized_Global_Variables");
       Rule.Rule_Status := Fully_Implemented;
       Rule.Help_Info   := new String'("uninitialized variables in packages");
-      Rule.Diagnosis   := new String'("uninitalized global variable");
+      Rule.Diagnosis   := new String'("uninitialized global variable");
    end Init_Rule;
 
    --------------------------------------------------------
@@ -1031,9 +1926,17 @@ package body Gnatcheck.Rules.Custom_3 is
             A_Generic_Package_Declaration
       then
          SM := Object_Declaration_View (Element);
-         SM := Asis.Definitions.Subtype_Mark (SM);
 
-         if not Is_Limited (SM) then
+         if Definition_Kind (SM) = A_Type_Definition then
+            --  Variable declared with constrained array definition
+            State.Detected  := True;
+         elsif Definition_Kind (SM) = A_Subtype_Indication then
+            SM := Asis.Definitions.Subtype_Mark (SM);
+
+            if not Is_Limited (SM) then
+               State.Detected  := True;
+            end if;
+         else
             State.Detected  := True;
          end if;
       end if;
@@ -1041,3 +1944,4 @@ package body Gnatcheck.Rules.Custom_3 is
    end Rule_Check_Pre_Op;
 
 end Gnatcheck.Rules.Custom_3;
+------------------------------------------------------------------------------
