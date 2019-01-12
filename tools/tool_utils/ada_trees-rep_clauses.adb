@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                   Copyright (C) 2014-2016, AdaCore                       --
+--                   Copyright (C) 2014-2018, AdaCore                       --
 --                                                                          --
 -- Gnat2xml is free software; you can redistribute it and/or modify it      --
 -- under terms of the  GNU General Public License  as published by the Free --
@@ -32,6 +32,7 @@ with Ada_Trees.Factory; use Ada_Trees.Factory;
 with Pp.Scanner;
 
 package body Ada_Trees.Rep_Clauses is
+   use Ada_Tree_Vectors;
 
    package DD renames Asis.Data_Decomposition;
 
@@ -69,7 +70,7 @@ package body Ada_Trees.Rep_Clauses is
    is
       function Component_Size
         (Type_Definition : Asis.Type_Definition) return Asis.ASIS_Natural is
-         (DD.Size (DD.Array_Components (Defn)));
+         (DD.Size (DD.Array_Components (Type_Definition)));
       --  There is no direct support in DD for the Component_Size attribute,
       --  but we can get that information from the Size of the
       --  Array_Components.

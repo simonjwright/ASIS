@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2013-2014, AdaCore                     --
+--                     Copyright (C) 2013-2018, AdaCore                     --
 --                                                                          --
 -- GNATCHECK  is  free  software;  you can redistribute it and/or modify it --
 -- under terms of the  GNU  General Public License as published by the Free --
@@ -53,5 +53,15 @@ package Gnatcheck.Projects is
       In_Switches :         Boolean    := False);
 
    overriding procedure Print_Tool_Usage (My_Project : Gnatcheck_Project_Type);
+
+   overriding procedure Close_Aggregate_Project_Report
+     (My_Project : Gnatcheck_Project_Type);
+
+   overriding procedure Aggregate_Project_Report_Header
+     (My_Project : Gnatcheck_Project_Type);
+
+   overriding procedure Report_Aggregated_Project_Exit_Code
+     (Aggregate_Prj : Gnatcheck_Project_Type;
+      Exit_Code     : Integer);
 
 end Gnatcheck.Projects;

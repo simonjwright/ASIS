@@ -7,7 +7,7 @@
 --                                                                          --
 --                                                                          --
 --                Copyright (C) 2006, McKae Technologies.                   --
---                   Copyright (C) 2012-2016, AdaCore                       --
+--                   Copyright (C) 2012-2017, AdaCore                       --
 --                                                                          --
 -- Avatox is free software; you can redistribute it and/or modify it        --
 -- under terms of the  GNU General Public License  as published by the Free --
@@ -179,7 +179,7 @@ package body Gnat2xml.Xml is
    is
       --  ???Much of the info in State could be local to here!
 
-      use Compilation_Units, Ada_Trees.Asis_To_Tree;
+      use Compilation_Units;
 
       procedure Put_Src_Lines (Up_To : Asis.Text.Line_Number);
       --  Print out source lines up to the current Sloc, which is Up_To. This

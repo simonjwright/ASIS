@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2005-2017, AdaCore                     --
+--                     Copyright (C) 2005-2018, AdaCore                     --
 --                                                                          --
 -- GNATCHECK  is  free  software;  you can redistribute it and/or modify it --
 -- under terms of the  GNU  General Public License as published by the Free --
@@ -49,6 +49,7 @@ with ASIS_UL.Debug;
 with ASIS_UL.Misc;               use ASIS_UL.Misc;
 with ASIS_UL.Options;            use ASIS_UL.Options;
 with ASIS_UL.Output;             use ASIS_UL.Output;
+with ASIS_UL.Projects.Aggregate; use ASIS_UL.Projects.Aggregate;
 
 with Gnatcheck.Compiler;         use Gnatcheck.Compiler;
 with Gnatcheck.Options;          use Gnatcheck.Options;
@@ -143,6 +144,7 @@ package body Gnatcheck.Diagnoses is
    Fully_Compliant_Sources          : Natural := 0;
    Sources_With_Violations          : Natural := 0;
    Sources_With_Exempted_Violations : Natural := 0;
+   Ignored_Sources                  : Natural := 0;
 
    procedure Diag_Srorage_Debug_Image;
    --  Prints out the debug image of the debug storage.
@@ -154,14 +156,27 @@ package body Gnatcheck.Diagnoses is
    --  Local routines for report generation --
    -------------------------------------------
 
-   Source_List_File_Name : constant String := "gnatcheck-source-list.out";
+   Source_List_File_Name_Str : constant String := "gnatcheck-source-list.out";
+   function Source_List_File_Name return String;
    --  Name of the file with all the argument file names created by
    --  gnatcheck if a used-provided file cannot be used for this.
 
-   Rule_List_File_Name : constant String := "gnatcheck-rule-list.out";
+   Ignored_Source_List_File_Name_Str : constant String :=
+     "gnatcheck-ignored-source-list.out";
+   function Ignored_Source_List_File_Name return String;
+   --  Name of the file with the argument file names that has been ignored by
+   --  the gnatcheck run.
+
+   Rule_List_File_Name_Str : constant String := "gnatcheck-rule-list.out";
+   function Rule_List_File_Name return String;
    --  Name of the file with all the active rules with their actual parameters
    --  created by gnatcheck if a used-provided coding standard file cannot be
    --  used for this.
+
+   Number : String_Access;
+   --  Used when processing individual projects as a part of aggregate project
+   --  processing. Represents a numeric index (prepended by "_") that is
+   --  taken from the report file name.
 
    function All_Sources_In_One_File return Boolean;
    --  Checks if all the argument sources are listed in a single user-provided
@@ -205,6 +220,13 @@ package body Gnatcheck.Diagnoses is
    --  Prints the reference to the (actual argument or artificially created)
    --  file that contains the list of all the files passed to gnatcheck
 
+   procedure Print_Ignored_File_List_File;
+   --  Prints the reference to the artificially created file that contains the
+   --  list of files passed to gnatcheck that have not been processed because
+   --  '--ignore=...' option. Note that it can be different from the list
+   --  provided by '--ignore=...' option - this list contains only the existing
+   --  files that have been passed as tool argument sources.
+
    procedure Print_Gnatcheck_Command_Line (XML : Boolean := False);
    --  Prints the gnatcheck command line. In case if gnatcheck has been
    --  called from the GNAT driver, prints the call to the GNAT driver, but not
@@ -216,10 +238,6 @@ package body Gnatcheck.Diagnoses is
    --  warnings and compiler error messages into Stderr. Up to Max_Diagnoses
    --  diagnoses are reported. If Max_Diagnoses equal to 0, all the diagnoses
    --  of these kinds are reported.
-
-   procedure Print_Report_Header;
-   --  Generates the report header, including the date, tool version and
-   --  tool command liner invocation sequence.
 
    procedure Print_Runtime (XML : Boolean := False);
    --  Prints the runtime version used for gnatcheck call. It is either the
@@ -1379,6 +1397,10 @@ package body Gnatcheck.Diagnoses is
 
    procedure Generate_Qualification_Report is
    begin
+      Number := new String'(Get_Number);
+
+      Ignored_Sources := Exempted_Sources;
+
       Process_Postponed_Exemptions;
       Compute_Statisctics;
 
@@ -1387,7 +1409,11 @@ package body Gnatcheck.Diagnoses is
          XML_Report_No_EOL ("<gnatcheck-report");
 
          if Gnatcheck_Prj.Is_Specified then
-            XML_Report (" project=""" & Gnatcheck_Prj.Source_Prj & """>");
+            XML_Report (" project=""" &
+              (if Aggregated_Project then
+                  Get_Aggregated_Project
+               else
+                  Gnatcheck_Prj.Source_Prj) & """>");
          else
             XML_Report (">");
          end if;
@@ -1399,6 +1425,7 @@ package body Gnatcheck.Diagnoses is
          Print_Report_Header;
          Print_Active_Rules_File;
          Print_File_List_File;
+         Print_Ignored_File_List_File;
          Print_Argument_Files_Summary;
 
          if Text_Report_ON then
@@ -1771,6 +1798,28 @@ package body Gnatcheck.Diagnoses is
          Position  => Section,
          Process   => Add_One'Access);
    end Icrease_Diag_Counter;
+
+   -----------------------------------
+   -- Ignored_Source_List_File_Name --
+   -----------------------------------
+
+   function Ignored_Source_List_File_Name return String is
+      Dot_Idx : constant Natural :=
+        Index (Ignored_Source_List_File_Name_Str, ".", Forward);
+   begin
+      if not Aggregated_Project then
+         return Ignored_Source_List_File_Name_Str;
+      end if;
+
+      pragma Assert (Dot_Idx > 0);
+
+      return Ignored_Source_List_File_Name_Str
+               (Ignored_Source_List_File_Name_Str'First .. Dot_Idx - 1) &
+             Number.all                                         &
+             Ignored_Source_List_File_Name_Str
+               (Dot_Idx .. Ignored_Source_List_File_Name_Str'Last);
+
+   end Ignored_Source_List_File_Name;
 
    ---------------------
    -- Init_Exemptions --
@@ -2427,6 +2476,8 @@ package body Gnatcheck.Diagnoses is
                  Unverified_Sources'Img, 1);
          Report ("total sources                         :" &
                  Last_Argument_Source'Img, 1);
+         Report ("ignored sources                       :" &
+                 Ignored_Sources'Img, 1);
       end if;
 
       if XML_Report_ON then
@@ -2462,7 +2513,8 @@ package body Gnatcheck.Diagnoses is
       pragma Assert (Checked_Sources =
                        Fully_Compliant_Sources +
                        Sources_With_Violations +
-                       Sources_With_Exempted_Violations);
+                       Sources_With_Exempted_Violations +
+                       Ignored_Sources);
       pragma Assert (Natural (Last_Argument_Source) =
                        Checked_Sources + Unverified_Sources);
    end Print_Argument_Files_Summary;
@@ -2558,8 +2610,11 @@ package body Gnatcheck.Diagnoses is
 
          declare
             Full_Source_List_File_Name : constant String :=
-              GNAT.Directory_Operations.Dir_Name
-                (Get_Report_File_Name) & Source_List_File_Name;
+              (if Get_Report_File_Name /= "" then
+                  GNAT.Directory_Operations.Dir_Name (Get_Report_File_Name)
+               else
+                  GNAT.Directory_Operations.Dir_Name
+                    (Get_XML_Report_File_Name)) & Source_List_File_Name;
          begin
             if XML_Report_ON then
                XML_Report (Source_List_File_Name & """>");
@@ -2578,12 +2633,14 @@ package body Gnatcheck.Diagnoses is
             end if;
 
             for SF in First_SF_Id .. Last_Argument_Source loop
-               Put_Line
-                 (Source_List_File,
-                  (if Full_Source_Locations then
-                      Source_Name (SF)
-                   else
-                      Short_Source_Name (SF)));
+               if Source_Info (SF) /= Ignore_Unit then
+                  Put_Line
+                    (Source_List_File,
+                     (if Full_Source_Locations then
+                         Source_Name (SF)
+                      else
+                         Short_Source_Name (SF)));
+               end if;
             end loop;
 
             Close (Source_List_File);
@@ -2603,7 +2660,10 @@ package body Gnatcheck.Diagnoses is
 
          for SF in First_SF_Id .. Last_Argument_Source loop
 
-            if XML_Report_ON then
+            if XML_Report_ON
+              and then
+               Source_Info (SF) /= Ignore_Unit
+            then
                XML_Report
                  ("<source>" & Source_Name (SF) & "</source>",
                   Indent_Level => 2);
@@ -2654,6 +2714,93 @@ package body Gnatcheck.Diagnoses is
       end if;
 
    end Print_Gnatcheck_Command_Line;
+
+   ----------------------------------
+   -- Print_Ignored_File_List_File --
+   ----------------------------------
+
+   procedure Print_Ignored_File_List_File is
+      Ignored_Source_List_File : Ada.Text_IO.File_Type;
+   begin
+      if Ignored_Sources = 0 then
+         return;
+      end if;
+
+      if Text_Report_ON then
+         Report_No_EOL ("list of ignored sources   : ");
+
+      end if;
+
+      if XML_Report_ON then
+         XML_Report_No_EOL ("<ignored-sources from-file=""",
+                            Indent_Level => 1);
+      end if;
+
+      declare
+         Full_Ignored_Source_List_File_Name : constant String :=
+           (if Get_Report_File_Name /= "" then
+                  GNAT.Directory_Operations.Dir_Name (Get_Report_File_Name)
+               else
+                  GNAT.Directory_Operations.Dir_Name
+                    (Get_XML_Report_File_Name)) &
+           Ignored_Source_List_File_Name;
+      begin
+         if XML_Report_ON then
+            XML_Report (Ignored_Source_List_File_Name & """>");
+         end if;
+
+         if Is_Regular_File (Full_Ignored_Source_List_File_Name) then
+            Open
+              (Ignored_Source_List_File,
+               Out_File,
+               Full_Ignored_Source_List_File_Name);
+         else
+            Create
+              (Ignored_Source_List_File,
+               Out_File,
+               Full_Ignored_Source_List_File_Name);
+         end if;
+
+         for SF in First_SF_Id .. Last_Argument_Source loop
+            if Source_Info (SF) = Ignore_Unit then
+               Put_Line
+                 (Ignored_Source_List_File,
+                  (if Full_Source_Locations then
+                      Source_Name (SF)
+                   else
+                      Short_Source_Name (SF)));
+            end if;
+         end loop;
+
+         Close (Ignored_Source_List_File);
+
+         if Text_Report_ON then
+            Report (Ignored_Source_List_File_Name);
+         end if;
+
+      end;
+
+      if Text_Report_ON then
+         Report_EOL;
+      end if;
+
+      if XML_Report_ON then
+
+         for SF in First_SF_Id .. Last_Argument_Source loop
+
+            if XML_Report_ON
+              and then
+               Source_Info (SF) = Ignore_Unit
+            then
+               XML_Report
+                 ("<source>" & Source_Name (SF) & "</source>",
+                  Indent_Level => 2);
+            end if;
+         end loop;
+
+         XML_Report ("</ignored-sources>", Indent_Level => 1);
+      end if;
+   end Print_Ignored_File_List_File;
 
    -------------------------
    -- Print_Out_Diagnoses --
@@ -3509,6 +3656,28 @@ package body Gnatcheck.Diagnoses is
 
    end Process_Postponed_Exemptions;
 
+   -------------------------
+   -- Rule_List_File_Name --
+   -------------------------
+
+   function Rule_List_File_Name return String is
+      Dot_Idx : constant Natural :=
+        Index (Rule_List_File_Name_Str, ".", Forward);
+   begin
+      if not Aggregated_Project then
+         return Rule_List_File_Name_Str;
+      end if;
+
+      pragma Assert (Dot_Idx > 0);
+
+      return Rule_List_File_Name_Str
+               (Rule_List_File_Name_Str'First .. Dot_Idx - 1) &
+             Number.all                                         &
+             Rule_List_File_Name_Str
+               (Dot_Idx .. Rule_List_File_Name_Str'Last);
+
+   end Rule_List_File_Name;
+
    --------------------
    -- Rule_Parameter --
    --------------------
@@ -3912,6 +4081,28 @@ package body Gnatcheck.Diagnoses is
 
       return Result;
    end To_Pars_List;
+
+   ---------------------------
+   -- Source_List_File_Name --
+   ---------------------------
+
+   function Source_List_File_Name return String is
+      Dot_Idx : constant Natural :=
+        Index (Source_List_File_Name_Str, ".", Forward);
+   begin
+      if not Aggregated_Project then
+         return Source_List_File_Name_Str;
+      end if;
+
+      pragma Assert (Dot_Idx > 0);
+
+      return Source_List_File_Name_Str
+               (Source_List_File_Name_Str'First .. Dot_Idx - 1) &
+             Number.all                                         &
+             Source_List_File_Name_Str
+               (Dot_Idx .. Source_List_File_Name_Str'Last);
+
+   end Source_List_File_Name;
 
    ------------------------
    -- Turn_Off_Exemption --

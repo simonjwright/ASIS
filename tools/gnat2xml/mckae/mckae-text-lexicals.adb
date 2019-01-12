@@ -66,7 +66,6 @@ package body McKae.Text.Lexicals is
             for I in T'Range loop
                if Cap_Next then
                   T (I)    := Value (Upper_Case_Map, T (I));
-                  Cap_Next := False;
                end if;
                Cap_Next := T (I) = '_';
             end loop;

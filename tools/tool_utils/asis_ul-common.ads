@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                    Copyright (C) 2004-2016, AdaCore                      --
+--                    Copyright (C) 2004-2018, AdaCore                      --
 --                                                                          --
 -- Asis Utility Library (ASIS UL) is free software; you can redistribute it --
 -- and/or  modify  it  under  terms  of  the  GNU General Public License as --
@@ -85,6 +85,19 @@ package ASIS_UL.Common is
    --  by the 'Target attribute in the argument project file or computed as
    --  the prefix of the tool name (in this order). If no target is specified
    --  points to an empty string
+
+   Closure_Object_Subdir : String_Access;
+   --  Name or the object subdirectory used to compute the main unit closure.
+   --  We have to protect the process of closure computation from ALI files
+   --  that may be located in object directory(ies) of the argument project
+   --  because these ALI files may correspond to builds made with some other
+   --  settings for external variables that may result in different structure
+   --  of the source directories.
+
+   Tool_Computes_Closure : Boolean := False;
+   --  Set ON if a tool computes the closure of the main unit itself. In this
+   --  case we have to step down into Closure_Object_Subdir subdirectory of
+   --  the temporary directory when computing the tree files.
 
    Gcc_To_Call : String_Access;
    --  This variable is supposed to contain the full path to gcc to be used to
@@ -251,5 +264,11 @@ package ASIS_UL.Common is
    --
    --  ???This flag and related code is obsolete, but we can't remove it,
    --  because it is still used by ada2java.
+
+   Aggregate_Project : Boolean := False;
+   --  Should be set ON if the argument project is an aggregate project
+   --  ??? do we need this???
+
+   N_Of_Aggregated_Projects : Natural := 0;
 
 end ASIS_UL.Common;

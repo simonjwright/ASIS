@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 1995-2016, Free Software Foundation, Inc.       --
+--            Copyright (C) 1995-2018, Free Software Foundation, Inc.       --
 --                                                                          --
 -- ASIS-for-GNAT is free software; you can redistribute it and/or modify it --
 -- under terms of the  GNU General Public License  as published by the Free --
@@ -375,6 +375,17 @@ package Asis.Extensions is
    --  Expected Expression_Kinds:
    --     An_Operator_Symbol
 
+   function Is_Shift_Operation
+     (Operator : Asis.Element)
+      return     Boolean;
+   --  Checks if the argument is a reference to one of the five shift
+   --  operations that are the result of pragma Provide_Shift_Operators
+   --  (Shift_Left, Shift_Right, Shift_Right_Arithmetic, Rotate_Left and
+   --  Rotate_Right)
+   --
+   --  Expected Expression_Kinds:
+   --     An_Identifier
+
    function Is_Label (Defining_Name : Asis.Defining_Name) return Boolean;
    --  Check if the argument is a statement label
 
@@ -571,6 +582,37 @@ package Asis.Extensions is
    -----------------------
    -- Asis.Declarations --
    -----------------------
+
+   function Corresponding_Representation_Items
+      (Defining_Name : Asis.Defining_Name)
+       return          Asis.Element_List;
+   --  This function tries to rectify shortcomings of the standard ASIS queries
+   --  that provides representation information (such as
+   --  Asis.Declarations.Corresponding_Representation_Clauses and
+   --  Asis.Elements.Corresponding_Pragmas). First, it operates on a defining
+   --  name, not on a declaration, so the result is a list of representation
+   --  items applied to a specific entity. Second, the result contains all
+   --  kinds of representation items - representation specifications, aspect
+   --  definitions and pragmas.
+   --
+   --  The query provides the compiler view on the set of representation items
+   --  provided for the argument entity - it traverses the chain of
+   --  representation items in the tree.
+   --
+   --  Only explicit representation items are included in the returned result.
+   --
+   --  Appropriate Element kinds:
+   --     A_Defining_Name
+   --
+   --  Result Element Kinds:
+   --     A_Pragma
+   --
+   --  Result Clause_Kinds:
+   --     A_Representation_Clause
+   --     A_Component_Clause
+   --
+   --  Result Definition_Kinds:
+   --     An_Aspect_Specification
 
    function Formal_Subprogram_Default
      (Declaration : Asis.Generic_Formal_Parameter)

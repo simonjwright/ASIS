@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                    Copyright (C) 2009-2017, AdaCore                      --
+--                    Copyright (C) 2009-2018, AdaCore                      --
 --                                                                          --
 -- GNATELIM  is  free software;  you can  redistribute it and/or  modify it --
 -- under the terms of the  GNU  General Public License  as published by the --
@@ -34,7 +34,6 @@ with ASIS_UL.Common;
 with  ASIS_UL.Compiler_Options;
 with ASIS_UL.Environment;
 with ASIS_UL.Global_State.CG.Gnatelim;
-with ASIS_UL.Misc;
 with ASIS_UL.Options;      use ASIS_UL.Options;
 with ASIS_UL.Output;
 with ASIS_UL.Source_Table; use ASIS_UL.Source_Table;
@@ -51,24 +50,6 @@ procedure Gnatelim.Driver is
 
    Success : Boolean := False;
 
-   procedure Set_Exemption (Fname : String);
-   --  Marks the argument file in the source table as exempted (that is, no
-   --  pragma should be generated for subprograms declared in this file).
-   --  Generates a warning if Fname does not point to argument file.
-
-   procedure Set_Exemption (Fname : String) is
-      SF : constant SF_Id := File_Find (Fname, Use_Short_Name => True);
-   begin
-      if Present (SF) then
-         Set_Source_Info (SF, Gnatelim.Options.Ignore_Unit);
-      else
-         ASIS_UL.Output.Warning ("exemption: source " & Fname & " not found");
-      end if;
-   end Set_Exemption;
-
-   procedure Process_Exemptions is new
-     ASIS_UL.Misc.Parse_File_List (Set_Exemption);
-
 begin
    ASIS_UL.Output.Set_Pipe_Mode;
    ASIS_UL.Compiler_Options.Add_I_Options_To_Source_Search_Path := True;
@@ -83,13 +64,19 @@ begin
 
    if Gnatelim.Options.Compute_Closure then
 
-      Gnatelim.Closure.Try_Get_Sources_From_Binder (Success);
-
-      if Success then
-         ASIS_UL.Source_Table.Processing.Process_Sources
-           (Add_Needed_Sources => True);
-      else
+      if Gnatelim.Options.Gnatelim_Prj.Is_Specified then
          Gnatelim.Closure.Process_Closure;
+      else
+         Gnatelim.Closure.Try_Get_Sources_From_Build (Success);
+
+         if Success then
+            ASIS_UL.Source_Table.Processing.Process_Sources
+              (Add_Needed_Sources => True);
+         else
+            ASIS_UL.Output.Error ("cannot get sources from the build of " &
+                                  Main_Subprogram_Name.all);
+            raise ASIS_UL.Common.Fatal_Error;
+         end if;
       end if;
 
    else
@@ -97,10 +84,14 @@ begin
    end if;
 
    --  Processing list of units to be ignored. We can do it only now, when we
-   --  have all the sources stored in source table.
+   --  have all the sources not only stored in source table, but fully
+   --  processed - we need a full call graph, so we cannot skip any unit when
+   --  building it. For gnatelim the '--ignore=...' option define sources for
+   --  that the tool should not generate Eliminate pragmas, but these sources
+   --  should be analyzed by the tool.
 
-   if Gnatelim.Options.Exempted_Units /= null then
-      Process_Exemptions (Gnatelim.Options.Exempted_Units.all);
+   if ASIS_UL.Options.Exempted_Units /= null then
+      Process_Exemptions (ASIS_UL.Options.Exempted_Units.all);
    end if;
 
    --  Finalize:

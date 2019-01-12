@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 1995-2014, Free Software Foundation, Inc.       --
+--            Copyright (C) 1995-2017, Free Software Foundation, Inc.       --
 --                                                                          --
 -- ASIS-for-GNAT is free software; you can redistribute it and/or modify it --
 -- under terms of the  GNU General Public License  as published by the Free --
@@ -497,9 +497,7 @@ package body A4G.A_Sinput is
        or else
         Ch = ASCII.LF
        or else
-        Ch = ASCII.FF
-       or else
-        Ch = ASCII.VT;
+        Ch = ASCII.FF;
 
       return Result;
    end Is_EOL_Char;

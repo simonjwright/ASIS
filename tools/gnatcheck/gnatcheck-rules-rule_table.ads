@@ -97,6 +97,11 @@ package Gnatcheck.Rules.Rule_Table is
    --  in the description of the rule options in documentation of
    --  Process_Rule_Option is also ignored.
 
+   function Processed_Rule_File_Name return String;
+   --  Returns the full path to the rule file currently being processed.
+   --  Returns an empty string if no rule file is processed at the moment of
+   --  the call.
+
    procedure Rules_Help;
    --  Outputs into Stderr the help info for all the rules currently
    --  implemented in gnatcheck. This procedure does not know about rule

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2007-2016, AdaCore                     --
+--                     Copyright (C) 2007-2017, AdaCore                     --
 --                                                                          --
 -- Asis Utility Library (ASIS UL) is free software; you can redistribute it --
 -- and/or  modify  it  under  terms  of  the  GNU General Public License as --
@@ -225,11 +225,20 @@ package ASIS_UL.Utilities is
    -- Test functions --
    --------------------
 
+   function Is_Access_Attribute (Attr : Asis.Element) return Boolean;
+   --  Checks if the argument is an attribute reference that denotes an access
+   --  attribute (that is, 'Access, 'Unchecked_Access or 'Unrestricted_Access).
+   --
+   --  Returns False for any unexpected element
+   --
+   --  Expected Expression_Kinds:
+   --     An_Attribute_Reference
+
    function Is_Volatile (Def_Name : Asis.Element) return Boolean;
-   --  Checks if Def_Name denotes a volatile data object. See comments to
-   --  the rule Volatile_Requires_Addr_Clause in Gnatcheck.Rules.Default
-   --  for the precise definition of the notion of a volatile object.
-   --  This function is supposed to be used for this rule only.
+   --  Checks if Def_Name denotes a volatile data object. This function is
+   --  supposed to be used for the gnatcheck rule Volatile_Requires_Addr_Clause
+   --  only. At the moment it does not analyze the Ada code but checks the
+   --  Treat_As_Volatile flag in the tree.
    --
    --  Returns False for any unexpected element
    --

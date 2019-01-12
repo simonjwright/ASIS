@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2011-2012, AdaCore                     --
+--                     Copyright (C) 2011-2018, AdaCore                     --
 --                                                                          --
 -- GNATTEST  is  free  software;  you  can redistribute it and/or modify it --
 -- under terms of the  GNU  General Public License as published by the Free --
@@ -27,8 +27,6 @@
 --  controlling the GNATtest, such as argument tables, routines for
 --  initialization, cleaning up etc.
 
-with GNAT.OS_Lib;                use GNAT.OS_Lib;
-
 package GNATtest.Environment is
 
    procedure Initialize;
@@ -42,11 +40,11 @@ package GNATtest.Environment is
    --  Performs the final clean-up actions, including closing and deleting of
    --  all files that should be closed or deleted.
 
-   Temp_Dir : String_Access;
-   --  Contains the name of the temporary directory created by the metric tools
-   --  for the tree files
-
    procedure Context_Clean_Up;
    --  Closes and dissociates the context, if needed
+
+   Source_Compilation_Failed : Boolean := False;
+   --  Indicates when at least one of sources could not be compiled.
+   --  This should affect exit code.
 
 end GNATtest.Environment;

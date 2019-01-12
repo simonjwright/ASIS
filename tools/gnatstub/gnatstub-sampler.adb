@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 1997-2016, Free Software Foundation, Inc.        --
+--           Copyright (C) 1997-2017, Free Software Foundation, Inc.        --
 --                                                                          --
 -- Gnatstub  is  free  software;  you can  redistribute it and/or modify it --
 -- under the terms of the  GNU  General Public License  as published by the --
@@ -248,8 +248,8 @@ package body Gnatstub.Sampler is
    --  If For_Subunit is ON, Subunit_Name should be set to the defining name
    --  of the separate unit. In this case the standard header contains the
    --  name of the separate unit, but not the argument unit. If
-   --  Gnatstub.Options.Header is set to From_Spec, for sununit it does NOT
-   --  contain the sununit name, the only change is replacing "S p e c' with
+   --  Gnatstub.Options.Header is set to From_Spec, for subunit it does NOT
+   --  contain the subunit name, the only change is replacing "S p e c' with
    --  'B o d y'
    --  ??? Do we really need the Success parameter???
 
@@ -426,7 +426,7 @@ package body Gnatstub.Sampler is
 
       Info ("  -in                    same as -gnatyn");
       Info ("  -k                     do not remove the tree file");
-      Info ("  -lnnn                  same as -gnatMnnn");
+      Info ("  -lnnn                  same as -gnatyMnnn");
 
       Info ("  --no-exception         avoid raising Program_Error in stubs");
 
@@ -477,7 +477,7 @@ package body Gnatstub.Sampler is
          end if;
 
          if Overwrite_Body then
-            Error ("overwtite mode cannot be specified " &
+            Error ("overwrite mode cannot be specified " &
                    "when generating subunits");
             raise Parameter_Error;
          end if;
@@ -582,11 +582,6 @@ package body Gnatstub.Sampler is
       then
          Error ("directory " & Destination_Dir.all & " does not exist");
          raise Parameter_Error;
---    elsif Gnatstub.Projects.Is_Specified (Gnatstub.Options.Gnatstub_Prj) then
---       --  We have to place body in the argument source directory
---       Free (Destination_Dir);
---       Destination_Dir :=
---         new String'(GNAT.Directory_Operations.Dir_Name (File_Name.all));
       end if;
 
       --  If subunits should be generated, we will prepare the template for
@@ -767,7 +762,7 @@ package body Gnatstub.Sampler is
                   raise Parameter_Error;
                end if;
             else
-               Error ("the body for " & File_Name.all & " already exists," &
+               Error ("the body for " & File_Name.all & " already exists; " &
                       "use -f to overwrite it");
                raise Parameter_Error;
             end if;
@@ -1123,6 +1118,7 @@ package body Gnatstub.Sampler is
             Generate_CU_Header (Header_Created);
 
             if Header_Created then
+               Put_Line (Body_File, "pragma Ada_2012;");
                Generate_Body_Structure;
                Close (Body_File);
 
@@ -1351,9 +1347,7 @@ package body Gnatstub.Sampler is
       end Print_Node_List;
 
    begin
-
       Print_Node (Body_Structure_Access);
-
    end Generate_Body_Structure;
 
    ------------------------
@@ -1741,140 +1735,9 @@ package body Gnatstub.Sampler is
    ----------------------------
 
    procedure Generate_Function_Body (Node : Link) is
-      No_Raise_Stataement : Boolean := False;
-
-      Parameters : constant Asis.Element_List := Parameter_Profile (Node.Spec);
-
-      Change_Line  : Boolean;
-      First_Formal : Boolean := True;
-
-      Next_Pos     : Natural;
-
-      Needs_Qualification : Boolean := False;
-      --  Indicates if a qualified function name should be used in a fake
-      --  recursive call in a generated return statement to avoid name conflict
-      --  with a parameter that has the same name as the function
-
-      LC_Function_Name : constant Program_Text :=
-        To_Lower_Case (Node.Spec_Name.all);
-
-      function Function_Name return Program_Text;
-      --  Returns the function name. If Needs_Qualification is ON, this name is
-      --  qualified.
-
-      procedure Output_Fake_Parameters;
-      --  Prints out the fake parameters of the fake recursive call of the
-      --  function to itself
-
-      function Function_Name return Program_Text is
-         EE : Asis.Element;
-      begin
-         if Needs_Qualification then
-            EE := Enclosing_Element (Node.Spec);
-
-            if Is_Nil (EE) then
-               --  library-level non-child function
-               return "Standard." & Node.Spec_Name.all;
-            else
-               return Defining_Name_Image (Names (EE) (1)) &
-                      "." & Node.Spec_Name.all;
-            end if;
-         else
-            return Node.Spec_Name.all;
-         end if;
-      end Function_Name;
-
-      procedure Output_Fake_Parameters is
-         Start_Pos : constant Positive_Count :=
-           Positive_Count (1 + (Level + 2) * Indent_Level);
-
-         Next_Len : Natural;
-
-      begin
-
-         if Next_Pos >= Max_Body_Line_Length then
-            Set_Col  (Body_File, Start_Pos - 1);
-            Next_Pos := Natural (Start_Pos - 1);
-         end if;
-
-         Put (Body_File, " (");
-         Next_Pos := Next_Pos + 1;
-
-         for J in Parameters'Range loop
-
-            declare
-               Formal_Names : constant Asis.Element_List :=
-                 Names (Parameters (J));
-            begin
-
-               for K in Formal_Names'Range loop
-                  Next_Len := Defining_Name_Image (Formal_Names (K))'Length;
-                  Next_Len := Next_Len * 2 + 4; --  for positional association
-
-                  if First_Formal then
-                     First_Formal := False;
-
-                     Put (Body_File, Defining_Name_Image (Formal_Names (K)));
-                     Put (Body_File, " => ");
-                     Put (Body_File, Defining_Name_Image (Formal_Names (K)));
-
-                     Next_Pos := Next_Pos + Next_Len;
-                  else
-                     Put (Body_File, ",");
-                     Next_Pos := Next_Pos + 1;
-
-                     if Next_Pos + 2 + Next_Len > Max_Body_Line_Length then
-                        Set_Col (Body_File, Start_Pos);
-                        Next_Pos := Natural (Start_Pos);
-                     else
-                        Put (Body_File, " ");
-                        Next_Pos := Next_Pos + 1;
-                     end if;
-
-                     Put
-                       (Body_File, Defining_Name_Image (Formal_Names (K)));
-                        Put (Body_File, " => ");
-                        Put
-                          (Body_File, Defining_Name_Image (Formal_Names (K)));
-
-                     Next_Pos := Next_Pos + Next_Len;
-
-                  end if;
-
-               end loop;
-
-            end;
-
-         end loop;
-
-         Put (Body_File, ");");
-
-      end Output_Fake_Parameters;
-
+      No_Raise_Statement : Boolean := False;
+      Change_Line : Boolean;
    begin
-      if Defining_Name_Kind (Names (Node.Spec) (1)) =
-        A_Defining_Identifier
-      then
-         In_Param_Specs : for J in Parameters'Range loop
-
-            declare
-               Formal_Names : constant Asis.Element_List :=
-                 Names (Parameters (J));
-            begin
-
-               for K in Formal_Names'Range loop
-                  if To_Lower_Case (Defining_Name_Image (Formal_Names (K))) =
-                       LC_Function_Name
-                  then
-                     Needs_Qualification := True;
-                     exit In_Param_Specs;
-                  end if;
-               end loop;
-            end;
-         end loop In_Param_Specs;
-
-      end if;
-
       Set_Col  (Body_File, Positive_Count (1 + Level * Indent_Level));
 
       if Is_Overriding_Declaration (Node.Spec) then
@@ -1884,7 +1747,6 @@ package body Gnatstub.Sampler is
       end if;
 
       Put (Body_File, "function " & Node.Spec_Name.all);
---      Put (Body_File, "function " & Function_Name);
       Generate_Profile (Node, Change_Line);
 
       if Change_Line then
@@ -1898,7 +1760,7 @@ package body Gnatstub.Sampler is
         and then
          Allows_Var_Declaration (Result_Profile (Node.Spec))
       then
-         No_Raise_Stataement := True;
+         No_Raise_Statement := True;
          Set_Col  (Body_File, Positive_Count (1 + (Level + 1) * Indent_Level));
          Put (Body_File, "Result : ");
          Put (Body_File,
@@ -1921,10 +1783,14 @@ package body Gnatstub.Sampler is
 
       Set_Col  (Body_File, Positive_Count (1 + (Level + 1) * Indent_Level));
 
-      if No_Raise_Stataement then
+      if No_Raise_Statement then
          Put_Line (Body_File, "return Result;");
       else
-         Put (Body_File, "raise Program_Error");
+         --  We now use a return of a raise expression, to avoid a kludgey
+         --  recursive call to itself. This is Ada 2012, so the checks for
+         --  >= Ada_2005 are not actually necessary.
+
+         Put (Body_File, "return raise Program_Error");
 
          if Opt.Ada_Version >= Ada_2005 then
             Put (Body_File,
@@ -1934,21 +1800,6 @@ package body Gnatstub.Sampler is
          end if;
 
          Put_Line (Body_File, ";");
-
-         Set_Col  (Body_File, Positive_Count (1 + (Level + 1) * Indent_Level));
-         --  generating a dummy recursive call to itself:
---         Put (Body_File, "return " & Node.Spec_Name.all);
-         Put (Body_File, "return " & Function_Name);
-
-         Next_Pos :=
-           1 + (Level + 1) * Indent_Level + 6 + 1 + Node.Spec_Name'Length;
-
-         if Parameters'Length = 0 then
-            Put_Line (Body_File, ";");
-         else
-            Output_Fake_Parameters;
-         end if;
-
       end if;
 
       Set_Col  (Body_File, Positive_Count (1 + Level * Indent_Level));
@@ -2341,6 +2192,7 @@ package body Gnatstub.Sampler is
                   For_Subunit  => True,
                   Subunit_Name => Def_Name);
 
+               Put_Line (Body_File, "pragma Ada_2012;");
                Put_Line
                  (Body_File,
                   "separate (" & Body_Structure.Spec_Name.all & ')');

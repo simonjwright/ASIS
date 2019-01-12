@@ -65,11 +65,16 @@ test-gnat2xml: all
 	@# cd test ; xmllint --schema ../ada-schema.compact.xsd.new actual.compact/*.xml --noout
 	cd test ; xmllint --schema ../ada-schema.xsd.new actual.verbose/*.xml --noout
 
-	@# Compare schemas to expected versions.
+	@# Compare schemas to expected versions. Strip out the copyright notices before
+	@# doing the comparison, so if that's the only difference, we won't fail.
 	diff    ada-schema.xsd ada-schema.xsd.new | head -80
 	diff    ada-schema.compact.xsd ada-schema.compact.xsd.new | head -80
-	diff -q ada-schema.xsd ada-schema.xsd.new
-	diff -q ada-schema.compact.xsd ada-schema.compact.xsd.new
+	grep -v 'gnat2xsd Copyright (C) 2012-201., AdaCore, Inc\.' ada-schema.xsd.new > ada-schema.xsd.new.no-copyright
+	grep -v 'gnat2xsd Copyright (C) 2012-201., AdaCore, Inc\.' ada-schema.xsd > ada-schema.xsd.no-copyright
+	grep -v 'gnat2xsd Copyright (C) 2012-201., AdaCore, Inc\.' ada-schema.compact.xsd.new > ada-schema.compact.xsd.new.no-copyright
+	grep -v 'gnat2xsd Copyright (C) 2012-201., AdaCore, Inc\.' ada-schema.compact.xsd > ada-schema.compact.xsd.no-copyright
+	diff -q ada-schema.xsd.no-copyright ada-schema.xsd.new.no-copyright
+	diff -q ada-schema.compact.xsd.no-copyright ada-schema.compact.xsd.new.no-copyright
 
 XML2GNAT_SRCS=*.ad[sb] mckae/*.ad[sb] ../tool_utils/*.ad[sb]
 

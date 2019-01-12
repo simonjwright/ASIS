@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2004-2014, AdaCore                     --
+--                     Copyright (C) 2004-2018, AdaCore                     --
 --                                                                          --
 -- Asis Utility Library (ASIS UL) is free software; you can redistribute it --
 -- and/or  modify  it  under  terms  of  the  GNU General Public License as --
@@ -51,7 +51,8 @@ package ASIS_UL.Source_Table.Processing is
 
    procedure Process_Sources
      (Need_Semantic_Info : Boolean := True;
-      Add_Needed_Sources : Boolean := Mimic_gcc);
+      Add_Needed_Sources : Boolean := Mimic_gcc;
+      Keep_ALI           : Boolean := False);
    --  Iterates through the source file table and calls the processing routine
    --  for each source. This procedure implements only iteration through the
    --  table, the specific processing routine(s) should be provided by the tool

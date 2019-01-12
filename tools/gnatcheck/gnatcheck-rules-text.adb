@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2010-2016, AdaCore                     --
+--                     Copyright (C) 2010-2017, AdaCore                     --
 --                                                                          --
 -- GNATCHECK  is  free  software;  you can redistribute it and/or modify it --
 -- under terms of the  GNU  General Public License as published by the Free --
@@ -316,5 +316,133 @@ package body Gnatcheck.Rules.Text is
             " separator="":"""                                      &
             "/>");
    end XML_Rule_Help;
+
+   ---------------------
+   -- Printable_ASCII --
+   ---------------------
+
+   function Bad_Symbol_Description (Ch : Wide_Character) return String;
+   --  Provides short description of a bad symbol for diagnoses
+
+   ----------------------------
+   -- Bad_Symbol_Description --
+   ----------------------------
+
+   function Bad_Symbol_Description (Ch : Wide_Character) return String is
+      Ch_Code   : Natural;
+      ASCII_Str : constant String := " (ASCII.";
+   begin
+      if not Is_Character (Ch) then
+         return " (outside Character type range)";
+      end if;
+
+      Ch_Code := Character'Pos (To_Character (Ch));
+
+      case Ch_Code is
+         when 127 .. 255 =>
+            return " (outside ASCII range)";
+
+         when  0 => return ASCII_Str & "NUL)";
+         when  1 => return ASCII_Str & "SOH)";
+         when  2 => return ASCII_Str & "STX)";
+         when  3 => return ASCII_Str & "ETX)";
+         when  4 => return ASCII_Str & "EOT)";
+         when  5 => return ASCII_Str & "ENQ)";
+         when  6 => return ASCII_Str & "ACK)";
+         when  7 => return ASCII_Str & "BEL)";
+         when  8 => return ASCII_Str & "BS)";
+         when  9 => return ASCII_Str & "HT)";
+         when 11 => return ASCII_Str & "VT)";
+         when 12 => return ASCII_Str & "FF)";
+         when 14 => return ASCII_Str & "SO)";
+         when 15 => return ASCII_Str & "SI)";
+         when 16 => return ASCII_Str & "DLE)";
+         when 17 => return ASCII_Str & "DC1)";
+         when 18 => return ASCII_Str & "DC2)";
+         when 19 => return ASCII_Str & "DC3)";
+         when 20 => return ASCII_Str & "DC4)";
+         when 21 => return ASCII_Str & "NAK)";
+         when 22 => return ASCII_Str & "SYN)";
+         when 23 => return ASCII_Str & "ETB)";
+         when 24 => return ASCII_Str & "CAN)";
+         when 25 => return ASCII_Str & "EM)";
+         when 26 => return ASCII_Str & "SUB)";
+         when 27 => return ASCII_Str & "ESC)";
+         when 28 => return ASCII_Str & "FS)";
+         when 29 => return ASCII_Str & "GS)";
+         when 30 => return ASCII_Str & "RS)";
+         when 31 => return ASCII_Str & "US)";
+
+         when others =>
+            pragma Assert (False);
+            return " !!!(report problem with the rule!!!)";
+      end case;
+   end Bad_Symbol_Description;
+
+   ---------------------------------
+   -- Init_Rule (Printable_ASCII) --
+   ---------------------------------
+
+   overriding procedure Init_Rule (Rule : in out Printable_ASCII_Rule_Type) is
+   begin
+      Init_Rule (Rule_Template (Rule));
+
+      Rule.Name        := new String'("Printable_ASCII");
+      Rule.Rule_Status := Fully_Implemented;
+      Rule.Help_Info   := new String'("non-printable characters");
+      Rule.Diagnosis   := new String'("#1#symbol is not from printable ASCII" &
+                                      "%1%"                                   &
+                                      "#2#symbol is not from printable ASCII" &
+                                      "%1% (more occurrences on this line)");
+   end Init_Rule;
+
+   ----------------------------------
+   -- Line_Check (Printable_ASCII) --
+   ----------------------------------
+
+   overriding procedure Line_Check
+     (Rule               : in out Printable_ASCII_Rule_Type;
+      Line_Num           :        Line_Number_Positive;
+      Full_Line_Image    :        Program_Text_Access;
+      Ada_Line_Image     :        Program_Text_Access;
+      Comment_Line_Image :        Program_Text_Access;
+      State              : in out Rule_Traversal_State)
+   is
+
+      pragma Unreferenced (Rule, Comment_Line_Image, Ada_Line_Image);
+      Ch_Code        : Natural;
+      Bad_Symbol_N   : Natural := 0;
+      First_Bad_Sym  : Boolean := True;
+   begin
+      for J in Full_Line_Image'Range loop
+         if not Is_Character (Full_Line_Image (J)) then
+            State.Detected := True;
+            Bad_Symbol_N   := Bad_Symbol_N + 1;
+         else
+            Ch_Code        :=
+              Character'Pos (To_Character (Full_Line_Image (J)));
+
+            if Ch_Code not in 10 | 13 | 32 .. 126 then
+               State.Detected := True;
+               Bad_Symbol_N   := Bad_Symbol_N + 1;
+            end if;
+         end if;
+
+         if State.Detected and then First_Bad_Sym then
+            State.Line        := Positive (Line_Num);
+            State.Column      := J;
+            State.Diag_Params := Enter_String
+              ("%1%" & Bad_Symbol_Description (Full_Line_Image (J)));
+            First_Bad_Sym     := False;
+         end if;
+
+         exit when Bad_Symbol_N = 2;
+      end loop;
+
+      if State.Detected then
+         State.Diagnosis := Bad_Symbol_N;
+      end if;
+
+   end Line_Check;
 
 end Gnatcheck.Rules.Text;

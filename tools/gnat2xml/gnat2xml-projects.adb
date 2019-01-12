@@ -127,6 +127,7 @@ package body Gnat2xml.Projects is
               "I: -RTS= -target= v q d? " &
               "-compact " &
               "files= " &
+              "-ignore= "         &   --  specify a set of units to skip
               "h -help -version " &
               "m: -output-dir=",
                Parser => Parser);
