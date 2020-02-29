@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                      Copyright (C) 2013-2016, AdaCore                    --
+--                      Copyright (C) 2013-2017, AdaCore                    --
 --                                                                          --
 -- Gnat2xml is free software; you can redistribute it and/or modify it      --
 -- under terms of the  GNU General Public License  as published by the Free --
@@ -46,9 +46,6 @@ package ASIS_UL.Slow_Vectors is
       "=");
 
    subtype Vector is Vectors.Vector;
-   use all type Vector;
-
-   --  Renamings of things that "use all type" won't make visible:
 
    subtype Extended_Index is Vectors.Extended_Index;
    No_Index : Extended_Index renames Vectors.No_Index;

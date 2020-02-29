@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                      Copyright (C) 2013-2016, AdaCore                    --
+--                      Copyright (C) 2013-2017, AdaCore                    --
 --                                                                          --
 -- Gnat2xml is free software; you can redistribute it and/or modify it      --
 -- under terms of the  GNU General Public License  as published by the Free --
@@ -134,7 +134,7 @@ package body Ada_Trees.Asis_To_Tree is
    end Decl_Of_Def_Id;
 
    function Decl_Kind (Def_Id : Defining_Name) return String is
-      use Asis.Elements, Ada.Characters.Handling;
+      use Ada.Characters.Handling;
       Decl : constant Asis.Declaration       := Decl_Of_Def_Id (Def_Id);
       Kind : constant Flat_Declaration_Kinds := Ekind (Decl);
       S1   : constant String                 := To_Lower (Kind'Img);
@@ -244,7 +244,6 @@ package body Ada_Trees.Asis_To_Tree is
    end Def_Name_Value;
 
    function Ref_Value (Ref_Id : Asis.Name) return String is
-      use Expressions;
 
    begin
       if Is_Uniquely_Defined (Ref_Id) then
@@ -414,7 +413,7 @@ package body Ada_Trees.Asis_To_Tree is
 
       if Is_Uniquely_Defined (Ref_Id) then
          declare
-            use Expressions, Compilation_Units, Elements;
+            use Compilation_Units, Elements;
             Def_Id : constant Asis.Element := Name_Definition (Ref_Id);
          begin
             case Ekind (Def_Id) is
@@ -520,7 +519,6 @@ package body Ada_Trees.Asis_To_Tree is
          Element : Asis.Element)
          return    Ada_Tree
       is
-         use Declarations;
 
          function Kind_Fixup return Opt_ASIS_Elems;
          --  This works around the handling of generic formal subprogram
@@ -535,7 +533,6 @@ package body Ada_Trees.Asis_To_Tree is
 
          function Kind_Fixup return Opt_ASIS_Elems is
             Result : Opt_ASIS_Elems := Ekind (Element);
-            use Asis.Elements;
 
          begin
             pragma Assert
@@ -788,6 +785,9 @@ package body Ada_Trees.Asis_To_Tree is
       is
          pragma Assert (List'First = 1);
          L : Ada_Tree_Vector;
+
+         use Ada_Tree_Vectors;
+
       begin
          for Index in List'Range loop
             if In_Gen_Regions (List (Index)) then

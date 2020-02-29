@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2011-2017, AdaCore                     --
+--                     Copyright (C) 2011-2018, AdaCore                     --
 --                                                                          --
 -- GNATTEST  is  free  software;  you  can redistribute it and/or modify it --
 -- under terms of the  GNU  General Public License as published by the Free --
@@ -39,10 +39,15 @@ with Asis.Implementation;        use Asis.Implementation;
 with Asis.Expressions;           use Asis.Expressions;
 with Asis.Set_Get;               use Asis.Set_Get;
 
+with ASIS_UL.Common;
+with ASIS_UL.Compiler_Options;   use ASIS_UL.Compiler_Options;
+with ASIS_UL.Debug;
+
 with GNAT.Directory_Operations;   use GNAT.Directory_Operations;
 with GNAT.SHA1;
 
 with GNATtest.Options;            use GNATtest.Options;
+with GNATtest.Skeleton.Source_Table;
 
 with GNATCOLL.Traces;             use GNATCOLL.Traces;
 
@@ -50,10 +55,13 @@ with Types; use Types;
 
 package body GNATtest.Common is
 
-   Me_Hash : constant Trace_Handle := Create ("Hash", Default => Off);
-   Me_Stub : constant Trace_Handle := Create ("Stubs", Default => Off);
+   Me_Hash    : constant Trace_Handle := Create ("Hash", Default => Off);
+   Me_Stub    : constant Trace_Handle := Create ("Stubs", Default => Off);
+   Me_Closure : constant Trace_Handle := Create ("Closure", Default => Off);
 
    Infix : Natural := 0;
+
+   Closure : String_Set.Set := String_Set.Empty_Set;
 
    function Operator_Image (Op : Defining_Name) return String;
    --  According to operator symbols returns their literal names to make the
@@ -66,6 +74,10 @@ package body GNATtest.Common is
    --  If the argument allready is a record type declaration, returns itself.
    --  If given not a tagged record declaration or extension declaration
    --  returns Nil_Element.
+
+   function Get_Closure_Diff return List_Of_Strings.List;
+   --  Recomputes the closure based on new ALI files created by last invocation
+   --  of gcc and returns the list of new files.
 
    ---------
    -- "<" --
@@ -92,6 +104,29 @@ package body GNATtest.Common is
       Char_Sequential_IO.Create
         (Output_File, Char_Sequential_IO.Out_File, P_Name & B_Name);
    end Create;
+
+   ----------------
+   -- Create_ALI --
+   ----------------
+
+   procedure Create_ALI (Source : String; Success : out Boolean) is
+      Delete_Success : Boolean;
+      Sufexless_Name : constant String :=
+        GNATtest.Skeleton.Source_Table.Get_Source_Suffixless_Name (Source);
+   begin
+      Trace (Me_Closure, "Creating intermidiate tree for " & Source);
+      Compile
+       (new String'(Source),
+        Arg_List.all,
+        Success,
+        GCC          => ASIS_UL.Common.Gcc_To_Call,
+        Display_Call => ASIS_UL.Debug.Debug_Flag_C);
+      Delete_File (Sufexless_Name & ".adt", Delete_Success);
+      if not Delete_Success then
+         Report_Std ("gnattest: cannot delete " &
+                     Sufexless_Name & ".adt");
+      end if;
+   end Create_ALI;
 
    -----------
    -- Close --
@@ -172,6 +207,48 @@ package body GNATtest.Common is
 
       Close_File;
    end Generate_Common_File;
+
+   ----------------------
+   -- Get_Closure_Diff --
+   ----------------------
+
+   function Get_Closure_Diff return List_Of_Strings.List is
+      Result : List_Of_Strings.List := List_Of_Strings.Empty_List;
+
+      Closure_Files : GNATCOLL.VFS.File_Array_Access;
+      Main_Files    : GNATCOLL.VFS.File_Array_Access;
+      Status        : Status_Type;
+   begin
+      Increase_Indent (Me_Closure, "Get_Closure_Diff");
+      for Main_Unit of Options.Main_Units loop
+         Append (Main_Files, Create (+Main_Unit));
+      end loop;
+      Get_Closures
+        (Source_Project_Tree.Root_Project,
+         Main_Files,
+         Status => Status,
+         Result => Closure_Files);
+
+      if Closure_Files /= null then
+         for I in Closure_Files'Range loop
+            if not Closure.Contains (Closure_Files (I).Display_Full_Name) then
+               Trace
+                 (Me_Closure,
+                  "new file: " & Closure_Files (I).Display_Base_Name);
+               Result.Append (Closure_Files (I).Display_Full_Name);
+               Closure.Include (Closure_Files (I).Display_Full_Name);
+            else
+               Trace
+                 (Me_Closure,
+                  "old file: " & Closure_Files (I).Display_Base_Name);
+            end if;
+         end loop;
+      end if;
+
+      Decrease_Indent (Me_Closure);
+
+      return Result;
+   end Get_Closure_Diff;
 
    -----------------
    -- Get_Nesting --
@@ -268,6 +345,8 @@ package body GNATtest.Common is
             Corresponding_Declaration (Subp)
          else
             Subp);
+
+      L_Subp_Span : constant Asis.Text.Span := Element_Span (L_Subp);
 
       Subp_Name_Im  : constant String :=
         To_String (Defining_Name_Image (First_Name (L_Subp)));
@@ -697,7 +776,11 @@ package body GNATtest.Common is
       end Unsubtype;
 
    begin
-      Trace (Me_Hash, "Mangle_Hash_Full for " & Subp_Name_Im);
+      Trace
+        (Me_Hash,
+         "Mangle_Hash_Full for " & Subp_Name_Im
+         & (if Is_Nil (L_Subp_Span) then ""
+           else " at line" & L_Subp_Span.First_Line'Img));
 
       case Declaration_Kind (L_Subp) is
          when A_Function_Declaration             |
@@ -1171,7 +1254,7 @@ package body GNATtest.Common is
       end if;
 
       if Declaration_Kind (Dec_Elem) = A_Private_Type_Declaration then
-         Dec_Elem := Corresponding_Type_Declaration (Dec_Elem);
+         Dec_Elem := Corresponding_Type_Completion (Dec_Elem);
          Def_Elem := Type_Declaration_View (Dec_Elem);
       end if;
 
@@ -1186,7 +1269,20 @@ package body GNATtest.Common is
       Dec_Elem := Corresponding_Parent_Subtype (Def_Elem);
 
       if Declaration_Kind (Dec_Elem) = A_Subtype_Declaration then
-         return Corresponding_First_Subtype (Dec_Elem);
+         Dec_Elem := Corresponding_First_Subtype (Dec_Elem);
+      end if;
+
+      if
+        Declaration_Kind (Dec_Elem) in
+        A_Tagged_Incomplete_Type_Declaration | An_Incomplete_Type_Declaration
+      then
+         Dec_Elem := Corresponding_Type_Completion (Dec_Elem);
+      end if;
+
+      if Declaration_Kind (Dec_Elem) in
+        A_Private_Type_Declaration | A_Private_Extension_Declaration
+      then
+         Dec_Elem := Corresponding_Type_Completion (Dec_Elem);
       end if;
 
       return Dec_Elem;
@@ -1284,6 +1380,22 @@ package body GNATtest.Common is
       Report_Err (Exception_Information (Ex));
    end Report_Unhandled_Exception;
 
+   ---------------------------------
+   -- Report_Exclusions_Not_Found --
+   ---------------------------------
+
+   procedure Report_Exclusions_Not_Found is
+      Cur : String_Set.Cursor := Excluded_Files.First;
+   begin
+      while Cur /= String_Set.No_Element loop
+         Report_Std
+           ("warning: exemption: source " & String_Set.Element (Cur)
+            & " not found");
+         Next (Cur);
+      end loop;
+      Excluded_Files.Clear;
+   end Report_Exclusions_Not_Found;
+
    -----------------------------
    --  Root_Type_Declaration  --
    -----------------------------
@@ -1318,7 +1430,9 @@ package body GNATtest.Common is
             Def_Elem := Type_Declaration_View (Dec_Elem);
          end if;
 
-         if Type_Kind (Def_Elem) = A_Tagged_Record_Type_Definition then
+         if Type_Kind (Def_Elem) in
+           A_Tagged_Record_Type_Definition | An_Interface_Type_Definition
+         then
             return Dec_Elem;
          end if;
 
@@ -1411,5 +1525,75 @@ package body GNATtest.Common is
 
       return To_Lower (T.all);
    end Unit_To_File_Name;
+
+   --------------------
+   -- Update_Closure --
+   --------------------
+
+   procedure Update_Closure is
+      Closure   : constant List_Of_Strings.List   := Get_Closure_Diff;
+      Cur       :          List_Of_Strings.Cursor := Closure.First;
+      Success   :          Boolean;
+      Recompute :          Boolean := False;
+      VF        :          GNATCOLL.VFS.Virtual_File;
+
+      use List_Of_Strings;
+
+      procedure Create_Intermediate_ALI;
+      procedure Create_Intermediate_ALI is
+      begin
+         Change_Dir
+           (Temp_Dir.all & Directory_Separator & Closure_Subdir_Name);
+         Create_ALI (VF.Display_Full_Name, Success);
+         if not Success then
+            Report_Std
+              ("gnattest (warning): "
+               & "cannot calculate closure for "
+               & VF.Display_Base_Name
+               & ", overall closure may be incomplete");
+         else
+            Recompute := True;
+         end if;
+         Change_Dir (Temp_Dir.all);
+      end Create_Intermediate_ALI;
+   begin
+      Trace (Me_Closure, "Update_Closure");
+
+      while Cur /= List_Of_Strings.No_Element loop
+         VF := Create (+List_Of_Strings.Element (Cur));
+
+         case Source_Project_Tree.Info (VF).Unit_Part is
+            when Unit_Spec =>
+               if Excluded_Files.Contains (VF.Display_Base_Name) then
+                  --  This file should not be processed, but we need
+                  --  to get its ALI in case it impacts the closure
+                  Create_Intermediate_ALI;
+                  Excluded_Files.Exclude (VF.Display_Base_Name);
+               else
+                  Skeleton.Source_Table.Add_Source_To_Process
+                    (VF.Display_Full_Name);
+               end if;
+
+            when Unit_Body =>
+               if not Skeleton.Source_Table.Source_Present
+                 (Source_Project_Tree.Other_File
+                    (VF).Display_Full_Name)
+               then
+                  --  There is no corresponding spec for this file, so we need
+                  --  to get its ALI in case it impacts the closure
+                  Create_Intermediate_ALI;
+               end if;
+
+            when others =>
+               null;
+         end case;
+
+         Next (Cur);
+      end loop;
+
+      if Recompute then
+         Update_Closure;
+      end if;
+   end Update_Closure;
 
 end GNATtest.Common;

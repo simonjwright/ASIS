@@ -61,15 +61,15 @@ Index
 ASIS-for-GNAT User's Guide
 **************************
 
-     ASIS-for-GNAT User's Guide 2017, May 16, 2017
+     ASIS-for-GNAT User's Guide 2019, May 18, 2019
 
      AdaCore
 
-     Copyright (C) 2008-2017, AdaCore
+     Copyright (C) 2008-2019, AdaCore
 
     `GNAT, The GNU Ada Development Environment' 
     The GNAT Ada Compiler 
-    Version 2017 
+    Version 2019 
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.1 or
@@ -1005,8 +1005,8 @@ ASIS-specific combination of two compileation options, `-gnatt' and
 `-gnatc'. The `-gnatt' option generates a tree file, and `-gnatc' turns
 off AST expansion. ASIS needs tree files created without AST expansion,
 whereas to create an object file, GNAT needs an expanded AST.
-Therefore it is impossible for one compilation command to to produce
-both a tree file and an object file for a given source file.
+Therefore it is impossible for one compilation command to produce both
+a tree file and an object file for a given source file.
 
 The following points are important to remember when generating and
 dealing with tree files:

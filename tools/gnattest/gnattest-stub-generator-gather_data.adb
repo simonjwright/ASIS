@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2014-2016, AdaCore                     --
+--                     Copyright (C) 2014-2017, AdaCore                     --
 --                                                                          --
 -- GNATTEST  is  free  software;  you  can redistribute it and/or modify it --
 -- under terms of the  GNU  General Public License as published by the Free --
@@ -24,6 +24,8 @@
 ------------------------------------------------------------------------------
 
 pragma Ada_2012;
+
+with Asis.Clauses; use Asis.Clauses;
 
 separate (GNATtest.Stub.Generator)
 procedure Gather_Data
@@ -200,8 +202,29 @@ is
    end Return_To_Ancestor;
 
    Control : Traverse_Control := Continue;
+
+   Spec_Clause_List : constant Asis.Context_Clause_List :=
+     Context_Clause_Elements (The_Unit);
 begin
    Trace (Me, "gathering data from " & To_String (Text_Name (The_Unit)));
+
+   for I in Spec_Clause_List'Range loop
+      if
+        Clause_Kind (Spec_Clause_List (I)) = A_With_Clause
+        and then Trait_Kind (Spec_Clause_List (I)) = A_Limited_Trait
+      then
+         declare
+            With_Names : constant Asis.Name_List :=
+              Clause_Names (Spec_Clause_List (I));
+            First_Idx  : constant Integer := With_Names'First;
+         begin
+            Data.Limited_Withed_Units.Include
+              (Trim
+                 (To_String (Element_Image (With_Names (First_Idx))),
+                  Both));
+         end;
+      end if;
+   end loop;
 
    Tasks_Present := False;
 

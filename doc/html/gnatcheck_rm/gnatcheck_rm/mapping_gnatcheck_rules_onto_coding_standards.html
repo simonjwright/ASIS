@@ -1,0 +1,143 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>7. Mapping gnatcheck Rules Onto Coding Standards &mdash; GNATcheck Reference Manual 2019 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2019',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="GNATcheck Reference Manual 2019 documentation" href="../gnatcheck_rm.html" />
+    <link rel="next" title="8. Rule exemption" href="rule_exemption.html" />
+    <link rel="prev" title="6. Adding the Results of Compiler Checks to gnatcheck Output" href="adding_the_results_of_compiler_checks_to_gnatcheck_output.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="rule_exemption.html" title="8. Rule exemption"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="adding_the_results_of_compiler_checks_to_gnatcheck_output.html" title="6. Adding the Results of Compiler Checks to gnatcheck Output"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../gnatcheck_rm.html">GNATcheck Reference Manual 2019 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../gnatcheck_rm.html">
+              <img class="logo" src="../_static/adacore_transparent.png" alt="Logo"/>
+            </a></p>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="adding_the_results_of_compiler_checks_to_gnatcheck_output.html"
+                        title="previous chapter">6. Adding the Results of Compiler Checks to <em>gnatcheck</em> Output</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="rule_exemption.html"
+                        title="next chapter">8. Rule exemption</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/gnatcheck_rm/mapping_gnatcheck_rules_onto_coding_standards.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="mapping-gnatcheck-rules-onto-coding-standards">
+<span id="id1"></span><h1>7. Mapping <em>gnatcheck</em> Rules Onto Coding Standards<a class="headerlink" href="#mapping-gnatcheck-rules-onto-coding-standards" title="Permalink to this headline">¶</a></h1>
+<p>If a user would like use <em>gnatcheck</em> to check if some code
+satisfies to a given coding standard, the following approach can be
+used to simplify mapping of the coding standard requirements onto
+<em>gnatcheck</em> rules:</p>
+<ul>
+<li><p class="first">when specifying rule options, use synonyms for the rule names
+that are relevant to your coding standard:</p>
+<div class="highlight-python"><div class="highlight"><pre>+R :My_Coding_Rule_1: Gnatcheck_Rule_1: param1
+...
++R :My_Coding_Rule_N: Gnatcheck_Rule_N
+</pre></div>
+</div>
+</li>
+<li><p class="first">call <em>gnatcheck</em> with <cite>&#8211;show-rule</cite> option that adds the rule names
+to the generated diagnoses. If a synonym is used in the rule option that
+enables the rule, then this synonym will be used to annotate the diagnosis
+instead of the rule name:</p>
+<div class="highlight-python"><div class="highlight"><pre>foo.adb:2:28: something is wrong here [My_Coding_Rule_1]
+...
+bar.ads:17:3: this is not good [My_Coding_Rule_N]
+</pre></div>
+</div>
+</li>
+</ul>
+<p>Currently this approach does not work for compiler-based checks integrated
+in <em>gnatcheck</em> (implemented by <cite>Restrictions</cite>, <cite>Style_Checks</cite> and
+<cite>Warnings</cite> rules.</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="rule_exemption.html" title="8. Rule exemption"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="adding_the_results_of_compiler_checks_to_gnatcheck_output.html" title="6. Adding the Results of Compiler Checks to gnatcheck Output"
+             >previous</a> |</li>
+        <li><a href="../gnatcheck_rm.html">GNATcheck Reference Manual 2019 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2008-2019, AdaCore.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3b2.
+    </div>
+  </body>
+</html>

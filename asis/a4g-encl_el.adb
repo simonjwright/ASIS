@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 1995-2016, Free Software Foundation, Inc.       --
+--            Copyright (C) 1995-2018, Free Software Foundation, Inc.       --
 --                                                                          --
 -- ASIS-for-GNAT is free software; you can redistribute it and/or modify it --
 -- under terms of the  GNU General Public License  as published by the Free --
@@ -46,6 +46,7 @@ with Asis.Set_Get;      use Asis.Set_Get;
 
 with A4G.A_Sem;         use A4G.A_Sem;
 with A4G.A_Types;       use A4G.A_Types;
+with A4G.Contt.UT;      use A4G.Contt.UT;
 with A4G.EE_Cache;      use A4G.EE_Cache;
 with A4G.Int_Knds;      use A4G.Int_Knds;
 with A4G.Mapping;       use A4G.Mapping;
@@ -760,9 +761,8 @@ A_Then_Abort_Path => Trivial_Mapping,
 --  Detailed classification for Asis.Element_Kinds (An_Expression_Path)
 --  literal corresponds to subtype Internal_Expression_Path_Kinds
 ------------------------------------------------------------
-A_Case_Expression_Path => Trivial_Mapping,
-
-An_If_Expression_Path ..
+A_Case_Expression_Path ..
+--    An_If_Expression_Path ..
 --    An_Elsif_Expression_Path,
 An_Else_Expression_Path => Non_Trivial_Mapping,
 ------------------------------------------------------------------------
@@ -1550,7 +1550,7 @@ An_Else_Path   => An_Else_Path_Enclosing'Access,
 --  An_Expression_Path,        -- Asis.Expressions  Ada 2015
 ------------------------------------------------------------
 
-An_If_Expression_Path ..
+A_Case_Expression_Path ..
 --    An_Elsif_Expression_Path,
 An_Else_Expression_Path => An_Expression_Enclosing'Access,
 -------------------------------------------------------------------------------
@@ -1797,6 +1797,8 @@ others => Not_Implemented_Enclosing_Element_Construction'Access);
       Parent_Node      : Node_Id                := Parent (R_Node (Element));
       Parent_Node_Kind : constant Node_Kind     := Nkind  (Parent_Node);
       Result_Kind      : Internal_Element_Kinds := Not_An_Element;
+
+      Tmp : Node_Id;
    begin
 
       if Nkind (Node (Element)) = N_Label then
@@ -1860,6 +1862,30 @@ others => Not_Implemented_Enclosing_Element_Construction'Access);
          end if;
 
          Parent_Node := Parent (Parent_Node);
+      elsif Nkind (Node (Element)) = N_Identifier
+          and then
+            Parent_Node_Kind = N_Loop_Statement
+      then
+         --  Special case - a loop name, and the loop uses iteration scheme
+         Tmp := Parent (Parent_Node);
+
+         if Nkind (Tmp) = N_Handled_Sequence_Of_Statements
+           and then
+            not Comes_From_Source (Tmp)
+         then
+            Tmp := Parent (Tmp);
+
+            if Is_Rewrite_Substitution (Tmp)
+               and then
+                Nkind (Tmp) = N_Block_Statement
+               and then
+                Nkind (Original_Node (Tmp)) = N_Loop_Statement
+            then
+               Parent_Node := Tmp;
+               Result_Kind := A_For_Loop_Statement;
+            end if;
+         end if;
+
       else
          return A_Defining_Expanded_Name_Enclosing (Element);
       end if;
@@ -2467,9 +2493,13 @@ others => Not_Implemented_Enclosing_Element_Construction'Access);
                Parent_Node := Parent (Parent_Node);
             end if;
 
+            Parent_Node := Get_Orig_Body_For_Class_Wide_Clode (Parent_Node);
+
             return Node_To_Element_New (Node             => Parent_Node,
                                         Starting_Element => Element);
       end case;
+
+      Parent_Node := Get_Orig_Body_For_Class_Wide_Clode (Parent_Node);
 
       return Node_To_Element_New (Node             => Parent_Node,
                                   Internal_Kind    => Parent_Internal_Kind,
@@ -3726,9 +3756,11 @@ others => Not_Implemented_Enclosing_Element_Construction'Access);
                then
                   Result_Node := Node_Field_2 (Element);
                   Result_Node := Parent (Parent (Result_Node));
-                  Result_Element := Node_To_Element_New
-                                      (Node    => Result_Node,
-                                       In_Unit => Encl_Unit (Element));
+                  Result_Element :=
+                    Node_To_Element_New
+                      (Node    => Result_Node,
+                       In_Unit => Enclosing_Unit
+                                   (Encl_Cont_Id (Element), Result_Node));
                else
                   Result_Element := Enclosing_Element_For_Explicit (Element);
                end if;
@@ -4353,7 +4385,11 @@ others => Not_Implemented_Enclosing_Element_Construction'Access);
           (N_Kind = N_Package_Declaration    or else
            N_Kind = N_Package_Body           or else
            N_Kind = N_Subprogram_Declaration or else
-           N_Kind = N_Subprogram_Body)
+           (N_Kind = N_Subprogram_Body
+           and then
+            Present (Corresponding_Spec (N))
+           and then
+            Ekind (Corresponding_Spec (N)) in Generic_Subprogram_Kind))
          and then
            Nkind (Original_Node (N)) not in  N_Renaming_Declaration)
        or else
@@ -4435,7 +4471,8 @@ others => Not_Implemented_Enclosing_Element_Construction'Access);
    ---------------------------------------
 
    procedure Skip_Normalized_Declarations_Back (Node : in out Node_Id) is
-      Arg_Kind : constant Node_Kind := Nkind (Node);
+      Arg_Kind    : constant Node_Kind := Nkind (Node);
+      Clause_Sloc : Source_Ptr;
    begin
       loop
          if Arg_Kind = N_Object_Declaration         or else
@@ -4444,7 +4481,8 @@ others => Not_Implemented_Enclosing_Element_Construction'Access);
             Arg_Kind = N_Component_Declaration      or else
             Arg_Kind = N_Parameter_Specification    or else
             Arg_Kind = N_Exception_Declaration      or else
-            Arg_Kind = N_Formal_Object_Declaration
+            Arg_Kind = N_Formal_Object_Declaration  or else
+            Arg_Kind = N_Use_Package_Clause
          then
 
             if Prev_Ids (Node) then
@@ -4469,6 +4507,22 @@ others => Not_Implemented_Enclosing_Element_Construction'Access);
                Node := Prev (Node);
             end if;
 
+         elsif Arg_Kind = N_Use_Type_Clause then
+            --  ??? N_Use_Type_Clause should be processed exactly in the same
+            --  way as N_Use_Package_Clause but for now More_Ids and Next_Id
+            --  are not definede for them ???
+            Clause_Sloc := Sloc (Node);
+
+            while Present (Prev (Node))
+                and then
+                  Nkind (Prev (Node)) = N_Use_Type_Clause
+                and then
+                  Sloc (Prev (Node)) = Clause_Sloc
+            loop
+               Node := Prev (Node);
+            end loop;
+
+            return;
          else
 
             return;

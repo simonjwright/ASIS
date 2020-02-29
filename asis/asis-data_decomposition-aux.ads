@@ -6,25 +6,23 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 1995-2012, Free Software Foundation, Inc.       --
+--            Copyright (C) 1995-2018, Free Software Foundation, Inc.       --
 --                                                                          --
 -- ASIS-for-GNAT is free software; you can redistribute it and/or modify it --
 -- under terms of the  GNU General Public License  as published by the Free --
--- Software Foundation;  either version 2,  or  (at your option)  any later --
--- version. ASIS-for-GNAT is distributed  in the hope  that it will be use- --
--- ful, but WITHOUT ANY WARRANTY; without even the implied warranty of MER- --
--- CHANTABILITY or  FITNESS FOR A  PARTICULAR PURPOSE.  See the GNU General --
--- Public License for more details.  You should have received a copy of the --
--- GNU  General  Public  License  distributed with  ASIS-for-GNAT; see file --
--- COPYING.  If not,  write  to the  Free Software Foundation,  51 Franklin --
--- Street, Fifth Floor, Boston, MA 02110-1301, USA.                         --
+-- Software  Foundation;  either version 3,  or (at your option)  any later --
+-- version.  ASIS-for-GNAT  is  distributed  in  the  hope  that it will be --
+-- useful,  but  WITHOUT ANY WARRANTY; without even the implied warranty of --
+-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                     --
 --                                                                          --
 --                                                                          --
 --                                                                          --
 --                                                                          --
 --                                                                          --
---                                                                          --
---                                                                          --
+-- You should have  received  a copy of the  GNU General Public License and --
+-- a copy of the  GCC Runtime Library Exception  distributed with GNAT; see --
+-- the files COPYING3 and COPYING.RUNTIME respectively.  If not, see        --
+-- <http://www.gnu.org/licenses/>.                                          --
 --                                                                          --
 -- ASIS-for-GNAT was originally developed  by the ASIS-for-GNAT team at the --
 -- Software  Engineering  Laboratory  of  the Swiss  Federal  Institute  of --
@@ -107,6 +105,23 @@ private package Asis.Data_Decomposition.Aux is
    --  known_discriminant_part of the parent type is returned in case if
    --  the declaration of this derived type does not have its own
    --  known_discriminant_part
+   --
+   --  Note that this function CANNOT be used in the implementation of the
+   --  Standard ASIS DDA Discriminant_Components queries because in case of
+   --  inherited discriminants we should get record components that corresponds
+   --  to implicit inherited discriminant specifications.
+
+   function Discriminant_Specs_From_Type_Definition
+     (T : Element)
+      return Element_List;
+   --  Provided that T is A_Type_Definition Element, returns the discriminant
+   --  specifications of the corresponding type. In case of a derived type,
+   --  if the type declaration has known_discriminant_part then the
+   --  discriminant specifications from this known_discriminant_part are
+   --  returned, otherwise implicit declarations of inherited discriminants are
+   --  returned (if any).
+   --
+   --  Returns Nil_Element_List if the type has no discriminant.
 
    function Is_Derived_From_Record (TD : Element) return Boolean;
    function Is_Derived_From_Array  (TD : Element) return Boolean;

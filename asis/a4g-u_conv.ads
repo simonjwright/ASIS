@@ -6,25 +6,23 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (c) 1995-2006, Free Software Foundation, Inc.       --
+--            Copyright (C) 1995-2017, Free Software Foundation, Inc.       --
 --                                                                          --
 -- ASIS-for-GNAT is free software; you can redistribute it and/or modify it --
 -- under terms of the  GNU General Public License  as published by the Free --
--- Software Foundation;  either version 2,  or  (at your option)  any later --
--- version. ASIS-for-GNAT is distributed  in the hope  that it will be use- --
--- ful, but WITHOUT ANY WARRANTY; without even the implied warranty of MER- --
--- CHANTABILITY or  FITNESS FOR A  PARTICULAR PURPOSE.  See the GNU General --
--- Public License for more details.  You should have received a copy of the --
--- GNU  General  Public  License  distributed with  ASIS-for-GNAT; see file --
--- COPYING.  If not,  write  to the  Free Software Foundation,  51 Franklin --
--- Street, Fifth Floor, Boston, MA 02110-1301, USA.                         --
+-- Software  Foundation;  either version 3,  or (at your option)  any later --
+-- version.  ASIS-for-GNAT  is  distributed  in  the  hope  that it will be --
+-- useful,  but  WITHOUT ANY WARRANTY; without even the implied warranty of --
+-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                     --
 --                                                                          --
 --                                                                          --
 --                                                                          --
 --                                                                          --
 --                                                                          --
---                                                                          --
---                                                                          --
+-- You should have  received  a copy of the  GNU General Public License and --
+-- a copy of the  GCC Runtime Library Exception  distributed with GNAT; see --
+-- the files COPYING3 and COPYING.RUNTIME respectively.  If not, see        --
+-- <http://www.gnu.org/licenses/>.                                          --
 --                                                                          --
 -- ASIS-for-GNAT was originally developed  by the ASIS-for-GNAT team at the --
 -- Software  Engineering  Laboratory  of  the Swiss  Federal  Institute  of --
@@ -32,7 +30,7 @@
 -- Scientific  Research  Computer  Center of  Moscow State University (SRCC --
 -- MSU), Russia,  with funding partially provided  by grants from the Swiss --
 -- National  Science  Foundation  and  the  Swiss  Academy  of  Engineering --
--- Sciences. ASIS-for-GNAT is now maintained by AdaCore                     --
+-- Sciences.  ASIS-for-GNAT is now maintained by  AdaCore                   --
 -- (http://www.adacore.com).                                                --
 --                                                                          --
 ------------------------------------------------------------------------------
@@ -43,9 +41,8 @@ package A4G.U_Conv is
 
 --  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 --  !!                                                                 !!
---  !!  This package should be completely revised (and very likely -   !!
---  !!  removed), when migration to using pre-created trees as to the  !!
---  !!  *ONLY* ASIS operation mode is completed                        !!
+--  !!  This package contains routines needed only for non-standard    !!
+--  !!  compile-on-the-fly ASIS mode                                   !!
 --  !!                                                                 !!
 --  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -107,8 +104,9 @@ package A4G.U_Conv is
    --  as Ada source file name into the name of the corresponding tree
    --  output file.
    --
-   --  This function requires revising if the effect of Source_File_Name
-   --  pragma is implemented!
+   --  Currently this function strip out all the directory information from
+   --  the tree namem because all the known cliens of the compile-on-the-fly
+   --  ASIS mode expects newly created trees in the current directory.
 
    function Is_Predefined_File_Name (S : String_Access) return Boolean;
    --  This function is the full analog of the GNAT function

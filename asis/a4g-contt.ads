@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 1995-2017, Free Software Foundation, Inc.       --
+--            Copyright (C) 1995-2019, Free Software Foundation, Inc.       --
 --                                                                          --
 -- ASIS-for-GNAT is free software; you can redistribute it and/or modify it --
 -- under terms of the  GNU General Public License  as published by the Free --
@@ -194,6 +194,7 @@ package A4G.Contt is
    function Source_Processing_Mode  (C : Context_Id) return Source_Mode;
    function Use_Default_Trees       (C : Context_Id) return Boolean;
    function Gcc_To_Call             (C : Context_Id) return String_Access;
+   function DDA_Mode                (C : Context_Id) return DDA_Modes;
 
    --------
 
@@ -203,11 +204,13 @@ package A4G.Contt is
    procedure Set_Context_Processing_Mode (C : Context_Id; M : Context_Mode);
    procedure Set_Tree_Processing_Mode    (C : Context_Id; M : Tree_Mode);
    procedure Set_Source_Processing_Mode  (C : Context_Id; M : Source_Mode);
+   procedure Set_DDA_Processing_Mode     (C : Context_Id; M : DDA_Modes);
    procedure Set_Use_Default_Trees       (C : Context_Id; B : Boolean);
 
    procedure Set_Default_Context_Processing_Mode (C : Context_Id);
    procedure Set_Default_Tree_Processing_Mode    (C : Context_Id);
    procedure Set_Default_Source_Processing_Mode  (C : Context_Id);
+   procedure Set_Default_DDA_Processing_Mode     (C : Context_Id);
    -------------------------------------------------
 
    -----------------
@@ -281,6 +284,8 @@ package A4G.Contt is
    procedure Backup_Current_Context;
    --  Saves tables for the currently accessed Context. Does nothing, if the
    --  currently accessed Context is Non_Associated.
+
+   function Get_Current_Context return Context_Id;
 
 private
 
@@ -488,6 +493,9 @@ private
       --  The search path for library (that is, object + ALI) files
       Tree_Path    : Directory_List_Ptr;
       --  The search path for the tree output files
+      Rep_Path     : Directory_List_Ptr;
+      --  The search path for files with representation infprmation generated
+      --  when compiling a source with -gnatR3 option
 
       Context_I_Options : Directory_List_Ptr;
       --  Source search path for GNAT or another tree builder, when it is
@@ -511,6 +519,9 @@ private
       Use_Default_Trees : Boolean      := False;
       --  If set On, the value of the GNAT environment variable
       --  ADA_OBJECTS_PATH is appended to Object_Path
+
+      DDA_Mode : DDA_Modes := Normal;
+      --  How DDA queries should be processed.
 
    end record;
 
@@ -541,6 +552,8 @@ private
    Current_Context : Context_Id := Non_Associated;
    --  This is the Context to which the currently accessed tree belongs.
    --  The Initialize procedure sets Current_Context equal to Non_Associated.
+
+   function Get_Current_Context return Context_Id is (Current_Context);
 
    First_New_Unit : Unit_Id;
    --  In the Incremental Context mode stores the first unit registered

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2007-2015, AdaCore                     --
+--                     Copyright (C) 2007-2019, AdaCore                     --
 --                                                                          --
 -- Asis Utility Library (ASIS UL) is free software; you can redistribute it --
 -- and/or  modify  it  under  terms  of  the  GNU General Public License as --
@@ -315,56 +315,45 @@ package body ASIS_UL.Utilities is
       return Result;
    end Is_Recursive_Component_Definition;
 
+   ---------------
+   -- Is_Tagged --
+   ---------------
+
+   function Is_Tagged (Dcl : Asis.Element) return Boolean is
+      Result : Boolean := False;
+   begin
+      case Declaration_Kind (Dcl) is
+         when A_Tagged_Incomplete_Type_Declaration |
+              A_Private_Extension_Declaration      =>
+            Result := True;
+         when A_Private_Type_Declaration =>
+            Result :=
+              Definition_Kind (Type_Declaration_View (Dcl)) =
+                A_Tagged_Private_Type_Definition;
+         when An_Ordinary_Type_Declaration =>
+            Result :=
+              Asis.Elements.Type_Kind (Type_Declaration_View (Dcl)) in
+                A_Derived_Record_Extension_Definition |
+                A_Tagged_Record_Type_Definition       |
+                An_Interface_Type_Definition;
+         when others =>
+            null;
+      end case;
+
+      return Result;
+   end Is_Tagged;
+
    -----------------
    -- Is_Volatile --
    -----------------
 
    function Is_Volatile (Def_Name : Asis.Element) return Boolean is
-      Object_Decl  : constant Asis.Element := Enclosing_Element (Def_Name);
-      Corr_Pragmas : constant Asis.Element_List :=
-        Corresponding_Pragmas (Object_Decl);
-      Tmp          : Asis.Element;
-
-      Result : Boolean := False;
+      E      : constant Entity_Id := R_Node (Def_Name);
+      Result :           Boolean   := False;
    begin
 
-      --  Note, that the implementation of this function depends on our
-      --  representation of the rule about volatile objects and address clauses
-      --  that has been formulated rather vaguely by the customer
-
-      --  Two possibilities here: either a pragma Volatile is applied to the
-      --  object, or - to its type
-
-      for J in Corr_Pragmas'Range loop
-
-         if Pragma_Kind (Corr_Pragmas (J)) = A_Volatile_Pragma then
-            Tmp := Pragma_Argument_Associations (Corr_Pragmas (J)) (1);
-            Tmp := Actual_Parameter (Tmp);
-
-            if Expression_Kind (Tmp) = An_Identifier then
-               Tmp := Corresponding_Name_Definition (Tmp);
-
-               if Is_Equal (Tmp, Def_Name) then
-                  Result := True;
-                  exit;
-               end if;
-
-            end if;
-         end if;
-
-      end loop;
-
-      if not Result then
-         --  We have to check the type of the object
-         Tmp := Object_Declaration_View (Object_Decl);
-
-         if Definition_Kind (Tmp) = A_Subtype_Indication then
-            Tmp := Asis.Definitions.Subtype_Mark (Tmp);
-
-            Result := Is_Volatile_Type (Tmp);
-
-         end if;
-
+      if Defining_Name_Kind (Def_Name) = A_Defining_Identifier then
+         Result := Treat_As_Volatile (E);
       end if;
 
       return Result;
@@ -1276,7 +1265,8 @@ package body ASIS_UL.Utilities is
       Tmp    : Asis.Element;
    begin
 
-      if Expression_Kind (Call) = A_Function_Call then
+      if Expression_Kind (Call) in A_Function_Call | An_Indexed_Component then
+         --  An_Indexed_Component can be Is_Generalized_Indexing only here!
          Result := Corresponding_Called_Function (Call);
       else
          Result := Corresponding_Called_Entity (Call);
@@ -1400,7 +1390,7 @@ package body ASIS_UL.Utilities is
          when A_Private_Type_Declaration |
               A_Private_Extension_Declaration =>
             Result :=
-              Get_Type_Structure (Corresponding_Type_Declaration (Result));
+              Get_Type_Structure (Corresponding_Type_Completion (Result));
 
          when A_Subtype_Declaration =>
             Result := Type_Declaration_View (Result);
@@ -1472,14 +1462,15 @@ package body ASIS_UL.Utilities is
       --  First, get rid of unexpected elements:
 
       case Declaration_Kind (Arg) is
-         when A_Procedure_Declaration         |
-              A_Function_Declaration          |
-              A_Procedure_Body_Declaration    |
-              A_Function_Body_Declaration     |
-              A_Generic_Procedure_Declaration |
-              A_Generic_Function_Declaration  |
-              A_Procedure_Instantiation       |
-              A_Function_Instantiation        =>
+         when A_Procedure_Declaration            |
+              A_Function_Declaration             |
+              A_Procedure_Body_Declaration       |
+              A_Function_Body_Declaration        |
+              An_Expression_Function_Declaration |
+              A_Generic_Procedure_Declaration    |
+              A_Generic_Function_Declaration     |
+              A_Procedure_Instantiation          |
+              A_Function_Instantiation           =>
             --  ???WHAT ABOUT SUBPROGRAM RENAMINGS???
 
             null; --  Just to continue...
@@ -1550,7 +1541,9 @@ package body ASIS_UL.Utilities is
       if not Result
         and then
          Declaration_Kind (Arg) in
-           A_Procedure_Body_Declaration .. A_Function_Body_Declaration
+           A_Procedure_Body_Declaration |
+           A_Function_Body_Declaration  |
+           An_Expression_Function_Declaration
       then
          Result := Has_Pragma_Inline (Corresponding_Declaration (Arg));
       end if;
@@ -1775,6 +1768,33 @@ package body ASIS_UL.Utilities is
       end case;
 
    end Interface_List;
+
+   -------------------------
+   -- Is_Access_Attribute --
+   -------------------------
+
+   function Is_Access_Attribute (Attr : Asis.Element) return Boolean is
+      Result : Boolean := False;
+   begin
+
+      case Attribute_Kind (Attr) is
+         when An_Access_Attribute           |
+              An_Unchecked_Access_Attribute =>
+            Result := True;
+
+         when An_Implementation_Defined_Attribute =>
+            if To_Lower (To_String (Name_Image
+                 (Attribute_Designator_Identifier (Attr)))) =
+               "unrestricted_access"
+            then
+               Result := True;
+            end if;
+         when others =>
+            null;
+      end case;
+
+      return Result;
+   end Is_Access_Attribute;
 
    -------------------------------------
    -- Is_Call_To_Attribute_Subprogram --
@@ -2219,6 +2239,17 @@ package body ASIS_UL.Utilities is
 
       return Result;
    end Is_Indefinite_Subtype;
+
+   ---------------------
+   -- Is_Modular_Type --
+   ---------------------
+
+   function Is_Modular_Type (Subtype_Ref : Asis.Element) return Boolean is
+      Ent : Entity_Id;
+   begin
+      Ent := Entity (R_Node (Subtype_Ref));
+      return Is_Modular_Integer_Type (Ent);
+   end Is_Modular_Type;
 
    ---------------------------------
    -- Is_Non_Structural_Statement --

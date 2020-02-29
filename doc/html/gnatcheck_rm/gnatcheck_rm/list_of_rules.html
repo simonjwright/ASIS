@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>10. List of Rules &mdash; GNATcheck Reference Manual 2017 documentation</title>
+    <title>11. List of Rules &mdash; GNATcheck Reference Manual 2019 documentation</title>
     
     <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '2017',
+        VERSION:     '2019',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,9 +24,9 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
-    <link rel="top" title="GNATcheck Reference Manual 2017 documentation" href="../gnatcheck_rm.html" />
+    <link rel="top" title="GNATcheck Reference Manual 2019 documentation" href="../gnatcheck_rm.html" />
     <link rel="next" title="GNU Free Documentation License" href="../share/gnu_free_documentation_license.html" />
-    <link rel="prev" title="9. Example of gnatcheck Usage" href="example_of_gnatcheck_usage.html" /> 
+    <link rel="prev" title="10. Example of gnatcheck Usage" href="example_of_gnatcheck_usage.html" /> 
   </head>
   <body role="document">
     <div class="related" role="navigation" aria-label="related navigation">
@@ -39,9 +39,9 @@
           <a href="../share/gnu_free_documentation_license.html" title="GNU Free Documentation License"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="example_of_gnatcheck_usage.html" title="9. Example of gnatcheck Usage"
+          <a href="example_of_gnatcheck_usage.html" title="10. Example of gnatcheck Usage"
              accesskey="P">previous</a> |</li>
-        <li><a href="../gnatcheck_rm.html">GNATcheck Reference Manual 2017 documentation</a> &raquo;</li> 
+        <li><a href="../gnatcheck_rm.html">GNATcheck Reference Manual 2019 documentation</a> &raquo;</li> 
       </ul>
     </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -51,7 +51,7 @@
             </a></p>
   <h4>Previous topic</h4>
   <p class="topless"><a href="example_of_gnatcheck_usage.html"
-                        title="previous chapter">9. Example of <em>gnatcheck</em> Usage</a></p>
+                        title="previous chapter">10. Example of <em>gnatcheck</em> Usage</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="../share/gnu_free_documentation_license.html"
                         title="next chapter">GNU Free Documentation License</a></p>
@@ -84,21 +84,27 @@
           <div class="body" role="main">
             
   <div class="section" id="list-of-rules">
-<span id="id1"></span><h1>10. List of Rules<a class="headerlink" href="#list-of-rules" title="Permalink to this headline">¶</a></h1>
+<span id="id1"></span><h1>11. List of Rules<a class="headerlink" href="#list-of-rules" title="Permalink to this headline">¶</a></h1>
 <p>This section contains an alphabetized list of all the predefined
 GNATcheck rules.</p>
 <ul class="simple">
+<li><a class="reference internal" href="predefined_rules.html#abort-statements"><em>Abort_Statements</em></a></li>
 <li><a class="reference internal" href="predefined_rules.html#abstract-type-declarations"><em>Abstract_Type_Declarations</em></a></li>
+<li><a class="reference internal" href="predefined_rules.html#address-specifications-for-initialized-objects"><em>Address_Specifications_For_Initialized_Objects</em></a></li>
+<li><a class="reference internal" href="predefined_rules.html#address-specifications-for-local-objects"><em>Address_Specifications_For_Local_Objects</em></a></li>
 <li><a class="reference internal" href="predefined_rules.html#anonymous-arrays"><em>Anonymous_Arrays</em></a></li>
 <li><a class="reference internal" href="predefined_rules.html#anonymous-subtypes"><em>Anonymous_Subtypes</em></a></li>
 <li><a class="reference internal" href="predefined_rules.html#binary-case-statements"><em>Binary_Case_Statements</em></a></li>
+<li><a class="reference internal" href="predefined_rules.html#bit-records-without-layout-definition"><em>Bit_Records_Without_Layout_Definition</em></a></li>
 <li><a class="reference internal" href="predefined_rules.html#blocks"><em>Blocks</em></a></li>
 <li><a class="reference internal" href="predefined_rules.html#boolean-relational-operators"><em>Boolean_Relational_Operators</em></a></li>
 <li><a class="reference internal" href="predefined_rules.html#complex-inlined-subprograms"><em>Complex_Inlined_Subprograms</em></a></li>
 <li><a class="reference internal" href="predefined_rules.html#conditional-expressions"><em>Conditional_Expressions</em></a></li>
+<li><a class="reference internal" href="predefined_rules.html#constructors"><em>Constructors</em></a></li>
 <li><a class="reference internal" href="predefined_rules.html#controlled-type-declarations"><em>Controlled_Type_Declarations</em></a></li>
 <li><a class="reference internal" href="predefined_rules.html#declarations-in-blocks"><em>Declarations_In_Blocks</em></a></li>
 <li><a class="reference internal" href="predefined_rules.html#deep-inheritance-hierarchies"><em>Deep_Inheritance_Hierarchies</em></a></li>
+<li><a class="reference internal" href="predefined_rules.html#deep-library-hierarchy"><em>Deep_Library_Hierarchy</em></a></li>
 <li><a class="reference internal" href="predefined_rules.html#deeply-nested-generics"><em>Deeply_Nested_Generics</em></a></li>
 <li><a class="reference internal" href="predefined_rules.html#deeply-nested-inlining"><em>Deeply_Nested_Inlining</em></a></li>
 <li><a class="reference internal" href="predefined_rules.html#default-parameters"><em>Default_Parameters</em></a></li>
@@ -106,6 +112,7 @@ GNATcheck rules.</p>
 <li><a class="reference internal" href="predefined_rules.html#deriving-from-predefined-type"><em>Deriving_From_Predefined_Type</em></a></li>
 <li><a class="reference internal" href="predefined_rules.html#direct-calls-to-primitives"><em>Direct_Calls_To_Primitives</em></a></li>
 <li><a class="reference internal" href="predefined_rules.html#discriminated-records"><em>Discriminated_Records</em></a></li>
+<li><a class="reference internal" href="predefined_rules.html#downward-view-conversions"><em>Downward_View_Conversions</em></a></li>
 <li><a class="reference internal" href="predefined_rules.html#enumeration-ranges-in-case-statements"><em>Enumeration_Ranges_In_CASE_Statements</em></a></li>
 <li><a class="reference internal" href="predefined_rules.html#enumeration-representation-clauses"><em>Enumeration_Representation_Clauses</em></a></li>
 <li><a class="reference internal" href="predefined_rules.html#exceptions-as-control-flow"><em>Exceptions_As_Control_Flow</em></a></li>
@@ -113,6 +120,7 @@ GNATcheck rules.</p>
 <li><a class="reference internal" href="predefined_rules.html#exit-statements-with-no-loop-name"><em>EXIT_Statements_With_No_Loop_Name</em></a></li>
 <li><a class="reference internal" href="predefined_rules.html#expanded-loop-exit-names"><em>Expanded_Loop_Exit_Names</em></a></li>
 <li><a class="reference internal" href="predefined_rules.html#explicit-full-discrete-ranges"><em>Explicit_Full_Discrete_Ranges</em></a></li>
+<li><a class="reference internal" href="predefined_rules.html#expression-functions"><em>Expression_Functions</em></a></li>
 <li><a class="reference internal" href="predefined_rules.html#fixed-equality-checks"><em>Fixed_Equality_Checks</em></a></li>
 <li><a class="reference internal" href="predefined_rules.html#float-equality-checks"><em>Float_Equality_Checks</em></a></li>
 <li><a class="reference internal" href="predefined_rules.html#forbidden-attributes"><em>Forbidden_Attributes</em></a></li>
@@ -124,29 +132,41 @@ GNATcheck rules.</p>
 <li><a class="reference internal" href="predefined_rules.html#implicit-small-for-fixed-point-types"><em>Implicit_SMALL_For_Fixed_Point_Types</em></a></li>
 <li><a class="reference internal" href="predefined_rules.html#improperly-located-instantiations"><em>Improperly_Located_Instantiations</em></a></li>
 <li><a class="reference internal" href="predefined_rules.html#improper-returns"><em>Improper_Returns</em></a></li>
+<li><a class="reference internal" href="predefined_rules.html#incomplete-representation-specifications"><em>Incomplete_Representation_Specifications</em></a></li>
 <li><a class="reference internal" href="predefined_rules.html#maximum-parameters"><em>Maximum_Parameters</em></a></li>
 <li><a class="reference internal" href="predefined_rules.html#library-level-subprograms"><em>Library_Level_Subprograms</em></a></li>
 <li><a class="reference internal" href="predefined_rules.html#local-packages"><em>Local_Packages</em></a></li>
+<li><a class="reference internal" href="predefined_rules.html#local-use-clauses"><em>Local_USE_Clauses</em></a></li>
 <li><a class="reference internal" href="predefined_rules.html#metrics-cyclomatic-complexity"><em>Metrics_Cyclomatic_Complexity</em></a></li>
 <li><a class="reference internal" href="predefined_rules.html#metrics-essential-complexity"><em>Metrics_Essential_Complexity</em></a></li>
 <li><a class="reference internal" href="predefined_rules.html#metrics-lsloc"><em>Metrics_LSLOC</em></a></li>
 <li><a class="reference internal" href="predefined_rules.html#misnamed-controlling-parameters"><em>Misnamed_Controlling_Parameters</em></a></li>
 <li><a class="reference internal" href="predefined_rules.html#identifier-suffixes"><em>Identifier_Suffixes</em></a></li>
+<li><a class="reference internal" href="predefined_rules.html#max-identifier-length"><em>Max_Identifier_Length</em></a></li>
 <li><a class="reference internal" href="predefined_rules.html#membership-tests"><em>Membership_Tests</em></a></li>
+<li><a class="reference internal" href="predefined_rules.html#misplaced-representation-items"><em>Misplaced_Representation_Items</em></a></li>
 <li><a class="reference internal" href="predefined_rules.html#multiple-entries-in-protected-definitions"><em>Multiple_Entries_In_Protected_Definitions</em></a></li>
 <li><a class="reference internal" href="predefined_rules.html#name-clashes"><em>Name_Clashes</em></a></li>
 <li><a class="reference internal" href="predefined_rules.html#nested-subprograms"><em>Nested_Subprograms</em></a></li>
+<li><a class="reference internal" href="predefined_rules.html#no-explicit-real-range"><em>No_Explicit_Real_Range</em></a></li>
+<li><a class="reference internal" href="predefined_rules.html#no-inherited-classwide-pre"><em>No_Inherited_Classwide_Pre</em></a></li>
+<li><a class="reference internal" href="predefined_rules.html#no-scalar-storage-order-specified"><em>No_Scalar_Storage_Order_Specified</em></a></li>
 <li><a class="reference internal" href="predefined_rules.html#non-qualified-aggregates"><em>Non_Qualified_Aggregates</em></a></li>
 <li><a class="reference internal" href="predefined_rules.html#non-short-circuit-operators"><em>Non_Short_Circuit_Operators</em></a></li>
 <li><a class="reference internal" href="predefined_rules.html#non-spark-attributes"><em>Non_SPARK_Attributes</em></a></li>
 <li><a class="reference internal" href="predefined_rules.html#non-tagged-derived-types"><em>Non_Tagged_Derived_Types</em></a></li>
 <li><a class="reference internal" href="predefined_rules.html#non-visible-exceptions"><em>Non_Visible_Exceptions</em></a></li>
+<li><a class="reference internal" href="predefined_rules.html#number-declarations"><em>Number_Declarations</em></a></li>
 <li><a class="reference internal" href="predefined_rules.html#null-paths"><em>Null_Paths</em></a></li>
+<li><a class="reference internal" href="predefined_rules.html#numeric-indexing"><em>Numeric_Indexing</em></a></li>
 <li><a class="reference internal" href="predefined_rules.html#numeric-literals"><em>Numeric_Literals</em></a></li>
+<li><a class="reference internal" href="predefined_rules.html#object-declarations-out-of-order"><em>Object_Declarations_Out_Of_Order</em></a></li>
 <li><a class="reference internal" href="predefined_rules.html#objects-of-anonymous-types"><em>Objects_Of_Anonymous_Types</em></a></li>
+<li><a class="reference internal" href="predefined_rules.html#one-construct-per-line"><em>One_Construct_Per_Line</em></a></li>
 <li><a class="reference internal" href="predefined_rules.html#others-in-aggregates"><em>OTHERS_In_Aggregates</em></a></li>
 <li><a class="reference internal" href="predefined_rules.html#others-in-case-statements"><em>OTHERS_In_CASE_Statements</em></a></li>
 <li><a class="reference internal" href="predefined_rules.html#others-in-exception-handlers"><em>OTHERS_In_Exception_Handlers</em></a></li>
+<li><a class="reference internal" href="predefined_rules.html#outbound-protected-assignments"><em>Outbound_Protected_Assignments</em></a></li>
 <li><a class="reference internal" href="predefined_rules.html#outer-loop-exits"><em>Outer_Loop_Exits</em></a></li>
 <li><a class="reference internal" href="predefined_rules.html#overloaded-operators"><em>Overloaded_Operators</em></a></li>
 <li><a class="reference internal" href="predefined_rules.html#overly-nested-control-structures"><em>Overly_Nested_Control_Structures</em></a></li>
@@ -159,11 +179,21 @@ GNATcheck rules.</p>
 <li><a class="reference internal" href="predefined_rules.html#positional-parameters"><em>Positional_Parameters</em></a></li>
 <li><a class="reference internal" href="predefined_rules.html#predicate-testing"><em>Predicate_Testing</em></a></li>
 <li><a class="reference internal" href="predefined_rules.html#predefined-numeric-types"><em>Predefined_Numeric_Types</em></a></li>
+<li><a class="reference internal" href="predefined_rules.html#printable-ascii"><em>Printable_ASCII</em></a></li>
+<li><a class="reference internal" href="predefined_rules.html#relative-delay-statements"><em>Relative_Delay_Statements</em></a></li>
+<li><a class="reference internal" href="predefined_rules.html#representation-specifications"><em>Representation_Specifications</em></a></li>
 <li><a class="reference internal" href="predefined_rules.html#quantified-expressions"><em>Quantified_Expressions</em></a></li>
 <li><a class="reference internal" href="predefined_rules.html#raising-external-exceptions"><em>Raising_External_Exceptions</em></a></li>
 <li><a class="reference internal" href="predefined_rules.html#raising-predefined-exceptions"><em>Raising_Predefined_Exceptions</em></a></li>
 <li><a class="reference internal" href="predefined_rules.html#separate-numeric-error-handlers"><em>Separate_Numeric_Error_Handlers</em></a></li>
+<li><a class="reference internal" href="predefined_rules.html#single-value-enumeration-types"><em>Single_Value_Enumeration_Types</em></a></li>
 <li><a class="reference internal" href="predefined_rules.html#slices"><em>Slices</em></a></li>
+<li><a class="reference internal" href="predefined_rules.html#specific-parent-type-invariant"><em>Specific_Parent_Type_Invariant</em></a></li>
+<li><a class="reference internal" href="predefined_rules.html#specific-pre-post"><em>Specific_Pre_Post</em></a></li>
+<li><a class="reference internal" href="predefined_rules.html#specific-type-invariants"><em>Specific_Type_Invariants</em></a></li>
+<li><a class="reference internal" href="predefined_rules.html#subprogram-access"><em>Subprogram_Access</em></a></li>
+<li><a class="reference internal" href="predefined_rules.html#too-many-dependencies"><em>Too_Many_Dependencies</em></a></li>
+<li><a class="reference internal" href="predefined_rules.html#too-many-primitives"><em>Too_Many_Primitives</em></a></li>
 <li><a class="reference internal" href="predefined_rules.html#too-many-parents"><em>Too_Many_Parents</em></a></li>
 <li><a class="reference internal" href="predefined_rules.html#unassigned-out-parameters"><em>Unassigned_OUT_Parameters</em></a></li>
 <li><a class="reference internal" href="predefined_rules.html#uncommented-begin-in-package-bodies"><em>Uncommented_BEGIN_In_Package_Bodies</em></a></li>
@@ -172,6 +202,7 @@ GNATcheck rules.</p>
 <li><a class="reference internal" href="predefined_rules.html#unchecked-conversions-as-actuals"><em>Unchecked_Conversions_As_Actuals</em></a></li>
 <li><a class="reference internal" href="predefined_rules.html#unconditional-exits"><em>Unconditional_Exits</em></a></li>
 <li><a class="reference internal" href="predefined_rules.html#unconstrained-array-returns"><em>Unconstrained_Array_Returns</em></a></li>
+<li><a class="reference internal" href="predefined_rules.html#unconstrained-arrays"><em>Unconstrained_Arrays</em></a></li>
 <li><a class="reference internal" href="predefined_rules.html#uninitialized-global-variables"><em>Uninitialized_Global_Variables</em></a></li>
 <li><a class="reference internal" href="predefined_rules.html#universal-ranges"><em>Universal_Ranges</em></a></li>
 <li><a class="reference internal" href="predefined_rules.html#unnamed-blocks-and-loops"><em>Unnamed_Blocks_And_Loops</em></a></li>
@@ -197,13 +228,13 @@ GNATcheck rules.</p>
           <a href="../share/gnu_free_documentation_license.html" title="GNU Free Documentation License"
              >next</a> |</li>
         <li class="right" >
-          <a href="example_of_gnatcheck_usage.html" title="9. Example of gnatcheck Usage"
+          <a href="example_of_gnatcheck_usage.html" title="10. Example of gnatcheck Usage"
              >previous</a> |</li>
-        <li><a href="../gnatcheck_rm.html">GNATcheck Reference Manual 2017 documentation</a> &raquo;</li> 
+        <li><a href="../gnatcheck_rm.html">GNATcheck Reference Manual 2019 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2008-2017, AdaCore.
+        &copy; Copyright 2008-2019, AdaCore.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3b2.
     </div>
   </body>

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 1995-2017, Free Software Foundation, Inc.       --
+--            Copyright (C) 1995-2019, Free Software Foundation, Inc.       --
 --                                                                          --
 -- ASIS-for-GNAT is free software; you can redistribute it and/or modify it --
 -- under terms of the  GNU General Public License  as published by the Free --
@@ -122,10 +122,12 @@ package body A4G.Contt is
    Source_Dirs : Dir_List;
    Object_Dirs : Dir_List;
    Tree_Dirs   : Dir_List;
+   Rep_Dirs    : Dir_List;
 
    Source_Dirs_Count : Natural := 0;
    Object_Dirs_Count : Natural := 0;
    Tree_Dirs_Count   : Natural := 0;
+   Rep_Dirs_Count    : Natural := 0;
 
    procedure Append_Dir (Dirs : in out Dir_List; Dir : Link);
    --  appends a new element with the directory name to a directory list
@@ -212,6 +214,7 @@ package body A4G.Contt is
       Free_Argument_List (Contexts.Table (C).Source_Path);
       Free_Argument_List (Contexts.Table (C).Object_Path);
       Free_Argument_List (Contexts.Table (C).Tree_Path);
+      Free_Argument_List (Contexts.Table (C).Rep_Path);
       --  Context "-I" options for the compiler
       Free_Argument_List (Contexts.Table (C).Context_I_Options);
       --  a list of tree files for C1/CN modes (if any)
@@ -581,6 +584,8 @@ package body A4G.Contt is
             Search_Path := Contexts.Table (C).Object_Path;
          when Tree   =>
             Search_Path := Contexts.Table (C).Tree_Path;
+         when Rep =>
+            Search_Path := Contexts.Table (C).Rep_Path;
       end case;
 
       if Search_Path = null then
@@ -602,9 +607,14 @@ package body A4G.Contt is
          if Is_Regular_File
               (Curr_Dir.all & Directory_Separator & File_Name)
          then
-            return new String'
-                         (Curr_Dir.all & Directory_Separator &
-                          File_Name & ASCII.NUL);
+            if Dir_Kind = Rep then
+               return new String'
+                            (Curr_Dir.all & Directory_Separator & File_Name);
+            else
+               return new String'
+                            (Curr_Dir.all & Directory_Separator &
+                             File_Name & ASCII.NUL);
+            end if;
          end if;
 
       end loop;
@@ -748,6 +758,9 @@ package body A4G.Contt is
          end if;
 
          Write_Eol;
+         Write_Str ("Context DDA mode: " & Contexts.Table (C).DDA_Mode'Img);
+         Write_Eol;
+         Write_Eol;
 
          Write_Str ("Context Search Dirs:");
          Write_Eol;
@@ -785,6 +798,10 @@ package body A4G.Contt is
          Write_Eol;
          Print_Context_Search_Dirs (C, Tree);
          Write_Eol;
+         Write_Str ("Rep Dirs");
+         Write_Eol;
+         Print_Context_Search_Dirs (C, Rep);
+         Write_Eol;
          Write_Eol;
       else
          Write_Str ("The Context is dissociated");
@@ -812,6 +829,8 @@ package body A4G.Contt is
             Path := Contexts.Table (C).Object_Path;
          when Tree   =>
             Path := Contexts.Table (C).Tree_Path;
+         when Rep =>
+            Path := Contexts.Table (C).Rep_Path;
       end case;
 
       if Path = null then
@@ -844,6 +863,7 @@ package body A4G.Contt is
       F_Set           : Boolean := False;
       S_Set           : Boolean := False;
       GCC_Set         : Boolean := False;
+      DDA_Set         : Boolean := False;
       Target          : String_Access;
       Tree_Builder    : String_Access;
 
@@ -895,6 +915,11 @@ package body A4G.Contt is
          if not S_Set then
             Set_Default_Source_Processing_Mode (Cont);
             S_Set := True;
+         end if;
+
+         if not DDA_Set then
+            Set_Default_DDA_Processing_Mode (Cont);
+            DDA_Set := True;
          end if;
 
          --  Special processing for GNSA mode:
@@ -1033,9 +1058,9 @@ package body A4G.Contt is
                --
                --     |
                --   bin - here all the GNAT executables are located including
-               --    |    [<traget>-]gcc
-               --    |
-               --   asis-gnsa
+               --     |    [<target>-]gcc
+               --     |
+               --   libexec/asis-gnsa
                Idx := Index (Tree_Builder.all,
                              (1 => Directory_Separator),
                              Backward);
@@ -1043,9 +1068,9 @@ package body A4G.Contt is
                Contexts.Table (Cont).GCC :=
                  new String'(Tree_Builder (Tree_Builder'First .. Idx - 4)     &
                              A4G.GNSA_Switch.GNSA_Dir                         &
-                               Directory_Separator & "bin"                    &
-                               Directory_Separator &
-                             "gcc" & Get_Executable_Suffix.all);
+                             Directory_Separator & "bin"                      &
+                             Directory_Separator & "gcc"                      &
+                             Get_Executable_Suffix.all);
                Free (Tree_Builder);
             else
                Contexts.Table (Cont).GCC := Tree_Builder;
@@ -1254,6 +1279,9 @@ package body A4G.Contt is
             elsif Switch_Char = 'T' then
                Process_Dir (Parameter (3 .. Par_Len), Tree);
 
+            elsif Switch_Char = 'R' then
+               Process_Dir (Parameter (3 .. Par_Len), Rep);
+
             elsif Switch_Char = 'g' and then
                   Par_Len >= 8      and then
                   Parameter (1 .. 7) = "-gnatec"
@@ -1262,6 +1290,10 @@ package body A4G.Contt is
 
             elsif Parameter = "-AOP" then
                Set_Use_Default_Trees (Cont, True);
+
+            elsif Parameter = "-gnatR" then
+               Set_DDA_Processing_Mode (Cont, gnatR);
+               DDA_Set := True;
 
             elsif Switch_Char = '-' then
                if Parameter (1 .. 6) = "--GCC=" then
@@ -1490,7 +1522,8 @@ package body A4G.Contt is
       end if;
 
       New_Dir          := new Dir_Rec;
-      New_Dir.Dir_Name := new String'(Dir_Name (First .. Last));
+      New_Dir.Dir_Name :=
+        new String'(Normalize_Pathname (Dir_Name (First .. Last)));
 
       case Dir_Kind is
          when Source =>
@@ -1502,6 +1535,9 @@ package body A4G.Contt is
          when Tree   =>
             Tree_Dirs_Count   := Tree_Dirs_Count   + 1;
             Append_Dir (Tree_Dirs, New_Dir);
+         when Rep =>
+            Rep_Dirs_Count    := Rep_Dirs_Count   + 1;
+            Append_Dir (Rep_Dirs, New_Dir);
       end case;
    end Process_Dir;
 
@@ -1575,6 +1611,7 @@ package body A4G.Contt is
       Contexts.Table (C).Source_Path        := null;
       Contexts.Table (C).Object_Path        := null;
       Contexts.Table (C).Tree_Path          := null;
+      Contexts.Table (C).Rep_Path           := null;
       Contexts.Table (C).Context_I_Options  := null;
       Contexts.Table (C).Extra_Options      := No_Args'Access;
       Contexts.Table (C).Context_Tree_Files := null;
@@ -1728,6 +1765,8 @@ package body A4G.Contt is
         (Contexts.Table (C).Object_Path, Object_Dirs, Object_Dirs_Count);
       Set_Path
         (Contexts.Table (C).Tree_Path,   Tree_Dirs,   Tree_Dirs_Count);
+      Set_Path
+        (Contexts.Table (C).Rep_Path,    Rep_Dirs,    Rep_Dirs_Count);
 
       --  And the last thing to do is to set for a given Context its
       --  Context_I_Options field:
@@ -1834,6 +1873,10 @@ package body A4G.Contt is
       return Contexts.Table (C).GCC;
    end Gcc_To_Call;
 
+   function DDA_Mode                (C : Context_Id) return DDA_Modes is
+   begin
+      return Contexts.Table (C).DDA_Mode;
+   end DDA_Mode;
    --------
 
    procedure Set_Is_Associated (C : Context_Id; Ass : Boolean) is
@@ -1866,6 +1909,12 @@ package body A4G.Contt is
       Contexts.Table (C).Source_Processing := M;
    end Set_Source_Processing_Mode;
 
+   procedure Set_DDA_Processing_Mode     (C : Context_Id; M : DDA_Modes) is
+   begin
+      pragma Assert (C in Contexts.First .. Contexts.Last);
+      Contexts.Table (C).DDA_Mode := M;
+   end Set_DDA_Processing_Mode;
+
    procedure Set_Use_Default_Trees       (C : Context_Id; B : Boolean) is
    begin
       pragma Assert (C in Contexts.First .. Contexts.Last);
@@ -1889,6 +1938,12 @@ package body A4G.Contt is
       pragma Assert (C in Contexts.First .. Contexts.Last);
       Contexts.Table (C).Source_Processing := All_Sources;
    end Set_Default_Source_Processing_Mode;
+
+   procedure Set_Default_DDA_Processing_Mode (C : Context_Id) is
+   begin
+      pragma Assert (C in Contexts.First .. Contexts.Last);
+      Contexts.Table (C).DDA_Mode := Normal;
+   end Set_Default_DDA_Processing_Mode;
 
 -----------------
 --  NEW STUFF  --

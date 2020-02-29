@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2004-2016, AdaCore                     --
+--                     Copyright (C) 2004-2018, AdaCore                     --
 --                                                                          --
 -- Asis Utility Library (ASIS UL) is free software; you can redistribute it --
 -- and/or  modify  it  under  terms  of  the  GNU General Public License as --
@@ -89,6 +89,22 @@ package ASIS_UL.Options is
    --  driver. The details of the test mode are tool-specific and should be
    --  set in the tool.
    --  '--test'
+
+   Exempted_Units : GNAT.OS_Lib.String_Access := null;
+   --  '--ignore=<filename>
+   --  File containing a list of units to be exempted. (Depending on a tool,
+   --  such units either are not processed or the tool does not generate
+   --  results for them).
+
+   Aggregated_Project : Boolean := False;
+   --  '-A <project_file>
+   --  True if this is a tool call spawned from an original tool call with
+   --  aggregated project as a parameter. In this mode the tool processes only
+   --  one (non-aggregate) project from the projects being aggregated.
+
+   In_Aggregate_Project : Boolean := False;
+   --  True if the tool is called for an aggregate project that aggregates more
+   --  than one (non-aggregate) project/
 
    Incremental_Mode : Boolean := False;
    --  True if --incremental was given on the command line. In this mode, the
@@ -209,7 +225,7 @@ package ASIS_UL.Options is
 
    Generate_Global_Structure_Warnings : Boolean := False;
    --  Generate warning messages in case if a problem that prevents the
-   --  complete analyzis of the program global structure is detected
+   --  complete analysis of the program global structure is detected
 
    Buld_Call_Graph : Boolean := False;
    --  Flag indicating if we have to collect the call graph information.
@@ -233,5 +249,12 @@ package ASIS_UL.Options is
    --  If this flag is ON, the call graph represents the dispatching calls.
    --  This flag should be removed after completing the implementation of
    --  dispatching calls representation in the call graph.
+
+   Skip_Dispatching_Calls : Boolean := False;
+   --  If this flag is ON, and Represent_Dispatching_Calls is also ON,
+   --  dispatching calls are stored separately and a tool may deside if it
+   --  needs transitive closure with or without dispatching calls. Originally
+   --  this flag has been introduced for Skip_Dispatching_Calls parameter of
+   --  the gnatcheck Recursive_Subprograms rule.
 
 end ASIS_UL.Options;

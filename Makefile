@@ -76,7 +76,7 @@ setup-factory:
 # ==================================================== install
 
 .PHONY: install-clean
-install-clean:
+install-clean-legacy:
 ifneq (,$(wildcard $(prefix)/lib/gnat/manifests/asislib))
 	-$(GPRINSTALL) --uninstall --prefix=$(prefix) \
 		--project-subdir=lib/gnat asislib
@@ -86,25 +86,38 @@ ifneq (,$(wildcard $(prefix)/lib/gnat/manifests/build_asis))
 		--project-subdir=lib/gnat build_asis
 endif
 
+install-clean: install-clean-legacy
+ifneq (,$(wildcard $(prefix)/share/gpr/manifests/asislib))
+	-$(GPRINSTALL) --uninstall --prefix=$(prefix) asislib
+endif
+ifneq (,$(wildcard $(prefix)/share/gpr/manifests/build_asis))
+	-$(GPRINSTALL) --uninstall --prefix=$(prefix) build_asis
+endif
+
+GPRINST_OPTS=-p -f --prefix=$(prefix) --sources-subdir=include/asis \
+	--lib-subdir=lib/asis -XBLD=$(BLD) -XOPSYS=$(OPSYS) \
+	--build-var=LIBRARY_TYPE --build-var=ASIS_BUILD --build-name=static
+
 .PHONY: install
 install: install-clean
-	$(GPRINSTALL) -p -f --prefix=$(prefix) --sources-subdir=include/asis \
-		--lib-subdir=lib/asis --project-subdir=lib/gnat -XBLD=$(BLD) \
-		-XOPSYS=$(OPSYS) -XASIS_COMPONENTS=lib build_asis.gpr
+	$(GPRINSTALL) $(GPRINST_OPTS) -XASIS_COMPONENTS=lib build_asis.gpr
 
 .PHONY: install-tools-clean
-install-tools-clean:
+install-tools-clean-legacy:
 ifneq (,$(wildcard $(prefix)/lib/gnat/manifests/asistools))
 	-$(GPRINSTALL) --uninstall --prefix=$(prefix) \
 		--project-subdir=lib/gnat asistools
 endif
 
+install-tools-clean:
+ifneq (,$(wildcard $(prefix)/share/gpr/manifests/asistools))
+	-$(GPRINSTALL) --uninstall --prefix=$(prefix) asistools
+endif
+
 .PHONY: install-tools
 install-tools: install-tools-clean
-	$(GPRINSTALL) -p -f --prefix=$(prefix) --sources-subdir=include/asis \
-		--lib-subdir=lib/asis --project-subdir=lib/gnat -XBLD=$(BLD) \
-		--install-name=asistools \
-		-XOPSYS=$(OPSYS) -XASIS_COMPONENTS=tools build_asis.gpr
+	$(GPRINSTALL) $(GPRINST_OPTS) --no-project \
+		--install-name=asistools -XASIS_COMPONENTS=tools build_asis.gpr
 
 # ==================================================== test
 

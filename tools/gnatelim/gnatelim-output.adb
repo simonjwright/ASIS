@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1998-2014, AdaCore                     --
+--                     Copyright (C) 1998-2018, AdaCore                     --
 --                                                                          --
 -- GNATELIM  is  free software;  you can  redistribute it and/or  modify it --
 -- under the terms of the  GNU  General Public License  as published by the --
@@ -69,6 +69,8 @@ package body Gnatelim.Output is
       Info (" -Pproject     - Use project file project. Only one such switch can be used.");
       Info (" -Xname=value  - specify an external reference for argument project file");
       Info (" -eL           - follow all symbolic links when processing project files");
+      Info (" -U            - process all sources of argument project instead of processing");
+      Info ("                 the closure of main (does not require the main to be built)");
       Info ("");
       Info (" -files=filemane    - name of text file containing a list of Ada units");
       Info ("                      to analyse");
@@ -82,7 +84,7 @@ package body Gnatelim.Output is
       Info (" -q                 - quiet mode");
       Info (" -v                 - verbose mode");
       Info (" -t                 - output execution time");
-      Info (" -wq                - quet warning mode - some warnings are suppressed");
+      Info (" -wq                - quiet warning mode - some warnings are suppressed");
       Info (" -o=filename        - send output to filename");
 
       Info ("");
@@ -152,7 +154,7 @@ package body Gnatelim.Output is
          if not (Present (Enclosing_Source (J))
                and then
                  Source_Info (Enclosing_Source (J)) =
-                   Gnatelim.Options.Ignore_Unit)
+                   ASIS_UL.Source_Table.Ignore_Unit)
            and then
             Is_Subprogram_Node (J)
            and then
@@ -194,7 +196,7 @@ package body Gnatelim.Output is
    begin
       Main_Loop : loop
          Last_Idx := Index (SLOC_Str (First_Idx .. SLOC_Str_Last), ":");
-         --  Fitst colon, indicates the line
+         --  First colon, indicates the line
 
          if Last_Idx = 0 then
             --  No colon any more, but we need to add closing ']' for SLOCs in

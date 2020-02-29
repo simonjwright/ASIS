@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                    Copyright (C) 2001-2016, AdaCore                      --
+--                    Copyright (C) 2001-2017, AdaCore                      --
 --                                                                          --
 -- GNATPP  is free software; you can redistribute it and/or modify it under --
 -- terms  of  the  GNU  General  Public  License  as  published by the Free --
@@ -213,6 +213,7 @@ package body GNATPP.Output is
       Info ("            Wildcards are allowed");
       Info (" -files=filename - the name of a text file containing a list");
       Info ("                   of Ada source files to reformat");
+      Info (" --ignore=filename - do not process sources listed in filename");
       Info (" --eol=text_format - sets the format of the gnatpp output " &
         "file(s),");
       Info ("                    can not be used together with -pipe option");

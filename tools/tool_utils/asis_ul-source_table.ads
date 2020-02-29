@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2004-2017, AdaCore                     --
+--                     Copyright (C) 2004-2018, AdaCore                     --
 --                                                                          --
 -- Asis Utility Library (ASIS UL) is free software; you can redistribute it --
 -- and/or  modify  it  under  terms  of  the  GNU General Public License as --
@@ -29,10 +29,13 @@ pragma Ada_2012;
 --  information about the source files to be processed and the state of their
 --  processing. Used by Several_Files_Driver.
 
+with Ada.Containers.Indefinite_Ordered_Sets;
+
 with GNAT.OS_Lib; use GNAT.OS_Lib;
 
 with Asis;
 
+with ASIS_UL.Misc;
 with ASIS_UL.Projects; use ASIS_UL.Projects;
 
 package ASIS_UL.Source_Table is
@@ -84,8 +87,13 @@ package ASIS_UL.Source_Table is
       --  The compilation that creates the tree for the source has been started
       --  but not sure to be finished
 
-      Tree_Is_Ready);
+      Tree_Is_Ready,
       --  The tree for the source has been successfully created.
+
+      Waiting_For_Closure
+      --  The source is waiting for the decision if it should be added to the
+      --  closure being computed
+      );
 
    type SF_Info is new Integer;
    --  The type to be used for the integer values associate with each source in
@@ -129,7 +137,8 @@ package ASIS_UL.Source_Table is
    procedure Add_Source_To_Process
      (Fname              : String;
       Arg_Project        : Arg_Project_Type'Class;
-      Duplication_Report : Boolean := True);
+      Duplication_Report : Boolean   := True;
+      Status             : SF_Status := Waiting);
    --  Fname is treated as the name of the file to process by the tool. We try
    --  to add this file to the table of files to process. The following checks
    --  are performed:
@@ -205,7 +214,8 @@ package ASIS_UL.Source_Table is
 
    procedure Read_Args_From_Temp_Storage
      (Duplication_Report : Boolean;
-      Arg_Project        : Arg_Project_Type'Class);
+      Arg_Project        : Arg_Project_Type'Class;
+      Status             : SF_Status := Waiting);
    --  Reads argument files from temporary storage (where they are placed by
    --  Store_Sources_To_Process/Store_Args_From_File routine(s)). Uses
    --  Add_Source_To_Process to read each file, so the check if a file exists
@@ -289,6 +299,15 @@ package ASIS_UL.Source_Table is
    function Last_Source return SF_Id;
    --  Returns the Id of the last source stored in the source table. Returns
    --  No_SF_Id if there is no source file stored
+
+   function Total_Sources_To_Process return Natural;
+   --  Returns the number of the arument sources to be processed. This may be
+   --  different from Last_Source if '--ignore=...' option specifies the list
+   --  of files to be ignored.
+
+   function Exempted_Sources return Natural;
+   --  Returns the number of (existing) sources marked as ignored/exempted as
+   --  the result of '--ignore=...' option.
 
    function Last_Argument_Source return SF_Id;
    --  Returns the Id of the last argument source stored in the source table.
@@ -383,6 +402,22 @@ package ASIS_UL.Source_Table is
    --  information or you can use this value as an index value in some other
    --  structure.
 
+   Ignore_Unit : constant ASIS_UL.Source_Table.SF_Info := 1;
+   --  Used to mark units to be ignored in the source table. The exact meaning
+   --  of "to be ignored" depends on a tool.
+
+   procedure Set_Exemption (Fname : String);
+   --  Marks the argument file in the source table as exempted (depending on
+   --  the tool, either the file is not processed or no result is generated
+   --  for the tool). Generates a warning if Fname does not point to argument
+   --  file).
+
+   procedure Process_Exemptions is new
+     ASIS_UL.Misc.Parse_File_List (Set_Exemption);
+   --  Reads the content of the text file that contains a list of the units to
+   --  be exempts/ignored and marks the corresponding units in the source
+   --  table.
+
    function Compilation_Switches (SF : SF_Id) return String_List;
    --  Returns the list of switches to be used for this particular file to
    --  call the compiler to create the tree.
@@ -413,6 +448,29 @@ package ASIS_UL.Source_Table is
    --  if the corresponding debug flag is ON (or if ASIS_UL.Options.Debug_Mode
    --  is ON, but we have to get rid of this flag), otherwise does nothing.
 
+   -----------------------------
+   --  Temporary file storage --
+   -----------------------------
+
+   --  We use an ordered set for temporary file storage to ensure as much
+   --  determinism in the tool output as possible (in case if a tool prints out
+   --  the results and/or diagnoses on per-file basis).
+
+   function File_Name_Is_Less_Than (L, R : String) return Boolean;
+   --  Assuming that L and R are file names compares them as follows:
+   --
+   --  * if L and/or R contains a directory separator, compares
+   --    lexicographicaly parts that follow the rightmost directory separator.
+   --    If these parts are equal, compares L and R lexicographicaly
+   --
+   --  * otherwise compares L and R lexicographicaly
+   --
+   --  Comparisons are case-sensitive.
+
+   package Temporary_File_Storages is new
+     Ada.Containers.Indefinite_Ordered_Sets
+       (Element_Type => String,
+        "<"          => File_Name_Is_Less_Than);
    ----------------------
    -- Problem counters --
    ----------------------

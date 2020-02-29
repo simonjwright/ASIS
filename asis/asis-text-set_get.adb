@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 1995-2014, Free Software Foundation, Inc.       --
+--            Copyright (C) 1995-2019, Free Software Foundation, Inc.       --
 --                                                                          --
 -- ASIS-for-GNAT is free software; you can redistribute it and/or modify it --
 -- under terms of the  GNU General Public License  as published by the Free --
@@ -177,7 +177,6 @@ package body Asis.Text.Set_Get is
       --  not to compute this in the loop:
       El_Encl_Unit : constant Unit_Id      := Encl_Unit_Id (El);
       El_Encl_Cont : constant Context_Id   := Encl_Cont_Id (El);
-      El_Encl_Tree : constant Tree_Id      := Encl_Tree    (El);
       El_Obtained  : constant ASIS_OS_Time := Obtained     (El);
 
       SFI : constant Source_File_Index := Get_Source_File_Index (El_Sloc);
@@ -208,7 +207,7 @@ package body Asis.Text.Set_Get is
       for LN in First_Line .. Last_Line loop
          LList (LN).Enclosing_Unit    := El_Encl_Unit;
          LList (LN).Enclosing_Context := El_Encl_Cont;
-         LList (LN).Enclosing_Tree    := El_Encl_Tree;
+         LList (LN).Enclosing_Tree    := Get_Current_Tree;
          LList (LN).Obtained          := El_Obtained;
 
          LList (LN).Sloc     := Line_Start (Physical_Line_Number (LN), SFI);

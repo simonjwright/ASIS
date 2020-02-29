@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2008-2016, AdaCore                     --
+--                     Copyright (C) 2008-2019, AdaCore                     --
 --                                                                          --
 -- GNATCHECK  is  free  software;  you can redistribute it and/or modify it --
 -- under terms of the  GNU  General Public License as published by the Free --
@@ -34,6 +34,7 @@ with Asis.Definitions;               use Asis.Definitions;
 with Asis.Elements;                  use Asis.Elements;
 with Asis.Expressions;               use Asis.Expressions;
 with Asis.Extensions;                use Asis.Extensions;
+with Asis.Extensions.Flat_Kinds;     use Asis.Extensions.Flat_Kinds;
 with Asis.Iterator;                  use Asis.Iterator;
 with Asis.Statements;                use Asis.Statements;
 with Asis.Text;                      use Asis.Text;
@@ -473,6 +474,7 @@ package body Gnatcheck.Rules.Custom_2 is
    is
    begin
       Init_Rule (One_Integer_Parameter_Rule_Template (Rule));
+      Rule.Rule_Bound := 0;
 
       Rule.Name        := new String'("Deeply_Nested_Generics");
       Rule.Rule_Status := Fully_Implemented;
@@ -739,6 +741,7 @@ package body Gnatcheck.Rules.Custom_2 is
       Called_Routine  : Asis.Element;
       Calling_Context : Asis.Element;
       Owner           : Asis.Element;
+      Steps_Up        : Elmt_Idx;
    begin
 
       if (Statement_Kind (Element) = A_Procedure_Call_Statement
@@ -798,13 +801,15 @@ package body Gnatcheck.Rules.Custom_2 is
             --     called in the body of overriding child's primitive.
 
             if State.Detected then
-               Calling_Context := Enclosing_Element (Element);
+               Calling_Context := Get_Enclosing_Element;
+               Steps_Up        := 1;
 
                while not (Is_Nil (Calling_Context)
                    or else
                      Is_Body (Calling_Context))
                loop
-                  Calling_Context := Enclosing_Element (Calling_Context);
+                  Calling_Context := Get_Enclosing_Element (Steps_Up);
+                  Steps_Up        := Steps_Up + 1;
                end loop;
 
                if Declaration_Kind (Calling_Context) in
@@ -1050,7 +1055,7 @@ package body Gnatcheck.Rules.Custom_2 is
       Rule.Name        := new String'("Maximum_Parameters");
       Rule.Rule_Status := Fully_Implemented;
       Rule.Help_Info   := new String
-       '("maxumum number of subprogram parameters");
+       '("maximum number of subprogram parameters");
       Rule.Diagnosis   := new String'("too many formal parameters (%1%)");
    end Init_Rule;
 
@@ -1142,6 +1147,8 @@ package body Gnatcheck.Rules.Custom_2 is
             return "Except_Assertions";
          when 2 =>
             return "Multi_Alternative_Only";
+         when 3 =>
+            return "Float_Types_Only";
          when others =>
             return "";
       end case;
@@ -1164,6 +1171,8 @@ package body Gnatcheck.Rules.Custom_2 is
          Result := 1;
       elsif Normalized_Exc_Name = "multi_alternative_only" then
          Result := 2;
+      elsif Normalized_Exc_Name = "float_types_only" then
+         Result := 3;
       end if;
 
       return Result;
@@ -1198,6 +1207,7 @@ package body Gnatcheck.Rules.Custom_2 is
       Detected     : Boolean := False;
       Enclosing_El : Asis.Element;
       Steps_Up     : Elmt_Idx;
+      Tmp          : Asis.Element;
 
       pragma Unreferenced (Control);
 
@@ -1232,6 +1242,10 @@ package body Gnatcheck.Rules.Custom_2 is
             State.Detected  := True;
          end if;
 
+         if State.Detected and then Rule.Exceptions (3) then
+            Tmp := Membership_Test_Expression (Element);
+            State.Detected := Is_Float (Tmp);
+         end if;
       end if;
    end Rule_Check_Pre_Op;
 
@@ -1429,6 +1443,7 @@ package body Gnatcheck.Rules.Custom_2 is
       pragma Unreferenced (Control, Rule);
       Type_Def       : Asis.Element;
       Is_Record_Type : Boolean := False;
+      Asp_Mark       : Asis.Element;
    begin
       if Declaration_Kind (Element) = An_Ordinary_Type_Declaration then
          Type_Def := Type_Declaration_View (Element);
@@ -1450,7 +1465,7 @@ package body Gnatcheck.Rules.Custom_2 is
          if Is_Record_Type then
             declare
                CRC : constant Asis.Element_List :=
-                 Corresponding_Representation_Clauses (Element);
+                 Corresponding_Representation_Items (First_Name (Element));
                Rec_Rep_Clause_Found              : Boolean := False;
                Scalar_Storage_Order_Clause_Found : Boolean := False;
                Bit_Order_Low                     : Boolean := False;
@@ -1458,7 +1473,7 @@ package body Gnatcheck.Rules.Custom_2 is
                Attr                              : Asis.Element;
             begin
                for J in CRC'Range loop
-                  case Representation_Clause_Kind (CRC (J)) is
+                  case Flat_Element_Kind (CRC (J)) is
                      when A_Record_Representation_Clause =>
 
                         if  Component_Clauses
@@ -1501,6 +1516,34 @@ package body Gnatcheck.Rules.Custom_2 is
                               Bit_Order_Low := True;
                            end if;
                         end if;
+                     when An_Aspect_Specification =>
+                        Asp_Mark := Aspect_Mark (CRC (J));
+
+                        if To_Lower_Case (Name_Image (Asp_Mark)) =
+                             "scalar_storage_order"
+                        then
+                           Scalar_Storage_Order_Clause_Found := True;
+                           exit when Rec_Rep_Clause_Found
+                                    and then
+                                    (Bit_Order_Low or else Bit_Order_High);
+
+                        elsif To_Lower_Case (Name_Image (Asp_Mark)) =
+                             "bit_order"
+                        then
+                           Attr := Aspect_Definition (CRC (J));
+                           Attr := Normalize_Reference (Attr);
+
+                           if To_Lower_Case (Name_Image (Attr)) =
+                              "high_order_first"
+                           then
+                              Bit_Order_High := True;
+                           elsif To_Lower_Case (Name_Image (Attr)) =
+                              "low_order_first"
+                           then
+                              Bit_Order_Low := True;
+                           end if;
+                        end if;
+
                      when others =>
                         null;
                   end case;
@@ -2024,6 +2067,45 @@ package body Gnatcheck.Rules.Custom_2 is
    -- Visible_Components --
    ------------------------
 
+   -----------------------------------------
+   -- Exception_Name (Visible_Components) --
+   -----------------------------------------
+
+   overriding function Exception_Name
+     (Rule      : Visible_Components_Rule_Type;
+      Exc_Index : Exception_Index)
+      return      String
+   is
+      pragma Unreferenced (Rule);
+   begin
+      case Exc_Index is
+         when 1 =>
+            return "Tagged_Only";
+         when others =>
+            return "";
+      end case;
+   end Exception_Name;
+
+   -------------------------------------------
+   -- Exception_Number (Visible_Components) --
+   -------------------------------------------
+
+   overriding function Exception_Number
+     (Rule     : Visible_Components_Rule_Type;
+      Exc_Name : String)
+      return     Exception_Numbers
+   is
+      pragma Unreferenced (Rule);
+      Result : Exception_Numbers := Not_An_Exception;
+      Normalized_Exc_Name : constant String := To_Lower (Exc_Name);
+   begin
+      if Normalized_Exc_Name = "tagged_only" then
+         Result := 1;
+      end if;
+
+      return Result;
+   end Exception_Number;
+
    ------------------------------------
    -- Init_Rule (Visible_Components) --
    ------------------------------------
@@ -2050,14 +2132,14 @@ package body Gnatcheck.Rules.Custom_2 is
       Control : in out Traverse_Control;
       State   : in out Rule_Traversal_State)
    is
-      pragma Unreferenced (Rule, Control);
+      pragma Unreferenced (Control);
    begin
 
       if Defines_Components (Element)
         and then
          Is_Publically_Accessible (Element)
       then
-         State.Detected  := True;
+         State.Detected := not Rule.Exceptions (1) or else Is_Tagged (Element);
       end if;
 
    end Rule_Check_Pre_Op;

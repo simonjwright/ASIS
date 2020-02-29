@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 1995-2017, Free Software Foundation, Inc.       --
+--            Copyright (C) 1995-2019, Free Software Foundation, Inc.       --
 --                                                                          --
 -- ASIS-for-GNAT is free software; you can redistribute it and/or modify it --
 -- under terms of the  GNU General Public License  as published by the Free --
@@ -65,6 +65,7 @@ with A4G.Decl_Sem;              use A4G.Decl_Sem;
 with A4G.Asis_Tables;           use A4G.Asis_Tables;
 with A4G.Expr_Sem;              use A4G.Expr_Sem;
 with A4G.GNAT_Int;              use A4G.GNAT_Int;
+with A4G.GNSA_Switch;           use A4G.GNSA_Switch;
 with A4G.Mapping;               use A4G.Mapping;
 with A4G.Queries;               use A4G.Queries;
 with A4G.Vcheck;                use A4G.Vcheck;
@@ -303,9 +304,11 @@ package body Asis.Extensions is
          Instantiation := Declaration;
 
          while not (Declaration_Kind (Instantiation) in
-                      A_Function_Instantiation  |
-                      A_Package_Instantiation   |
-                      A_Procedure_Instantiation
+                      A_Function_Instantiation             |
+                      A_Package_Instantiation              |
+                      A_Procedure_Instantiation            |
+                      A_Formal_Package_Declaration         |
+                      A_Formal_Package_Declaration_With_Box
                    and then
                      not Is_Part_Of_Instance (Instantiation))
          loop
@@ -902,6 +905,10 @@ package body Asis.Extensions is
       --  And now - from a defining name to a declaration itself
       Result_Node := Parent (Result_Node);
 
+      if Nkind (Result_Node) = N_Defining_Program_Unit_Name then
+         Result_Node := Parent (Result_Node);
+      end if;
+
       if Nkind (Result_Node) in N_Subprogram_Specification then
          Result_Node := Parent (Result_Node);
       end if;
@@ -1052,6 +1059,10 @@ package body Asis.Extensions is
 
       Result_Node := Parent (Result_Node);
       --  to go from a defining name to a declaration itself
+
+      if Nkind (Result_Node) = N_Defining_Program_Unit_Name then
+         Result_Node := Parent (Result_Node);
+      end if;
 
       if Is_Expanded_Subprogram (Result_Node) then
          Res_Spec_Case := Expanded_Subprogram_Instantiation;
@@ -1770,6 +1781,78 @@ package body Asis.Extensions is
             Arg_Element   => Type_Definition);
    end Corresponding_Parent_Subtype_Unwind_Base;
 
+   ----------------------------------------
+   -- Corresponding_Representation_Items --
+   ----------------------------------------
+
+   function Corresponding_Representation_Items
+      (Defining_Name : Asis.Defining_Name)
+       return          Asis.Element_List
+   is
+      Arg_Kind   : constant Internal_Element_Kinds := Int_Kind (Defining_Name);
+      Arg_El     :          Asis.Element           := Defining_Name;
+      Arg_Entity :          Entity_Id;
+      Next_Rep   :          Node_Id;
+   begin
+      Check_Validity (Defining_Name,
+                     Package_Name &
+                     "Corresponding_Representation_Items");
+
+      if Arg_Kind not in Internal_Defining_Name_Kinds then
+         Raise_ASIS_Inappropriate_Element
+          (Diagnosis => Package_Name &
+                        "Corresponding_Representation_Items",
+           Wrong_Kind => Arg_Kind);
+      end if;
+
+      if Arg_Kind = A_Defining_Expanded_Name then
+         Arg_El := Defining_Selector (Arg_El);
+      end if;
+
+      Arg_Entity := Node (Arg_El);
+      Next_Rep   := First_Rep_Item (Arg_Entity);
+
+      if No (Next_Rep) then
+         return Nil_Element_List;
+      end if;
+
+      Asis_Element_Table.Init;
+
+      while Present (Next_Rep) loop
+
+         if Comes_From_Source (Next_Rep) then
+               Asis_Element_Table.Append
+                 (Node_To_Element_New
+                   (Starting_Element => Defining_Name,
+                    Node             => Next_Rep));
+         end if;
+
+         Next_Rep := Next_Rep_Item (Next_Rep);
+      end loop;
+
+      return Asis.Element_List
+               (Asis_Element_Table.Table (1 .. Asis_Element_Table.Last));
+   exception
+      when ASIS_Inappropriate_Element =>
+         raise;
+      when ASIS_Failed =>
+
+         if Status_Indicator = Unhandled_Exception_Error then
+            Add_Call_Information
+              (Argument   => Defining_Name,
+               Outer_Call => Package_Name &
+                             "Corresponding_Representation_Items");
+         end if;
+
+         raise;
+      when Ex : others =>
+         Report_ASIS_Bug
+           (Query_Name    => Package_Name &
+                             "Corresponding_Representation_Items",
+            Ex            => Ex,
+            Arg_Element   => Defining_Name);
+   end Corresponding_Representation_Items;
+
    ----------------------
    -- CU_Requires_Body --
    ----------------------
@@ -1821,7 +1904,6 @@ package body Asis.Extensions is
      (E    : Asis.Element)
       return Ada.Containers.Hash_Type
    is
-      use Ada.Containers;
       Asis_Hash : constant Asis.ASIS_Integer := abs Asis.Elements.Hash (E);
       Result    :          Ada.Containers.Hash_Type;
    begin
@@ -2655,9 +2737,13 @@ package body Asis.Extensions is
       if Expression_Kind (Element) in An_Identifier | A_Character_Literal then
          Tmp := R_Node (Element);
 
-         if Nkind (Tmp) in N_Identifier | N_Character_Literal
+         if (Nkind (Tmp) = N_Identifier
            and then
-            not Present (Entity (Tmp))
+            not Present (Entity (Tmp)))
+          or else
+            (Nkind (Tmp) = N_Character_Literal
+           and then
+            not Present (Etype (Tmp)))
          then
             Tmp := Parent (Tmp);
 
@@ -3110,49 +3196,12 @@ package body Asis.Extensions is
 
    function Is_From_SPARK_Aspect  (E : Asis.Element) return Boolean is
       Result : Boolean := False;
-      N      : Node_Id;
    begin
       --  If and when we get a flag in the tree that marks SPARK-specific
       --  aspects, this code should be replaced with the use of this flag!
 
       if not Is_Nil (E) then
-         N := R_Node (E);
-
-         loop
-            exit when No (N) or else
-              Nkind (N) in
-                N_Pragma | N_Aspect_Specification |
-                N_Statement_Other_Than_Procedure_Call |
-                N_Procedure_Call_Statement | N_Declaration;
-
-            N := Parent (N);
-         end loop;
-
-         if Nkind (N) = N_Pragma then
-            if Present (Corresponding_Aspect (N)) then
-               N := Corresponding_Aspect (N);
-            end if;
-         end if;
-
-         if Nkind (N) in N_Aspect_Specification | N_Pragma then
-
-            N := (if Nkind (N) = N_Aspect_Specification then
-                     Sinfo.Identifier (N)
-                  else
-                     Pragma_Identifier (N));
-
-            Result := Chars (N) in Name_Abstract_State    |
-                                   Name_Depends           |
-                                   Name_Global            |
-                                   Name_Initial_Condition |
-                                   Name_Initializes       |
-                                   Name_Refined_Depends   |
-                                   Name_Refined_Global    |
-                                   Name_Refined_Post      |
-                                   Name_Refined_State;
-
-         end if;
-
+         Result := Is_From_SPARK_Aspect (R_Node (E));
       end if;
 
       return Result;
@@ -3623,6 +3672,58 @@ package body Asis.Extensions is
             Ex            => Ex,
             Arg_Element   => Declaration);
    end Is_Renaming_As_Body;
+
+   ------------------------
+   -- Is_Shift_Operation --
+   ------------------------
+
+   function Is_Shift_Operation
+     (Operator : Asis.Element)
+      return     Boolean
+   is
+      Result    : Boolean := False;
+      Arg_Chars : Name_Id;
+      Entity_N  : Entity_Id;
+      Arg_N     : Node_Id := Node (Operator);
+   begin
+      if Expression_Kind (Operator) = An_Identifier then
+         Arg_N     := Node (Operator);
+
+         if Nkind (Arg_N) in N_Has_Chars then
+
+            Arg_Chars := Chars (Arg_N);
+
+            if Arg_Chars = Name_Rotate_Left
+              or else
+               Arg_Chars = Name_Rotate_Right
+              or else
+               Arg_Chars = Name_Shift_Left
+              or else
+               Arg_Chars = Name_Shift_Right
+              or else
+               Arg_Chars = Name_Shift_Right_Arithmetic
+            then
+               Entity_N := Entity (Arg_N);
+
+               Result := Present (Entity_N)
+                        and then
+                         Is_Intrinsic_Subprogram (Entity_N)
+                        and then
+                         Is_Imported (Entity_N)
+                        and then
+                         Has_Convention_Pragma (Entity_N);
+
+               if Result then
+                  Entity_N := Import_Pragma (Entity_N);
+                  Result := not Comes_From_Source (Entity_N);
+               end if;
+            end if;
+         end if;
+      end if;
+
+      return Result;
+
+   end Is_Shift_Operation;
 
    ---------------
    -- Is_Static --
@@ -4203,8 +4304,11 @@ package body Asis.Extensions is
          --  GNAT rewrites the tree structure for non-recognized pragma as
          --  if it is a null statement, so:
 
-         if Result and then
-           Nkind (Parent (Parent (Arg_Node))) = N_Null_Statement
+         if Result
+           and then
+            Nkind (Parent (Parent (Arg_Node))) = N_Null_Statement
+           and then
+            Nkind (Original_Node (Parent (Parent (Arg_Node)))) = N_Pragma
          then
             Result := False;
          end if;
@@ -4749,6 +4853,27 @@ package body Asis.Extensions is
       return Result;
    end Overrides_Type_Operator;
 
+   -----------------
+   -- Pos_In_List --
+   -----------------
+
+   function Pos_In_List
+     (E       : Asis.Element;
+      In_List : Asis.Element_List)
+      return    ASIS_Natural
+   is
+      Result : ASIS_Natural := 0;
+   begin
+      for J in In_List'Range loop
+         if Is_Equal (E, In_List (J)) then
+            Result := J;
+            exit;
+         end if;
+      end loop;
+
+      return Result;
+   end Pos_In_List;
+
    -------------------
    -- Pragmas_After --
    -------------------
@@ -5263,7 +5388,8 @@ package body Asis.Extensions is
       end if;
 
       Free (Path);
-      Path := new String'(Head & "asis-gnsa" & Directory_Separator &
+      Path := new String'(Head & A4G.GNSA_Switch.GNSA_Dir &
+                         Directory_Separator              &
                          Tail (Tail_Start .. Tail_End));
    end Switch_To_GNSA;
 

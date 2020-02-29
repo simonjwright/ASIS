@@ -5,7 +5,6 @@
 import sys
 import os
 import time
-import re
 
 sys.path.append('.')
 
@@ -39,9 +38,10 @@ def get_gnat_version():
         with open('../../version_information') as vinfo:
             line = (vinfo.readline()).strip()
             return line
-    except:
+    except Exception:
         print 'Error opening or reading version_information file'
         sys.exit(1)
+
 
 # First retrieve the name of the documentation we are building
 doc_name = os.environ.get('DOC_NAME', None)
@@ -74,7 +74,7 @@ copyright = get_copyright()
 version = get_gnat_version()
 release = get_gnat_version()
 
-pygments_style = 'sphinx'
+pygments_style = 'bw'
 html_theme = 'sphinxdoc'
 if os.path.isfile('adacore_transparent.png'):
     html_logo = 'adacore_transparent.png'

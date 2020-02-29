@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2007-2017, AdaCore                     --
+--                     Copyright (C) 2007-2018, AdaCore                     --
 --                                                                          --
 -- Asis Utility Library (ASIS UL) is free software; you can redistribute it --
 -- and/or  modify  it  under  terms  of  the  GNU General Public License as --
@@ -919,6 +919,9 @@ package body ASIS_UL.Global_State is
          Info_No_EOL (2 * Ident_String & "direct calls             :");
          Print_SLOC_List (Table (N).SLOC_Node_List_1);
 
+         Info_No_EOL (2 * Ident_String & "postponed disp calls     :");
+         Print_SLOC_List (Table (N).Dispatching_Calls);
+
          Direct_Calls_Count :=
            Direct_Calls_Count +
              Natural (SLOC_Node_Lists.Length (Table (N).SLOC_Node_List_1));
@@ -1102,12 +1105,14 @@ package body ASIS_UL.Global_State is
          SLOC_Node_List_1   => SLOC_Node_Lists.Empty_Set,
          SLOC_Node_List_2   => SLOC_Node_Lists.Empty_Set,  --  Direct reads
          SLOC_Node_List_3   => SLOC_Node_Lists.Empty_Set,  --  Direct writes
+         Dispatching_Calls  => SLOC_Node_Lists.Empty_Set,  -- Dispatching calls
          Node_List_1        => Node_Lists.Empty_Set,  --  All_Calls
          Node_List_2        => Node_Lists.Empty_Set, --  Direct disp calls
          Node_List_3        => Node_Lists.Empty_Set, --  Directly impl spbs
          Node_List_4        => Node_Lists.Empty_Set, --  All impl spbs
          Node_List_5        => Node_Lists.Empty_Set, --  Indirect reads
-         Node_List_6        => Node_Lists.Empty_Set  --  Indirect writes
+         Node_List_6        => Node_Lists.Empty_Set, --  Indirect writes
+         Bool_Flag_7               => False          --  Missing_Body_Reported
          );
 
       pragma Assert (New_Node.Node_Kind /= Not_A_Node);
@@ -1459,6 +1464,7 @@ package body ASIS_UL.Global_State is
    procedure Set_Bool_Flag_4        (For_Node_Rec : in out GS_Node_Record);
    procedure Set_Bool_Flag_5        (For_Node_Rec : in out GS_Node_Record);
    procedure Set_Bool_Flag_6        (For_Node_Rec : in out GS_Node_Record);
+   procedure Set_Bool_Flag_7        (For_Node_Rec : in out GS_Node_Record);
    procedure Set_Application_Flag_1 (For_Node_Rec : in out GS_Node_Record);
    --  Procedures for updating the node record fields.
 
@@ -1477,6 +1483,12 @@ package body ASIS_UL.Global_State is
          when Calls =>
             SLOC_Node_Lists.Insert
              (Container => For_Node_Rec.SLOC_Node_List_1,
+              New_Item  => SLOC_Link_Tmp,
+              Position  => Tmp_SLOC_Cursor,
+              Inserted  => Tmp_Boolean);
+         when Dispatching_Calls =>
+            SLOC_Node_Lists.Insert
+             (Container => For_Node_Rec.Dispatching_Calls,
               New_Item  => SLOC_Link_Tmp,
               Position  => Tmp_SLOC_Cursor,
               Inserted  => Tmp_Boolean);
@@ -1543,6 +1555,11 @@ package body ASIS_UL.Global_State is
    begin
       For_Node_Rec.Bool_Flag_6 := Bool_Tmp;
    end Set_Bool_Flag_6;
+
+   procedure Set_Bool_Flag_7 (For_Node_Rec : in out GS_Node_Record) is
+   begin
+      For_Node_Rec.Bool_Flag_7 := Bool_Tmp;
+   end Set_Bool_Flag_7;
 
    procedure Set_Application_Flag_1 (For_Node_Rec : in out GS_Node_Record) is
    begin
@@ -1642,6 +1659,16 @@ package body ASIS_UL.Global_State is
          Process   => Set_Bool_Flag_6'Access);
    end Set_Bool_Flag_6;
 
+   procedure Set_Bool_Flag_7 (N : GS_Node_Id; Val : Boolean) is
+   begin
+      Bool_Tmp := Val;
+
+      GS_Nodes_Container.Update_Element
+        (Container => GS_Nodes_Table,
+         Index     => N,
+         Process   => Set_Bool_Flag_7'Access);
+   end Set_Bool_Flag_7;
+
    procedure Set_Application_Flag_1 (N : GS_Node_Id; Val : Boolean) is
    begin
       Bool_Tmp := Val;
@@ -1704,10 +1731,12 @@ begin
       Bool_Flag_4               => False,          --  Is_Dispatching_Operation
       Bool_Flag_5               => False,          --  Is_Abstract_Subprogram
       Bool_Flag_6               => False,          --  Is_Implicit_Subprogram
+      Bool_Flag_7               => False,          --  Missing_Body_Reported
       Application_Flag_1        => False,
       SLOC_Node_List_1          => SLOC_Node_Lists.Empty_Set, --  Direct_Calls
       SLOC_Node_List_2          => SLOC_Node_Lists.Empty_Set, --  Direct reads
       SLOC_Node_List_3          => SLOC_Node_Lists.Empty_Set, --  Direct writes
+      Dispatching_Calls         => SLOC_Node_Lists.Empty_Set, -- Disp calls
       Node_List_1               => Node_Lists.Empty_Set,      --  All_Calls
       Node_List_2               => Node_Lists.Empty_Set, --  Direct disp calls
       Node_List_3               => Node_Lists.Empty_Set, --  Directly impl spbs

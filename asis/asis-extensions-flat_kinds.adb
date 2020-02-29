@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 1995-2014, Free Software Foundation, Inc.       --
+--            Copyright (C) 1995-2017, Free Software Foundation, Inc.       --
 --                                                                          --
 -- ASIS-for-GNAT is free software; you can redistribute it and/or modify it --
 -- under terms of the  GNU General Public License  as published by the Free --
@@ -45,8 +45,6 @@ with A4G.Knd_Conv; use A4G.Knd_Conv;
 with A4G.Vcheck;   use A4G.Vcheck;
 
 package body Asis.Extensions.Flat_Kinds is
-
-   use Asis;
 
    -----------------------
    -- Flat_Element_Kind --

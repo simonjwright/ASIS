@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                    Copyright (C) 2001-2016, AdaCore                      --
+--                    Copyright (C) 2001-2019, AdaCore                      --
 --                                                                          --
 -- GNATPP  is free software; you can redistribute it and/or modify it under --
 -- terms  of  the  GNU  General  Public  License  as  published by the Free --
@@ -135,8 +135,8 @@ package GNATPP.Options is
    Decimal_Grouping : Natural renames Opt.Decimal_Grouping;
    Based_Grouping : Natural renames Opt.Based_Grouping;
 
-   Pp_Off_String : access String renames Opt.Pp_Off_String;
-   Pp_On_String : access String renames Opt.Pp_On_String;
+   Pp_Off_String : String_Access renames Opt.Pp_Off_String;
+   Pp_On_String : String_Access renames Opt.Pp_On_String;
 
    type Output_Modes is
    --  Defines the where and how gnatpp places the result source.

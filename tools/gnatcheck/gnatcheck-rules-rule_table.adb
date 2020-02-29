@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2004-2017, AdaCore                     --
+--                     Copyright (C) 2004-2019, AdaCore                     --
 --                                                                          --
 -- GNATCHECK  is  free  software;  you can redistribute it and/or modify it --
 -- under terms of the  GNU  General Public License as published by the Free --
@@ -34,6 +34,7 @@ with GNAT.Directory_Operations; use GNAT.Directory_Operations;
 with GNAT.OS_Lib;               use GNAT.OS_Lib;
 
 with ASIS_UL.Common;
+with ASIS_UL.Debug;            use ASIS_UL.Debug;
 with ASIS_UL.Misc;             use ASIS_UL.Misc;
 with ASIS_UL.Output;           use ASIS_UL.Output;
 
@@ -680,11 +681,11 @@ package body Gnatcheck.Rules.Rule_Table is
                         when Indefinite =>
                            Error
                              ("bad format of rule file "   &
-                              RF_Name & ", part of lines " &
+                              RF_Name & ", lines "         &
                               Image (Rule_Start_Line)      &
                               ":"                          &
-                              Image (Current_Line)         &
-                              " ignored");
+                              Image (Current_Line - 1)     &
+                              " do not have format of rule option");
                      end case;
                   end if;
 
@@ -803,7 +804,6 @@ package body Gnatcheck.Rules.Rule_Table is
       end Set_File_Name;
 
    begin -- Process_Rule_File
---      Rule_File_Name := Get_Rule_File_Name (RF_Name);
 
       if not Is_Regular_File (Rule_File_Name) then
          Error ("can not locate rule file " & Rule_File_Name);
@@ -869,11 +869,13 @@ package body Gnatcheck.Rules.Rule_Table is
             when Indefinite =>
                Error
                  ("bad format of rule file "          &
-                  Rule_File_Name & ", part of lines " &
+                  Rule_File_Name & ", lines "         &
                   Image (Rule_Start_Line)             &
                   ":"                                 &
-                  Image (Current_Line)                &
-                  " ignored");
+                  Image (if New_State = Indefinite then
+                            Current_Line
+                         else Current_Line - 1)       &
+                  " do not have format of rule option");
          end case;
 
       end if;
@@ -928,6 +930,11 @@ package body Gnatcheck.Rules.Rule_Table is
       Rule    : Rule_Id;
       Enable  : Boolean;
 
+      Diag_Defined_At : constant String :=
+        (if Defined_At = "" then
+            ""
+         else " (" & Defined_At & ")");
+
       procedure Set_Parameter is
          Found : Boolean := False;
       begin
@@ -976,21 +983,9 @@ package body Gnatcheck.Rules.Rule_Table is
 
    begin
 
---      if Option = "+ALL" then
---         Turn_All_Rules_On;
---         return;
-
---      elsif Option = "+GLOBAL" then
---         Turn_All_Global_Rules_On;
---         return;
-
       if Option = "-ALL" then
          Turn_All_Rules_Off;
          return;
-
---      elsif Option = "-GLOBAL" then
---         Turn_All_Global_Rules_Off;
---         return;
       end if;
 
       if Last_Idx - First_Idx > 2
@@ -1012,7 +1007,8 @@ package body Gnatcheck.Rules.Rule_Table is
             Word_End := Index (Option (Word_Start + 1 .. Last_Idx), ":");
 
             if Word_End = 0 then
-               Error ("bad structure of rule option (" & Option & ")");
+               Error ("bad structure of rule option " & Option &
+                      Diag_Defined_At);
                return;
             end if;
 
@@ -1051,7 +1047,8 @@ package body Gnatcheck.Rules.Rule_Table is
             Set_Parameter;
 
             if Word_Start = 0 then
-               Error ("restrictions rule option must have a parameter");
+               Error ("restrictions rule option must have a parameter" &
+                      Diag_Defined_At);
                return;
             else
 
@@ -1069,14 +1066,16 @@ package body Gnatcheck.Rules.Rule_Table is
 
             if not Enable then
                Error ("there is no -R option for style checks, " &
-                      "use style options to turn checks OFF");
+                      "use style options to turn checks OFF"     &
+                      Diag_Defined_At);
                return;
             end if;
 
             Set_Parameter;
 
             if Word_Start = 0 then
-               Error ("style_checks rule option must have a parameter");
+               Error ("style_checks rule option must have a parameter" &
+                      Diag_Defined_At);
                return;
             else
 
@@ -1092,15 +1091,17 @@ package body Gnatcheck.Rules.Rule_Table is
          elsif To_Lower (Option (Word_Start .. Word_End)) = "warnings" then
 
             if not Enable then
-               Error ("there is no -R option for warnings, " &
-                      "use warning options to turn warnings OFF");
+               Error ("there is no -R option for warnings, "     &
+                      "use warning options to turn warnings OFF" &
+                       Diag_Defined_At);
                return;
             end if;
 
             Set_Parameter;
 
             if Word_Start = 0 then
-               Error ("warnings rule option must have a parameter");
+               Error ("warnings rule option must have a parameter" &
+                      Diag_Defined_At);
                return;
             else
 
@@ -1159,16 +1160,30 @@ package body Gnatcheck.Rules.Rule_Table is
 
             else
                Error ("unknown rule : " & Option (Word_Start .. Word_End) &
-                      " (ignored)");
+                      ", ignored" & Diag_Defined_At);
             end if;
 
          end if;
 
       else
-         Error ("unknown rule option: " & Option & ", ignored");
+         Error ("unknown rule option: " & Option & ", ignored" &
+                 Diag_Defined_At);
       end if;
 
    end Process_Rule_Option;
+
+   ------------------------------
+   -- Processed_Rule_File_Name --
+   ------------------------------
+
+   function Processed_Rule_File_Name return String is
+   begin
+      if Rule_File_Stack.Is_Empty then
+         return "";
+      else
+         return Rule_File_Stack.Table (Rule_File_Stack.Last).Full_Name.all;
+      end if;
+   end Processed_Rule_File_Name;
 
    ---------------
    -- Rule_Name --
@@ -1215,12 +1230,7 @@ package body Gnatcheck.Rules.Rule_Table is
 
          for J in First_Rule .. All_Rules.Last loop
 
-            if All_Rules.Table (J).all not in Global_Rule_Template'Class
-               --  Currently we hide the information about all the global
-               --  rules, because they are not reliable enough...
-              and then
-               All_Rules.Table (J).Rule_Status = Fully_Implemented
-            then
+            if All_Rules.Table (J).Rule_Status = Fully_Implemented then
                Print_Rule_Help (All_Rules.Table (J).all);
             end if;
 
@@ -1232,9 +1242,20 @@ package body Gnatcheck.Rules.Rule_Table is
             "provided by GNAT");
       Info ("using the same syntax to control these checks as for other " &
             "rules:");
-      Info ("  Warnings     - compiler warnings");
-      Info ("  Style_Checks - compiler style checks");
-      Info ("  Restrictions - checks made by pragma Restriction_Warnings");
+      Info ("  Warnings     - compiler warnings" &
+            (if Debug_Flag_RR then
+                " - EASY"
+             else ""));
+
+      Info ("  Style_Checks - compiler style checks" &
+            (if Debug_Flag_RR then
+                " - TRIVIAL"
+             else ""));
+
+      Info ("  Restrictions - checks made by pragma Restriction_Warnings" &
+            (if Debug_Flag_RR then
+                " - EASY"
+             else ""));
 
    end Rules_Help;
 

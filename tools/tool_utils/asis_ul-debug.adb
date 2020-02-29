@@ -6,18 +6,18 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                    Copyright (C) 2009-2016, AdaCore                      --
+--                    Copyright (C) 2009-2019, AdaCore                      --
 --                                                                          --
 -- Asis Utility Library (ASIS UL) is free software; you can redistribute it --
 -- and/or  modify  it  under  terms  of  the  GNU General Public License as --
--- published by the Free Software Foundation; either version 2, or (at your --
+-- published by the Free Software Foundation; either version 3, or (at your --
 -- option)  any later version.  ASIS UL  is distributed in the hope that it --
 -- will  be  useful,  but  WITHOUT  ANY  WARRANTY; without even the implied --
 -- warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the --
 -- GNU  General Public License for more details. You should have received a --
 -- copy of the  GNU General Public License  distributed with GNAT; see file --
--- COPYING.  If  not,  write  to  the Free Software Foundation, 51 Franklin --
--- Street, Fifth Floor, Boston, MA 02110-1301, USA.                         --
+-- COPYING3. If not,  go to http://www.gnu.org/licenses for a complete copy --
+-- of the license.                                                          --
 --                                                                          --
 -- ASIS UL is maintained by AdaCore (http://www.adacore.com).               --
 --                                                                          --
@@ -56,9 +56,40 @@ package body ASIS_UL.Debug is
    --  dy  not used yet
    --  dz  not used yet
 
+   --  dA   not used yet
+   --  dB   not used yet
+   --  dC   not used yet
+   --  dD   not used yet
+   --  dE   not used yet
+   --  dF   not used yet
+   --  dG   not used yet
+   --  dH   not used yet
+   --  dI   not used yet
+   --  dJ   gnatcheck  : similar to gnat -gnatdJ option
+   --  dK   not used yet
+   --  dL   not used yet
+   --  dM   not used yet
+   --  dN   not used yet
+   --  dO   not used yet
+   --  dP   not used yet
+   --  dQ   not used yet
+   --  dR   gnatcheck  : indicate remediation level in brief rule help (-h)
+   --  dS   not used yet
+   --  dT   not used yet
+   --  dU   not used yet
+   --  dV   not used yet
+   --  dW   not used yet
+   --  dX   not used yet
+   --  dY   not used yet
+   --  dZ   not used yet
+
    -----------------------------------
    -- Documentation for Debug Flags --
    -----------------------------------
+
+   ------------------------
+   --  Low case letters: --
+   ------------------------
 
    --  da   not used yet
 
@@ -123,6 +154,44 @@ package body ASIS_UL.Debug is
 
    --  dz   not used yet
 
+   --------------------------
+   --  Upper case letters: --
+   --------------------------
+
+   --  dA   not used yet
+   --  dB   not used yet
+   --  dC   not used yet
+   --  dD   not used yet
+   --  dE   not used yet
+   --  dF   not used yet
+   --  dG   not used yet
+   --  dH   not used yet
+   --  dI   not used yet
+
+   --  dJ   gnatcheck  : similar to gnat -gnatdJ option: adds scope name after
+   --                    SLOC into the generated diagnoses
+   --       other tools: not used yet
+
+   --  dK   not used yet
+   --  dL   not used yet
+   --  dM   not used yet
+   --  dN   not used yet
+   --  dO   not used yet
+   --  dP   not used yet
+   --  dQ   not used yet
+   --  dR   gnatcheck  :  indicate remediation level in the output generated
+   --                      with '-h' gnatcheck option
+   --       other tools: not used yet
+
+   --  dS   not used yet
+   --  dT   not used yet
+   --  dU   not used yet
+   --  dV   not used yet
+   --  dW   not used yet
+   --  dX   not used yet
+   --  dY   not used yet
+   --  dZ   not used yet
+
    --------------------
    -- Set_Debug_Flag --
    --------------------
@@ -130,6 +199,7 @@ package body ASIS_UL.Debug is
    procedure Set_Debug_Flag (C : Character; Val : Boolean := True) is
       subtype Dig  is Character range '1' .. '9';
       subtype LLet is Character range 'a' .. 'z';
+      subtype ULet is Character range 'A' .. 'Z';
 
    begin
       if C in Dig then
@@ -144,9 +214,7 @@ package body ASIS_UL.Debug is
             when '8' => Debug_Flag_8 := Val;
             when '9' => Debug_Flag_9 := Val;
          end case;
-      end if;
-
-      if C in LLet then
+      elsif C in LLet then
          case LLet'(C) is
             when 'a' => Debug_Flag_A := Val;
             when 'b' => Debug_Flag_B := Val;
@@ -175,6 +243,37 @@ package body ASIS_UL.Debug is
             when 'y' => Debug_Flag_Y := Val;
             when 'z' => Debug_Flag_Z := Val;
          end case;
+
+      elsif C in ULet then
+         case ULet (C) is
+            when 'A' => Debug_Flag_AA := Val;
+            when 'B' => Debug_Flag_BB := Val;
+            when 'C' => Debug_Flag_CC := Val;
+            when 'D' => Debug_Flag_DD := Val;
+            when 'E' => Debug_Flag_EE := Val;
+            when 'F' => Debug_Flag_FF := Val;
+            when 'G' => Debug_Flag_GG := Val;
+            when 'H' => Debug_Flag_HH := Val;
+            when 'I' => Debug_Flag_II := Val;
+            when 'J' => Debug_Flag_JJ := Val;
+            when 'K' => Debug_Flag_KK := Val;
+            when 'L' => Debug_Flag_LL := Val;
+            when 'M' => Debug_Flag_MM := Val;
+            when 'N' => Debug_Flag_NN := Val;
+            when 'O' => Debug_Flag_OO := Val;
+            when 'P' => Debug_Flag_PP := Val;
+            when 'Q' => Debug_Flag_QQ := Val;
+            when 'R' => Debug_Flag_RR := Val;
+            when 'S' => Debug_Flag_SS := Val;
+            when 'T' => Debug_Flag_TT := Val;
+            when 'U' => Debug_Flag_UU := Val;
+            when 'V' => Debug_Flag_VV := Val;
+            when 'W' => Debug_Flag_WW := Val;
+            when 'X' => Debug_Flag_XX := Val;
+            when 'Y' => Debug_Flag_YY := Val;
+            when 'Z' => Debug_Flag_ZZ := Val;
+         end case;
+
       end if;
    end Set_Debug_Flag;
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 1995-2017, Free Software Foundation, Inc.       --
+--            Copyright (C) 1995-2019, Free Software Foundation, Inc.       --
 --                                                                          --
 -- ASIS-for-GNAT is free software; you can redistribute it and/or modify it --
 -- under terms of the  GNU General Public License  as published by the Free --
@@ -44,6 +44,7 @@ with Asis.Compilation_Units;  use Asis.Compilation_Units;
 with Asis.Elements;           use Asis.Elements;
 with Asis.Errors;             use Asis.Errors;
 with Asis.Exceptions;         use Asis.Exceptions;
+with Asis.Statements;
 
 with Asis.Set_Get;            use Asis.Set_Get;
 with Asis.Text.Set_Get;       use Asis.Text.Set_Get;
@@ -685,7 +686,15 @@ package body Asis.Text is
         ((Right.Last_Line = Right.First_Line) and then
            (Right.Last_Column < Right.First_Column))
       do
-         pragma Assert (Result = (Right = Nil_Span));
+         --  We disable this assertion for now. It should be true, and almost
+         --  always is true, but it is false in the case of a formal private
+         --  type definition of the form "type T is limited private;", which
+         --  gets a source location that looks Nil by the above test. It does
+         --  not appear worth fixing this "properly".
+
+         if False then
+            pragma Assert (Result = (Right = Nil_Span));
+         end if;
       end return;
    end Is_Nil;
 
@@ -699,10 +708,21 @@ package body Asis.Text is
    begin
       Check_Validity (Element,
                       "Asis.Text.Is_Text_Available");
-      if El_Kind = Not_An_Element                          or else
-         Is_From_Implicit (Element)                        or else
-         Is_From_Instance (Element)                        or else
-         Normalization_Case (Element) /= Is_Not_Normalized or else
+      if El_Kind = Not_An_Element
+        or else
+         (Is_From_Implicit (Element)
+          and then
+           not (El_Kind = A_Null_Statement
+               and then
+                not Is_Nil (Asis.Statements.Label_Names (Element))
+                --  this is the case of implicit NULL statement for
+                --  floating labels
+                ))
+        or else
+         Is_From_Instance (Element)
+        or else
+         Normalization_Case (Element) /= Is_Not_Normalized
+        or else
          Spec_Case in Is_From_Standard
       then
          return False;

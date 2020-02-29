@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2007-2016, AdaCore                     --
+--                     Copyright (C) 2007-2018, AdaCore                     --
 --                                                                          --
 -- Asis Utility Library (ASIS UL) is free software; you can redistribute it --
 -- and/or  modify  it  under  terms  of  the  GNU General Public License as --
@@ -511,8 +511,8 @@ private
       --  Callable_Node -> Is_Implicit_Subprogram_Node;
       --  Data_Node     -> ???
 
---      Bool_Flag_7 : Boolean;
-      --  Callable_Node -> Is_Called_Dispatching_Root;
+      Bool_Flag_7 : Boolean;
+      --  Callable_Node -> Is the missing body reported;
       --  Data_Node     -> ???
 
       Application_Flag_1 : Boolean;
@@ -534,6 +534,15 @@ private
       --  by the callable entity.
       --  For a data node - list of all the callable entities that directly
       --  write the data entity.
+
+      Dispatching_Calls : SLOC_Node_Lists.Set;
+      --  For a callable node - if Skip_Dispatching_Calls is ON, dispatching
+      --  calls are stored here instead of SLOC_Node_List_1, then a tool
+      --  can do transitive closure without taking into account dispatching
+      --  calls, analyze the result, then copy stored dispatching calls
+      --  into SLOC_Node_List_1 and do transitive closure again.
+      --
+      --  For a data node - not used
 
       Node_List_1 : Node_Lists.Set;
       --  Callable_Node -> All_Calls;
@@ -576,6 +585,7 @@ private
 
    type SLOC_Link_List_Types is
      (Calls,
+      Dispatching_Calls,
       Direct_Read_References,
       Direct_Write_References,
       Indirect_Read_References,
@@ -611,5 +621,6 @@ private
    procedure Set_Bool_Flag_4 (N : GS_Node_Id; Val : Boolean);
    procedure Set_Bool_Flag_5 (N : GS_Node_Id; Val : Boolean);
    procedure Set_Bool_Flag_6 (N : GS_Node_Id; Val : Boolean);
+   procedure Set_Bool_Flag_7 (N : GS_Node_Id; Val : Boolean);
 
 end ASIS_UL.Global_State;

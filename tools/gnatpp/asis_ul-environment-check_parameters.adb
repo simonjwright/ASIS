@@ -8,7 +8,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2009-2016, AdaCore                     --
+--                     Copyright (C) 2009-2017, AdaCore                     --
 --                                                                          --
 -- GNATPP  is free software; you can redistribute it and/or modify it under --
 -- terms  of  the  GNU  General  Public  License  as  published by the Free --
@@ -69,6 +69,14 @@ begin
       return;
    end if;
 
+   if ASIS_UL.Options.Exempted_Units /= null
+     and then Incremental_Mode
+   then
+      Error ("--ignore option cannot be used in incremental mode");
+      Brief_Help;
+      raise Parameter_Error;
+   end if;
+
    if RM_Style_Spacing then
       --  RM-style colons are incompatible with aligning them
 
@@ -86,8 +94,19 @@ begin
       Set_Arg_List;
    end if;
 
-   Total_Sources      := Natural (Last_Source);
-   Sources_Left       := Total_Sources;
+   if ASIS_UL.Options.Exempted_Units /= null then
+      Process_Exemptions (ASIS_UL.Options.Exempted_Units.all);
+   end if;
+
+   Total_Sources := Total_Sources_To_Process;
+
+   if Total_Sources = 0 then
+      Error ("No existing file to process");
+      --  All the rest does not make any sense
+      return;
+   end if;
+
+   Sources_Left := Total_Sources;
 
    --  Check that GNAT_Comment_Inden and Standard_Comment_Indent
    --  are not set together

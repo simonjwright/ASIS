@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2011-2017, AdaCore                     --
+--                     Copyright (C) 2011-2019, AdaCore                     --
 --                                                                          --
 -- GNATTEST  is  free  software;  you  can redistribute it and/or modify it --
 -- under terms of the  GNU  General Public License as published by the Free --
@@ -43,10 +43,12 @@ package GNATtest.Options is
    GNATtest_Mode : GNATtest_Modes;
 
    --  Output options:
-   type Output_Mode is (Separate_Root, Parallel, Subdir, Direct);
+   type Output_Mode is (Separate_Root, Subdir, Direct);
 
    RTS_Path : String_Access := new String'("");
    RTS_Attribute_Val : String_Access;
+
+   Target : String_Access := new String'("");
 
    Default_Output_Mode : constant Output_Mode := Direct;
 
@@ -75,9 +77,6 @@ package GNATtest.Options is
 
    Verbose : Boolean := False;
    --  Verbose mode.
-
-   Suppress_Contacts : Boolean := True;
-   --  to be removed;
 
    Harness_Only : Boolean := False;
    --  Indicates than argument files should be treated as tests but not as
@@ -151,5 +150,21 @@ package GNATtest.Options is
    Queues_Number : Positive := 1;
 
    Reporter_Name : String_Access := new String'("gnattest");
+
+   Test_Case_Only : Boolean := False;
+
+   Has_Test_Cases : Boolean := False;
+
+   Strict_Execution : Boolean := False;
+   --  Return failure exit status if at least one of the sources
+   --  could not be compiled.
+
+   Main_Units : String_Set.Set := String_Set.Empty_Set;
+
+   Environment_Dir : String_Access := null;
+
+   Aggregate_Subdir_Name : String_Access := new String'("");
+   --  Used to prepend the names of test driver executables in
+   --  test_drivers.list
 
 end GNATtest.Options;

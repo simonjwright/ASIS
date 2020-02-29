@@ -1,4 +1,4 @@
------------------------------------------------------------------------------
+------------------------------------------------------------------------------
 --                                                                          --
 --                          GNATCHECK COMPONENTS                            --
 --                                                                          --
@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2006-2017, AdaCore                     --
+--                     Copyright (C) 2006-2019, AdaCore                     --
 --                                                                          --
 -- GNATCHECK  is  free  software;  you can redistribute it and/or modify it --
 -- under terms of the  GNU  General Public License as published by the Free --
@@ -48,7 +48,6 @@ with Namet;
 with Snames;
 with GNAT.Table;
 
-with ASIS_UL.Debug;
 with ASIS_UL.Misc;                use ASIS_UL.Misc;
 with ASIS_UL.Output;              use ASIS_UL.Output;
 with ASIS_UL.Utilities;           use ASIS_UL.Utilities;
@@ -860,7 +859,6 @@ package body Gnatcheck.Rules.Custom_1 is
    -----------------------------------------------
 
    function Get_Attribute_Kind (S : String) return Attribute_Kinds is
-      use  type Snames.Attribute_Id;
       Result  : Attribute_Kinds := Not_An_Attribute;
       Attr_Id : Snames.Attribute_Id;
       pragma Warnings (Off, Attr_Id);
@@ -3085,15 +3083,13 @@ package body Gnatcheck.Rules.Custom_1 is
 
       case Parameter_Kind is
          when Type_Par =>
-            if ASIS_UL.Debug.Debug_Flag_W
---              and then
---               Rule.Rule_State = Enabled
-               --  This condition is commented out because thedisabled rule
-               --  remembers all the previous settings at the moment
+            if Gnatcheck.Options.Check_Param_Redefinition
               and then
                Rule.Type_Casing /= Not_A_Casing_Scheme
               and then
                Rule.Type_Casing /= Casing_Scheme
+               --  We do not check if Rule.Rule_State = Enabled because the
+               --  disabled rule remembers all the previous settings
             then
                Error
                 ("redefining at " &
@@ -3119,15 +3115,13 @@ package body Gnatcheck.Rules.Custom_1 is
             end if;
 
          when Constant_Par =>
-            if ASIS_UL.Debug.Debug_Flag_W
---              and then
---               Rule.Rule_State = Enabled
-               --  This condition is commented out because thedisabled rule
-               --  remembers all the previous settings at the moment
+            if Gnatcheck.Options.Check_Param_Redefinition
               and then
                Rule.Constant_Casing /= Not_A_Casing_Scheme
               and then
                Rule.Constant_Casing /= Casing_Scheme
+               --  We do not check if Rule.Rule_State = Enabled because the
+               --  disabled rule remembers all the previous settings
             then
                Error
                 ("redefining at " &
@@ -3153,15 +3147,13 @@ package body Gnatcheck.Rules.Custom_1 is
             end if;
 
          when Exception_Par =>
-            if ASIS_UL.Debug.Debug_Flag_W
---              and then
---               Rule.Rule_State = Enabled
-               --  This condition is commented out because thedisabled rule
-               --  remembers all the previous settings at the moment
+            if Gnatcheck.Options.Check_Param_Redefinition
               and then
                Rule.Exception_Casing /= Not_A_Casing_Scheme
               and then
                Rule.Exception_Casing /= Casing_Scheme
+               --  We do not check if Rule.Rule_State = Enabled because the
+               --  disabled rule remembers all the previous settings
             then
                Error
                 ("redefining at " &
@@ -3187,15 +3179,13 @@ package body Gnatcheck.Rules.Custom_1 is
             end if;
 
          when Enum_Par =>
-            if ASIS_UL.Debug.Debug_Flag_W
---              and then
---               Rule.Rule_State = Enabled
-               --  This condition is commented out because thedisabled rule
-               --  remembers all the previous settings at the moment
+            if Gnatcheck.Options.Check_Param_Redefinition
               and then
                Rule.Enum_Casing /= Not_A_Casing_Scheme
               and then
                Rule.Enum_Casing /= Casing_Scheme
+               --  We do not check if Rule.Rule_State = Enabled because the
+               --  disabled rule remembers all the previous settings
             then
                Error
                 ("redefining at " &
@@ -3221,15 +3211,13 @@ package body Gnatcheck.Rules.Custom_1 is
             end if;
 
          when Others_Par =>
-            if ASIS_UL.Debug.Debug_Flag_W
---              and then
---               Rule.Rule_State = Enabled
-               --  This condition is commented out because thedisabled rule
-               --  remembers all the previous settings at the moment
+            if Gnatcheck.Options.Check_Param_Redefinition
               and then
                Rule.Others_Casing /= Not_A_Casing_Scheme
               and then
                Rule.Others_Casing /= Casing_Scheme
+               --  We do not check if Rule.Rule_State = Enabled because the
+               --  disabled rule remembers all the previous settings
             then
                Error
                 ("redefining at " &
@@ -3827,6 +3815,12 @@ package body Gnatcheck.Rules.Custom_1 is
          Enable     => True,
          Defined_At => "");
 
+      Process_Rule_Parameter
+        (Rule       => Rule,
+         Param      => "Interrupt_Suffix=_Interrupt",
+         Enable     => True,
+         Defined_At => "");
+
    end Activate_In_Test_Mode;
 
    ----------------------------------------------------------
@@ -3872,6 +3866,8 @@ package body Gnatcheck.Rules.Custom_1 is
             return " [" & Rule.Class_Access_Suffix_Synonym.all & "]";
          elsif Var = 8 and then Rule.Access_Obj_Suffix_Synonym /= null then
             return " [" & Rule.Access_Obj_Suffix_Synonym.all & "]";
+         elsif Var = 9 and then Rule.Interrupt_Suffix_Synonym /= null then
+            return " [" & Rule.Interrupt_Suffix_Synonym.all & "]";
 
          else
             return " [" & Rule_Name (Rule) & ':' &
@@ -3883,9 +3879,11 @@ package body Gnatcheck.Rules.Custom_1 is
                        when 6     => "Class_Subtype_Suffix",
                        when 7     => "Class_Access_Suffix",
                        when 8     => "Access_Obj_Suffix",
+                       when 9     => "Interrupt_Suffix",
                        when others => "")
                    & "]";
          end if;
+
       end if;
 
    end Annotate_Rule;
@@ -3906,6 +3904,7 @@ package body Gnatcheck.Rules.Custom_1 is
       Free (Rule.Constant_Suffix);
       Free (Rule.Renaming_Suffix);
       Free (Rule.Access_Obj_Suffix);
+      Free (Rule.Interrupt_Suffix);
 
       Free (Rule.Type_Suffix_Synonym);
       Free (Rule.Access_Suffix_Synonym);
@@ -3914,7 +3913,7 @@ package body Gnatcheck.Rules.Custom_1 is
       Free (Rule.Constant_Suffix_Synonym);
       Free (Rule.Renaming_Suffix_Synonym);
       Free (Rule.Access_Obj_Suffix_Synonym);
-
+      Free (Rule.Interrupt_Suffix_Synonym);
    end Free_All_Suffixes;
 
    --------------------------------------
@@ -3959,9 +3958,10 @@ package body Gnatcheck.Rules.Custom_1 is
                     "#5#wrong suffix in access-to-access type name" &
                     "#6#wrong suffix in class-wide subtype name"    &
                     "#7#wrong suffix in access-to-class type name"  &
-                    "#8#wrong suffix in access object name");
+                    "#8#wrong suffix in access object name"         &
+                    "#9#wrong suffix in interrupt handler name");
 
-      --  Excemption parameters:
+      --  Exemption parameters:
       Insert (Identifier_Suffixes_Exemption_Parameters, "type");
       Insert (Identifier_Suffixes_Exemption_Parameters, "access");
       Insert (Identifier_Suffixes_Exemption_Parameters, "access_obj");
@@ -3969,6 +3969,7 @@ package body Gnatcheck.Rules.Custom_1 is
       Insert (Identifier_Suffixes_Exemption_Parameters, "class_subtype");
       Insert (Identifier_Suffixes_Exemption_Parameters, "constant");
       Insert (Identifier_Suffixes_Exemption_Parameters, "renaming");
+      Insert (Identifier_Suffixes_Exemption_Parameters, "interrupt");
    end Init_Rule;
 
    --------------------------------------
@@ -4095,6 +4096,22 @@ package body Gnatcheck.Rules.Custom_1 is
             Report_No_EOL
               (Rule_Name_Padding &
                "Access_Obj_Suffix = " & Rule.Access_Obj_Suffix.all,
+              Indent_Level);
+         end if;
+
+      end if;
+
+      if Rule.Interrupt_Suffix /= null then
+
+         if First_Param then
+            Report_No_EOL
+              (": Interrupt_Suffix = " & Rule.Interrupt_Suffix.all);
+            First_Param := False;
+         else
+            Report (",");
+            Report_No_EOL
+              (Rule_Name_Padding &
+               "Interrupt_Suffix = " & Rule.Interrupt_Suffix.all,
               Indent_Level);
          end if;
 
@@ -4243,6 +4260,26 @@ package body Gnatcheck.Rules.Custom_1 is
 
       end if;
 
+      if Rule.Interrupt_Suffix /= null then
+
+         if First_Param then
+            Put (Rule_File,
+                 ": Interrupt_Suffix = " & Rule.Interrupt_Suffix.all);
+            First_Param := False;
+         else
+            Put_Line (Rule_File, ",");
+
+            for J in 1 .. Indent_Level loop
+               Put (Rule_File, Get_Indent_String);
+            end loop;
+
+            Put (Rule_File,
+                 Rule_Name_Padding &
+                 "Interrupt_Suffix = " & Rule.Interrupt_Suffix.all);
+         end if;
+
+      end if;
+
    end Print_Rule_To_File;
 
    --------------------------------------------------
@@ -4346,7 +4383,12 @@ package body Gnatcheck.Rules.Custom_1 is
                "access_obj_suffix"
             then
                Free (Rule.Access_Obj_Suffix);
-               Free (Rule.Access_Obj_Suffix);
+               Free (Rule.Access_Obj_Suffix_Synonym);
+            elsif To_Lower (Param (First_Par_Idx .. Last_Par_Idx)) =
+               "interrupt_suffix"
+            then
+               Free (Rule.Interrupt_Suffix);
+               Free (Rule.Interrupt_Suffix_Synonym);
             else
                Error
                 ("(" & Rule.Name.all & ") wrong parameter : " &
@@ -4472,6 +4514,21 @@ package body Gnatcheck.Rules.Custom_1 is
                   if Has_Synonym (Rule) then
                      Free (Rule.Access_Obj_Suffix_Synonym);
                      Rule.Access_Obj_Suffix_Synonym :=
+                       new String'(Rule_Synonym (Rule));
+                  end if;
+
+                  Rule.Rule_State := Enabled;
+
+               elsif To_Lower (Param (First_Par_Idx .. Last_Par_Idx)) =
+                  "interrupt_suffix"
+               then
+
+                  Rule.Interrupt_Suffix :=
+                    new String'(Param (First_Str_Idx .. Last_Str_Idx));
+
+                  if Has_Synonym (Rule) then
+                     Free (Rule.Interrupt_Suffix_Synonym);
+                     Rule.Interrupt_Suffix_Synonym :=
                        new String'(Rule_Synonym (Rule));
                   end if;
 
@@ -4740,7 +4797,7 @@ package body Gnatcheck.Rules.Custom_1 is
                                 not Is_Nil (Corresponding_Constant_Declaration
                                               (Element)))
                then
-                  --  Check for access suffix. The case of a defered constant
+                  --  Check for access suffix. The case of a deferred constant
                   --  and the corresponding full constant declarations is
                   --  filtered out
                   Tmp := Object_Declaration_View (Tmp);
@@ -4783,7 +4840,7 @@ package body Gnatcheck.Rules.Custom_1 is
                            when A_Private_Type_Declaration =>
                               --  For private type, we do only one step
                               --  attempting to go from private to full view.
-                              --  The reason is that for full unvinding of all
+                              --  The reason is that for full unwinding of all
                               --  possible subtyping, derivation and privating
                               --  it is very hard to define which information
                               --  is visible at the place of Element
@@ -4860,6 +4917,19 @@ package body Gnatcheck.Rules.Custom_1 is
                   State.Diagnosis := 4;
                end if;
 
+            when A_Procedure_Declaration =>
+
+               if Rule.Interrupt_Suffix /= null
+                 and then
+                  Is_Interrupt_Handler (Tmp)
+                 and then
+                  not Has_Suffix
+                       (Element, To_Wide_String (Rule.Interrupt_Suffix.all))
+               then
+                  State.Detected  := True;
+                  State.Diagnosis := 9;
+               end if;
+
             when others =>
                null;
          end case;
@@ -4867,7 +4937,6 @@ package body Gnatcheck.Rules.Custom_1 is
       end if;
 
    end Rule_Check_Pre_Op;
-
    ------------------------------------------
    -- Rule_Parameter (Identifier_Suffixes) --
    ------------------------------------------
@@ -4893,6 +4962,8 @@ package body Gnatcheck.Rules.Custom_1 is
          return "type";
       elsif Index (Diag, "renaming") /= 0 then
          return "renaming";
+      elsif Index (Diag, "interrupt") /= 0 then
+         return "interrupt";
       else
          return "";
       end if;
@@ -4915,6 +4986,7 @@ package body Gnatcheck.Rules.Custom_1 is
       Rule.Class_Access_Suffix     := null;
       Rule.Constant_Suffix         := new String'("_C");
       Rule.Renaming_Suffix         := new String'("_R");
+      Rule.Interrupt_Suffix        := null;
    end Set_Rule_Defaults;
 
    ------------------------------------------
@@ -4980,6 +5052,13 @@ package body Gnatcheck.Rules.Custom_1 is
          XML_Report
            ("<parameter>Access_Obj_Suffix=" &
                Rule.Access_Obj_Suffix.all   & "</parameter>",
+            Indent_Level + 1);
+      end if;
+
+      if Rule.Interrupt_Suffix /= null then
+         XML_Report
+           ("<parameter>Interrupt_Suffix=" &
+               Rule.Interrupt_Suffix.all   & "</parameter>",
             Indent_Level + 1);
       end if;
 
@@ -5066,6 +5145,19 @@ package body Gnatcheck.Rules.Custom_1 is
             " switch-off=""-R"                     &
             Rule.Name.all                          &
             ":Access_Obj_Suffix"""                 &
+            "/>");
+
+      Info (Level * Ident_String                   &
+            "<field switch=""+R"                   &
+            Rule.Name.all                          &
+            ":Interrupt_Suffix"""                  &
+            " label="""                            &
+            "suffix for interrupt handler names"   &
+            " (empty string disables check)"""     &
+            " separator=""="""                     &
+            " switch-off=""-R"                     &
+            Rule.Name.all                          &
+            ":Interrupt_Suffix"""                  &
             "/>");
 
       --  Specifying the dependencies between the default suffixes and the
@@ -5667,7 +5759,7 @@ package body Gnatcheck.Rules.Custom_1 is
                     "#11#%1% does not start with prefix %2% "      &
                     "required for exceptions");
 
-      --  Excemption parameters:
+      --  Exemption parameters:
       Insert (Identifier_Prefixes_Exemption_Parameters, "type");
       Insert (Identifier_Prefixes_Exemption_Parameters, "concurrent");
       Insert (Identifier_Prefixes_Exemption_Parameters, "access");
@@ -7152,6 +7244,68 @@ package body Gnatcheck.Rules.Custom_1 is
 
    end Rule_Check_Pre_Op;
 
+   ----------------------
+   -- Numeric_Indexing --
+   ----------------------
+
+   ----------------------------------
+   -- Init_Rule (Numeric_Indexing) --
+   ----------------------------------
+
+   procedure Init_Rule (Rule : in out Numeric_Indexing_Rule_Type) is
+   begin
+      Init_Rule (Rule_Template (Rule));
+
+      Rule.Name        := new String'("Numeric_Indexing");
+      Rule.Rule_Status := Fully_Implemented;
+      Rule.Help_Info   := new String'("use integer literals as indexes");
+      Rule.Diagnosis   := new String'("integer literal as index value");
+   end Init_Rule;
+
+   ------------------------------------------
+   -- Rule_Check_Pre_Op (Numeric_Indexing) --
+   ------------------------------------------
+
+   procedure Rule_Check_Pre_Op
+     (Rule    : in out Numeric_Indexing_Rule_Type;
+      Element :        Asis.Element;
+      Control : in out Traverse_Control;
+      State   : in out Rule_Traversal_State)
+   is
+      pragma Unreferenced (Rule, Control);
+      EE   : Asis.Element;
+      Call : Asis.Element;
+      Pref : Asis.Element;
+   begin
+
+      if Expression_Kind (Element) = An_Integer_Literal then
+         EE := Get_Enclosing_Element;
+
+         if Expression_Kind (EE) = An_Indexed_Component then
+            State.Detected := True;
+         elsif Association_Kind (EE) = A_Parameter_Association then
+            Call := Get_Enclosing_Element (1);
+            EE   := Get_Enclosing_Element (2);
+
+            if Expression_Kind (EE) = An_Indexed_Component then
+               --  Check if we have a call to a predefined unary "-"
+
+               Pref := Prefix (Call);
+               Pref := Normalize_Reference (Pref);
+
+               if Operator_Kind (Pref) = A_Unary_Minus_Operator
+                 and then
+                  Is_Predefined_Operator (Pref)
+               then
+                  State.Detected := True;
+               end if;
+            end if;
+         end if;
+
+      end if;
+
+   end Rule_Check_Pre_Op;
+
    ---------------------------------
    -- Non_Short_Circuit_Operators --
    ---------------------------------
@@ -7516,7 +7670,7 @@ package body Gnatcheck.Rules.Custom_1 is
       end if;
 
       if Enable then
-         if ASIS_UL.Debug.Debug_Flag_W
+         if Gnatcheck.Options.Check_Param_Redefinition
            and then
             Rule.Rule_State = Enabled
          then
@@ -7603,8 +7757,10 @@ package body Gnatcheck.Rules.Custom_1 is
 
       if Arg_Kind in An_Integer_Literal .. A_Real_Literal then
 
-         if Arg_Kind = An_Integer_Literal then
-
+         if Arg_Kind = An_Integer_Literal
+           and then
+            Rule.Up_To > 0
+         then
             begin
                Integer_Literal_Value :=
                  Natural'Value (To_String (Value_Image (Element)));
@@ -7612,8 +7768,13 @@ package body Gnatcheck.Rules.Custom_1 is
                when Constraint_Error =>
                   --  The value is definitely too big to be an exception for
                   --  this rule!
-                  return;
+                  Integer_Literal_Value := Natural'Last;
             end;
+
+            if Integer_Literal_Value <= Rule.Up_To then
+               --  Literal is too small to be flagged
+               return;
+            end if;
 
          end if;
 
@@ -7622,76 +7783,64 @@ package body Gnatcheck.Rules.Custom_1 is
             Old_Encl_El : Asis.Element := Element;
             Step_Up     : Elmt_Idx     := 0;
          begin
-            if Arg_Kind = An_Integer_Literal
-              and then
-               Integer_Literal_Value <= Rule.Up_To
-            then
+            while Element_Kind (Encl_El) = An_Expression
+                or else
+                  Path_Kind (Encl_El) in
+                    A_Case_Expression_Path .. An_Else_Expression_Path
+                or else
+                  (Element_Kind (Encl_El) = An_Association
+                  and then
+                   Association_Kind (Encl_El) /=
+                     An_Array_Component_Association)
+                or else
+                   (Association_Kind (Encl_El) =
+                     An_Array_Component_Association
+                   and then
+                     Is_Equal (Old_Encl_El, Component_Expression (Encl_El)))
+                or else
+                  (Definition_Kind (Encl_El) = A_Discrete_Subtype_Definition
+                 and then
+                   Declaration_Kind (Get_Enclosing_Element (Step_Up + 1)) =
+                     A_Loop_Parameter_Specification)
+            loop
+               Step_Up     := Step_Up + 1;
+               Old_Encl_El := Encl_El;
+               Encl_El     := Get_Enclosing_Element (Step_Up);
+            end loop;
 
-               if Expression_Kind (Encl_El) = An_Indexed_Component then
+            if not (Declaration_Kind (Encl_El) = A_Constant_Declaration
+                  or else
+                   Declaration_Kind (Encl_El) in
+                     An_Integer_Number_Declaration ..
+                     A_Real_Number_Declaration
+                  or else
+                   Clause_Kind (Encl_El)  in
+                     A_Representation_Clause | A_Component_Clause
+                  or else
+                   Definition_Kind (Encl_El) = An_Aspect_Specification
+                  or else
+                   (Discrete_Range_Kind (Encl_El) =
+                      A_Discrete_Simple_Expression_Range
+                   and then
+                    Clause_Kind (Get_Enclosing_Element (Step_Up + 1)) =
+                      A_Component_Clause))
+            then
+               if Rule.Statements_Only then
+                  State.Detected :=
+                    Element_Kind (Encl_El) in A_Statement .. A_Path
+                      or else
+                    Declaration_Kind (Encl_El) =
+                      A_Loop_Parameter_Specification;
+               else
                   State.Detected := True;
                end if;
-
-            else
-               while Element_Kind (Encl_El) = An_Expression
-                   or else
-                     Path_Kind (Encl_El) in
-                       A_Case_Expression_Path .. An_Else_Expression_Path
-                   or else
-                     (Element_Kind (Encl_El) = An_Association
-                     and then
-                      Association_Kind (Encl_El) /=
-                        An_Array_Component_Association)
-                   or else
-                      (Association_Kind (Encl_El) =
-                        An_Array_Component_Association
-                      and then
-                        Is_Equal (Old_Encl_El, Component_Expression (Encl_El)))
-                   or else
-                     (Definition_Kind (Encl_El) = A_Discrete_Subtype_Definition
-                    and then
-                      Declaration_Kind (Get_Enclosing_Element (Step_Up + 1)) =
-                        A_Loop_Parameter_Specification)
-               loop
-                  Step_Up     := Step_Up + 1;
-                  Old_Encl_El := Encl_El;
-                  Encl_El     := Get_Enclosing_Element (Step_Up);
-               end loop;
-
-               if not (Declaration_Kind (Encl_El) = A_Constant_Declaration
-                     or else
-                      Declaration_Kind (Encl_El) in
-                        An_Integer_Number_Declaration ..
-                        A_Real_Number_Declaration
-                     or else
-                      Clause_Kind (Encl_El)  in
-                        A_Representation_Clause | A_Component_Clause
-                     or else
-                      Definition_Kind (Encl_El) = An_Aspect_Specification
-                     or else
-                      (Discrete_Range_Kind (Encl_El) =
-                         A_Discrete_Simple_Expression_Range
-                      and then
-                       Clause_Kind (Get_Enclosing_Element (Step_Up + 1)) =
-                         A_Component_Clause))
-               then
-                  if Rule.Statements_Only then
-                     State.Detected :=
-                       Element_Kind (Encl_El) in A_Statement .. A_Path
-                         or else
-                       Declaration_Kind (Encl_El) =
-                         A_Loop_Parameter_Specification;
-                  else
-                     State.Detected := True;
-                  end if;
-               end if;
-
             end if;
+
          end;
 
          if State.Detected then
             State.Diag_Params := Enter_String ("%1%" &
               To_String (Value_Image (Element)));
-
          end if;
 
       end if;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2006-2017, AdaCore                     --
+--                     Copyright (C) 2006-2018, AdaCore                     --
 --                                                                          --
 -- GNATCHECK  is  free  software;  you can redistribute it and/or modify it --
 -- under terms of the  GNU  General Public License as published by the Free --
@@ -1023,6 +1023,7 @@ package Gnatcheck.Rules.Custom_1 is
    --      - formal object declarations
    --    * package renaming declarations (but not generic package renaming
    --      declarations
+   --    * (protected) subprograms used as unterrupt handlers
    --
    --  This rule may have parameters. When used without parameters, the
    --  following checks are made:
@@ -1035,6 +1036,8 @@ package Gnatcheck.Rules.Custom_1 is
    --    * names defining package renamings end with '_R'
    --
    --    * the check for access type objects is not enabled
+   --
+   --    * the check for interrupt hundlers is not enabled
    --
    --  Defined names from incomplete type declarations are not checked.
    --
@@ -1108,6 +1111,9 @@ package Gnatcheck.Rules.Custom_1 is
    --                               have an access type (including types
    --                               derived from access types)
    --
+   --      Interrupt_Suffix       - specifies the suffix for protected
+   --                               subprograms used as interrupt handlers
+   --
    --  o For -R option:
    --
    --      All_Suffixes           - remove all the suffixes specified for the
@@ -1154,6 +1160,10 @@ package Gnatcheck.Rules.Custom_1 is
    --                               access types, this disables checks for
    --                               such objects. It does not disable any
    --                               other checks for this rule.
+   --      Interrupt_Suffix       - removes the suffix for protected
+   --                               subprograms used as interrupt handlers. It
+   --                               does not disable any other checks for this
+   --                               rule.
    --
    --  If more than one parameter is used, parameters should be separated by
    --  comma.
@@ -1203,6 +1213,9 @@ package Gnatcheck.Rules.Custom_1 is
 
       Access_Obj_Suffix               : String_Access;
       Access_Obj_Suffix_Synonym       : Rule_Name_Str;
+
+      Interrupt_Suffix                : String_Access;
+      Interrupt_Suffix_Synonym        : Rule_Name_Str;
    end record;
 
    overriding procedure Activate_In_Test_Mode
@@ -1384,6 +1397,32 @@ package Gnatcheck.Rules.Custom_1 is
    Improperly_Located_Instantiations_Rule :
      aliased Improperly_Located_Instantiations_Rule_Type;
 
+   ----------------------
+   -- Numeric_Indexing --
+   ----------------------
+
+   --  Flag numeric literals, including those preceded by an predefined unary
+   --  minus, if they are used as index expressions in array components.
+   --  Literals that are subcomponents of index expressions are not flagged
+   --  (other than the aforementioned case of unary minus)..
+   --
+   --  This rule has no parameters.
+
+   type Numeric_Indexing_Rule_Type is new Rule_Template
+     with null record;
+
+   procedure Rule_Check_Pre_Op
+     (Rule    : in out Numeric_Indexing_Rule_Type;
+      Element :        Asis.Element;
+      Control : in out Traverse_Control;
+      State   : in out Rule_Traversal_State);
+   --  If Element is an integer literal checks if it is used as an index
+   --  expression.
+
+   procedure Init_Rule (Rule : in out Numeric_Indexing_Rule_Type);
+
+   Numeric_Indexing_Rule : aliased Numeric_Indexing_Rule_Type;
+
    ---------------------------------
    -- Non_Short_Circuit_Operators --
    ---------------------------------
@@ -1470,11 +1509,11 @@ package Gnatcheck.Rules.Custom_1 is
    --  * a literal is a subcomponet of the initialization expression in a
    --    constant declaration or a number declaration;
    --
-   --  * a literal is a part of a aspect clause or an aspect defitition;
+   --  * a literal is a part of a aspect clause or an aspect definition;
    --
    --  * a literal is an integer literal that is less than or equal to a value
    --    specified by the rule parameter (if no parameter is set, this value
-   --    is 1 (except the case when it is an index expression)
+   --    is 1;
    --
    --  The rule may have the following parameters:
    --
@@ -1494,9 +1533,6 @@ package Gnatcheck.Rules.Custom_1 is
    --  for this rule does not have any parameter, it turns the rule off and
    --  resets the default rule mode (all the literals except integer literals
    --  0 and 1 are checked in any context)
-   --
-   --  (What about literals in representation clauses? Default expressions? The
-   --  rule may need some ramification.)
 
    type Numeric_Literals_Rule_Type is new Rule_Template with record
      Up_To           : Integer := 1;

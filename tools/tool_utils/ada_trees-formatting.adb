@@ -40,7 +40,6 @@ with ASIS_UL.Common;
 with Pp.Scanner; use Pp.Scanner.Token_Vectors;
 
 package body Ada_Trees.Formatting is
-   use Buffers.Marker_Vectors;
 
    --  Hard and soft line breaks:
    --
@@ -667,7 +666,7 @@ package body Ada_Trees.Formatting is
      (Ada_Tree_Base, Error_Message);
    use Lines_Data_Pkg;
    use Line_Break_Vectors;
-   use Tab_Vectors, Tab_In_Line_Vectors, Tab_In_Line_Vector_Vectors;
+   use Tab_Vectors;
    Lines_Data : Lines_Data_Rec;
 
    Out_Buf : Buffer renames Lines_Data.Out_Buf;
@@ -734,13 +733,8 @@ package body Ada_Trees.Formatting is
             declare
                T : constant String :=
                  To_UTF8 (W_Str (Template_Table (Kind).all));
-
             begin
-               Put
-                 ("--  \1 => \2",
-                  Image (Kind),
-                  (if Template_Table (Kind) = null then "null"
-                   else """" & T & """"));
+               Put ("--  \1 => \2", Image (Kind), """" & T & """");
                if Count (T, "[") /= Count (T, "]") then
                   Put ("    MISMATCHED [...]");
                   raise Program_Error;

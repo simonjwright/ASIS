@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2004-2017, AdaCore                     --
+--                     Copyright (C) 2004-2019, AdaCore                     --
 --                                                                          --
 -- GNATCHECK  is  free  software;  you can redistribute it and/or modify it --
 -- under terms of the  GNU  General Public License as published by the Free --
@@ -28,7 +28,7 @@ pragma Ada_2012;
 with Ada.Strings.Fixed;          use Ada.Strings.Fixed;
 
 with ASIS_UL.Common;
-with ASIS_UL.Debug;
+with ASIS_UL.Debug;              use ASIS_UL.Debug;
 with ASIS_UL.Global_State.CG.Conditions;
 with ASIS_UL.Misc;               use ASIS_UL.Misc;
 with ASIS_UL.Output;             use ASIS_UL.Output;
@@ -37,6 +37,7 @@ with Gnatcheck.Categories;       use Gnatcheck.Categories;
 with Gnatcheck.Rules.Custom_1;   use Gnatcheck.Rules.Custom_1;
 with Gnatcheck.Rules.Custom_2;   use Gnatcheck.Rules.Custom_2;
 with Gnatcheck.Rules.Custom_3;   use Gnatcheck.Rules.Custom_3;
+with Gnatcheck.Rules.Custom_4;   use Gnatcheck.Rules.Custom_4;
 with Gnatcheck.Rules.Default;    use Gnatcheck.Rules.Default;
 with Gnatcheck.Rules.Global;     use Gnatcheck.Rules.Global;
 with Gnatcheck.Rules.Metrics;    use Gnatcheck.Rules.Metrics;
@@ -55,6 +56,10 @@ package body Gnatcheck.Rules is
    --  Initializes its parameter (by calling Init_Rule for it) and creates
    --  the corresponding element in the rule table for this rule. Ensures that
    --  all the rules have unique names (casing is not important)
+
+   function Rem_Level (Rule : Rule_Template) return String;
+   --  If Debug_Flag_RR is ON Returns the (string image of the) rule
+   --  remediation level. Otherwise returns null string.
 
    ---------------------------
    -- Activate_In_Test_Mode --
@@ -338,6 +343,7 @@ package body Gnatcheck.Rules is
    begin
       Rule.Rule_State                 := Disabled;
       Rule.Rule_Status                := Under_Construction;
+      Rule.Remediation_Level          := Easy;
       Rule.Rule_Category              := No_Category;
       Rule.Next_In_Category           := No_Rule;
       Rule.Check_In_Expanded_Generics := False;
@@ -552,7 +558,8 @@ package body Gnatcheck.Rules is
    procedure Print_Rule_Help (Rule : Rule_Template) is
    begin
       Info
-        (Message  => " " & Rule.Name.all & " - " & Rule.Help_Info.all,
+        (Message  => " " & Rule.Name.all  & " - " & Rule.Help_Info.all &
+                     Rem_Level (Rule),
          Line_Len => 79,
          Spacing  => 2);
    end Print_Rule_Help;
@@ -613,7 +620,7 @@ package body Gnatcheck.Rules is
 
          if Enable then
 
-            if ASIS_UL.Debug.Debug_Flag_W
+            if Gnatcheck.Options.Check_Param_Redefinition
               and then
                Rule.Rule_State = Enabled
             then
@@ -687,7 +694,7 @@ package body Gnatcheck.Rules is
                       Param);
                Rule.Rule_State := Disabled;
             else
-               if ASIS_UL.Debug.Debug_Flag_W
+               if Gnatcheck.Options.Check_Param_Redefinition
                  and then
                   Rule.Rule_State = Enabled
                  and then
@@ -786,8 +793,20 @@ package body Gnatcheck.Rules is
 
    procedure Register_Rules is
    begin
+      Register_Rule (Rule        => Abort_Statements_Rule'Access,
+                     In_Category => Feature_Use_Detection'Access);
+
       Register_Rule (Rule        => Abstract_Type_Declarations_Rule'Access,
                      In_Category => Feature_Use_Detection'Access);
+
+      Register_Rule
+        (Rule        =>
+           Address_Specifications_For_Initialized_Objects_Rule'Access,
+         In_Category => Programming_Practices'Access);
+
+      Register_Rule
+        (Rule        => Address_Specifications_For_Local_Objects_Rule'Access,
+         In_Category => Programming_Practices'Access);
 
       Register_Rule (Rule        => Annotated_Comments_Rule'Access,
                      In_Category => Spark'Access);
@@ -800,6 +819,10 @@ package body Gnatcheck.Rules is
 
       Register_Rule (Rule        => Binary_Case_Statements_Rule'Access,
                      In_Category => Programming_Practices'Access);
+
+      Register_Rule
+        (Rule        => Bit_Records_Without_Layout_Definition_Rule'Access,
+         In_Category => Portability'Access);
 
       Register_Rule (Rule        => Blocks_Rule'Access,
                      In_Category => Feature_Use_Detection'Access);
@@ -815,6 +838,9 @@ package body Gnatcheck.Rules is
       Register_Rule (Rule        => Conditional_Expressions_Rule'Access,
                      In_Category => Feature_Use_Detection'Access);
 
+      Register_Rule (Rule        => Constructors_Rule'Access,
+                     In_Category => Object_Oriented_Features'Access);
+
       Register_Rule (Rule        => Controlled_Type_Declarations_Rule'Access,
                      In_Category => Feature_Use_Detection'Access);
 
@@ -825,6 +851,9 @@ package body Gnatcheck.Rules is
                      In_Category => Object_Oriented_Features'Access);
 
       Register_Rule (Rule        => Deeply_Nested_Generics_Rule'Access,
+                     In_Category => Program_Structure'Access);
+
+      Register_Rule (Rule        => Deep_Library_Hierarchy_Rule'Access,
                      In_Category => Program_Structure'Access);
 
       Register_Rule (Rule        => Deeply_Nested_Inlining_Rule'Access,
@@ -848,6 +877,9 @@ package body Gnatcheck.Rules is
 
       Register_Rule (Rule        => Discriminated_Records_Rule'Access,
                      In_Category => Feature_Use_Detection'Access);
+
+      Register_Rule (Rule        => Downward_View_Conversions_Rule'Access,
+                     In_Category => Object_Oriented_Features'Access);
 
       Register_Rule
         (Rule        => Enumeration_Ranges_In_CASE_Statements_Rule'Access,
@@ -926,11 +958,21 @@ package body Gnatcheck.Rules is
         (Rule        => Improperly_Located_Instantiations_Rule'Access,
          In_Category => Feature_Use_Detection'Access);
 
+      Register_Rule
+        (Rule        => Incomplete_Representation_Specifications_Rule'Access,
+         In_Category => Portability'Access);
+
       Register_Rule (Rule        => Library_Level_Subprograms_Rule'Access,
                      In_Category => Feature_Use_Detection'Access);
 
       Register_Rule (Rule        => Local_Packages_Rule'Access,
                      In_Category => Program_Structure'Access);
+
+      Register_Rule (Rule        => Local_USE_Clauses_Rule'Access,
+                     In_Category => Programming_Practices'Access);
+
+      Register_Rule (Rule        => Max_Identifier_Length_Rule'Access,
+                     In_Category => Readability'Access);
 
       Register_Rule (Rule        => Metrics_Cyclomatic_Complexity_Rule'Access,
                      In_Category => Gnatcheck.Categories.Metrics'Access);
@@ -954,6 +996,10 @@ package body Gnatcheck.Rules is
          In_Category => Readability'Access);
 
       Register_Rule
+        (Rule        => Misplaced_Representation_Items_Rule'Access,
+         In_Category => Programming_Practices'Access);
+
+      Register_Rule
         (Rule        => Multiple_Entries_In_Protected_Definitions_Rule'Access,
          In_Category => Concurrency'Access);
 
@@ -962,6 +1008,12 @@ package body Gnatcheck.Rules is
 
       Register_Rule (Rule        => Nested_Subprograms_Rule'Access,
                      In_Category => Programming_Practices'Access);
+
+      Register_Rule (Rule        => No_Inherited_Classwide_Pre_Rule'Access,
+                     In_Category => Object_Oriented_Features'Access);
+
+      Register_Rule (Rule        => No_Explicit_Real_Range_Rule'Access,
+                     In_Category => Portability'Access);
 
       Register_Rule
         (Rule        => No_Scalar_Storage_Order_Specified_Rule'Access,
@@ -985,11 +1037,24 @@ package body Gnatcheck.Rules is
       Register_Rule (Rule        => Null_Paths_Rule'Access,
                      In_Category => Programming_Practices'Access);
 
+      Register_Rule (Rule        => Number_Declarations_Rule'Access,
+                     In_Category => Feature_Use_Detection'Access);
+
+      Register_Rule (Rule        => Numeric_Indexing_Rule'Access,
+                     In_Category => Feature_Use_Detection'Access);
+
       Register_Rule (Rule        => Numeric_Literals_Rule'Access,
                      In_Category => Feature_Use_Detection'Access);
 
+      Register_Rule
+        (Rule        => Object_Declarations_Out_Of_Order_Rule'Access,
+         In_Category => Readability'Access);
+
       Register_Rule (Rule        => Objects_Of_Anonymous_Types_Rule'Access,
                      In_Category => Programming_Practices'Access);
+
+      Register_Rule (Rule        => One_Construct_Per_Line_Rule'Access,
+                     In_Category => Readability'Access);
 
       Register_Rule (Rule        => OTHERS_In_Aggregates_Rule'Access,
                      In_Category => Programming_Practices'Access);
@@ -998,6 +1063,9 @@ package body Gnatcheck.Rules is
                      In_Category => Programming_Practices'Access);
 
       Register_Rule (Rule        => OTHERS_In_Exception_Handlers_Rule'Access,
+                     In_Category => Programming_Practices'Access);
+
+      Register_Rule (Rule        => Outbound_Protected_Assignments_Rule'Access,
                      In_Category => Programming_Practices'Access);
 
       Register_Rule (Rule        => Outer_Loop_Exits_Rule'Access,
@@ -1040,6 +1108,9 @@ package body Gnatcheck.Rules is
       Register_Rule (Rule        => Predicate_Testing_Rule'Access,
                      In_Category => Feature_Use_Detection'Access);
 
+      Register_Rule (Rule        => Printable_ASCII_Rule'Access,
+                     In_Category => Portability'Access);
+
       Register_Rule (Rule        => Quantified_Expressions_Rule'Access,
                      In_Category => Feature_Use_Detection'Access);
 
@@ -1053,6 +1124,9 @@ package body Gnatcheck.Rules is
       Register_Rule (Rule        => Recursive_Subprograms_Rule'Access,
                      In_Category => Programming_Practices'Access);
 
+      Register_Rule (Rule        => Relative_Delay_Statements_Rule'Access,
+                     In_Category => Feature_Use_Detection'Access);
+
       Register_Rule (Rule        => Representation_Specifications_Rule'Access,
                      In_Category => Feature_Use_Detection'Access);
 
@@ -1062,13 +1136,31 @@ package body Gnatcheck.Rules is
         (Rule        => Separate_Numeric_Error_Handlers_Rule'Access,
          In_Category => Portability'Access);
 
+      Register_Rule (Rule        => Single_Value_Enumeration_Types_Rule'Access,
+                     In_Category => Programming_Practices'Access);
+
       Register_Rule (Rule        => Slices_Rule'Access,
                      In_Category => Spark'Access);
+
+      Register_Rule (Rule        => Specific_Parent_Type_Invariant_Rule'Access,
+                     In_Category => Object_Oriented_Features'Access);
+
+      Register_Rule (Rule        => Specific_Pre_Post_Rule'Access,
+                     In_Category => Object_Oriented_Features'Access);
+
+      Register_Rule (Rule        => Specific_Type_Invariants_Rule'Access,
+                     In_Category => Object_Oriented_Features'Access);
 
       Register_Rule (Rule        => Subprogram_Access_Rule'Access,
                      In_Category => Feature_Use_Detection'Access);
 
+      Register_Rule (Rule        => Too_Many_Dependencies_Rule'Access,
+                     In_Category => Feature_Use_Detection'Access);
+
       Register_Rule (Rule        => Too_Many_Parents_Rule'Access,
+                     In_Category => Object_Oriented_Features'Access);
+
+      Register_Rule (Rule        => Too_Many_Primitives_Rule'Access,
                      In_Category => Object_Oriented_Features'Access);
 
       Register_Rule (Rule        => Unassigned_OUT_Parameters_Rule'Access,
@@ -1089,6 +1181,9 @@ package body Gnatcheck.Rules is
                      In_Category => Feature_Use_Detection'Access);
 
       Register_Rule (Rule        => Unconditional_Exits_Rule'Access,
+                     In_Category => Feature_Use_Detection'Access);
+
+      Register_Rule (Rule        => Unconstrained_Arrays_Rule'Access,
                      In_Category => Feature_Use_Detection'Access);
 
       Register_Rule (Rule        => Uninitialized_Global_Variables_Rule'Access,
@@ -1112,6 +1207,21 @@ package body Gnatcheck.Rules is
          In_Category => Concurrency'Access);
 
    end Register_Rules;
+
+   ---------------
+   -- Rem_Level --
+   ---------------
+
+   function Rem_Level (Rule : Rule_Template) return String is
+   begin
+
+      if Debug_Flag_RR then
+         return " - " & Rule.Remediation_Level'Img;
+      else
+         return "";
+      end if;
+
+   end Rem_Level;
 
    ------------------------
    -- Rule_Check_Post_Op --

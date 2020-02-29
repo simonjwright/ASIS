@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                    Copyright (C) 2003-2016, AdaCore                      --
+--                    Copyright (C) 2003-2017, AdaCore                      --
 --                                                                          --
 -- GNATMETRIC  is  free software; you can  redistribute it and/or modify it --
 -- under terms of the  GNU  General Public License as published by the Free --
@@ -79,13 +79,14 @@ package body METRICS.Output is
       Info (" --version - Display version and exit");
       Info (" --help    - Display usage and exit");
       Info ("");
-      Info (" -Pproject        - Use project file project. Only one such switch can be used");
-      Info (" -U               - process all sources of the argument project");
-      Info (" -U main          - process the closure of units rooted at unit main");
-      Info (" -Xname=value     - specify an external reference for argument project file");
-      Info (" --subdirs=dir    - specify subdirectory to place the result files into");
-      Info (" --no_objects_dir - place results into current dir instead of project dir");
-      Info (" -eL              - follow all symbolic links when processing project files");
+      Info (" -Pproject         - Use project file project. Only one such switch can be used");
+      Info (" -U                - process all sources of the argument project");
+      Info (" -U main           - process the closure of units rooted at unit main");
+      Info (" -Xname=value      - specify an external reference for argument project file");
+      Info (" --subdirs=dir     - specify subdirectory to place the result files into");
+      Info (" --no_objects_dir  - place results into current dir instead of project dir");
+      Info (" -eL               - follow all symbolic links when processing project files");
+      Info (" --ignore=filename - do not process sources listed in filename");
 
       Info ("");
       Info (" -a    - process sources from RTL");

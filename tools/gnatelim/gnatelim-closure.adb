@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                    Copyright (C) 2009-2017, AdaCore                      --
+--                    Copyright (C) 2009-2018, AdaCore                      --
 --                                                                          --
 -- GNATELIM  is  free software;  you can  redistribute it and/or  modify it --
 -- under the terms of the  GNU  General Public License  as published by the --
@@ -34,7 +34,7 @@ with GNAT.Directory_Operations;       use GNAT.Directory_Operations;
 with GNAT.OS_Lib;                     use GNAT.OS_Lib;
 with GNAT.Table;
 
-with Asis.Implementation;
+--  with Asis.Implementation;
 
 with ASIS_UL.Common;                  use ASIS_UL.Common;
 with ASIS_UL.Compiler_Options;        use ASIS_UL.Compiler_Options;
@@ -45,6 +45,7 @@ with ASIS_UL.Output;                  use ASIS_UL.Output;
 with ASIS_UL.Projects;                use ASIS_UL.Projects;
 with ASIS_UL.Source_Table;            use ASIS_UL.Source_Table;
 with ASIS_UL.Source_Table.Processing; use ASIS_UL.Source_Table.Processing;
+--  with ASIS_UL.Source_Table.Processing; use ASIS_UL.Source_Table.Processing;
 
 with Gnatelim.Options;
 with Gnatelim.Projects;
@@ -72,6 +73,7 @@ package body Gnatelim.Closure is
    -----------------------
 
    procedure Get_Next_Source (Source : in out String_Access);
+   pragma Unreferenced (Get_Next_Source);
    --  Computes the name of the next source to compile using the call to
    --  'gnatmake -n ...' with the name of the main unit as the argument. If
    --  there is no source to compile any more, returns null;
@@ -101,35 +103,42 @@ package body Gnatelim.Closure is
    ---------------------
 
    procedure Process_Closure is
-      Next_Source : String_Access;
    begin
-      --  Here we have to repeat manually the general scheme of source
-      --  processing from ASIS_UL.Source_Table.Processing.Process_Sources,
-      --  but we have to add sources incrementally, after getting them from
-      --  gnatmake
+      if not Gnatelim.Options.Gnatelim_Prj.Is_Specified then
+         Error ("can only be called after a full successful build");
+         Error_No_Tool_Name ("cannot compute closure if no project set");
+         raise ASIS_UL.Common.Fatal_Error;
+      end if;
 
-      Asis.Implementation.Initialize ("-k -ws -asis05");
+      Gnatelim.Projects.Closure_Setup (Gnatelim.Options.Gnatelim_Prj);
 
-      Next_Source := new String'(Main_Subprogram_Name.all);
+      Change_Dir (Tool_Temp_Dir.all & Directory_Separator &
+                  Closure_Object_Subdir.all);
 
-      while Next_Source /= null loop
+      Gnatelim.Projects.Add_Main
+        (Gnatelim.Options.Gnatelim_Prj,
+         ASIS_UL.Options.Main_Subprogram_Name.all);
 
-         Add_Source_To_Process
-           (Fname              => Next_Source.all,
-            Duplication_Report => False,
-            Arg_Project        => Gnatelim.Options.Gnatelim_Prj);
+      if Debug_Flag_U then
+         Closure_Debug_Image_Mains;
+      end if;
 
-         Process_Source
-           (SF                 => Last_Source,
-            Only_Bodies        => False,
-            Need_Semantic_Info => True,
-            Add_Needed_Sources => True,
-            Keep_ALI_Files     => True);
+      loop
+         Process_Sources (Keep_ALI => True);
 
-         Get_Next_Source (Next_Source);
-
+         exit when Gnatelim.Projects.Closure_Complete
+                      (Gnatelim.Options.Gnatelim_Prj);
       end loop;
 
+      Change_Dir (Tool_Temp_Dir.all);
+
+      Gnatelim.Projects.Closure_Clean_Up (Gnatelim.Options.Gnatelim_Prj);
+
+   exception
+      when others =>
+         Change_Dir (Tool_Temp_Dir.all);
+         Gnatelim.Projects.Closure_Clean_Up (Gnatelim.Options.Gnatelim_Prj);
+         raise;
    end Process_Closure;
 
    -------------------------------------
@@ -304,17 +313,17 @@ package body Gnatelim.Closure is
          raise;
    end Read_Sources_From_Binder_Output;
 
-   ---------------------------------
-   -- Try_Get_Sources_From_Binder --
-   ---------------------------------
+   --------------------------------
+   -- Try_Get_Sources_From_Build --
+   --------------------------------
 
-   procedure Try_Get_Sources_From_Binder (Success : in out Boolean) is
+   procedure Try_Get_Sources_From_Build (Success : in out Boolean) is
    begin
       Change_Dir (Tool_Current_Dir.all);
 
       Read_Sources_From_Binder_Output (Success);
 
       Change_Dir (Tool_Temp_Dir.all);
-   end Try_Get_Sources_From_Binder;
+   end Try_Get_Sources_From_Build;
 
 end Gnatelim.Closure;

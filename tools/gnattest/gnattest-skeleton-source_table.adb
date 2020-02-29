@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2011-2016, AdaCore                     --
+--                     Copyright (C) 2011-2019, AdaCore                     --
 --                                                                          --
 -- GNATTEST  is  free  software;  you  can redistribute it and/or modify it --
 -- under terms of the  GNU  General Public License as published by the Free --
@@ -125,6 +125,7 @@ package body GNATtest.Skeleton.Source_Table is
       Imported_List       : List_Of_Strings.List;
       Limited_Withed      : String_Set.Set;
       Is_Externally_Built : Boolean;
+      Is_Library          : Boolean := False;
 
       Needed_For_Extention : Boolean := False;
    end record;
@@ -163,6 +164,21 @@ package body GNATtest.Skeleton.Source_Table is
           (Fname,
            Resolve_Links  => False,
              Case_Sensitive => False));
+
+      if
+        Source_Present (Full_Source_Name_String.all) and then
+        Get_Source_Status (Full_Source_Name_String.all) = Body_Reference
+      then
+         Trace (Me, "...replacing body reference");
+         New_SF_Record := SF_Table.Element (Full_Source_Name_String.all);
+         SF_Table.Delete (Full_Source_Name_String.all);
+         New_SF_Record.Status := Waiting;
+         Insert (SF_Table, Full_Source_Name_String.all, New_SF_Record);
+         return;
+      elsif Source_Present (Full_Source_Name_String.all) then
+         --  Duplicate, just ignore it
+         return;
+      end if;
 
       --  Making the new SF_Record
       New_SF_Record.Full_Source_Name :=
@@ -316,6 +332,8 @@ package body GNATtest.Skeleton.Source_Table is
 
       New_SF_Record : SF_Record;
    begin
+      Trace (Me, "adding source (as reference): " & Fname);
+
       if not Is_Regular_File (Fname) then
          Report_Std ("gnattest: " & Fname & " not found");
          return;
@@ -404,6 +422,11 @@ package body GNATtest.Skeleton.Source_Table is
 
       Insert (SF_Table, Full_Source_Name_String.all, New_SF_Record);
 
+      if not Main_Units.Is_Empty then
+         Sources_Left  := Sources_Left + 1;
+         Total_Sources := Total_Sources + 1;
+      end if;
+
       Free (Short_Source_Name_String);
       Free (Full_Source_Name_String);
    end Add_Body_Reference;
@@ -474,11 +497,6 @@ package body GNATtest.Skeleton.Source_Table is
 
          if Arg_Proj.Needed_For_Extention then
 
-            Relative_P_Path := new String'
-              (+Relative_Path
-                 (Create (+Arg_Proj.Path.all),
-                  Create (+Arg_Proj.Stub_Dir.all)));
-
             declare
                F : File_Array_Access;
             begin
@@ -493,8 +511,26 @@ package body GNATtest.Skeleton.Source_Table is
                      & Directory_Separator
                      & Unit_To_File_Name
                        (Stub_Project_Prefix & Current_Source_Infix & Proj))));
+
+               if Arg_Proj.Is_Library then
+                  Append
+                    (F,
+                     GNATCOLL.VFS.Create
+                       (+(Arg_Proj.Stub_Dir.all
+                        & Directory_Separator
+                        & Unit_To_File_Name
+                          (Stub_Project_Prefix
+                           & Current_Source_Infix
+                           & Proj
+                           & "_lib"))));
+               end if;
                Create_Dirs (F);
             end;
+
+            Relative_P_Path := new String'
+              (+Relative_Path
+                 (Create (+Arg_Proj.Path.all),
+                  Create (+Arg_Proj.Stub_Dir.all)));
 
             Trace
               (Me,
@@ -623,6 +659,23 @@ package body GNATtest.Skeleton.Source_Table is
                  (Stub_Project_Prefix & Current_Source_Infix & Proj)
                & """;");
             Put_New_Line;
+            if Arg_Proj.Is_Library then
+               S_Put
+                 (3,
+                  "for Library_Dir use """
+                  & Unit_To_File_Name
+                    (Stub_Project_Prefix
+                     & Current_Source_Infix & Proj & "_lib")
+                  & """;");
+               Put_New_Line;
+               S_Put
+                 (3,
+                  "for Library_Name use """
+                  & Unit_To_File_Name
+                    (Stub_Project_Prefix & Current_Source_Infix & Proj)
+                  & """;");
+               Put_New_Line;
+            end if;
             Put_New_Line;
 
             E_Cur := Current_Proj_Present_Sources.First;
@@ -786,11 +839,6 @@ package body GNATtest.Skeleton.Source_Table is
          --  generating stuff
          if Arg_Proj.Needed_For_Extention then
 
-            Relative_P_Path := new String'
-              (+Relative_Path
-                 (Create (+Arg_Proj.Path.all),
-                  Create (+Arg_Proj.Stub_Dir.all)));
-
             declare
                F : File_Array_Access;
             begin
@@ -805,8 +853,25 @@ package body GNATtest.Skeleton.Source_Table is
                      & Directory_Separator
                      & Unit_To_File_Name
                        (Stub_Project_Prefix & Current_Project_Infix & Proj))));
+               if Arg_Proj.Is_Library then
+                  Append
+                    (F,
+                     GNATCOLL.VFS.Create
+                       (+(Arg_Proj.Stub_Dir.all
+                        & Directory_Separator
+                        & Unit_To_File_Name
+                          (Stub_Project_Prefix
+                           & Current_Project_Infix
+                           & Proj
+                           & "_lib"))));
+               end if;
                Create_Dirs (F);
             end;
+
+            Relative_P_Path := new String'
+              (+Relative_Path
+                 (Create (+Arg_Proj.Path.all),
+                  Create (+Arg_Proj.Stub_Dir.all)));
 
             Trace
               (Me,
@@ -935,6 +1000,23 @@ package body GNATtest.Skeleton.Source_Table is
                  (Stub_Project_Prefix & Current_Project_Infix & Proj)
                & """;");
             Put_New_Line;
+            if Arg_Proj.Is_Library then
+               S_Put
+                 (3,
+                  "for Library_Dir use """
+                  & Unit_To_File_Name
+                    (Stub_Project_Prefix
+                     & Current_Project_Infix & Proj & "_lib")
+                  & """;");
+               Put_New_Line;
+               S_Put
+                 (3,
+                  "for Library_Name use """
+                  & Unit_To_File_Name
+                    (Stub_Project_Prefix & Current_Project_Infix & Proj)
+                  & """;");
+               Put_New_Line;
+            end if;
             Put_New_Line;
 
             E_Cur := Current_Proj_Present_Sources.First;
@@ -1076,9 +1158,13 @@ package body GNATtest.Skeleton.Source_Table is
           (Name           => Source_Name,
            Resolve_Links  => False,
            Case_Sensitive => False);
+      SR : constant SF_Record := Source_File_Table.Element (SF_Table, SN);
    begin
-      return Source_File_Table.Element
-        (SF_Table, SN).Test_Destination.all;
+      if SR.Test_Destination = null then
+         return "";
+      else
+         return SR.Test_Destination.all;
+      end if;
    end Get_Source_Output_Dir;
 
    ------------------------
@@ -1228,6 +1314,12 @@ package body GNATtest.Skeleton.Source_Table is
 
             if P = Source_Project_Tree.Root_Project then
                PR.Needed_For_Extention := True;
+            end if;
+
+            if Has_Attribute (P, Library_Name_Attribute)
+              and then Attribute_Value (P, Library_Name_Attribute) /= ""
+            then
+               PR.Is_Library := True;
             end if;
 
             PR.Path := new String'(P.Project_Path.Display_Full_Name);
@@ -1589,12 +1681,15 @@ package body GNATtest.Skeleton.Source_Table is
       SF_Rec_Key : String_Access;
       Cur        : Source_File_Table.Cursor := SF_Table.First;
    begin
+      Increase_Indent (Me, "Set_Subdir_Output");
 
       loop
          exit when Cur = Source_File_Table.No_Element;
 
          SF_Rec := Source_File_Table.Element (Cur);
          SF_Rec_Key := new String'(Key (Cur));
+
+         Trace (Me, "processing: " & SF_Rec_Key.all);
 
          Tmp_Str := new String'(Dir_Name (SF_Rec.Full_Source_Name.all));
 
@@ -1610,11 +1705,14 @@ package body GNATtest.Skeleton.Source_Table is
          Free (Tmp_Str);
       end loop;
 
+      Decrease_Indent (Me);
+
    end Set_Subdir_Output;
 
    -------------------------
    --  Set_Separate_Root  --
    -------------------------
+
    procedure Set_Separate_Root (Max_Common_Root : String) is
       SF_Rec     : SF_Record;
       Tmp_Str    : String_Access;
@@ -1623,12 +1721,16 @@ package body GNATtest.Skeleton.Source_Table is
 
       Idx : Integer;
    begin
+      Increase_Indent (Me, "Set_Separate_Root");
 
       loop
          exit when  Cur = Source_File_Table.No_Element;
 
          SF_Rec := Source_File_Table.Element (Cur);
          SF_Rec_Key := new String'(Key (Cur));
+
+         Trace (Me, "processing: " & SF_Rec_Key.all);
+
          Tmp_Str := new String'(Dir_Name (SF_Rec.Full_Source_Name.all));
 
          Idx := Max_Common_Root'Last + 1;
@@ -1644,6 +1746,8 @@ package body GNATtest.Skeleton.Source_Table is
          Free (SF_Rec_Key);
          Free (Tmp_Str);
       end loop;
+
+      Decrease_Indent (Me);
 
    end Set_Separate_Root;
 
@@ -1752,6 +1856,7 @@ package body GNATtest.Skeleton.Source_Table is
            Resolve_Links  => False,
            Case_Sensitive => False);
    begin
+      Trace (Me, "Set_Output_Dir for " & Source_Name);
       SF_Rec := SF_Table.Element (SN);
       SF_Rec.Test_Destination := new String'(Output_Dir);
       Replace (SF_Table, SN, SF_Rec);

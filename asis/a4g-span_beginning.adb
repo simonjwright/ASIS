@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 1995-2014, Free Software Foundation, Inc.       --
+--            Copyright (C) 1995-2018, Free Software Foundation, Inc.       --
 --                                                                          --
 -- ASIS-for-GNAT is free software; you can redistribute it and/or modify it --
 -- under terms of the  GNU General Public License  as published by the Free --
@@ -888,26 +888,21 @@ package body A4G.Span_Beginning is
          end;
 
          S := Search_Rightmost_Symbol (S, ')');
+      else
+         S := Get_Word_End (P       => S,
+                            In_Word => In_Identifier'Access);
+
+         S := Search_Next_Word (S);
+
+         S := Get_Word_End (P       => S,
+                            In_Word => In_Identifier'Access);
       end if;
 
-      S := Search_Rightmost_Symbol (S, ';');
+      S := Search_Next_Word (S);
+      S := Get_Word_End (P       => S,
+                         In_Word => In_Identifier'Access);
 
-      --  skipping "private"
-      S := Search_Prev_Word_Start (S);
-      if Tagged_Present (N) then
-         --  skipping "tagged"
-         S := Search_Prev_Word_Start (S);
-      end if;
-
-      --  skipping "abstract"
-      if Abstract_Present (N) then
-         S := Search_Prev_Word_Start (S);
-      end if;
-
-      --  skipping "limited"
-      if Limited_Present (N) then
-         S := Search_Prev_Word_Start (S);
-      end if;
+      S := Search_Next_Word (S);
 
       return S;
    end Private_Type_Definition_Beginning;

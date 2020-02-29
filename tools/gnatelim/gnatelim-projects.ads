@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                    Copyright (C) 2013-2014, AdaCore                      --
+--                    Copyright (C) 2013-2018, AdaCore                      --
 --                                                                          --
 -- GNATELIM  is  free software;  you can  redistribute it and/or  modify it --
 -- under the terms of the  GNU  General Public License  as published by the --
@@ -38,7 +38,7 @@ package Gnatelim.Projects is
 
    overriding function Compute_Project_Closure
      (My_Project  : Gnatelim_Project_Type)
-      return        Boolean is (False);
+      return        Boolean is (U_Option_Set);
    --  gnatelim requires the main unit to be specified explicitly.
 
    overriding procedure Print_Tool_Usage (My_Project : Gnatelim_Project_Type);

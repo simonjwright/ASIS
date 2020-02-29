@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 1999-2013, AdaCore                     --
+--                     Copyright (C) 1999-2018, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -453,6 +453,12 @@ package A4G.DDA_Aux is
    --
    --    Raises Variable_Rep_Info if the size depends on a variable other
    --    than a discriminant.
+
+   function Get_RM_Size
+     (Comp  : Entity_Id;
+      Discs : Repinfo.Discrim_List := Null_Discrims)
+      return  Uint;
+   --  Same as Get_Esize but obtains the value size (RM_Size)
 
    -------------------------------
    -- Computation of Attributes --

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                    Copyright (C) 2001-2016, AdaCore                      --
+--                    Copyright (C) 2001-2019, AdaCore                      --
 --                                                                          --
 -- GNATPP  is free software; you can redistribute it and/or modify it under --
 -- terms  of  the  GNU  General  Public  License  as  published by the Free --
@@ -29,6 +29,7 @@ with Ada.Containers.Bounded_Vectors;
 with Ada.Containers.Indefinite_Vectors;
 with System.WCh_Con;
 with Namet;
+with GNAT.OS_Lib; use GNAT.OS_Lib;
 
 with ASIS_UL.Vectors;
 with ASIS_UL.Char_Vectors; use ASIS_UL.Char_Vectors;
@@ -239,7 +240,7 @@ package Pp.Formatting is
       --  Same as Decimal_Grouping, but used when a base (including base 10)
       --  has been specified. E.g. "16#DEAD_BEEF#".
 
-      Pp_Off_String, Pp_On_String : access String := null;
+      Pp_Off_String, Pp_On_String : String_Access := null;
       --  Comment strings that cause pretty printing to be turned off and
       --  on. The initial lead "--" is not included, but initial leading
       --  blanks, if any are included.

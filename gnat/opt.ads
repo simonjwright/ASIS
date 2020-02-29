@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -366,7 +366,7 @@ package Opt is
    Check_Validity_Of_Parameters : Boolean := False;
    --  GNAT
    --  Set to True to check for proper scalar initialization of subprogram
-   --  parameters on both entry and exit. Turned on by??? turned off by???
+   --  parameters on both entry and exit. This is turned on by -gnateV.
 
    Check_Withs : Boolean := False;
    --  GNAT
@@ -462,18 +462,21 @@ package Opt is
    --    otherwise:   "pragma Default_Storage_Pool (X);" applies, and
    --                 this points to the name X.
    --  Push_Scope and Pop_Scope in Sem_Ch8 save and restore this value.
-   Default_Stack_Size : Int := -1;
-   --  GNATBIND
-   --  Set to default primary stack size in units of bytes. Set by
-   --  the -dnnn switch for the binder. A value of -1 indicates that no
-   --  default was set by the binder.
 
-   Default_Sec_Stack_Size : Int := -1;
+   No_Stack_Size : constant := -1;
+
+   Default_Stack_Size : Int := No_Stack_Size;
    --  GNATBIND
-   --  Set to default secondary stack size in units of bytes. Set by
-   --  the -Dnnn switch for the binder. A value of -1 indicates that no
-   --  default was set by the binder, and that the default should be the
-   --  initial value of System.Secondary_Stack.Default_Secondary_Stack_Size.
+   --  Set to default primary stack size in units of bytes. Set by the -dnnn
+   --  switch for the binder. A value of No_Stack_Size indicates that
+   --  no default was set by the binder.
+
+   Default_Sec_Stack_Size : Int := No_Stack_Size;
+   --  GNATBIND
+   --  Set to default secondary stack size in units of bytes. Set by the -Dnnn
+   --  switch for the binder. A value of No_Stack_Size indicates that no
+   --  default was set by the binder and the run-time value should be used
+   --  instead.
 
    Default_SSO : Character := ' ';
    --  GNAT
@@ -550,9 +553,13 @@ package Opt is
    --  GNAT
    --  Set to True to output info messages for static elabmodel (-gnatel)
 
-   Elab_Warnings : Boolean := False;
+   Elab_Warnings : Boolean := True;
    --  GNAT
-   --  Set to True to generate elaboration warnings (-gnatwl)
+   --  Set to True to generate elaboration warnings (-gnatwl). The warnings are
+   --  enabled by default because they carry the same importance as errors. The
+   --  compiler cannot emit actual errors because elaboration diagnostics need
+   --  dataflow analysis, which is not available. This behavior parallels that
+   --  of the old ABE mechanism.
 
    Error_Msg_Line_Length : Nat := 0;
    --  GNAT
@@ -632,6 +639,10 @@ package Opt is
    --  GNATBIND
    --  Set to True to store tracebacks in exception occurrences and enable
    --  symbolic tracebacks (-Es).
+
+   Expand_Nonbinary_Modular_Ops : Boolean := False;
+   --  Set to True to convert nonbinary modular additions into code
+   --  that relies on the front-end expansion of operator Mod.
 
    Extensions_Allowed : Boolean := False;
    --  GNAT
@@ -716,7 +727,7 @@ package Opt is
    --  Set True to activate inlining by front-end expansion (even on GCC
    --  targets, where inlining is normally handled by the back end). Set by
    --  the flag -gnatN (which is now considered obsolescent, since the GCC
-   --  back end can do a better job of inlining than the front end these days.
+   --  back end can do a better job of inlining than the front end these days).
 
    Full_Path_Name_For_Brief_Errors : Boolean := False;
    --  PROJECT MANAGER
@@ -735,9 +746,9 @@ package Opt is
    --  file name with extension stripped.
 
    Generate_C_Code : Boolean := False;
-   --  GNAT
+   --  GNAT, GNATBIND
    --  If True, the Cprint circuitry to generate C code output is activated.
-   --  Set True by use of -gnateg or -gnatd.V.
+   --  Set True by use of -gnateg or -gnatd.V for GNAT, and -G for GNATBIND.
 
    Generate_CodePeer_Messages : Boolean := False;
    --  GNAT
@@ -775,7 +786,7 @@ package Opt is
 
    Ghost_Mode : Ghost_Mode_Type := None;
    --  GNAT
-   --  Current Ghost mode setting
+   --  The current Ghost mode in effect
 
    Global_Discard_Names : Boolean := False;
    --  GNAT, GNATBIND
@@ -833,9 +844,15 @@ package Opt is
 
    Ignore_Unrecognized_VWY_Switches : Boolean := False;
    --  GNAT
-   --  Set True to ignore unrecognized y, V, w switches. Can be set True
-   --  by use of -gnateu, causing subsequent unrecognized switches to result
-   --  in a warning rather than an error.
+   --  Set True to ignore unrecognized y, V, w switches. Can be set True by
+   --  use of -gnateu, causing subsequent unrecognized switches to result in
+   --  a warning rather than an error.
+
+   Ignored_Ghost_Region : Node_Id := Empty;
+   --  GNAT
+   --  The start of the current ignored Ghost region. This value must always
+   --  reflect the starting node of the outermost ignored Ghost region. If a
+   --  nested ignored Ghost region is entered, the value must remain unchanged.
 
    Implementation_Unit_Warnings : Boolean := True;
    --  GNAT
@@ -847,6 +864,10 @@ package Opt is
    --  If set True, then a Size attribute clause on an array is allowed to
    --  cause implicit packing instead of generating an error message. Set by
    --  use of pragma Implicit_Packing.
+
+   Include_Subprogram_In_Messages : Boolean := False;
+   --  GNAT
+   --  Set True to include the enclosing subprogram in compiler messages.
 
    Ineffective_Inline_Warnings : Boolean := False;
    --  GNAT
@@ -921,6 +942,16 @@ package Opt is
    --  Set to True to enable leap seconds support in Ada.Calendar and its
    --  children.
 
+   Legacy_Elaboration_Checks : Boolean := False;
+   --  GNAT
+   --  Set to True when the pre-18.x access-before-elaboration model is to be
+   --  used. Modified by use of -gnatH.
+
+   Legacy_Elaboration_Order : Boolean := False;
+   --  GNATBIND
+   --  Set to True when the pre-20.x elaboration-order model is to be used.
+   --  Modified by use of -H.
+
    Link_Only : Boolean := False;
    --  GNATMAKE, GPRBUILD
    --  Set to True to skip compile and bind steps (except when Bind_Only is
@@ -960,27 +991,38 @@ package Opt is
    --  the list of object dependencies (-M switch). Output depends if -a switch
    --  is used or not. This list can be used directly in a Makefile.
 
-   List_Representation_Info : Int range 0 .. 3 := 0;
+   List_Representation_Info : Int range 0 .. 4 := 0;
    --  GNAT
    --  Set non-zero by -gnatR switch to list representation information.
    --  The settings are as follows:
    --
    --    0 = no listing of representation information (default as above)
-   --    1 = list rep info for user defined record and array types
-   --    2 = list rep info for all user defined types and objects
+   --    1 = list rep info for user-defined record and array types
+   --    2 = list rep info for all user-defined types and objects
    --    3 = like 2, but variable fields are decoded symbolically
+   --    4 = like 3, but list rep info for relevant compiler-generated types
 
    List_Representation_Info_To_File : Boolean := False;
    --  GNAT
-   --  Set true by -gnatRs switch. Causes information from -gnatR/1/2/3/m to be
+   --  Set true by -gnatRs switch. Causes information from -gnatR[1-4]m to be
    --  written to file.rep (where file is the name of the source file) instead
    --  of stdout. For example, if file x.adb is compiled using -gnatR2s then
    --  representation info is written to x.adb.ref.
+
+   List_Representation_Info_To_JSON : Boolean := False;
+   --  GNAT
+   --  Set true by -gnatRj switch. Causes information from -gnatR[1-4]m to be
+   --  output in the JSON data interchange format.
 
    List_Representation_Info_Mechanisms : Boolean := False;
    --  GNAT
    --  Set true by -gnatRm switch. Causes information on mechanisms to be
    --  included in the representation output information.
+
+   List_Representation_Info_Extended : Boolean := False;
+   --  GNAT
+   --  Set true by -gnatRe switch. Causes extended information for record types
+   --  to be included in the representation output information.
 
    List_Preprocessing_Symbols : Boolean := False;
    --  GNAT, GNATPREP
@@ -1077,6 +1119,12 @@ package Opt is
    --  GNATMAKE, GPRBUILD
    --  Maximum number of processes that should be spawned to carry out
    --  compilations.
+
+   Minimal_Binder : Boolean := False;
+   --  GNATBIND
+   --  Set to True to suppress the generation of objects by the binder that
+   --  are not strictly required for a program to run. Intended for ZFP
+   --  applications that have tight memory constraints.
 
    Minimal_Recompilation : Boolean := False;
    --  GNATMAKE
@@ -1179,6 +1227,11 @@ package Opt is
    --  Set to True with switch --single-compile-per-obj-dir. When True, there
    --  cannot be simultaneous compilations with the object files in the same
    --  object directory, if project files are used.
+
+   OpenAcc_Enabled : Boolean := False;
+   --  GNAT
+   --  Indicates whether OpenAcc pragmas should be taken into account. Set to
+   --  True by the use of -fopenacc.
 
    type Operating_Mode_Type is (Check_Syntax, Check_Semantics, Generate_Code);
    pragma Ordered (Operating_Mode_Type);
@@ -1304,6 +1357,13 @@ package Opt is
    --  Indicates if a project file is used or not. Set to In_Use by the first
    --  SFNP pragma.
 
+   Quantity_Of_Default_Size_Sec_Stacks : Int := -1;
+   --  GNATBIND
+   --  The number of default sized secondary stacks that the binder should
+   --  generate. Allows ZFP users to have the binder generate extra stacks if
+   --  needed to support multithreaded applications. A value of -1 indicates
+   --  that no size was set by the binder.
+
    Queuing_Policy : Character := ' ';
    --  GNAT, GNATBIND
    --  Set to ' ' for the default case (no queuing policy specified). Reset to
@@ -1325,6 +1385,12 @@ package Opt is
    --  GNAT
    --  Set to True to enable compatibility mode with Rational compiler, and
    --  to accept renamings of implicit operations in their own scope.
+
+   Relaxed_Elaboration_Checks : Boolean := False;
+   --  GNAT
+   --  Set to True to ignore certain elaboration scenarios, thus making the
+   --  current ABE mechanism more permissive. This behavior is applicable to
+   --  both the default and the legacy ABE models. Modified by use of -gnatJ.
 
    Relaxed_RM_Semantics : Boolean := False;
    --  GNAT
@@ -1924,7 +1990,7 @@ package Opt is
    --  set by the command line switches -gnat83/95/2005/2012, and possibly
    --  modified by the use of configuration pragmas Ada_*. This switch is used
    --  to set the initial value for Ada_Version mode at the start of analysis
-   --  of a unit.  Note however that the setting of this flag is ignored for
+   --  of a unit. Note however that the setting of this flag is ignored for
    --  internal and predefined units (which are always compiled in the most up
    --  to date version of Ada).
 
@@ -2099,11 +2165,20 @@ package Opt is
    type Config_Switches_Type is private;
    --  Type used to save values of the switches set from Config values
 
-   procedure Save_Opt_Config_Switches (Save : out Config_Switches_Type);
-   --  This procedure saves the current values of the switches which are
-   --  initialized from the above Config values.
+   procedure Register_Config_Switches;
+   --  This procedure is called after processing the gnat.adc file and other
+   --  configuration pragma files to record the values of the Config switches,
+   --  as possibly modified by the use of command line switches and pragmas
+   --  appearing in these files.
 
-   procedure Set_Opt_Config_Switches
+   procedure Restore_Config_Switches (Save : Config_Switches_Type);
+   --  This procedure restores a set of switch values previously saved by a
+   --  call to Save_Config_Switches.
+
+   function Save_Config_Switches return Config_Switches_Type;
+   --  Return the current state of all configuration-related attributes
+
+   procedure Set_Config_Switches
      (Internal_Unit : Boolean;
       Main_Unit     : Boolean);
    --  This procedure sets the switches to the appropriate initial values. The
@@ -2115,31 +2190,11 @@ package Opt is
    --  internal unit is the main unit, in which case we use the command line
    --  settings.
 
-   procedure Restore_Opt_Config_Switches (Save : Config_Switches_Type);
-   --  This procedure restores a set of switch values previously saved by a
-   --  call to Save_Opt_Config_Switches (Save).
-
-   procedure Register_Opt_Config_Switches;
-   --  This procedure is called after processing the gnat.adc file and other
-   --  configuration pragma files to record the values of the Config switches,
-   --  as possibly modified by the use of command line switches and pragmas
-   --  appearing in these files.
-
    ------------------------
    -- Other Global Flags --
    ------------------------
 
-   Expander_Active : Boolean := False;
-   --  A flag that indicates if expansion is active (True) or deactivated
-   --  (False). When expansion is deactivated all calls to expander routines
-   --  have no effect. Note that the initial setting of False is merely to
-   --  prevent saving of an undefined value for an initial call to the
-   --  Expander_Mode_Save_And_Set procedure. For more information on the use of
-   --  this flag, see package Expander. Indeed this flag might more logically
-   --  be in the spec of Expander, but it is referenced by Errout, and it
-   --  really seems wrong for Errout to depend on Expander.
-
-   Static_Dispatch_Tables : Boolean := True;
+   Building_Static_Dispatch_Tables : Boolean := True;
    --  This flag indicates if the backend supports generation of statically
    --  allocated dispatch tables. If it is True, then the front end will
    --  generate static aggregates for dispatch tables that contain forward
@@ -2150,6 +2205,16 @@ package Opt is
    --  dispatch tables for all library level tagged types in all platforms.This
    --  behavior can be disabled using switch -gnatd.t which will set this flag
    --  to False and revert to the previous dynamic behavior.
+
+   Expander_Active : Boolean := False;
+   --  A flag that indicates if expansion is active (True) or deactivated
+   --  (False). When expansion is deactivated all calls to expander routines
+   --  have no effect. Note that the initial setting of False is merely to
+   --  prevent saving of an undefined value for an initial call to the
+   --  Expander_Mode_Save_And_Set procedure. For more information on the use of
+   --  this flag, see package Expander. Indeed this flag might more logically
+   --  be in the spec of Expander, but it is referenced by Errout, and it
+   --  really seems wrong for Errout to depend on Expander.
 
    -----------------------
    -- Tree I/O Routines --
@@ -2292,7 +2357,6 @@ package Opt is
    --------------------------
 
 private
-
    --  The following type is used to save and restore settings of switches in
    --  Opt that represent the configuration (i.e. result of config pragmas).
 

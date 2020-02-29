@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -458,6 +458,32 @@ package body Sem_Aux is
          when others           => raise Program_Error;
       end case;
    end Get_Binary_Nkind;
+
+   -----------------------
+   -- Get_Called_Entity --
+   -----------------------
+
+   function Get_Called_Entity (Call : Node_Id) return Entity_Id is
+      Nam : constant Node_Id := Name (Call);
+      Id  : Entity_Id;
+
+   begin
+      if Nkind (Nam) = N_Explicit_Dereference then
+         Id := Etype (Nam);
+         pragma Assert (Ekind (Id) = E_Subprogram_Type);
+
+      elsif Nkind (Nam) = N_Selected_Component then
+         Id := Entity (Selector_Name (Nam));
+
+      elsif Nkind (Nam) = N_Indexed_Component then
+         Id := Entity (Selector_Name (Prefix (Nam)));
+
+      else
+         Id := Entity (Nam);
+      end if;
+
+      return Id;
+   end Get_Called_Entity;
 
    -------------------
    -- Get_Low_Bound --
@@ -1298,6 +1324,19 @@ package body Sem_Aux is
       end if;
    end Is_Limited_View;
 
+   ----------------------------
+   -- Is_Protected_Operation --
+   ----------------------------
+
+   function Is_Protected_Operation (E : Entity_Id) return Boolean is
+   begin
+      return
+        Is_Entry (E)
+          or else (Is_Subprogram (E)
+                    and then Nkind (Parent (Unit_Declaration_Node (E))) =
+                               N_Protected_Definition);
+   end Is_Protected_Operation;
+
    ----------------------
    -- Nearest_Ancestor --
    ----------------------
@@ -1446,7 +1485,8 @@ package body Sem_Aux is
       return Has_Constrained_Partial_View (Typ)
         or else (In_Generic_Body (Scop)
                   and then Is_Generic_Type (Base_Type (Typ))
-                  and then Is_Private_Type (Base_Type (Typ))
+                  and then (Is_Private_Type (Base_Type (Typ))
+                             or else Is_Derived_Type (Base_Type (Typ)))
                   and then not Is_Tagged_Type (Typ)
                   and then not (Is_Array_Type (Typ)
                                  and then not Is_Constrained (Typ))
@@ -1667,6 +1707,7 @@ package body Sem_Aux is
         and then Nkind (N) /= N_Package_Renaming_Declaration
         and then Nkind (N) /= N_Procedure_Instantiation
         and then Nkind (N) /= N_Protected_Body
+        and then Nkind (N) /= N_Protected_Type_Declaration
         and then Nkind (N) /= N_Subprogram_Declaration
         and then Nkind (N) /= N_Subprogram_Body
         and then Nkind (N) /= N_Subprogram_Body_Stub

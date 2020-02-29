@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 1995-2014, Free Software Foundation, Inc.       --
+--            Copyright (C) 1995-2019, Free Software Foundation, Inc.       --
 --                                                                          --
 -- ASIS-for-GNAT is free software; you can redistribute it and/or modify it --
 -- under terms of the  GNU General Public License  as published by the Free --
@@ -37,24 +37,33 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Ada.Characters.Handling;        use Ada.Characters.Handling;
 with System; use System;
+
+with GNAT.OS_Lib;                    use GNAT.OS_Lib;
 
 with Asis.Declarations;              use Asis.Declarations;
 with Asis.Definitions;               use Asis.Definitions;
 with Asis.Elements;                  use Asis.Elements;
+with Asis.Errors;                    use Asis.Errors;
+with Asis.Exceptions;                use Asis.Exceptions;
 with Asis.Extensions;                use Asis.Extensions;
 with Asis.Iterator;                  use Asis.Iterator;
 
 with Asis.Set_Get;                   use Asis.Set_Get;
 
 with Asis.Data_Decomposition.Aux;    use Asis.Data_Decomposition.Aux;
+with Asis.Data_Decomposition.gnatRj; use Asis.Data_Decomposition.gnatRj;
 
 with A4G.Contt;                      use A4G.Contt;
+with A4G.Vcheck;                     use A4G.Vcheck;
 
 with Atree;                          use Atree;
 with Sinfo;                          use Sinfo;
 with Einfo;                          use Einfo;
+with Namet;
 with Nlists;                         use Nlists;
+with Repinfo.Input;                  use Repinfo.Input;
 with Uintp;                          use Uintp;
 
 package body Asis.Data_Decomposition.Set_Get is
@@ -229,8 +238,9 @@ package body Asis.Data_Decomposition.Set_Get is
       Parent_Indication          : Element          := Nil_Element;
       Parent_Discriminants       : Discrim_List     := Null_Discrims;
       Parent_First_Bit_Offset    : ASIS_Natural     := 0;
-      Dynamic_Array              : Boolean          := False)
-      return Array_Component
+      Dynamic_Array              : Boolean          := False;
+      Context_DDA_Mode           : DDA_Modes        := Normal)
+      return                       Array_Component
    is
       Comp_Node        : Node_Id;
       Comp_Type_Entity : Node_Id;
@@ -246,6 +256,8 @@ package body Asis.Data_Decomposition.Set_Get is
       Dim       : Asis.ASIS_Positive;
       Tmp_Node  : Node_Id;
       Comp_Size : ASIS_Natural;
+
+      Type_Name : String_Access;
    begin
       Result.Parent_Array_Type     := Array_Type_Definition;
       Result.Parent_Component_Name :=
@@ -316,8 +328,18 @@ package body Asis.Data_Decomposition.Set_Get is
 
       end loop;
 
-      Comp_Size := ASIS_Natural (UI_To_Int (
-         Get_Component_Size (Array_Entity)));
+      if Context_DDA_Mode = gnatR then
+         Type_Name := new String'(
+           To_Lower (Get_Entity_Name
+             (Enclosing_Element (Enclosing_Element (Array_Type_Definition)))) &
+              "." & Namet.Get_Name_String (Chars (Array_Entity)));
+
+         Comp_Size := ASIS_Natural
+                        (UI_To_Int (Get_JSON_Component_Size (Type_Name.all)));
+      else
+         Comp_Size :=
+           ASIS_Natural (UI_To_Int (Get_Component_Size (Array_Entity)));
+      end if;
 
       Result.Position := Parent_First_Bit_Offset / Storage_Unit;
 
@@ -485,7 +507,8 @@ package body Asis.Data_Decomposition.Set_Get is
    --------------------------------------
 
    procedure Set_Record_Components_From_Names
-     (Parent_First_Bit : ASIS_Natural  := 0;
+     (Context_DDA_Mode : DDA_Modes     := Normal;
+      Parent_First_Bit : ASIS_Natural  := 0;
       Data_Stream      : Portable_Data := Nil_Portable_Data;
       Discriminants    : Boolean       := False)
    is
@@ -504,7 +527,23 @@ package body Asis.Data_Decomposition.Set_Get is
       Comp_First_Bit_Offset : ASIS_Natural;
       Comp_Position         : ASIS_Natural;
       Comp_Size             : ASIS_Natural;
+
+      Type_Name : String_Access;
    begin
+
+      if Context_DDA_Mode = gnatR then
+
+         if Data_Stream /= Nil_Portable_Data then
+            Set_Error_Status
+              (Status    => Not_Implemented_Error,
+               Diagnosis => "Data stream is not supported in -gnatR mode");
+            raise ASIS_Failed;
+         else
+            Type_Name := new String'(To_Lower
+                               (Get_Entity_Name (Parent_Type_Definition)));
+         end if;
+      end if;
+
       Record_Component_Table.Init;
 
       for I in 1 .. Asis_Element_Table.Last loop
@@ -538,14 +577,37 @@ package body Asis.Data_Decomposition.Set_Get is
                   new Discrim_List'(Discs);
             end if;
 
-            Comp_First_Bit_Offset := Parent_First_Bit +
-               ASIS_Natural (UI_To_Int (
-                  Get_Component_Bit_Offset (Comp_Entity, Discs)));
+            case Context_DDA_Mode is
+               when Normal =>
+                  Comp_First_Bit_Offset := Parent_First_Bit +
+                     ASIS_Natural (UI_To_Int (
+                        Get_Component_Bit_Offset (Comp_Entity, Discs)));
 
-            Comp_Position := Comp_First_Bit_Offset / Storage_Unit;
+                  Comp_Position := Comp_First_Bit_Offset / Storage_Unit;
 
-            Comp_Size := ASIS_Natural (UI_To_Int
-                            (Get_Esize (Comp_Entity, Discs)));
+                  Comp_Size := ASIS_Natural (UI_To_Int
+                                  (Get_Esize (Comp_Entity, Discs)));
+               when gnatR =>
+                  declare
+                     Comp_Name : constant String :=
+                       To_Lower (To_String (Defining_Name_Image
+                         (Component_Name)));
+                  begin
+                     Comp_First_Bit_Offset := Parent_First_Bit +
+                       ASIS_Natural (UI_To_Int (
+                         Get_JSON_Component_Bit_Offset
+                           (Name        => Comp_Name,
+                            Record_Name => Type_Name.all)));
+
+                     Comp_Position := Comp_First_Bit_Offset / Storage_Unit;
+
+                     Comp_Size := ASIS_Natural (UI_To_Int (
+                         Get_JSON_Esize
+                           (Name        => Comp_Name,
+                            Record_Name => Type_Name.all)));
+
+                  end;
+            end case;
 
             RC_Table (New_Comp).Position := Comp_Position;
 
@@ -563,6 +625,8 @@ package body Asis.Data_Decomposition.Set_Get is
          end if;
 
       end loop;
+
+      Free (Type_Name);
    end Set_Record_Components_From_Names;
 
 end Asis.Data_Decomposition.Set_Get;

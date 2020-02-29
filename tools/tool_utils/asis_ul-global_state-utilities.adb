@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                         --
---                     Copyright (C) 2007-2015, AdaCore                     --
+--                     Copyright (C) 2007-2018, AdaCore                     --
 --                                                                          --
 
 -- Asis Utility Library (ASIS UL) is free software; you can redistribute it --
@@ -130,12 +130,8 @@ package body ASIS_UL.Global_State.Utilities is
 
          end if;
 
-         if Entity_Node = Next_Par then
-            Result := Ekind (Entity_Node) in E_Record_Type              |
-                                             E_Record_Subtype           |
-                                             E_Record_Type_With_Private |
-                                             E_Record_Subtype_With_Private;
-         end if;
+         Result := Entity_Node = Next_Par;
+
       end if;
 
       return Result;
@@ -653,6 +649,8 @@ package body ASIS_UL.Global_State.Utilities is
             Result := True;
          when An_Entry_Call_Statement =>
             Result := True;
+         when An_Indexed_Component =>
+            Result := Is_Generalized_Indexing (El);
          when others =>
             null;
       end case;

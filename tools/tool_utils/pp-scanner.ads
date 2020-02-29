@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2012-2016, AdaCore                     --
+--                     Copyright (C) 2012-2019, AdaCore                     --
 --                                                                          --
 -- Gnat2xml is free software; you can redistribute it and/or modify it      --
 -- under terms of the  GNU General Public License  as published by the Free --
@@ -196,9 +196,10 @@ package Pp.Scanner is
    Default_Pp_Off_String : aliased constant W_Str := "--!pp off";
    Default_Pp_On_String : aliased constant W_Str := "--!pp on";
 
+   type W_Str_Access_Constant is access constant W_Str;
    type Pp_Off_On_Delimiters_Rec is record
-      Off : access constant W_Str := Default_Pp_Off_String'Access;
-      On : access constant W_Str := Default_Pp_On_String'Access;
+      Off : W_Str_Access_Constant := Default_Pp_Off_String'Access;
+      On : W_Str_Access_Constant := Default_Pp_On_String'Access;
       --  Text of comments for turning pretting printing off and on, including
       --  the leading '--'. For example, if the user specified --pp-off='pp-',
       --  then Off will be "--pp-". A whole-line comment of the form "--pp-"
@@ -262,12 +263,14 @@ package Pp.Scanner is
    --  The comments are always on a line by themselves, so we don't have to
    --  worry about column numbers.
 
-   procedure Put_Token (Tok : Token; Index : Token_Index := 1);
+   procedure Put_Token
+     (Tok : Token; Index : Token_Index := 1; Slocs : Boolean := True);
    procedure Put_Tokens
      (Tokens    : Token_Vectors.Vector;
       First     : Token_Index'Base := 1;
       Last      : Token_Index'Base := Token_Index'Last;
-      Highlight : Token_Index'Base := 0);
+      Highlight : Token_Index'Base := 0;
+      Slocs : Boolean := True);
    --  Put token(s) to standard output (even if Text_IO.Current_Output has been
    --  redirected). The tokens come out in compilable form, one per line, with
    --  the text of the token first, and the other information commented out.
@@ -275,5 +278,9 @@ package Pp.Scanner is
    --  should have identical semantics to the original Ada code. First and Last
    --  indicate a slice of Tokens, and we tolerate out-of-bounds indices.
    --  We draw a comment line before Highlight.
+   --
+   --  If Slocs is True, we include Source_Location information. Leaving that
+   --  out is useful for seeing whether two files contain the same sequence of
+   --  tokens.
 
 end Pp.Scanner;

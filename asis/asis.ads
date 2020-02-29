@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 1995-2014, Free Software Foundation, Inc.       --
+--            Copyright (C) 1995-2019, Free Software Foundation, Inc.       --
 --                                                                          --
 -- This   specification  is  derived   from  the  Ada   Semantic  Interface --
 -- Specification Standard (ISO/IEC 15291) for use with GNAT.                --
@@ -1294,7 +1294,7 @@ package Asis is
     A_Pos_Attribute,               -- 3.5.5(2), K(175)
     A_Position_Attribute,          -- 13.5.2(2), K(179)
     A_Pred_Attribute,              -- 3.5(25), K(181)
-    A_Range_Attribute,             -- 3.5(14), 3.6.2(7), K(187), ú(189)
+    A_Range_Attribute,             -- 3.5(14), 3.6.2(7), K(187), K(189)
     A_Read_Attribute,              -- 13.13.2(6), 13.13.2(14), K(191), K(195)
     A_Remainder_Attribute,         -- A.5.3(45), K(199)
     A_Round_Attribute,             -- 3.5.10(12), K(203)
