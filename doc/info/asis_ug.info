@@ -7,11 +7,11 @@ START-INFO-DIR-ENTRY
 * asis_ug: (asis_ug.info). asis_ug
 END-INFO-DIR-ENTRY
 
-     ASIS-for-GNAT User's Guide 2018, May 24, 2018
+     ASIS-for-GNAT User's Guide 2019, May 18, 2019
 
      AdaCore
 
-     Copyright (C) 2008-2018, AdaCore
+     Copyright (C) 2008-2019, AdaCore
 
 
 File: asis_ug.info,  Node: Top,  Next: About This Guide,  Up: (dir)
@@ -19,15 +19,15 @@ File: asis_ug.info,  Node: Top,  Next: About This Guide,  Up: (dir)
 ASIS-for-GNAT User's Guide
 **************************
 
-     ASIS-for-GNAT User's Guide 2018, May 24, 2018
+     ASIS-for-GNAT User's Guide 2019, May 18, 2019
 
      AdaCore
 
-     Copyright (C) 2008-2018, AdaCore
+     Copyright (C) 2008-2019, AdaCore
 
     `GNAT, The GNU Ada Development Environment' 
     The GNAT Ada Compiler 
-    Version 2018 
+    Version 2019 
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.1 or
@@ -1081,8 +1081,8 @@ ASIS-specific combination of two compileation options, `-gnatt' and
 `-gnatc'. The `-gnatt' option generates a tree file, and `-gnatc' turns
 off AST expansion. ASIS needs tree files created without AST expansion,
 whereas to create an object file, GNAT needs an expanded AST.
-Therefore it is impossible for one compilation command to to produce
-both a tree file and an object file for a given source file.
+Therefore it is impossible for one compilation command to produce both
+a tree file and an object file for a given source file.
 
 The following points are important to remember when generating and
 dealing with tree files:
@@ -3226,139 +3226,139 @@ Ref: 2a43173
 Node: Creating Tree Files for Use by ASIS44857
 Ref: asis_ug/asis_context creating-tree-files-for-use-by-asis45044
 Ref: 2b45044
-Node: Creating Trees for Data Decomposition Annex50849
-Ref: asis_ug/asis_context creating-trees-for-data-decomposition-annex50965
-Ref: 2e50965
-Node: Different Ways to Define an ASIS Context in ASIS-for-GNAT52325
-Ref: asis_ug/asis_context different-ways-to-define-an-asis-context-in-asis-for-gnat52505
-Ref: 2f52505
-Node: Defining a set of tree files making up a Context54121
-Ref: asis_ug/asis_context defining-a-set-of-tree-files-making-up-a-context54347
-Ref: 3054347
-Node: Dealing with tree files when opening a Context and processing ASIS queries55503
-Ref: asis_ug/asis_context dealing-with-tree-files-when-opening-a-context-and-processing-asis-queries55790
-Ref: 3155790
-Node: Processing source files during the consistency check56971
-Ref: asis_ug/asis_context processing-source-files-during-the-consistency-check57230
-Ref: 3257230
-Node: Setting search paths58345
-Ref: asis_ug/asis_context setting-search-paths58521
-Ref: 3358521
-Node: Consistency Problems59248
-Ref: asis_ug/asis_context id259430
-Ref: 3459430
-Ref: asis_ug/asis_context consistency-problems59430
-Ref: 2c59430
-Node: Inconsistent versions of ASIS and GNAT60046
-Ref: asis_ug/asis_context inconsistent-versions-of-asis-and-gnat60196
-Ref: 3560196
-Node: Consistency of a set of tree and source files62345
-Ref: asis_ug/asis_context consistency-of-a-set-of-tree-and-source-files62495
-Ref: 3662495
-Node: Processing Several Contexts at a Time64648
-Ref: asis_ug/asis_context processing-several-contexts-at-a-time64805
-Ref: 3764805
-Node: Using ASIS with a cross-compiler65450
-Ref: asis_ug/asis_context using-asis-with-a-cross-compiler65578
-Ref: 3865578
-Node: ASIS Interpreter asistant67260
-Ref: asis_ug/asis_interpreter_asistant asis-interpreter-asistant67382
-Ref: 3967382
-Ref: asis_ug/asis_interpreter_asistant doc67382
-Ref: 3a67382
-Node: asistant Introduction67640
-Ref: asis_ug/asis_interpreter_asistant asistant-introduction67750
-Ref: 3b67750
-Node: asistant commands71911
-Ref: asis_ug/asis_interpreter_asistant asistant-commands72048
-Ref: 3c72048
-Node: asistant variables73615
-Ref: asis_ug/asis_interpreter_asistant asistant-variables73752
-Ref: 3d73752
-Node: Browsing an ASIS tree74288
-Ref: asis_ug/asis_interpreter_asistant browsing-an-asis-tree74415
-Ref: 3e74415
-Node: Example77330
-Ref: asis_ug/asis_interpreter_asistant example77430
-Ref: 3f77430
-Node: ASIS Application Templates79106
-Ref: asis_ug/asis_application_templates asis-application-templates79230
-Ref: 979230
-Ref: asis_ug/asis_application_templates doc79230
-Ref: 4079230
-Ref: asis_ug/asis_application_templates id179230
-Ref: 4179230
-Node: ASIS Tutorials79781
-Ref: asis_ug/asis_tutorials asis-tutorials79920
-Ref: a79920
-Ref: asis_ug/asis_tutorials doc79920
-Ref: 4279920
-Ref: asis_ug/asis_tutorials id179920
-Ref: 4379920
-Node: How to Build Efficient ASIS Applications80476
-Ref: asis_ug/how_to_build_efficient_asis_applications doc80636
-Ref: 4480636
-Ref: asis_ug/how_to_build_efficient_asis_applications how-to-build-efficient-asis-applications80636
-Ref: b80636
-Ref: asis_ug/how_to_build_efficient_asis_applications id180636
-Ref: 4580636
-Node: Tree Swapping as a Performance Issue81035
-Ref: asis_ug/how_to_build_efficient_asis_applications tree-swapping-as-a-performance-issue81194
-Ref: 4681194
-Node: Queries That Can Cause Tree Swapping83259
-Ref: asis_ug/how_to_build_efficient_asis_applications queries-that-can-cause-tree-swapping83465
-Ref: 4783465
-Node: How to Avoid Unnecessary Tree Swapping84174
-Ref: asis_ug/how_to_build_efficient_asis_applications how-to-avoid-unnecessary-tree-swapping84379
-Ref: 4884379
-Node: Using gnatmake to Create Tree Files87054
-Ref: asis_ug/how_to_build_efficient_asis_applications using-gnatmake-to-create-tree-files87214
-Ref: 2d87214
-Ref: asis_ug/how_to_build_efficient_asis_applications id287214
-Ref: 4987214
-Node: Processing an Ada Library by an ASIS-Based Tool89752
-Ref: asis_ug/processing_an_ada_library_by_an_asis-based_tool doc89959
-Ref: 4a89959
-Ref: asis_ug/processing_an_ada_library_by_an_asis-based_tool processing-an-ada-library-by-an-asis-based-tool89959
-Ref: c89959
-Ref: asis_ug/processing_an_ada_library_by_an_asis-based_tool id189959
-Ref: 4b89959
-Node: Compiling Binding and Linking Applications with ASIS-for-GNAT93683
-Ref: asis_ug/compiling_binding_and_linking_applications_with_asis-for-gnat compiling-binding-and-linking-applications-with-asis-for-gnat93872
-Ref: d93872
-Ref: asis_ug/compiling_binding_and_linking_applications_with_asis-for-gnat doc93872
-Ref: 4c93872
-Ref: asis_ug/compiling_binding_and_linking_applications_with_asis-for-gnat id193872
-Ref: 4d93872
-Node: ASIS-for-GNAT Warnings94348
-Ref: asis_ug/asis-for-gnat_warnings asis-for-gnat-warnings94536
-Ref: e94536
-Ref: asis_ug/asis-for-gnat_warnings doc94536
-Ref: 4e94536
-Ref: asis_ug/asis-for-gnat_warnings id194536
-Ref: 4f94536
-Node: Exception Handling and Reporting Internal Bugs95985
-Ref: asis_ug/exception_handling_and_reporting_internal_bugs id196162
-Ref: 5096162
-Ref: asis_ug/exception_handling_and_reporting_internal_bugs doc96162
-Ref: 5196162
-Ref: asis_ug/exception_handling_and_reporting_internal_bugs exception-handling-and-reporting-internal-bugs96162
-Ref: f96162
-Node: File Naming Conventions and Application Name Space97075
-Ref: asis_ug/file_naming_conventions_and_application_name_space file-naming-conventions-and-application-name-space97260
-Ref: 1097260
-Ref: asis_ug/file_naming_conventions_and_application_name_space doc97260
-Ref: 5297260
-Ref: asis_ug/file_naming_conventions_and_application_name_space id197260
-Ref: 5397260
-Node: GNU Free Documentation License99290
-Ref: share/gnu_free_documentation_license gnu-fdl99434
-Ref: 5499434
-Ref: share/gnu_free_documentation_license doc99434
-Ref: 5599434
-Ref: share/gnu_free_documentation_license gnu-free-documentation-license99434
-Ref: 5699434
-Node: Index122556
+Node: Creating Trees for Data Decomposition Annex50846
+Ref: asis_ug/asis_context creating-trees-for-data-decomposition-annex50962
+Ref: 2e50962
+Node: Different Ways to Define an ASIS Context in ASIS-for-GNAT52322
+Ref: asis_ug/asis_context different-ways-to-define-an-asis-context-in-asis-for-gnat52502
+Ref: 2f52502
+Node: Defining a set of tree files making up a Context54118
+Ref: asis_ug/asis_context defining-a-set-of-tree-files-making-up-a-context54344
+Ref: 3054344
+Node: Dealing with tree files when opening a Context and processing ASIS queries55500
+Ref: asis_ug/asis_context dealing-with-tree-files-when-opening-a-context-and-processing-asis-queries55787
+Ref: 3155787
+Node: Processing source files during the consistency check56968
+Ref: asis_ug/asis_context processing-source-files-during-the-consistency-check57227
+Ref: 3257227
+Node: Setting search paths58342
+Ref: asis_ug/asis_context setting-search-paths58518
+Ref: 3358518
+Node: Consistency Problems59245
+Ref: asis_ug/asis_context id259427
+Ref: 3459427
+Ref: asis_ug/asis_context consistency-problems59427
+Ref: 2c59427
+Node: Inconsistent versions of ASIS and GNAT60043
+Ref: asis_ug/asis_context inconsistent-versions-of-asis-and-gnat60193
+Ref: 3560193
+Node: Consistency of a set of tree and source files62342
+Ref: asis_ug/asis_context consistency-of-a-set-of-tree-and-source-files62492
+Ref: 3662492
+Node: Processing Several Contexts at a Time64645
+Ref: asis_ug/asis_context processing-several-contexts-at-a-time64802
+Ref: 3764802
+Node: Using ASIS with a cross-compiler65447
+Ref: asis_ug/asis_context using-asis-with-a-cross-compiler65575
+Ref: 3865575
+Node: ASIS Interpreter asistant67257
+Ref: asis_ug/asis_interpreter_asistant asis-interpreter-asistant67379
+Ref: 3967379
+Ref: asis_ug/asis_interpreter_asistant doc67379
+Ref: 3a67379
+Node: asistant Introduction67637
+Ref: asis_ug/asis_interpreter_asistant asistant-introduction67747
+Ref: 3b67747
+Node: asistant commands71908
+Ref: asis_ug/asis_interpreter_asistant asistant-commands72045
+Ref: 3c72045
+Node: asistant variables73612
+Ref: asis_ug/asis_interpreter_asistant asistant-variables73749
+Ref: 3d73749
+Node: Browsing an ASIS tree74285
+Ref: asis_ug/asis_interpreter_asistant browsing-an-asis-tree74412
+Ref: 3e74412
+Node: Example77327
+Ref: asis_ug/asis_interpreter_asistant example77427
+Ref: 3f77427
+Node: ASIS Application Templates79103
+Ref: asis_ug/asis_application_templates asis-application-templates79227
+Ref: 979227
+Ref: asis_ug/asis_application_templates doc79227
+Ref: 4079227
+Ref: asis_ug/asis_application_templates id179227
+Ref: 4179227
+Node: ASIS Tutorials79778
+Ref: asis_ug/asis_tutorials asis-tutorials79917
+Ref: a79917
+Ref: asis_ug/asis_tutorials doc79917
+Ref: 4279917
+Ref: asis_ug/asis_tutorials id179917
+Ref: 4379917
+Node: How to Build Efficient ASIS Applications80473
+Ref: asis_ug/how_to_build_efficient_asis_applications doc80633
+Ref: 4480633
+Ref: asis_ug/how_to_build_efficient_asis_applications how-to-build-efficient-asis-applications80633
+Ref: b80633
+Ref: asis_ug/how_to_build_efficient_asis_applications id180633
+Ref: 4580633
+Node: Tree Swapping as a Performance Issue81032
+Ref: asis_ug/how_to_build_efficient_asis_applications tree-swapping-as-a-performance-issue81191
+Ref: 4681191
+Node: Queries That Can Cause Tree Swapping83256
+Ref: asis_ug/how_to_build_efficient_asis_applications queries-that-can-cause-tree-swapping83462
+Ref: 4783462
+Node: How to Avoid Unnecessary Tree Swapping84171
+Ref: asis_ug/how_to_build_efficient_asis_applications how-to-avoid-unnecessary-tree-swapping84376
+Ref: 4884376
+Node: Using gnatmake to Create Tree Files87051
+Ref: asis_ug/how_to_build_efficient_asis_applications using-gnatmake-to-create-tree-files87211
+Ref: 2d87211
+Ref: asis_ug/how_to_build_efficient_asis_applications id287211
+Ref: 4987211
+Node: Processing an Ada Library by an ASIS-Based Tool89749
+Ref: asis_ug/processing_an_ada_library_by_an_asis-based_tool doc89956
+Ref: 4a89956
+Ref: asis_ug/processing_an_ada_library_by_an_asis-based_tool processing-an-ada-library-by-an-asis-based-tool89956
+Ref: c89956
+Ref: asis_ug/processing_an_ada_library_by_an_asis-based_tool id189956
+Ref: 4b89956
+Node: Compiling Binding and Linking Applications with ASIS-for-GNAT93680
+Ref: asis_ug/compiling_binding_and_linking_applications_with_asis-for-gnat compiling-binding-and-linking-applications-with-asis-for-gnat93869
+Ref: d93869
+Ref: asis_ug/compiling_binding_and_linking_applications_with_asis-for-gnat doc93869
+Ref: 4c93869
+Ref: asis_ug/compiling_binding_and_linking_applications_with_asis-for-gnat id193869
+Ref: 4d93869
+Node: ASIS-for-GNAT Warnings94345
+Ref: asis_ug/asis-for-gnat_warnings asis-for-gnat-warnings94533
+Ref: e94533
+Ref: asis_ug/asis-for-gnat_warnings doc94533
+Ref: 4e94533
+Ref: asis_ug/asis-for-gnat_warnings id194533
+Ref: 4f94533
+Node: Exception Handling and Reporting Internal Bugs95982
+Ref: asis_ug/exception_handling_and_reporting_internal_bugs id196159
+Ref: 5096159
+Ref: asis_ug/exception_handling_and_reporting_internal_bugs doc96159
+Ref: 5196159
+Ref: asis_ug/exception_handling_and_reporting_internal_bugs exception-handling-and-reporting-internal-bugs96159
+Ref: f96159
+Node: File Naming Conventions and Application Name Space97072
+Ref: asis_ug/file_naming_conventions_and_application_name_space file-naming-conventions-and-application-name-space97257
+Ref: 1097257
+Ref: asis_ug/file_naming_conventions_and_application_name_space doc97257
+Ref: 5297257
+Ref: asis_ug/file_naming_conventions_and_application_name_space id197257
+Ref: 5397257
+Node: GNU Free Documentation License99287
+Ref: share/gnu_free_documentation_license gnu-fdl99431
+Ref: 5499431
+Ref: share/gnu_free_documentation_license doc99431
+Ref: 5599431
+Ref: share/gnu_free_documentation_license gnu-free-documentation-license99431
+Ref: 5699431
+Node: Index122553
 
 End Tag Table
 

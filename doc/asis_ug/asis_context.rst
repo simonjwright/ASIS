@@ -95,7 +95,7 @@ and
 ``-gnatc`` turns off AST expansion. ASIS needs tree files created without
 AST expansion, whereas to create an object file, GNAT needs an expanded AST.
 Therefore it is impossible for one compilation command to
-to produce both a tree file and an object file for a given source file.
+produce both a tree file and an object file for a given source file.
 
 The following points are important to remember when generating and dealing
 with tree files:

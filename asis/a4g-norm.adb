@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 1995-2018, Free Software Foundation, Inc.       --
+--            Copyright (C) 1995-2019, Free Software Foundation, Inc.       --
 --                                                                          --
 -- ASIS-for-GNAT is free software; you can redistribute it and/or modify it --
 -- under terms of the  GNU General Public License  as published by the Free --
@@ -890,7 +890,17 @@ package body A4G.Norm is
 
          while Present (Next_Renaming_In_Instance)
              and then
-               Nkind (Next_Renaming_In_Instance) = N_Freeze_Entity
+              (Nkind (Next_Renaming_In_Instance) = N_Freeze_Entity
+             or else
+                --  This is the case of artificial subtype that may be created
+                --  to pass actual object of unconstrained type
+               (Nkind (Next_Renaming_In_Instance) = N_Subtype_Declaration
+               and then
+                  not
+                    (Present (Generic_Parent_Type (Next_Renaming_In_Instance))
+                   or else
+                     Comes_From_Source
+                       (Defining_Identifier (Next_Renaming_In_Instance)))))
          loop
             Next_Renaming_In_Instance :=
               Next_Non_Pragma (Next_Renaming_In_Instance);

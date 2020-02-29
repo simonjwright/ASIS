@@ -447,8 +447,8 @@ package Gnatcheck.Rules.Custom_2 is
    --  The rule has the following (optional) parameters for the `+R' option:
    --
    --      Multi_Alternative_Only - if this parameter is specified, then only
-   --      those membership test expressions that are more than one membership
-   --      choice in the membership choice list are flagged.
+   --         those membership test expressions that are more than one
+   --         membership choice in the membership choice list are flagged.
    --
    --      Except_Assertions - if this parameter is specified, then the
    --         use of the constructs described above is not flagged in the
@@ -487,10 +487,14 @@ package Gnatcheck.Rules.Custom_2 is
    --           Predicate
    --           Refined_Post
    --
+   --      Float_Types_Only - if this parameter is specified, then only those
+   --         membership test expressions that operates on float point types
+   --         are flagged
+   --
    --  These two parameters are independent on each other.
 
    type Membership_Tests_Rule_Type is new
-     Rule_With_Exceptions_Template (2) with null record;
+     Rule_With_Exceptions_Template (3) with null record;
 
    overriding procedure Activate_In_Test_Mode
      (Rule : in out Membership_Tests_Rule_Type);
@@ -865,12 +869,25 @@ package Gnatcheck.Rules.Custom_2 is
    --  Declarations located in private parts of local (generic) packages are
    --  not flagged. Declarations in private packages are not flagged.
    --
-   --  The rule does not have any parameter.
+   --  The rule has the following (optional) parameter for the `+R' option:
+   --
+   --     Tagged_Only - if this parameter is specified, the rule checks only
+   --                   tagged record declarations and type extensions
 
-   type Visible_Components_Rule_Type is
-     new Rule_Template with null record;
+   type Visible_Components_Rule_Type is new
+     Rule_With_Exceptions_Template (1) with null record;
 
-   procedure Rule_Check_Pre_Op
+   overriding function Exception_Name
+     (Rule      : Visible_Components_Rule_Type;
+      Exc_Index : Exception_Index)
+      return      String;
+
+   overriding function Exception_Number
+     (Rule     : Visible_Components_Rule_Type;
+      Exc_Name : String)
+      return     Exception_Numbers;
+
+   overriding procedure Rule_Check_Pre_Op
      (Rule    : in out Visible_Components_Rule_Type;
       Element :        Asis.Element;
       Control : in out Traverse_Control;
@@ -880,7 +897,7 @@ package Gnatcheck.Rules.Custom_2 is
    --  package or a generic library package. If the type declaration is located
    --  in the private part of a local package, it is not flagged.
 
-   procedure Init_Rule (Rule : in out Visible_Components_Rule_Type);
+   overriding procedure Init_Rule (Rule : in out Visible_Components_Rule_Type);
 
    Visible_Components_Rule : aliased Visible_Components_Rule_Type;
 

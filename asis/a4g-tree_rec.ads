@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 1995-2013, Free Software Foundation, Inc.       --
+--            Copyright (C) 1995-2019, Free Software Foundation, Inc.       --
 --                                                                          --
 -- ASIS-for-GNAT is free software; you can redistribute it and/or modify it --
 -- under terms of the  GNU General Public License  as published by the Free --
@@ -55,7 +55,7 @@ package A4G.Tree_Rec is
    -- Tree_Rec type definition --
    ------------------------------
 
-   --  Similar to the Contexts' Unit tabl‚es and Source File tables,
+   --  Similar to the Contexts' Unit tables and Source File tables,
    --  Tree tables are organised as Name tables (for the names of the
    --  tree files), and each entry in such a Name table has additional
    --  fields for information related to tree files handling in ASIS.

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2012-2017, AdaCore                     --
+--                     Copyright (C) 2012-2019, AdaCore                     --
 --                                                                          --
 -- Gnat2xml is free software; you can redistribute it and/or modify it      --
 -- under terms of the  GNU General Public License  as published by the Free --
@@ -196,9 +196,10 @@ package Pp.Scanner is
    Default_Pp_Off_String : aliased constant W_Str := "--!pp off";
    Default_Pp_On_String : aliased constant W_Str := "--!pp on";
 
+   type W_Str_Access_Constant is access constant W_Str;
    type Pp_Off_On_Delimiters_Rec is record
-      Off : access constant W_Str := Default_Pp_Off_String'Access;
-      On : access constant W_Str := Default_Pp_On_String'Access;
+      Off : W_Str_Access_Constant := Default_Pp_Off_String'Access;
+      On : W_Str_Access_Constant := Default_Pp_On_String'Access;
       --  Text of comments for turning pretting printing off and on, including
       --  the leading '--'. For example, if the user specified --pp-off='pp-',
       --  then Off will be "--pp-". A whole-line comment of the form "--pp-"

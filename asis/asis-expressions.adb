@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 1995-2018, Free Software Foundation, Inc.       --
+--            Copyright (C) 1995-2019, Free Software Foundation, Inc.       --
 --                                                                          --
 -- ASIS-for-GNAT is free software; you can redistribute it and/or modify it --
 -- under terms of the  GNU General Public License  as published by the Free --
@@ -1527,6 +1527,28 @@ package body Asis.Expressions is
                     Considering_Parent_Count => False);
 
             else
+
+               --  Special case: 'A (I) (J)' when both 'A (I) (J)' and 'A (I)'
+               --  are generalized iterators
+
+               if Expression_Kind (Expression) = An_Indexed_Component
+                 and then
+                  Present (Generalized_Indexing (Node (Expression)))
+               then
+
+                  if not Comes_From_Source (Result_Node)
+                    and then
+                     Nkind (Result_Node) = N_Explicit_Dereference
+                    and then
+                     not Comes_From_Source (Prefix (Result_Node))
+                    and then
+                     Nkind (Prefix (Result_Node)) = N_Selected_Component
+                  then
+                     Result_Node := Prefix (Prefix (Result_Node));
+                     pragma Assert (Comes_From_Source (Result_Node));
+                  end if;
+
+               end if;
 
                Result :=
                  Node_To_Element_New (
@@ -3717,6 +3739,14 @@ package body Asis.Expressions is
       else
 
          Function_Call_Node_Kind := Nkind (Function_Call_Node);
+
+         if Function_Call_Node_Kind = N_Qualified_Expression
+           and then
+            Is_Rewrite_Substitution (Function_Call_Node)
+         then
+            Function_Call_Node      := Sinfo.Expression (Function_Call_Node);
+            Function_Call_Node_Kind := Nkind (Function_Call_Node);
+         end if;
 
          case Function_Call_Node_Kind is
             when N_Binary_Op =>

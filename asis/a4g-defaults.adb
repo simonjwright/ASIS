@@ -4,7 +4,7 @@
 --                                                                          --
 --                          A 4 G . D E F A U L T S                         --
 --                                                                          --
---            Copyright (C) 1995-2014, Free Software Foundation, Inc.       --
+--            Copyright (C) 1995-2019, Free Software Foundation, Inc.       --
 --                                                                          --
 -- ASIS-for-GNAT is free software; you can redistribute it and/or modify it --
 -- under terms of the  GNU General Public License  as published by the Free --
@@ -122,9 +122,7 @@ package body A4G.Defaults is
                Search_Path := Getenv ("ADA_INCLUDE_PATH");
             when Object =>
                Search_Path := Getenv ("ADA_OBJECTS_PATH");
-            when Tree =>
-               --  There is no environment variable for separate
-               --  tree path at the moment;
+            when Tree | Rep =>
                exit;
          end case;
 
@@ -159,8 +157,8 @@ package body A4G.Defaults is
                      when Object =>
                         Add_Lib_Search_Dir
                           (Search_Path.all (Lower_Bound .. Upper_Bound - 1));
-                     when Tree =>
-                        exit; --  non implemented yet;
+                     when Tree | Rep =>
+                        exit;
                   end case;
 
                   Lower_Bound := Upper_Bound + 1;
@@ -238,8 +236,8 @@ package body A4G.Defaults is
                       & File_Name.all);
                end if;
             end loop;
-         when Tree =>
-            null; --  non implemented yet;
+         when Tree | Rep =>
+            null;
       end case;
 
       return null;

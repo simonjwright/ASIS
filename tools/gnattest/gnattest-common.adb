@@ -220,7 +220,9 @@ package body GNATtest.Common is
       Status        : Status_Type;
    begin
       Increase_Indent (Me_Closure, "Get_Closure_Diff");
-      Append (Main_Files, Create (+Options.Main_Unit.all));
+      for Main_Unit of Options.Main_Units loop
+         Append (Main_Files, Create (+Main_Unit));
+      end loop;
       Get_Closures
         (Source_Project_Tree.Root_Project,
          Main_Files,
@@ -1252,7 +1254,7 @@ package body GNATtest.Common is
       end if;
 
       if Declaration_Kind (Dec_Elem) = A_Private_Type_Declaration then
-         Dec_Elem := Corresponding_Type_Declaration (Dec_Elem);
+         Dec_Elem := Corresponding_Type_Completion (Dec_Elem);
          Def_Elem := Type_Declaration_View (Dec_Elem);
       end if;
 
@@ -1267,7 +1269,20 @@ package body GNATtest.Common is
       Dec_Elem := Corresponding_Parent_Subtype (Def_Elem);
 
       if Declaration_Kind (Dec_Elem) = A_Subtype_Declaration then
-         return Corresponding_First_Subtype (Dec_Elem);
+         Dec_Elem := Corresponding_First_Subtype (Dec_Elem);
+      end if;
+
+      if
+        Declaration_Kind (Dec_Elem) in
+        A_Tagged_Incomplete_Type_Declaration | An_Incomplete_Type_Declaration
+      then
+         Dec_Elem := Corresponding_Type_Completion (Dec_Elem);
+      end if;
+
+      if Declaration_Kind (Dec_Elem) in
+        A_Private_Type_Declaration | A_Private_Extension_Declaration
+      then
+         Dec_Elem := Corresponding_Type_Completion (Dec_Elem);
       end if;
 
       return Dec_Elem;
@@ -1365,6 +1380,22 @@ package body GNATtest.Common is
       Report_Err (Exception_Information (Ex));
    end Report_Unhandled_Exception;
 
+   ---------------------------------
+   -- Report_Exclusions_Not_Found --
+   ---------------------------------
+
+   procedure Report_Exclusions_Not_Found is
+      Cur : String_Set.Cursor := Excluded_Files.First;
+   begin
+      while Cur /= String_Set.No_Element loop
+         Report_Std
+           ("warning: exemption: source " & String_Set.Element (Cur)
+            & " not found");
+         Next (Cur);
+      end loop;
+      Excluded_Files.Clear;
+   end Report_Exclusions_Not_Found;
+
    -----------------------------
    --  Root_Type_Declaration  --
    -----------------------------
@@ -1402,7 +1433,6 @@ package body GNATtest.Common is
          if Type_Kind (Def_Elem) in
            A_Tagged_Record_Type_Definition | An_Interface_Type_Definition
          then
-            Decrease_Indent (Me_Hash);
             return Dec_Elem;
          end if;
 
@@ -1508,6 +1538,24 @@ package body GNATtest.Common is
       VF        :          GNATCOLL.VFS.Virtual_File;
 
       use List_Of_Strings;
+
+      procedure Create_Intermediate_ALI;
+      procedure Create_Intermediate_ALI is
+      begin
+         Change_Dir
+           (Temp_Dir.all & Directory_Separator & Closure_Subdir_Name);
+         Create_ALI (VF.Display_Full_Name, Success);
+         if not Success then
+            Report_Std
+              ("gnattest (warning): "
+               & "cannot calculate closure for "
+               & VF.Display_Base_Name
+               & ", overall closure may be incomplete");
+         else
+            Recompute := True;
+         end if;
+         Change_Dir (Temp_Dir.all);
+      end Create_Intermediate_ALI;
    begin
       Trace (Me_Closure, "Update_Closure");
 
@@ -1516,8 +1564,15 @@ package body GNATtest.Common is
 
          case Source_Project_Tree.Info (VF).Unit_Part is
             when Unit_Spec =>
-               Skeleton.Source_Table.Add_Source_To_Process
-                 (VF.Display_Full_Name);
+               if Excluded_Files.Contains (VF.Display_Base_Name) then
+                  --  This file should not be processed, but we need
+                  --  to get its ALI in case it impacts the closure
+                  Create_Intermediate_ALI;
+                  Excluded_Files.Exclude (VF.Display_Base_Name);
+               else
+                  Skeleton.Source_Table.Add_Source_To_Process
+                    (VF.Display_Full_Name);
+               end if;
 
             when Unit_Body =>
                if not Skeleton.Source_Table.Source_Present
@@ -1526,19 +1581,7 @@ package body GNATtest.Common is
                then
                   --  There is no corresponding spec for this file, so we need
                   --  to get its ALI in case it impacts the closure
-                  Change_Dir
-                    (Temp_Dir.all & Directory_Separator & Closure_Subdir_Name);
-                  Create_ALI (VF.Display_Full_Name, Success);
-                  if not Success then
-                     Report_Std
-                       ("gnattest (warning): "
-                        & "cannot calculate closure for "
-                        & VF.Display_Base_Name
-                        & ", overall closure may be incomplete");
-                  else
-                     Recompute := True;
-                  end if;
-                  Change_Dir (Temp_Dir.all);
+                  Create_Intermediate_ALI;
                end if;
 
             when others =>

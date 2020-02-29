@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -993,7 +993,7 @@ private
    --  clause. The First entry is the main unit. The second entry, if present
    --  is a unit on which the first unit depends, etc. This stack is used to
    --  generate error messages showing the dependency chain if a file is not
-   --  found, or whether a true circular dependency exists.  The Load_Unit
+   --  found, or whether a true circular dependency exists. The Load_Unit
    --  function makes an entry in this table when it is called, and removes
    --  the entry just before it returns.
 

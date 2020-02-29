@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1913,7 +1913,8 @@ package body Sinfo is
         or else NT (N).Nkind = N_Package_Instantiation
         or else NT (N).Nkind = N_Procedure_Call_Statement
         or else NT (N).Nkind = N_Procedure_Instantiation
-        or else NT (N).Nkind = N_Requeue_Statement);
+        or else NT (N).Nkind = N_Requeue_Statement
+        or else NT (N).Nkind = N_Variable_Reference_Marker);
       return Flag1 (N);
    end Is_Elaboration_Checks_OK_Node;
 
@@ -1932,12 +1933,15 @@ package body Sinfo is
         or else NT (N).Nkind = N_Attribute_Reference
         or else NT (N).Nkind = N_Call_Marker
         or else NT (N).Nkind = N_Entry_Call_Statement
+        or else NT (N).Nkind = N_Expanded_Name
         or else NT (N).Nkind = N_Function_Call
         or else NT (N).Nkind = N_Function_Instantiation
+        or else NT (N).Nkind = N_Identifier
         or else NT (N).Nkind = N_Package_Instantiation
         or else NT (N).Nkind = N_Procedure_Call_Statement
         or else NT (N).Nkind = N_Procedure_Instantiation
-        or else NT (N).Nkind = N_Requeue_Statement);
+        or else NT (N).Nkind = N_Requeue_Statement
+        or else NT (N).Nkind = N_Variable_Reference_Marker);
       return Flag3 (N);
    end Is_Elaboration_Warnings_OK_Node;
 
@@ -2069,6 +2073,22 @@ package body Sinfo is
       return Flag16 (N);
    end Is_Null_Loop;
 
+   function Is_OpenAcc_Environment
+      (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Loop_Statement);
+      return Flag13 (N);
+   end Is_OpenAcc_Environment;
+
+   function Is_OpenAcc_Loop
+      (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Loop_Statement);
+      return Flag14 (N);
+   end Is_OpenAcc_Loop;
+
    function Is_Overloaded
       (N : Node_Id) return Boolean is
    begin
@@ -2114,7 +2134,7 @@ package body Sinfo is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_Variable_Reference_Marker);
-      return Flag1 (N);
+      return Flag4 (N);
    end Is_Read;
 
    function Is_Source_Call
@@ -2140,7 +2160,8 @@ package body Sinfo is
         or else NT (N).Nkind = N_Package_Instantiation
         or else NT (N).Nkind = N_Procedure_Call_Statement
         or else NT (N).Nkind = N_Procedure_Instantiation
-        or else NT (N).Nkind = N_Requeue_Statement);
+        or else NT (N).Nkind = N_Requeue_Statement
+        or else NT (N).Nkind = N_Variable_Reference_Marker);
       return Flag2 (N);
    end Is_SPARK_Mode_On_Node;
 
@@ -2200,7 +2221,7 @@ package body Sinfo is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_Variable_Reference_Marker);
-      return Flag2 (N);
+      return Flag5 (N);
    end Is_Write;
 
    function Iteration_Scheme
@@ -3075,6 +3096,14 @@ package body Sinfo is
       return Flag18 (N);
    end Rounded_Result;
 
+   function Save_Invocation_Graph_Of_Body
+      (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Compilation_Unit);
+      return Flag1 (N);
+   end Save_Invocation_Graph_Of_Body;
+
    function SCIL_Controlling_Tag
       (N : Node_Id) return Node_Id is
    begin
@@ -3521,14 +3550,6 @@ package body Sinfo is
         or else NT (N).Nkind = N_Task_Body);
       return Flag13 (N);
    end Was_Originally_Stub;
-
-   function Withed_Body
-      (N : Node_Id) return Node_Id is
-   begin
-      pragma Assert (False
-        or else NT (N).Nkind = N_With_Clause);
-      return Node1 (N);
-   end Withed_Body;
 
    --------------------------
    -- Field Set Procedures --
@@ -5350,6 +5371,8 @@ package body Sinfo is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_Allocator);
+      pragma Assert (not Val
+        or else not Is_Static_Coextension (N));
       Set_Flag18 (N, Val);
    end Set_Is_Dynamic_Coextension;
 
@@ -5377,7 +5400,8 @@ package body Sinfo is
         or else NT (N).Nkind = N_Package_Instantiation
         or else NT (N).Nkind = N_Procedure_Call_Statement
         or else NT (N).Nkind = N_Procedure_Instantiation
-        or else NT (N).Nkind = N_Requeue_Statement);
+        or else NT (N).Nkind = N_Requeue_Statement
+        or else NT (N).Nkind = N_Variable_Reference_Marker);
       Set_Flag1 (N, Val);
    end Set_Is_Elaboration_Checks_OK_Node;
 
@@ -5396,12 +5420,15 @@ package body Sinfo is
         or else NT (N).Nkind = N_Attribute_Reference
         or else NT (N).Nkind = N_Call_Marker
         or else NT (N).Nkind = N_Entry_Call_Statement
+        or else NT (N).Nkind = N_Expanded_Name
         or else NT (N).Nkind = N_Function_Call
         or else NT (N).Nkind = N_Function_Instantiation
+        or else NT (N).Nkind = N_Identifier
         or else NT (N).Nkind = N_Package_Instantiation
         or else NT (N).Nkind = N_Procedure_Call_Statement
         or else NT (N).Nkind = N_Procedure_Instantiation
-        or else NT (N).Nkind = N_Requeue_Statement);
+        or else NT (N).Nkind = N_Requeue_Statement
+        or else NT (N).Nkind = N_Variable_Reference_Marker);
       Set_Flag3 (N, Val);
    end Set_Is_Elaboration_Warnings_OK_Node;
 
@@ -5533,6 +5560,22 @@ package body Sinfo is
       Set_Flag16 (N, Val);
    end Set_Is_Null_Loop;
 
+   procedure Set_Is_OpenAcc_Environment
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Loop_Statement);
+      Set_Flag13 (N, Val);
+   end Set_Is_OpenAcc_Environment;
+
+   procedure Set_Is_OpenAcc_Loop
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Loop_Statement);
+      Set_Flag14 (N, Val);
+   end Set_Is_OpenAcc_Loop;
+
    procedure Set_Is_Overloaded
       (N : Node_Id; Val : Boolean := True) is
    begin
@@ -5578,7 +5621,7 @@ package body Sinfo is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_Variable_Reference_Marker);
-      Set_Flag1 (N, Val);
+      Set_Flag4 (N, Val);
    end Set_Is_Read;
 
    procedure Set_Is_Source_Call
@@ -5604,7 +5647,8 @@ package body Sinfo is
         or else NT (N).Nkind = N_Package_Instantiation
         or else NT (N).Nkind = N_Procedure_Call_Statement
         or else NT (N).Nkind = N_Procedure_Instantiation
-        or else NT (N).Nkind = N_Requeue_Statement);
+        or else NT (N).Nkind = N_Requeue_Statement
+        or else NT (N).Nkind = N_Variable_Reference_Marker);
       Set_Flag2 (N, Val);
    end Set_Is_SPARK_Mode_On_Node;
 
@@ -5613,6 +5657,8 @@ package body Sinfo is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_Allocator);
+      pragma Assert (not Val
+        or else not Is_Dynamic_Coextension (N));
       Set_Flag14 (N, Val);
    end Set_Is_Static_Coextension;
 
@@ -5664,7 +5710,7 @@ package body Sinfo is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_Variable_Reference_Marker);
-      Set_Flag2 (N, Val);
+      Set_Flag5 (N, Val);
    end Set_Is_Write;
 
    procedure Set_Iteration_Scheme
@@ -6539,6 +6585,14 @@ package body Sinfo is
       Set_Flag18 (N, Val);
    end Set_Rounded_Result;
 
+   procedure Set_Save_Invocation_Graph_Of_Body
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Compilation_Unit);
+      Set_Flag1 (N, Val);
+   end Set_Save_Invocation_Graph_Of_Body;
+
    procedure Set_SCIL_Controlling_Tag
       (N : Node_Id; Val : Node_Id) is
    begin
@@ -6985,14 +7039,6 @@ package body Sinfo is
         or else NT (N).Nkind = N_Task_Body);
       Set_Flag13 (N, Val);
    end Set_Was_Originally_Stub;
-
-   procedure Set_Withed_Body
-     (N : Node_Id; Val : Node_Id) is
-   begin
-      pragma Assert (False
-        or else NT (N).Nkind = N_With_Clause);
-      Set_Node1 (N, Val);
-   end Set_Withed_Body;
 
    -------------------------
    -- Iterator Procedures --

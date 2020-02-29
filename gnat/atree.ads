@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -569,6 +569,13 @@ package Atree is
    --  caller's responsibility to ensure that any pointers to the original node
    --  are appropriately updated. This function is used only by Sinfo.CN to
    --  change nodes into their corresponding entities.
+
+   type Ignored_Ghost_Record_Proc is access procedure (N : Node_Or_Entity_Id);
+
+   procedure Set_Ignored_Ghost_Recording_Proc
+     (Proc : Ignored_Ghost_Record_Proc);
+   --  Register a procedure that is invoked when an ignored Ghost node or
+   --  entity is created.
 
    type Report_Proc is access procedure (Target : Node_Id; Source : Node_Id);
 

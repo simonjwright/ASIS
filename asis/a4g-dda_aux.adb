@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                    Copyright (C) 1999-2015, AdaCore                      --
+--                    Copyright (C) 1999-2018, AdaCore                      --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,6 +33,7 @@ with Einfo;   use Einfo;
 with Sem_Aux; use Sem_Aux;
 with Sinfo;   use Sinfo;
 with Snames;  use Snames;
+with Namet;   use Namet;
 with Nlists;  use Nlists;
 with System;  use System;
 
@@ -662,7 +663,43 @@ package body A4G.DDA_Aux is
 
          end if;
 
-      --  If not static expression, or discriminant, cannot get bounds
+      --  A user defined non-static constant
+
+      elsif Nkind (N) = N_Identifier
+        and then Ekind (Entity (N)) = E_Constant
+      then
+         return Eval_Scalar_Node (Constant_Value (Entity (N)), Discs);
+
+      --  The four usual arithmetical operators
+
+      elsif Nkind (N) = N_Op_Add then
+         return Eval_Scalar_Node (Left_Opnd (N), Discs) +
+           Eval_Scalar_Node (Right_Opnd (N), Discs);
+
+      elsif Nkind (N) = N_Op_Subtract then
+         return Eval_Scalar_Node (Left_Opnd (N), Discs) -
+           Eval_Scalar_Node (Right_Opnd (N), Discs);
+
+      elsif Nkind (N) = N_Op_Multiply then
+         return Eval_Scalar_Node (Left_Opnd (N), Discs) *
+           Eval_Scalar_Node (Right_Opnd (N), Discs);
+
+      elsif Nkind (N) = N_Op_Divide then
+         return Eval_Scalar_Node (Left_Opnd (N), Discs) /
+           Eval_Scalar_Node (Right_Opnd (N), Discs);
+
+      --  The Size attribute. This makes it possible to evaluate second order
+      --  sizes, i.e. sizes which explicitly depend on other sizes, used for
+      --  example to build array types overlaid on other types.
+
+      elsif Nkind (N) = N_Attribute_Reference
+        and then Attribute_Name (N) = Name_Size
+        and then Nkind (Prefix (N)) = N_Identifier
+      then
+         return Get_RM_Size (Entity (Prefix (N)));
+
+      --  If neither discriminant, nor static expression, non-static constant,
+      --  arithmetical operators or handled attribute, then cannot get bounds.
 
       else
          raise Variable_Rep_Info;
@@ -927,6 +964,23 @@ package body A4G.DDA_Aux is
                         - Eval_Scalar_Node (L, Discs)
                             + 1));
    end Get_Length;
+
+   -----------------
+   -- Get_RM_Size --
+   -----------------
+
+   function Get_RM_Size
+     (Comp  : Entity_Id;
+      Discs : Discrim_List := Null_Discrims)
+      return  Uint
+   is
+   begin
+      if Component_Present (Comp, Discs) then
+         return Check_And_Eval (RM_Size (Comp), Discs);
+      else
+         raise No_Component;
+      end if;
+   end Get_RM_Size;
 
    ------------------
    -- Linear_Index --

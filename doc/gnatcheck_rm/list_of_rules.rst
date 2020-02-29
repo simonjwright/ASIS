@@ -8,7 +8,16 @@ This section contains an alphabetized list of all the predefined
 GNATcheck rules.
 
 *
+  :ref:`Abort_Statements`
+
+*
   :ref:`Abstract_Type_Declarations`
+
+*
+  :ref:`Address_Specifications_For_Initialized_Objects`
+
+*
+  :ref:`Address_Specifications_For_Local_Objects`
 
 *
   :ref:`Anonymous_Arrays`
@@ -18,6 +27,9 @@ GNATcheck rules.
 
 *
   :ref:`Binary_Case_Statements`
+
+*
+  :ref:`Bit_Records_Without_Layout_Definition`
 
 *
   :ref:`Blocks`
@@ -128,6 +140,9 @@ GNATcheck rules.
   :ref:`Improper_Returns`
 
 *
+  :ref:`Incomplete_Representation_Specifications`
+
+*
   :ref:`Maximum_Parameters`
 
 *
@@ -135,6 +150,9 @@ GNATcheck rules.
 
 *
   :ref:`Local_Packages`
+
+*
+  :ref:`Local_USE_Clauses`
 
 *
   :ref:`Metrics_Cyclomatic_Complexity`
@@ -152,7 +170,13 @@ GNATcheck rules.
   :ref:`Identifier_Suffixes`
 
 *
+  :ref:`Max_Identifier_Length`
+
+*
   :ref:`Membership_Tests`
+
+*
+  :ref:`Misplaced_Representation_Items`
 
 *
   :ref:`Multiple_Entries_In_Protected_Definitions`
@@ -164,7 +188,13 @@ GNATcheck rules.
   :ref:`Nested_Subprograms`
 
 *
+  :ref:`No_Explicit_Real_Range`
+
+*
   :ref:`No_Inherited_Classwide_Pre`
+
+*
+  :ref:`No_Scalar_Storage_Order_Specified`
 
 *
   :ref:`Non_Qualified_Aggregates`
@@ -182,13 +212,25 @@ GNATcheck rules.
   :ref:`Non_Visible_Exceptions`
 
 *
+  :ref:`Number_Declarations`
+
+*
   :ref:`Null_Paths`
+
+*
+  :ref:`Numeric_Indexing`
 
 *
   :ref:`Numeric_Literals`
 
 *
+  :ref:`Object_Declarations_Out_Of_Order`
+
+*
   :ref:`Objects_Of_Anonymous_Types`
+
+*
+  :ref:`One_Construct_Per_Line`
 
 *
   :ref:`OTHERS_In_Aggregates`
@@ -198,6 +240,9 @@ GNATcheck rules.
 
 *
   :ref:`OTHERS_In_Exception_Handlers`
+
+*
+  :ref:`Outbound_Protected_Assignments`
 
 *
   :ref:`Outer_Loop_Exits`
@@ -239,6 +284,9 @@ GNATcheck rules.
   :ref:`Printable_ASCII`
 
 *
+  :ref:`Relative_Delay_Statements`
+
+*
   :ref:`Representation_Specifications`
 
 *
@@ -252,6 +300,9 @@ GNATcheck rules.
 
 *
   :ref:`Separate_Numeric_Error_Handlers`
+
+*
+  :ref:`Single_Value_Enumeration_Types`
 
 *
   :ref:`Slices`
@@ -297,6 +348,9 @@ GNATcheck rules.
 
 *
   :ref:`Unconstrained_Array_Returns`
+
+*
+  :ref:`Unconstrained_Arrays`
 
 *
   :ref:`Uninitialized_Global_Variables`

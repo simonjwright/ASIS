@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2007-2017, AdaCore                     --
+--                     Copyright (C) 2007-2018, AdaCore                     --
 --                                                                          --
 -- Asis Utility Library (ASIS UL) is free software; you can redistribute it --
 -- and/or  modify  it  under  terms  of  the  GNU General Public License as --
@@ -244,6 +244,22 @@ package ASIS_UL.Utilities is
    --
    --  Expected Defining_Name_Kinds:
    --     A_Defining_Identifier
+
+   function Is_Tagged (Dcl : Asis.Element) return Boolean;
+   --  Checks if Dcl declares a tagged type. Returns False for any unexpected
+   --  element.
+   --
+   --  Expected Element_Kinds:
+   --     A_Declaration
+
+   function Is_Modular_Type (Subtype_Ref : Asis.Element) return Boolean;
+   --  Provided that Subtype_Ref is a subtype mark, check if it denotes a
+   --  modular type. Returns False for any unexpected element
+   --
+   --  Expected Expression_Kinds:
+   --       An_Identifier
+   --       A_Selected_Component
+   --       An_Attribute_Reference
 
    function Is_Volatile_Type (Subtype_Ref : Asis.Element) return Boolean;
    --  Provided that Subtype_Ref is a subtype mark, check if it denotes a

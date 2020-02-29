@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1997-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1997-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- ASIStant  is  free  software;  you can redistribute  it and/or modify it --
 -- under terms of the  GNU  General Public License as published by the Free --
@@ -128,6 +128,11 @@ package ASIStant.FuncEnum is
          end case;
       end record;
    --  Universal ASIStant expression representation
+
+   function "=" (Left, Right : Query_Result) return Boolean;
+   --  We need to define this "=" becayse Query_Result has fields with abstract
+   --  "=". Moreover, access fields need more smart comparison then just
+   --  predefined "="
 
 ------------------------------------------------------------------------------
 --    For brevity sake, the following convention is used to identify a query

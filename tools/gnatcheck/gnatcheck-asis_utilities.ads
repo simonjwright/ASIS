@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2004-2017, AdaCore                     --
+--                     Copyright (C) 2004-2019, AdaCore                     --
 --                                                                          --
 -- GNATCHECK  is  free  software;  you can redistribute it and/or modify it --
 -- under terms of the  GNU  General Public License as published by the Free --
@@ -149,6 +149,16 @@ package Gnatcheck.ASIS_Utilities is
    --  If El is not an exception handler, then no exception handlers are
    --  checked. Nested handlers are never checked.
 
+   function Is_Address_Specification (El : Asis.Element) return Boolean;
+   --  Checks if the argument is either an address clause or the definition of
+   --  address aspect.
+
+   function Enclosing_List return Asis.Element_List;
+   --  This function returns a list of all the first-order components of the
+   --  Element that is wisited (that's why it does not have an argument - it
+   --  works on a traversal stack). If the argument is a top argument in the
+   --  Compilation Unit structure, Nil_Element_List is returned
+
    ---------------------------------------
    -- Routines used by individual rules --
    ---------------------------------------
@@ -264,6 +274,15 @@ package Gnatcheck.ASIS_Utilities is
    --  the predefined Constraint_Error exception (unwinding all the renamings)
    --  Returns False if it denotes the obsolete predefined renaming of
    --  Constraint_Error as Numeric_Error.
+
+   function Is_Interrupt_Handler (Proc : Asis.Element) return Boolean;
+   --  Checks if the argument is an interrupt handler (a protected
+   --  parameterless procedure for which a pragma or an aspect Attach_Handler
+   --  or Interrupt_Handler is applied. Returns False for any unexpected
+   --  Element.
+   --
+   --  Expected Declaration_Kinds
+   --     A_Procedure_Declaration
 
    function Is_Numeric_Error (Ref : Asis.Element) return Boolean;
    --  Supposing that Checks Ref is an exception name, checks that it denotes
@@ -468,6 +487,83 @@ package Gnatcheck.ASIS_Utilities is
    --  Unfortunately ASIS has not been properly updated for multiple
    --  inheritance introduced in Ada 2012, so the functionality described above
    --  cannot be implemented in ASIS and we have to use direct tree traversing.
+
+   function Contains_Modular_Component
+     (Type_Decl : Asis.Element)
+      return      Boolean;
+   --  Assuming that Type_Decl represents a record type or record extension
+   --  declaration checks if the type contains a component of a modular type.
+   --  Returns False for any unexpected element.
+   --
+   --  Expects Declaration_Kinds:
+   --     An_Ordinary_Type_Declaration
+
+   function Is_Representation_Item (El : Asis.Element) return Boolean;
+   --  Defines if the argument is a representation item for
+   --  Misplaced_Representation_Items rule.
+
+   function Entity_From_Rep_Item
+     (Rep_Item : Asis.Element)
+      return     Asis.Element;
+   --  Assuming that Rep_Cl represents a representation item (as defined for
+   --  Misplaced_Representation_Items rule, that is by Is_Representation_Item
+   --  query) computes the declaartion of the entity this representation item
+   --  is applied to.
+   --  Raises ASIS_Inappropriate_Element for any other argument
+   --
+   --  Appropriate Clause_Kinds:
+   --     A_Representation_Clause
+   --
+   --  Appropriate Element_Kinds
+   --     A_Pragma (The pragma name is one of the following:
+   --                 Atomic
+   --                 Atomic_Components
+   --                 Independent
+   --                 Independent_Components
+   --                 Pack
+   --                 Unchecked_Union
+   --                 Volatile
+   --                 Volatile_Components)
+
+   function Needs_Real_Range_Definition (El : Asis.Element) return Boolean;
+   --  For No_Explicit_Real_Range rule. Checks if the argument is a declaration
+   --  of a floating point type or a decimal fixed point type, or a derived
+   --  type declaration where the ancestor type is of these kinds.
+
+   function Has_Range_Specification (El : Asis.Element) return Boolean;
+   --  For No_Explicit_Real_Range rule, Assumes that for the outer call (this
+   --  is a recursive function) Needs_Real_Range_Definition (El) is True.
+   --  Checks if the argument type has a range specification. In case if the
+   --  argument is a derived type, step-by-step unwinds the chain of
+   --  derivations and subtyping and stops when finds a range constraint.
+
+   function Is_Object_Address_Specification (El : Asis.Element) return Boolean;
+   --  Checks if the argument is either an address clause or the definition of
+   --  address aspect, and it is applied to a data object.
+
+   --  Routines for Outbound_Protected_Assignment rule --
+
+   function Get_Encl_Protected_Body return Asis.Element;
+   --  Checks if El is an element located in protected body. If it is, returns
+   --  the corresponding protected body, otherwise returns Nil_Element
+   --  This function uses traversal stack, that's why it does not have any
+   --  argument.
+
+   function Get_Obj_Dcl (El : Asis.Element) return Asis.Element;
+   --  Assuming that El is an element representing the variable name from an
+   --  assignment statement, tries to compute the declaration of the data
+   --  object that is the source of this assignment (or which component is the
+   --  source of this assignment). If this is not possible because of any
+   --  reason Nil_Element is returned.
+
+   function Is_Local
+     (Dcl            : Asis.Element;
+      Protected_Body : Asis.Element)
+      return Boolean;
+   --  Assuming that Dcl represents a data object declaration, and
+   --  Protected_Body represents a protected body, checks if Dcl is local to
+   --  Protected_Body (that is, declared either inside it or inside the
+   --  corresponding protected specification).
 
    ----------------------------------------------------------------------
    -- Routines used for creating and analyzing of the global structure --

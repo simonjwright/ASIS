@@ -649,6 +649,8 @@ package body ASIS_UL.Global_State.Utilities is
             Result := True;
          when An_Entry_Call_Statement =>
             Result := True;
+         when An_Indexed_Component =>
+            Result := Is_Generalized_Indexing (El);
          when others =>
             null;
       end case;

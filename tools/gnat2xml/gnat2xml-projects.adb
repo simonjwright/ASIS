@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2013-2017, AdaCore                     --
+--                     Copyright (C) 2013-2018, AdaCore                     --
 --                                                                          --
 -- Gnat2xml is free software; you can redistribute it and/or modify it      --
 -- under terms of the  GNU General Public License  as published by the Free --
@@ -338,8 +338,7 @@ package body Gnat2xml.Projects is
          end if;
 
          if not First_Pass or else In_Project_File then
-            ASIS_UL.Compiler_Options.Process_cargs_Section
-              (Parser, Preprocessing_Allowed => False);
+            ASIS_UL.Compiler_Options.Process_cargs_Section (Parser);
          end if;
 
          if Incremental_Mode_By_Default

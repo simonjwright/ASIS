@@ -1,4 +1,4 @@
------------------------------------------------------------------------------
+------------------------------------------------------------------------------
 --                                                                          --
 --                          GNATCHECK COMPONENTS                            --
 --                                                                          --
@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2006-2017, AdaCore                     --
+--                     Copyright (C) 2006-2019, AdaCore                     --
 --                                                                          --
 -- GNATCHECK  is  free  software;  you can redistribute it and/or modify it --
 -- under terms of the  GNU  General Public License as published by the Free --
@@ -3815,6 +3815,12 @@ package body Gnatcheck.Rules.Custom_1 is
          Enable     => True,
          Defined_At => "");
 
+      Process_Rule_Parameter
+        (Rule       => Rule,
+         Param      => "Interrupt_Suffix=_Interrupt",
+         Enable     => True,
+         Defined_At => "");
+
    end Activate_In_Test_Mode;
 
    ----------------------------------------------------------
@@ -3860,6 +3866,8 @@ package body Gnatcheck.Rules.Custom_1 is
             return " [" & Rule.Class_Access_Suffix_Synonym.all & "]";
          elsif Var = 8 and then Rule.Access_Obj_Suffix_Synonym /= null then
             return " [" & Rule.Access_Obj_Suffix_Synonym.all & "]";
+         elsif Var = 9 and then Rule.Interrupt_Suffix_Synonym /= null then
+            return " [" & Rule.Interrupt_Suffix_Synonym.all & "]";
 
          else
             return " [" & Rule_Name (Rule) & ':' &
@@ -3871,9 +3879,11 @@ package body Gnatcheck.Rules.Custom_1 is
                        when 6     => "Class_Subtype_Suffix",
                        when 7     => "Class_Access_Suffix",
                        when 8     => "Access_Obj_Suffix",
+                       when 9     => "Interrupt_Suffix",
                        when others => "")
                    & "]";
          end if;
+
       end if;
 
    end Annotate_Rule;
@@ -3894,6 +3904,7 @@ package body Gnatcheck.Rules.Custom_1 is
       Free (Rule.Constant_Suffix);
       Free (Rule.Renaming_Suffix);
       Free (Rule.Access_Obj_Suffix);
+      Free (Rule.Interrupt_Suffix);
 
       Free (Rule.Type_Suffix_Synonym);
       Free (Rule.Access_Suffix_Synonym);
@@ -3902,7 +3913,7 @@ package body Gnatcheck.Rules.Custom_1 is
       Free (Rule.Constant_Suffix_Synonym);
       Free (Rule.Renaming_Suffix_Synonym);
       Free (Rule.Access_Obj_Suffix_Synonym);
-
+      Free (Rule.Interrupt_Suffix_Synonym);
    end Free_All_Suffixes;
 
    --------------------------------------
@@ -3947,9 +3958,10 @@ package body Gnatcheck.Rules.Custom_1 is
                     "#5#wrong suffix in access-to-access type name" &
                     "#6#wrong suffix in class-wide subtype name"    &
                     "#7#wrong suffix in access-to-class type name"  &
-                    "#8#wrong suffix in access object name");
+                    "#8#wrong suffix in access object name"         &
+                    "#9#wrong suffix in interrupt handler name");
 
-      --  Excemption parameters:
+      --  Exemption parameters:
       Insert (Identifier_Suffixes_Exemption_Parameters, "type");
       Insert (Identifier_Suffixes_Exemption_Parameters, "access");
       Insert (Identifier_Suffixes_Exemption_Parameters, "access_obj");
@@ -3957,6 +3969,7 @@ package body Gnatcheck.Rules.Custom_1 is
       Insert (Identifier_Suffixes_Exemption_Parameters, "class_subtype");
       Insert (Identifier_Suffixes_Exemption_Parameters, "constant");
       Insert (Identifier_Suffixes_Exemption_Parameters, "renaming");
+      Insert (Identifier_Suffixes_Exemption_Parameters, "interrupt");
    end Init_Rule;
 
    --------------------------------------
@@ -4083,6 +4096,22 @@ package body Gnatcheck.Rules.Custom_1 is
             Report_No_EOL
               (Rule_Name_Padding &
                "Access_Obj_Suffix = " & Rule.Access_Obj_Suffix.all,
+              Indent_Level);
+         end if;
+
+      end if;
+
+      if Rule.Interrupt_Suffix /= null then
+
+         if First_Param then
+            Report_No_EOL
+              (": Interrupt_Suffix = " & Rule.Interrupt_Suffix.all);
+            First_Param := False;
+         else
+            Report (",");
+            Report_No_EOL
+              (Rule_Name_Padding &
+               "Interrupt_Suffix = " & Rule.Interrupt_Suffix.all,
               Indent_Level);
          end if;
 
@@ -4231,6 +4260,26 @@ package body Gnatcheck.Rules.Custom_1 is
 
       end if;
 
+      if Rule.Interrupt_Suffix /= null then
+
+         if First_Param then
+            Put (Rule_File,
+                 ": Interrupt_Suffix = " & Rule.Interrupt_Suffix.all);
+            First_Param := False;
+         else
+            Put_Line (Rule_File, ",");
+
+            for J in 1 .. Indent_Level loop
+               Put (Rule_File, Get_Indent_String);
+            end loop;
+
+            Put (Rule_File,
+                 Rule_Name_Padding &
+                 "Interrupt_Suffix = " & Rule.Interrupt_Suffix.all);
+         end if;
+
+      end if;
+
    end Print_Rule_To_File;
 
    --------------------------------------------------
@@ -4334,7 +4383,12 @@ package body Gnatcheck.Rules.Custom_1 is
                "access_obj_suffix"
             then
                Free (Rule.Access_Obj_Suffix);
-               Free (Rule.Access_Obj_Suffix);
+               Free (Rule.Access_Obj_Suffix_Synonym);
+            elsif To_Lower (Param (First_Par_Idx .. Last_Par_Idx)) =
+               "interrupt_suffix"
+            then
+               Free (Rule.Interrupt_Suffix);
+               Free (Rule.Interrupt_Suffix_Synonym);
             else
                Error
                 ("(" & Rule.Name.all & ") wrong parameter : " &
@@ -4460,6 +4514,21 @@ package body Gnatcheck.Rules.Custom_1 is
                   if Has_Synonym (Rule) then
                      Free (Rule.Access_Obj_Suffix_Synonym);
                      Rule.Access_Obj_Suffix_Synonym :=
+                       new String'(Rule_Synonym (Rule));
+                  end if;
+
+                  Rule.Rule_State := Enabled;
+
+               elsif To_Lower (Param (First_Par_Idx .. Last_Par_Idx)) =
+                  "interrupt_suffix"
+               then
+
+                  Rule.Interrupt_Suffix :=
+                    new String'(Param (First_Str_Idx .. Last_Str_Idx));
+
+                  if Has_Synonym (Rule) then
+                     Free (Rule.Interrupt_Suffix_Synonym);
+                     Rule.Interrupt_Suffix_Synonym :=
                        new String'(Rule_Synonym (Rule));
                   end if;
 
@@ -4728,7 +4797,7 @@ package body Gnatcheck.Rules.Custom_1 is
                                 not Is_Nil (Corresponding_Constant_Declaration
                                               (Element)))
                then
-                  --  Check for access suffix. The case of a defered constant
+                  --  Check for access suffix. The case of a deferred constant
                   --  and the corresponding full constant declarations is
                   --  filtered out
                   Tmp := Object_Declaration_View (Tmp);
@@ -4771,7 +4840,7 @@ package body Gnatcheck.Rules.Custom_1 is
                            when A_Private_Type_Declaration =>
                               --  For private type, we do only one step
                               --  attempting to go from private to full view.
-                              --  The reason is that for full unvinding of all
+                              --  The reason is that for full unwinding of all
                               --  possible subtyping, derivation and privating
                               --  it is very hard to define which information
                               --  is visible at the place of Element
@@ -4848,6 +4917,19 @@ package body Gnatcheck.Rules.Custom_1 is
                   State.Diagnosis := 4;
                end if;
 
+            when A_Procedure_Declaration =>
+
+               if Rule.Interrupt_Suffix /= null
+                 and then
+                  Is_Interrupt_Handler (Tmp)
+                 and then
+                  not Has_Suffix
+                       (Element, To_Wide_String (Rule.Interrupt_Suffix.all))
+               then
+                  State.Detected  := True;
+                  State.Diagnosis := 9;
+               end if;
+
             when others =>
                null;
          end case;
@@ -4855,7 +4937,6 @@ package body Gnatcheck.Rules.Custom_1 is
       end if;
 
    end Rule_Check_Pre_Op;
-
    ------------------------------------------
    -- Rule_Parameter (Identifier_Suffixes) --
    ------------------------------------------
@@ -4881,6 +4962,8 @@ package body Gnatcheck.Rules.Custom_1 is
          return "type";
       elsif Index (Diag, "renaming") /= 0 then
          return "renaming";
+      elsif Index (Diag, "interrupt") /= 0 then
+         return "interrupt";
       else
          return "";
       end if;
@@ -4903,6 +4986,7 @@ package body Gnatcheck.Rules.Custom_1 is
       Rule.Class_Access_Suffix     := null;
       Rule.Constant_Suffix         := new String'("_C");
       Rule.Renaming_Suffix         := new String'("_R");
+      Rule.Interrupt_Suffix        := null;
    end Set_Rule_Defaults;
 
    ------------------------------------------
@@ -4968,6 +5052,13 @@ package body Gnatcheck.Rules.Custom_1 is
          XML_Report
            ("<parameter>Access_Obj_Suffix=" &
                Rule.Access_Obj_Suffix.all   & "</parameter>",
+            Indent_Level + 1);
+      end if;
+
+      if Rule.Interrupt_Suffix /= null then
+         XML_Report
+           ("<parameter>Interrupt_Suffix=" &
+               Rule.Interrupt_Suffix.all   & "</parameter>",
             Indent_Level + 1);
       end if;
 
@@ -5054,6 +5145,19 @@ package body Gnatcheck.Rules.Custom_1 is
             " switch-off=""-R"                     &
             Rule.Name.all                          &
             ":Access_Obj_Suffix"""                 &
+            "/>");
+
+      Info (Level * Ident_String                   &
+            "<field switch=""+R"                   &
+            Rule.Name.all                          &
+            ":Interrupt_Suffix"""                  &
+            " label="""                            &
+            "suffix for interrupt handler names"   &
+            " (empty string disables check)"""     &
+            " separator=""="""                     &
+            " switch-off=""-R"                     &
+            Rule.Name.all                          &
+            ":Interrupt_Suffix"""                  &
             "/>");
 
       --  Specifying the dependencies between the default suffixes and the
@@ -5655,7 +5759,7 @@ package body Gnatcheck.Rules.Custom_1 is
                     "#11#%1% does not start with prefix %2% "      &
                     "required for exceptions");
 
-      --  Excemption parameters:
+      --  Exemption parameters:
       Insert (Identifier_Prefixes_Exemption_Parameters, "type");
       Insert (Identifier_Prefixes_Exemption_Parameters, "concurrent");
       Insert (Identifier_Prefixes_Exemption_Parameters, "access");

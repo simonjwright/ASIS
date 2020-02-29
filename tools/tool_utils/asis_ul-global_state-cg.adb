@@ -336,6 +336,13 @@ package body ASIS_UL.Global_State.CG is
    --  where the call takes place. Only one (the first) call from the scope to
    --  the given Element is stored.
 
+   procedure Store_Dispatching_Call
+     (Called_Entity  : Asis.Element;
+      At_SLOC        : String_Loc;
+      Calling_Entity : Asis.Element := Nil_Element);
+   --  Similar to Store_Arc, but stores the arc not to the list of direct
+   --  calls, but to the list of dispatching calls.
+
    procedure Set_Is_Renaming (N : GS_Node_Id; Val : Boolean := True);
    --  Set the flag indicating if the callable entity is a renaming of another
    --  callable entity (only renamings-as-bodies are represented in the call
@@ -1221,14 +1228,26 @@ package body ASIS_UL.Global_State.CG is
             Called_El := Corresponding_Declaration (Called_El);
          end if;
 
-         if At_SLOC = Nil_String_Loc then
-            Store_Arc
-              (Called_Entity => Called_El,
-               At_SLOC       => Build_GNAT_Location (Element));
+         if Skip_Dispatching_Calls then
+            if At_SLOC = Nil_String_Loc then
+               Store_Dispatching_Call
+                 (Called_Entity => Called_El,
+                  At_SLOC       => Build_GNAT_Location (Element));
+            else
+               Store_Dispatching_Call
+                 (Called_Entity => Called_El,
+                  At_SLOC       => At_SLOC);
+            end if;
          else
-            Store_Arc
-              (Called_Entity => Called_El,
-               At_SLOC       => At_SLOC);
+            if At_SLOC = Nil_String_Loc then
+               Store_Arc
+                 (Called_Entity => Called_El,
+                  At_SLOC       => Build_GNAT_Location (Element));
+            else
+               Store_Arc
+                 (Called_Entity => Called_El,
+                  At_SLOC       => At_SLOC);
+            end if;
          end if;
 
       end if;
@@ -2137,6 +2156,37 @@ package body ASIS_UL.Global_State.CG is
 
    end Store_Arc;
 
+   ----------------------------
+   -- Store_Dispatching_Call --
+   ----------------------------
+
+   procedure Store_Dispatching_Call
+     (Called_Entity  : Asis.Element;
+      At_SLOC        : String_Loc;
+      Calling_Entity : Asis.Element := Nil_Element)
+   is
+      Called_Node  : constant GS_Node_Id := Corresponding_Node (Called_Entity);
+      Calling_Node :          GS_Node_Id := Current_Scope;
+   begin
+
+      if not Is_Nil (Calling_Entity) then
+         Calling_Node := Corresponding_Node
+           (Corresponding_Element (Calling_Entity), Unconditionally => True);
+         pragma Assert (Present (Calling_Node));
+      end if;
+
+      pragma Assert
+        (First_GS_Node < Called_Node
+       and then
+         Called_Node <= Last_Node);
+
+      Add_Link_To_SLOC_List
+        (To_Node     => Calling_Node,
+         To_List     => Dispatching_Calls,
+         Link_To_Add => (Node => Called_Node, SLOC => At_SLOC));
+
+   end Store_Dispatching_Call;
+
    ----------------------------------
    -- Store_Dispatching_Operations --
    ----------------------------------
@@ -2168,7 +2218,10 @@ package body ASIS_UL.Global_State.CG is
          Traverse_Renamings;
       end if;
 
-      if Represent_Dispatching_Calls then
+      if Represent_Dispatching_Calls
+        and then
+         not Skip_Dispatching_Calls
+      then
          Expand_Dispatching_Calls;
       end if;
 

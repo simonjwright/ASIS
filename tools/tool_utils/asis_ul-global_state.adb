@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2007-2017, AdaCore                     --
+--                     Copyright (C) 2007-2018, AdaCore                     --
 --                                                                          --
 -- Asis Utility Library (ASIS UL) is free software; you can redistribute it --
 -- and/or  modify  it  under  terms  of  the  GNU General Public License as --
@@ -919,6 +919,9 @@ package body ASIS_UL.Global_State is
          Info_No_EOL (2 * Ident_String & "direct calls             :");
          Print_SLOC_List (Table (N).SLOC_Node_List_1);
 
+         Info_No_EOL (2 * Ident_String & "postponed disp calls     :");
+         Print_SLOC_List (Table (N).Dispatching_Calls);
+
          Direct_Calls_Count :=
            Direct_Calls_Count +
              Natural (SLOC_Node_Lists.Length (Table (N).SLOC_Node_List_1));
@@ -1102,6 +1105,7 @@ package body ASIS_UL.Global_State is
          SLOC_Node_List_1   => SLOC_Node_Lists.Empty_Set,
          SLOC_Node_List_2   => SLOC_Node_Lists.Empty_Set,  --  Direct reads
          SLOC_Node_List_3   => SLOC_Node_Lists.Empty_Set,  --  Direct writes
+         Dispatching_Calls  => SLOC_Node_Lists.Empty_Set,  -- Dispatching calls
          Node_List_1        => Node_Lists.Empty_Set,  --  All_Calls
          Node_List_2        => Node_Lists.Empty_Set, --  Direct disp calls
          Node_List_3        => Node_Lists.Empty_Set, --  Directly impl spbs
@@ -1482,6 +1486,12 @@ package body ASIS_UL.Global_State is
               New_Item  => SLOC_Link_Tmp,
               Position  => Tmp_SLOC_Cursor,
               Inserted  => Tmp_Boolean);
+         when Dispatching_Calls =>
+            SLOC_Node_Lists.Insert
+             (Container => For_Node_Rec.Dispatching_Calls,
+              New_Item  => SLOC_Link_Tmp,
+              Position  => Tmp_SLOC_Cursor,
+              Inserted  => Tmp_Boolean);
 --         when All_Calls =>
 --            Node_Lists.Insert
 --             (Container => For_Node_Rec.All_Calls_Chain,
@@ -1726,6 +1736,7 @@ begin
       SLOC_Node_List_1          => SLOC_Node_Lists.Empty_Set, --  Direct_Calls
       SLOC_Node_List_2          => SLOC_Node_Lists.Empty_Set, --  Direct reads
       SLOC_Node_List_3          => SLOC_Node_Lists.Empty_Set, --  Direct writes
+      Dispatching_Calls         => SLOC_Node_Lists.Empty_Set, -- Disp calls
       Node_List_1               => Node_Lists.Empty_Set,      --  All_Calls
       Node_List_2               => Node_Lists.Empty_Set, --  Direct disp calls
       Node_List_3               => Node_Lists.Empty_Set, --  Directly impl spbs

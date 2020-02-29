@@ -250,4 +250,11 @@ package ASIS_UL.Options is
    --  This flag should be removed after completing the implementation of
    --  dispatching calls representation in the call graph.
 
+   Skip_Dispatching_Calls : Boolean := False;
+   --  If this flag is ON, and Represent_Dispatching_Calls is also ON,
+   --  dispatching calls are stored separately and a tool may deside if it
+   --  needs transitive closure with or without dispatching calls. Originally
+   --  this flag has been introduced for Skip_Dispatching_Calls parameter of
+   --  the gnatcheck Recursive_Subprograms rule.
+
 end ASIS_UL.Options;

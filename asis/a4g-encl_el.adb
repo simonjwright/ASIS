@@ -2493,9 +2493,13 @@ others => Not_Implemented_Enclosing_Element_Construction'Access);
                Parent_Node := Parent (Parent_Node);
             end if;
 
+            Parent_Node := Get_Orig_Body_For_Class_Wide_Clode (Parent_Node);
+
             return Node_To_Element_New (Node             => Parent_Node,
                                         Starting_Element => Element);
       end case;
+
+      Parent_Node := Get_Orig_Body_For_Class_Wide_Clode (Parent_Node);
 
       return Node_To_Element_New (Node             => Parent_Node,
                                   Internal_Kind    => Parent_Internal_Kind,
@@ -4381,7 +4385,11 @@ others => Not_Implemented_Enclosing_Element_Construction'Access);
           (N_Kind = N_Package_Declaration    or else
            N_Kind = N_Package_Body           or else
            N_Kind = N_Subprogram_Declaration or else
-           N_Kind = N_Subprogram_Body)
+           (N_Kind = N_Subprogram_Body
+           and then
+            Present (Corresponding_Spec (N))
+           and then
+            Ekind (Corresponding_Spec (N)) in Generic_Subprogram_Kind))
          and then
            Nkind (Original_Node (N)) not in  N_Renaming_Declaration)
        or else

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,7 +34,7 @@
 
 package Gnatvsn is
 
-   Gnat_Static_Version_String : constant String := "2018 (20180523)";
+   Gnat_Static_Version_String : constant String := "2019 (20190517)";
    --  Static string identifying this version, that can be used as an argument
    --  to e.g. pragma Ident. Note that the date (founding date of AdaCore) is
    --  a dummy value that gets reset to the actual build date by the scripts.
@@ -44,14 +44,14 @@ package Gnatvsn is
    --  other variable in this package may have a name starting with
    --  Gnat_Static_Version.
 
-   Library_Version : constant String := "2018";
+   Library_Version : constant String := "2019";
    --  Library version. It needs to be updated whenever the major version
    --  number is changed.
    --
    --  Note: Makefile.in uses the library version string to construct the
    --  soname value.
 
-   Current_Year : constant String := "2018";
+   Current_Year : constant String := "2019";
    --  Used in printing copyright messages
 
    Verbose_Library_Version : constant String := "GNAT Lib v" & Library_Version;

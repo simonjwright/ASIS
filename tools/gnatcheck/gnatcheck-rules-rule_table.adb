@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2004-2018, AdaCore                     --
+--                     Copyright (C) 2004-2019, AdaCore                     --
 --                                                                          --
 -- GNATCHECK  is  free  software;  you can redistribute it and/or modify it --
 -- under terms of the  GNU  General Public License as published by the Free --
@@ -34,6 +34,7 @@ with GNAT.Directory_Operations; use GNAT.Directory_Operations;
 with GNAT.OS_Lib;               use GNAT.OS_Lib;
 
 with ASIS_UL.Common;
+with ASIS_UL.Debug;            use ASIS_UL.Debug;
 with ASIS_UL.Misc;             use ASIS_UL.Misc;
 with ASIS_UL.Output;           use ASIS_UL.Output;
 
@@ -1241,9 +1242,20 @@ package body Gnatcheck.Rules.Rule_Table is
             "provided by GNAT");
       Info ("using the same syntax to control these checks as for other " &
             "rules:");
-      Info ("  Warnings     - compiler warnings");
-      Info ("  Style_Checks - compiler style checks");
-      Info ("  Restrictions - checks made by pragma Restriction_Warnings");
+      Info ("  Warnings     - compiler warnings" &
+            (if Debug_Flag_RR then
+                " - EASY"
+             else ""));
+
+      Info ("  Style_Checks - compiler style checks" &
+            (if Debug_Flag_RR then
+                " - TRIVIAL"
+             else ""));
+
+      Info ("  Restrictions - checks made by pragma Restriction_Warnings" &
+            (if Debug_Flag_RR then
+                " - EASY"
+             else ""));
 
    end Rules_Help;
 

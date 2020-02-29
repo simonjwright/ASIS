@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2004-2018, AdaCore                     --
+--                     Copyright (C) 2004-2019, AdaCore                     --
 --                                                                          --
 -- GNATCHECK  is  free  software;  you can redistribute it and/or modify it --
 -- under terms of the  GNU  General Public License as published by the Free --
@@ -152,6 +152,15 @@ package Gnatcheck.Rules is
       Temporary_Disabled);
    --  To be used when temporary rule enabling/disabling is implemented.
 
+   type Remediation_Levels is
+     (Trivial,
+      Easy,
+      Medium,
+      Major,
+      High,
+      Complex);
+   --  How hard it could be to revove the rule violation.
+
    type Rule_Template is tagged record
       Name : Rule_Name_Str;
       --  The only means of rule identification outside gnatcheck. All the
@@ -179,6 +188,8 @@ package Gnatcheck.Rules is
       --  Is the rule active or not
 
       Rule_Status : Rule_Statuses;
+
+      Remediation_Level : Remediation_Levels;
 
       Help_Info : Rule_Help;
       --  Short help information for the rule

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2004-2017, AdaCore                     --
+--                     Copyright (C) 2004-2018, AdaCore                     --
 --                                                                          --
 -- Asis Utility Library (ASIS UL) is free software; you can redistribute it --
 -- and/or  modify  it  under  terms  of  the  GNU General Public License as --
@@ -204,6 +204,51 @@ package body ASIS_UL.Compiler_Options is
    ---------------------------
 
    procedure Process_cargs_Section
+     (Parser : Opt_Parser := Command_Line_Parser)
+   is
+   begin
+      Goto_Section
+        ((if ASIS_UL.Options.Mimic_gcc
+            then "inner-cargs"
+            else "cargs"), Parser => Parser);
+      --  See doc for -inner-cargs in asis_ul-environment.adb.
+
+      loop
+         case GNAT.Command_Line.Getopt
+                ("* " &
+                 --  options that need path parameter normalization
+                 "I: gnatec! gnatem! gnatep!",
+                 Parser => Parser) is
+            when 'I' | 'g' =>
+               if Full_Switch (Parser => Parser) = "gnatec"
+                 or else
+                  Full_Switch (Parser => Parser) = "gnatep"
+                 or else
+                  Full_Switch (Parser => Parser) = "gnatem"
+               then
+                  Store_GNAT_Option_With_Path
+                    (Full_Switch (Parser => Parser),
+                     Parameter (Parser => Parser));
+               elsif Full_Switch (Parser => Parser) = "I" then
+                  Store_I_Option (Parameter (Parser => Parser));
+               else
+                  Store_Option (Full_Switch (Parser => Parser));
+               end if;
+
+            when ASCII.NUL =>
+               exit;
+
+            when others =>
+               Store_Option (Full_Switch (Parser => Parser));
+         end case;
+      end loop;
+
+      Process_ADA_PRJ_INCLUDE_FILE;
+      Set_Arg_List;
+
+   end Process_cargs_Section;
+
+   procedure Process_cargs_Section_Old
      (Parser           : Opt_Parser := Command_Line_Parser;
       Preprocessing_Allowed : Boolean := True)
    is
@@ -219,6 +264,8 @@ package body ASIS_UL.Compiler_Options is
          case
             GNAT.Command_Line.Getopt
              ("* -RTS= I: gnatec! gnatep! gnateD? " &
+
+              "gnatWh gnatWu gnatWs gnatWe gnatW8 gnatWb " &
 
               --  switches to be ignored:
 
@@ -279,6 +326,12 @@ package body ASIS_UL.Compiler_Options is
                   Store_Option ('-' & Full_Switch (Parser => Parser));
                   Opt.Ada_Version := Ada_2012;
 
+               elsif Full_Switch (Parser => Parser) in
+                 "gnatWh" | "gnatWu" | "gnatWs" | "gnatWe" |
+                 "gnatW8" | "gnatWb"
+               then
+                  Store_Option ('-' & Full_Switch (Parser => Parser));
+
                --  Ignore everything else: -gnatD/Q/G/R/s/d
 
                else
@@ -295,14 +348,18 @@ package body ASIS_UL.Compiler_Options is
                end if;
 
             when others =>
-               Store_Option (Full_Switch (Parser => Parser));
+               --  We don't want miscellaneous switches passed to gcc.
+               --  They can, for example, cause errors for switches not
+               --  supported on all targets.
+
+               null;
          end case;
       end loop;
 
       Process_ADA_PRJ_INCLUDE_FILE;
       Set_Arg_List;
 
-   end Process_cargs_Section;
+   end Process_cargs_Section_Old;
 
    ------------------
    -- Set_Arg_List --

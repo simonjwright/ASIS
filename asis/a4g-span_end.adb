@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 1995-2017, Free Software Foundation, Inc.       --
+--            Copyright (C) 1995-2018, Free Software Foundation, Inc.       --
 --                                                                          --
 -- ASIS-for-GNAT is free software; you can redistribute it and/or modify it --
 -- under terms of the  GNU General Public License  as published by the Free --
@@ -37,8 +37,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Asis.Declarations; use  Asis.Declarations;
-with Asis.Definitions;  use  Asis.Definitions;
+--  with Asis.Declarations; use  Asis.Declarations;
+--  with Asis.Definitions;  use  Asis.Definitions;
 with Asis.Elements;     use Asis.Elements;
 with Asis.Expressions;  use Asis.Expressions;
 with Asis.Statements;   use Asis.Statements;
@@ -54,7 +54,7 @@ with A4G.Int_Knds;      use A4G.Int_Knds;
 with A4G.Skip_TB;       use A4G.Skip_TB;
 
 with Atree;             use Atree;
-with Nlists;            use Nlists;
+--  with Nlists;            use Nlists;
 with Output;            use Output;
 with Sinfo;             use Sinfo;
 
@@ -91,6 +91,10 @@ package body A4G.Span_End is
    --  Set_Image_End which in turn call it again, and this makes the
    --  recursive processing of an Element if its right-most component
    --  itself has components.
+
+   function Null_Statement_End (E : Asis.Element) return Source_Ptr;
+   --  There is a special case here - an implicit null statement with
+   --  floating labels
 
    function Word_Or_Character_End (E : Asis.Element) return Source_Ptr;
    --  In some specific cases finding an end of identifier require special
@@ -264,6 +268,30 @@ package body A4G.Span_End is
    end Function_Call_End;
 
 --  --|A2005 end
+
+   -------------------------
+   --  Null_Statement_End --
+   -------------------------
+
+   function Null_Statement_End (E : Asis.Element) return Source_Ptr is
+      Result : Source_Ptr;
+   begin
+      if Is_Part_Of_Implicit (E) then
+         declare
+            Lbls      : constant Asis.Element_List := Label_Names (E);
+            Last_Comp : constant Asis.Element      := Lbls (Lbls'Last);
+         begin
+            Result := Word_Or_Character_End (Last_Comp);
+            Result := Search_Rightmost_Symbol (Result, '>');
+            Result := Result + 1;
+         end;
+
+      else
+         Result := Nonterminal_Component (E);
+      end if;
+
+      return Result;
+   end Null_Statement_End;
 
    ---------------------------
    -- Word_Or_Character_End --
@@ -516,28 +544,44 @@ package body A4G.Span_End is
 
    function Private_Type_Definition_End (E : Asis.Element) return Source_Ptr is
       N : constant Node_Id := Node (E);
-      S : Source_Ptr := Get_Location (E);
+      S : Source_Ptr       :=
+        Span_Beginning.Private_Type_Definition_Beginning (E);
    begin
-      --  if the enclosing type declaration contains a discriminant part, we
-      --  should skip it first
+      --  private_type_declaration ::=
+      --     type defining_identifier [discriminant_part] is
+      --       [[abstract] tagged] [limited] private
+      --            [aspect_specification];
 
-      if Nkind (N) = N_Private_Type_Declaration and then
-         Present (Discriminant_Specifications (N))
-      then
-         declare
-            Discr_Part : constant Asis.Element_List :=
-              Discriminants (Discriminant_Part (Enclosing_Element (E)));
-            Tmp : Asis.Element := Discr_Part (Discr_Part'Last);
-         begin
-            Tmp := Get_Last_Component (Tmp);
-            S   := A4G.Span_End.Set_Image_End (Tmp);
-         end;
+      --  That is, we have to skip from 1 to 4 keywords
 
-         S := Search_Rightmost_Symbol (S, ')');
+      --  skipping "tagged", if any
+      if Tagged_Present (N) then
+         S := Get_Word_End (P       => S,
+                            In_Word => In_Identifier'Access);
+
+         S := Search_Next_Word (S);
       end if;
 
-      S := Search_Rightmost_Symbol (S, ';');
-      S := Search_Prev_Word (S);
+      --  skipping "abstract", if any
+      if Abstract_Present (N) then
+         S := Get_Word_End (P       => S,
+                            In_Word => In_Identifier'Access);
+
+         S := Search_Next_Word (S);
+      end if;
+
+      --  skipping "limited", if any
+      if Limited_Present (N) then
+         S := Get_Word_End (P       => S,
+                            In_Word => In_Identifier'Access);
+
+         S := Search_Next_Word (S);
+      end if;
+
+      --  skipping "private"
+      S := Get_Word_End (P       => S,
+                         In_Word => In_Identifier'Access);
+
       return S;
    end Private_Type_Definition_End;
 
@@ -1058,11 +1102,11 @@ package body A4G.Span_End is
 --  --|A2005 end
 
       A_Parameter_Association ..
-      --  A_Generic_Association
-      --  A_Null_Statement
-      --      We can treat this statement as a Nonterminal_Component.
-      --     Get_Last_Comp function will return Nil_Element.
-      --  An_Assignment_Statement
+      A_Generic_Association =>   Nonterminal_Component'Access,
+
+      A_Null_Statement => Null_Statement_End'Access,
+
+      An_Assignment_Statement ..
       --  An_If_Statement
       --  A_Case_Statement
       --  A_Loop_Statement

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 1995-2017, Free Software Foundation, Inc.       --
+--            Copyright (C) 1995-2019, Free Software Foundation, Inc.       --
 --                                                                          --
 -- ASIS-for-GNAT is free software; you can redistribute it and/or modify it --
 -- under terms of the  GNU General Public License  as published by the Free --
@@ -157,7 +157,8 @@ package A4G.A_Types is
    type Search_Dir_Kinds is (
       Source, --  for source search path
       Object, --  for object search path
-      Tree);  --  for tree search path
+      Tree,   --  for tree search path
+      Rep);   -- for search path for files with representation information
    --  this type may be further expanded
 
    --------------------------------------------

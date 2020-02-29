@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2004-2016, AdaCore                     --
+--                     Copyright (C) 2004-2018, AdaCore                     --
 --                                                                          --
 -- Asis Utility Library (ASIS UL) is free software; you can redistribute it --
 -- and/or  modify  it  under  terms  of  the  GNU General Public License as --
@@ -176,7 +176,7 @@ package ASIS_UL.Compiler_Options is
    --  Raises Fatal_Error if the parameter specified for command-line --RTS=...
    --  option cannot be resolved to a full path to runtime.
 
-   procedure Process_cargs_Section
+   procedure Process_cargs_Section_Old
      (Parser : Opt_Parser := Command_Line_Parser;
       Preprocessing_Allowed : Boolean := True);
    --  Implements the processing of all the options in -cargs section. Note
@@ -191,6 +191,16 @@ package ASIS_UL.Compiler_Options is
    --  If -cargs section contains '-gnata' option, this option is just skipped.
    --  '-gnata' should not be passed to the compiler call that creates the tree
    --  because it may cause tree transformations that are not good for ASIS.
+   --
+   --  This routine implements the old version of processing of the -cargs
+   --  section, when we try to filter out options that are not needed or even
+   --  could be dangerous for tree creation.
+
+   procedure Process_cargs_Section
+     (Parser : Opt_Parser := Command_Line_Parser);
+   --  Stores the compilation option passed in -cargs section. All the options
+   --  are stored "as is", no analysis of filtering os performed except
+   --  normalizing parameters of -I, -gnatec, -gnatem and -gnated options.
 
    procedure Process_ADA_PRJ_INCLUDE_FILE;
    --  If ADA_PRJ_INCLUDE_FILE points to an existing file, scans this file

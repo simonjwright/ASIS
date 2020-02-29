@@ -56,6 +56,20 @@ the private part of the protected definition are also checked.
 
 This rule has no parameters.
 
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 3
+
+   protected PO is
+      entry Get (I :     Integer);
+      entry Put (I : out Integer);    --  FLAG
+      procedure Reset;
+      function Check return Boolean;
+   private
+      Val : Integer := 0;
+   end PO;
+
 .. _Volatile_Objects_Without_Address_Clauses:
 
 ``Volatile_Objects_Without_Address_Clauses``
@@ -72,6 +86,27 @@ if the GNAT compiler considers this object as volatile because of some
 code generation reasons.
 
 This rule has no parameters.
+
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 6, 11
+
+   with Interfaces, System, System.Storage_Elements;
+   package Foo is
+      Variable: Interfaces.Unsigned_8
+         with Address => System.Storage_Elements.To_Address (0), Volatile;
+
+      Variable1: Interfaces.Unsigned_8                                --  FLAG
+         with Volatile;
+
+      type My_Int is range 1 .. 32 with Volatile;
+
+      Variable3 : My_Int;                                             --  FLAG
+
+      Variable4 : My_Int
+        with Address => Variable3'Address;
+   end Foo;
 
 .. _Object_Orientation:
 
@@ -96,6 +131,19 @@ controlling result and no controlling parameter. If a declaration is a
 completion of another declaration then it is not flagged.
 
 This rule has no parameters.
+
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 5-7
+
+   type T is tagged record
+      I : Integer;
+   end record;
+
+   function Fun (I : Integer) return T;                -- FLAG
+   function Bar (J : Integer) return T renames Fun;    -- FLAG
+   function Foo (K : Integer) return T is ((I => K));  -- FLAG
 
 
 .. _Deep_Inheritance_Hierarchies:
@@ -136,6 +184,21 @@ This rule has the following (mandatory) parameter for the ``+R`` option:
   inheritance hierarchy. If the rule parameter is set to -1, the rule
   flags all the declarations of tagged and interface types.
 
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 8
+
+   type I0 is interface;
+   type I1 is interface and I0;
+   type I2 is interface and I1;
+
+   type T0 is tagged null record;
+   type T1 is new T0 and I0 with null record;
+   type T2 is new T0 and I1 with null record;
+   type T3 is new T0 and I2 with null record; -- FLAG (if rule parameter is 2)
+
+
 .. _Direct_Calls_To_Primitives:
 
 ``Direct_Calls_To_Primitives``
@@ -143,7 +206,7 @@ This rule has the following (mandatory) parameter for the ``+R`` option:
 
 .. index:: Direct_Calls_To_Primitives
 
-Flag any nondispatching call to a dispatching primitive operation, except for:
+Flag any non-dispatching call to a dispatching primitive operation, except for:
 
 
 *
@@ -162,9 +225,52 @@ This rule has the following (optional) parameters for the ``+R`` option:
 
 
 *Except_Constructors*
-  Do not flag nondispatching calls to functions if the function has a
+  Do not flag non-dispatching calls to functions if the function has a
   controlling result and no controlling parameters (in a traditional OO sense
   such functions may be considered as constructors).
+
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 28, 29
+
+   package Root is
+      type T_Root is tagged private;
+
+      procedure Primitive_1 (X : in out T_Root);
+      procedure Primitive_2 (X : in out T_Root);
+   private
+      type T_Root is tagged record
+         Comp : Integer;
+      end record;
+   end Root;
+
+   package Root.Child is
+      type T_Child is new T_Root with private;
+
+      procedure Primitive_1 (X : in out T_Child);
+      procedure Primitive_2 (X : in out T_Child);
+   private
+      type T_Child is new T_Root with record
+         B : Boolean;
+      end record;
+   end Root.Child;
+
+   package body Root.Child is
+
+      procedure Primitive_1 (X : in out T_Child) is
+      begin
+         Primitive_1 (T_Root (X));      --  NO FLAG
+         Primitive_2 (T_Root (X));      --  FLAG
+         Primitive_2 (X);               --  FLAG
+      end Primitive_1;
+
+      procedure Primitive_2 (X : in out T_Child) is
+      begin
+         X.Comp  := X.Comp + 1;
+      end Primitive_2;
+
+   end Root.Child;
 
 
 .. _Downward_View_Conversions:
@@ -177,6 +283,41 @@ This rule has the following (optional) parameters for the ``+R`` option:
 Flag downward view conversions.
 
 This rule has no parameters.
+
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 19, 21
+
+   package Foo is
+      type T1 is tagged private;
+      procedure Proc1 (X : in out T1'Class);
+
+      type T2 is new T1 with private;
+      procedure Proc2 (X : in out T2'Class);
+
+   private
+      type T1 is tagged record
+         C : Integer := 0;
+      end record;
+
+      type T2 is new T1 with null record;
+   end Foo;
+
+   package body Foo is
+
+      procedure Proc1 (X : in out T1'Class) is
+         Var : T2 := T2 (X);                   --  FLAG
+      begin
+         Proc2 (T2'Class (X));                 --  FLAG
+      end Proc1;
+
+      procedure Proc2 (X : in out T2'Class) is
+      begin
+         X.C := X.C + 1;
+      end Proc2;
+
+   end Foo;
 
 
 .. _No_Inherited_Classwide_Pre:
@@ -193,6 +334,38 @@ it.
 
 This rule has no parameters.
 
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 13, 17
+
+   package Foo is
+
+      type Int is interface;
+      function Test (X : Int) return Boolean is abstract;
+      procedure Proc (I : in out Int) is abstract with Pre'Class => Test (I);
+
+      type Int1 is interface;
+      procedure Proc (I : in out Int1) is abstract;
+
+      type T is tagged private;
+
+       type NT1 is new T and Int with private;
+       function Test (X : NT1) return Boolean;        --  FLAG
+       procedure Proc (X : in out NT1);
+
+       type NT2 is new T and Int1 with private;
+       procedure Proc (X : in out NT2);               --  FLAG
+
+      private
+      type T is tagged record
+         I : Integer;
+      end record;
+
+      type NT1 is new T and Int with null record;
+      type NT2 is new T and Int1 with null record;
+
+   end Foo;
 
 .. _Specific_Pre_Post:
 
@@ -206,6 +379,34 @@ declaration contains specification of Pre or/and Post aspect.
 
 This rule has no parameters.
 
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 5, 8, 11, 19
+
+   type T is tagged private;
+   function Check1 (X : T) return Boolean;
+   function Check2 (X : T) return Boolean;
+
+   procedure Proc1 (X : in out T)           --  FLAG
+      with Pre => Check1 (X);
+
+   procedure Proc2 (X : in out T)           --  FLAG
+      with Post => Check2 (X);
+
+   function Fun1 (X : T) return Integer     --  FLAG
+      with Pre  => Check1 (X),
+           Post => Check2 (X);
+
+   function Fun2 (X : T) return Integer
+      with Pre'Class  => Check1 (X),
+           Post'Class => Check2 (X);
+
+   function Fun3 (X : T) return Integer     --  FLAG
+      with Pre'Class  => Check1 (X),
+           Post'Class => Check2 (X),
+           Pre        => Check1 (X),
+           Post       => Check2 (X);
 
 .. _Specific_Parent_Type_Invariant:
 
@@ -220,6 +421,39 @@ extension definition is not flagged if it is a part of a completion of a
 private extension declaration.
 
 This rule has no parameters.
+
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 18, 23
+
+   package Pack1 is
+      type PT1 is tagged private;
+      type PT2 is tagged private
+        with Type_Invariant => Invariant_2 (PT2);
+
+      function Invariant_2   (X : PT2) return Boolean;
+
+   private
+      type PT1 is tagged record
+         I : Integer;
+      end record;
+
+      type PT2 is tagged record
+         I : Integer;
+      end record;
+
+      type PT1_N is new PT1 with null record;
+      type PT2_N is new PT2 with null record;    --  FLAG
+   end Pack1;
+
+   package Pack2 is
+      type N_PT1 is new Pack1.PT1 with private;
+      type N_PT2 is new Pack1.PT2 with private;  --  FLAG
+   private
+      type N_PT1 is new Pack1.PT1 with null record;
+      type N_PT2 is new Pack1.PT2 with null record;
+   end Pack2;
 
 
 .. _Specific_Type_Invariants:
@@ -237,6 +471,22 @@ are not flagged.
 
 This rule has no parameters.
 
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 6
+
+   type PT is private
+      with Type_Invariant => Test_PT (PT);
+   function Test_PT (X : PT) return Boolean;
+
+   type TPT1 is tagged private
+      with Type_Invariant => Test_TPT1 (TPT1);        --  FLAG
+   function Test_TPT1 (X : TPT1) return Boolean;
+
+   type TPT2 is tagged private
+      with Type_Invariant'Class => Test_TPT2 (TPT2);
+   function Test_TPT2 (X : TPT2) return Boolean;
 
 .. _Too_Many_Parents:
 
@@ -259,7 +509,22 @@ This rule has the following (mandatory) parameters for the ``+R`` option:
 *N*
   Positive integer specifying the maximal allowed number of parents/progenitors.
 
+.. rubric:: Example
 
+.. code-block:: ada
+   :emphasize-lines: 11
+
+   type I1 is interface;
+   type I2 is interface;
+   type I3 is interface;
+   type I4 is interface;
+
+   type T_Root is tagged private;
+
+   type T_1 is new T_Root with private;
+   type T_2 is new T_Root and I1 with private;
+   type T_3 is new T_Root and I1 and I2 with private;
+   type T_4 is new T_Root and I1 and I2 and I3 with private; -- FLAG (if rule parameter is 3 or less)
 
 
 .. _Too_Many_Primitives:
@@ -271,7 +536,7 @@ This rule has the following (mandatory) parameters for the ``+R`` option:
 
 Flag any tagged type declaration that has more than N user-defined
 primitive operations (counting both inherited and not overridden and
-explicitly declared, not counting predefined operators), Do not flag
+explicitly declared, not counting predefined operators). Do not flag
 type declarations that are completions of private type or extension
 declarations.
 
@@ -284,6 +549,33 @@ This rule has the following (mandatory) parameters for the ``+R`` option:
   the type is not flagged.
 
 
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 2, 14
+
+   package Foo is
+      type PT is tagged private;     --  FLAG (if rule parameter is 3 or less)
+
+      procedure P1 (X : in out PT);
+      procedure P2 (X : in out PT) is null;
+      function F1 (X : PT) return Integer;
+      function F2 (X : PT) return Integer is (F1 (X) + 1);
+
+      type I1 is interface;
+
+      procedure P1 (X : in out I1) is abstract;
+      procedure P2 (X : in out I1) is null;
+
+      type I2 is interface and I1;   --  FLAG (if rule parameter is 3 or less)
+      function F1 (X : I2) return Integer is abstract;
+      function F2 (X : I2) return Integer is abstract;
+
+   private
+      type PT is tagged record
+         I : Integer;
+      end record;
+   end Foo;
 
 .. _Visible_Components:
 
@@ -303,7 +595,47 @@ or in local (generic) packages are not flagged. *Record definitions* in
 private packages, in package bodies, and in the main subprogram body are not
 flagged.
 
-This rule has no parameters.
+This rule has the following (optional) parameters for the ``+R`` option:
+
+
+*Tagged_Only*
+  Only declarations of tagged types are flagged.
+
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 3, 5, 10, 17
+
+   with Types;
+   package Foo is
+      type Null_Record is null record;                                    --  FLAG
+
+      type Not_Null_Record is record                                      --  FLAG
+         I : Integer;
+         B : Boolean;
+      end record;
+
+      type Tagged_Not_Null_Record is tagged record                        --  FLAG
+         I : Integer;
+         B : Boolean;
+      end record;
+
+      type Private_Extension is new Types.Tagged_Private with private;
+
+      type NoN_Private_Extension is new Types.Tagged_Private with record  --  FLAG
+         B : Boolean;
+      end record;
+
+   private
+      type Rec is tagged record
+         I : Integer;
+      end record;
+
+      type Private_Extension is new Types.Tagged_Private with record
+         C : Rec;
+      end record;
+   end Foo;
+
 
 .. _Portability:
 
@@ -314,6 +646,32 @@ Portability
 
 The rules in this subsection may be used to enforce various
 feature usages that support program portability.
+
+.. _Bit_Records_Without_Layout_Definition:
+
+``Bit_Records_Without_Layout_Definition``
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. index:: Bit_Records_Without_Layout_Definition
+
+Flag record type declarations if a record has a component of a modular
+type and the record type does not have a record representation clause
+applied to it.
+
+This rule has no parameters.
+
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 4
+
+   package Pack is
+      type My_Mod is mod 8;
+
+      type My_Rec is record   --  FLAG
+         I : My_Mod;
+      end record;
+   end Pack;
 
 .. _Forbidden_Attributes:
 
@@ -393,6 +751,24 @@ The rule allows parametric exemption, the parameters that are allowed in the
 definition of exemption sections are *Attribute_Designators*. Each
 *Attribute_Designator* used as a rule exemption parameter should denote
 a predefined or GNAT-specific attribute.
+
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 6, 9
+
+   --  if the rule is activated as +RForbidden_Attributes:Range,First,Last
+   procedure Foo is
+      type Arr is array (1 .. 10) of Integer;
+      Arr_Var : Arr;
+
+      subtype Ind is Integer range Arr'First .. Arr'Last; --  FLAG (twice)
+   begin
+
+      for J in Arr'Range loop                             --  FLAG
+         Arr_Var (J) := Integer'Succ (J);
+
+
 
 .. _Forbidden_Pragmas:
 
@@ -480,6 +856,24 @@ definition of exemption sections are pragma names. Each
 name used as a rule exemption parameter should denote
 a predefined or GNAT-specific pragma.
 
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 5
+
+   --  if the rule is activated as +RForbidden_Pragmas:Pack
+   package Foo is
+
+      type Arr is array (1 .. 8) of Boolean;
+      pragma Pack (Arr);                      --  FLAG
+
+      I : Integer;
+      pragma Atomic (I);
+
+   end Foo;
+
+
+
 .. _Implicit_SMALL_For_Fixed_Point_Types:
 
 ``Implicit_SMALL_For_Fixed_Point_Types``
@@ -493,6 +887,72 @@ Since ``'Small`` can be  defined only for ordinary fixed point types,
 decimal fixed point type declarations are not checked.
 
 This rule has no parameters.
+
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 3
+
+   package Foo is
+      type Fraction is delta 0.01 range -1.0 .. 1.0;
+      type Fraction1 is delta 0.01 range -1.0 .. 1.0; --  FLAG
+
+      type Money is delta 0.01 digits 15;
+
+      for Fraction'Small use 0.01;
+   end Foo;
+
+
+
+.. _Incomplete_Representation_Specifications:
+
+``Incomplete_Representation_Specifications``
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. index:: Incomplete_Representation_Specifications
+
+Flag all record types that have a layout representation specification
+but without Size and Pack representation specifications.
+
+This rule has no parameters.
+
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 2
+
+   package Pack is
+      type Rec is record  --  FLAG
+         I : Integer;
+         B : Boolean;
+      end record;
+
+      for Rec use record
+         I at 0 range 0 ..31;
+         B at 4 range 0 .. 7;
+      end record;
+   end Pack;
+
+.. _No_Explicit_Real_Range:
+
+``No_Explicit_Real_Range``
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. index:: No_Explicit_Real_Range
+
+Flag a declaration of a floating point type or a decimal fixed point
+type, including types derived from them if no explicit range
+specification is provided for the type.
+
+This rule has no parameters.
+
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 1, 2
+
+   type F1 is digits 8;                           --  FLAG
+   type F2 is delta 0.01 digits 8;                --  FLAG
 
 .. _No_Scalar_Storage_Order_Specified:
 
@@ -508,6 +968,36 @@ applies to it (or an ancestor), but neither the type nor any of its
 ancestors has an explicitly specified Scalar_Storage_Order attribute.
 
 This rule has no parameters.
+
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 4
+
+   with System;
+   package Foo is
+
+      type Rec1 is  record     --  FLAG
+         I : Integer;
+      end record;
+
+      for Rec1 use
+         record
+            I at 0 range 0 .. 31;
+         end record;
+
+      type Rec2 is  record
+         I : Integer;
+      end record;
+
+      for Rec2 use
+         record
+            I at 0 range 0 .. 31;
+         end record;
+
+      pragma Attribute_Definition (Scalar_Storage_Order, Rec2, System.Low_Order_First);
+   end Foo;
+
 
 .. _Predefined_Numeric_Types:
 
@@ -541,11 +1031,30 @@ predefined packages (such as ``System.Any_Priority`` or
 
 This rule has no parameters.
 
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 2, 3, 6, 9
+
+   package Foo is
+      I : Integer;                               -- FLAG
+      F : Float;                                 -- FLAG
+      B : Boolean;
+
+      type Arr is array (1 .. 5) of Short_Float; -- FLAG
+
+      type Res is record
+         C1 : Long_Integer;                      -- FLAG
+         C2 : Character;
+      end record;
+
+   end Foo;
+
 
 .. _Printable_ASCII:
 
 ``Printable_ASCII``
-^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^
 
 .. index:: Printable_ASCII
 
@@ -574,6 +1083,17 @@ that contains the choice for ``Numeric_Error``, but does not contain the
 choice for ``Constraint_Error``.
 
 This rule has no parameters.
+
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 2
+
+   exception
+      when Constraint_Error =>  --  FLAG
+         Clean_Up;
+   end;
+
 
 .. _Program_Structure:
 
@@ -607,6 +1127,15 @@ This rule has the following (mandatory) parameters for the ``+R`` option:
   Positive integer specifying the maximal number of ancestors when
   the unit is not flagged.
 
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 1
+
+   package Parent.Child1.Child2 is  -- FLAG  (if rule parameter is 1)
+      I : Integer;
+   end;
+
 
 .. _Deeply_Nested_Generics:
 
@@ -629,6 +1158,28 @@ This rule has the following (mandatory) parameters for the ``+R`` option:
   Nonnegative integer specifying the maximum nesting level for a
   generic declaration.
 
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 7
+
+   package Foo is
+
+      generic
+      package P_G_0 is
+         generic
+         package P_G_1 is
+            generic              --  FLAG (if rule parameter is 1)
+            package P_G_2 is
+               I  : Integer;
+            end;
+         end;
+      end;
+
+   end Foo;
+
+
+
 .. _Local_Packages:
 
 ``Local_Packages``
@@ -642,12 +1193,23 @@ Local packages in bodies are not flagged.
 
 This rule has no parameters.
 
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 2
+
+   package Foo is
+      package Inner is    --  FLAG
+         I : Integer;
+      end Inner;
+   end Foo;
+
 .. _Non_Visible_Exceptions:
 
 ``Non_Visible_Exceptions``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. index:: Non_Visible_Exceptions rule
+.. index:: Non_Visible_Exceptions
 
 Flag constructs leading to the possibility of propagating an exception
 out of the scope in which the exception is declared.
@@ -674,6 +1236,36 @@ Renamings of local exceptions are not flagged.
 
 This rule has no parameters.
 
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 5, 18
+
+   procedure Bar is
+      Var : Integer :=- 13;
+
+      procedure Inner (I : in out Integer) is
+         Inner_Exception_1 : exception;          --  FLAG
+         Inner_Exception_2 : exception;
+      begin
+         if I = 0 then
+            raise Inner_Exception_1;
+         elsif I = 1 then
+            raise Inner_Exception_2;
+         else
+            I := I - 1;
+         end if;
+      exception
+         when Inner_Exception_2 =>
+            I := 0;
+            raise;                               --  FLAG
+      end Inner;
+
+   begin
+      Inner (Var);
+   end Bar;
+
+
 .. _Raising_External_Exceptions:
 
 ``Raising_External_Exceptions``
@@ -688,6 +1280,31 @@ renamed) in the visible part of the package.
 
 This rule has no parameters.
 
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 12
+
+   package Exception_Declarations is
+      Ex : exception;
+   end Exception_Declarations;
+   package Foo is
+      procedure Proc (I : in out Integer);
+   end Foo;
+   with Exception_Declarations;
+   package body Foo is
+      procedure Proc (I : in out Integer) is
+      begin
+         if I < 0 then
+            raise Exception_Declarations.Ex;   --  FLAG
+         else
+            I := I - 1;
+         end if;
+      end Proc;
+   end Foo;
+
+
+
 .. _Programming_Practice:
 
 Programming Practice
@@ -697,6 +1314,61 @@ Programming Practice
 
 The rules in this subsection may be used to enforce feature usages that
 relate to program maintainability.
+
+
+.. _Address_Specifications_For_Initialized_Objects:
+
+``Address_Specifications_For_Initialized_Objects``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. index:: Address_Specifications_For_Initialized_Objects
+
+Flag address clauses and address aspect definitions if they are applied
+to object declarations with explicit initializations.
+
+This rule has no parameters.
+
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 5
+
+   I : Integer := 0;
+   Var0 : Integer with Address => I'Address;
+
+   Var1 : Integer := 10;
+   for Var1'Address use Var0'Address;             --  FLAG
+
+.. _Address_Specifications_For_Local_Objects:
+
+``Address_Specifications_For_Local_Objects``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. index:: Address_Specifications_For_Local_Objects
+
+Flag address clauses and address aspect definitions if they are applied
+to data objects declared in local subprogram bodies. Data objects
+declared in library subprogram bodies are not flagged.
+
+This rule has no parameters.
+
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 7
+
+   package Pack is
+      Var : Integer;
+      procedure Proc (I : in out Integer);
+   end Pack;
+   package body Pack is
+      procedure Proc (I : in out Integer) is
+         Tmp : Integer with Address => Pack.Var'Address;   --  FLAG
+      begin
+         I := Tmp;
+      end Proc;
+   end Pack;
+
 
 .. _Anonymous_Arrays:
 
@@ -709,6 +1381,16 @@ Flag all anonymous array type definitions (by Ada semantics these can only
 occur in object declarations).
 
 This rule has no parameters.
+
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 3
+
+   type Arr is array (1 .. 10) of Integer;
+   Var1 : Arr;
+   Var2 : array (1 .. 10) of Integer;      --  FLAG
+
 
 .. _Binary_Case_Statements:
 
@@ -723,6 +1405,18 @@ or the ``OTHERS`` choice.
 
 This rule has no parameters.
 
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 1
+
+   case Var is                   --  FLAG
+      when 1 =>
+         Var := Var + 1;
+      when others =>
+         null;
+   end case;
+
 .. _Default_Values_For_Record_Components:
 
 ``Default_Values_For_Record_Components``
@@ -736,6 +1430,24 @@ Do not flag discriminant specifications.
 
 This rule has no parameters.
 
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 2, 7
+
+   type Rec (D : Natural := 0) is record
+      I : Integer := 0;                    -- FLAG
+      B : Boolean;
+
+      case D is
+         when 0 =>
+            C : Character := 'A';          -- FLAG
+         when others =>
+            F : Float;
+      end case;
+   end record;
+
+
 .. _Deriving_From_Predefined_Type:
 
 ``Deriving_From_Predefined_Type``
@@ -748,6 +1460,18 @@ predefined Ada type. Do not flag record extensions and private
 extensions. The rule is checked inside expanded generics.
 
 This rule has no parameters.
+
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 3, 5
+
+   package Foo is
+      type T is private;
+      type My_String is new String;  --  FLAG
+   private
+      type T is new Integer;         --  FLAG
+   end Foo;
 
 .. _Enumeration_Ranges_In_CASE_Statements:
 
@@ -770,6 +1494,26 @@ enumeration value to a type and having it implicitly handled by an existing
 
 This rule has no parameters.
 
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 8, 10
+
+   procedure Bar (I : in out Integer) is
+      type Enum is (A, B, C, D, E);
+      type Arr is array (A .. C) of Integer;
+
+      function F (J : Integer) return Enum is separate;
+   begin
+      case F (I) is
+         when Arr'Range  =>  --  FLAG
+            I := I + 1;
+         when D .. E =>      --  FLAG
+            null;
+      end case;
+   end Bar;
+
+
 .. _Enumeration_Representation_Clauses:
 
 ``Enumeration_Representation_Clauses``
@@ -780,6 +1524,15 @@ This rule has no parameters.
 Flag enumeration representation clauses.
 
 This rule has no parameters.
+
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 2
+
+   type Enum1 is (A1, B1, C1);
+   for Enum1 use (A1 => 1, B1 => 11, C1 => 111);     --  FLAG
+
 
 .. _Exceptions_As_Control_Flow:
 
@@ -793,6 +1546,25 @@ same subprogram body. A ``raise`` statement in an exception handler,
 package body, task body or entry body is not flagged.
 
 The rule has no parameters.
+
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 5
+
+   procedure Bar (I : in out Integer) is
+
+   begin
+      if I = Integer'Last then
+         raise Constraint_Error;    --  FLAG
+      else
+        I := I - 1;
+      end if;
+   exception
+      when Constraint_Error =>
+         I := Integer'First;
+   end Bar;
+
 
 .. _Exits_From_Conditional_Loops:
 
@@ -809,6 +1581,23 @@ outer (unconditional) ``loop`` statement.
 
 The rule has no parameters.
 
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 5
+
+   function Bar (S : String) return Natural is
+      Result : Natural := 0;
+   begin
+      for J in S'Range loop
+         exit when S (J) = '@';  --  FLAG
+         Result := Result + J;
+      end loop;
+
+      return 0;
+   end Bar;
+
+
 .. _EXIT_Statements_With_No_Loop_Name:
 
 ``EXIT_Statements_With_No_Loop_Name``
@@ -820,6 +1609,21 @@ Flag each ``exit`` statement that does not specify the name of the loop
 being exited.
 
 The rule has no parameters.
+
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 4
+
+   procedure Bar (I, J : in out Integer) is
+   begin
+      loop
+         exit when I < J;  --  FLAG
+         I := I - 1;
+         J := J + 1;
+      end loop;
+   end Bar;
+
 
 .. _Global_Variables:
 
@@ -835,11 +1639,23 @@ not flagged.
 
 This rule has the following (optional) parameters for the ``+R`` option:
 
-
-
 *Only_Public*
   Do not flag variable declarations in private library (generic) packages and
   in package private parts.
+
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 2, 5
+
+   package Foo is
+       Var1 : Integer;    --  FLAG
+       procedure Proc;
+   private
+       Var2 : Boolean;    --  FLAG
+   end Foo;
+
+
 
 .. _GOTO_Statements:
 
@@ -851,6 +1667,20 @@ This rule has the following (optional) parameters for the ``+R`` option:
 Flag each occurrence of a ``goto`` statement.
 
 This rule has no parameters.
+
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 3
+
+   for K in 1 .. 10 loop
+      if K = 6 then
+         goto Quit; -- FLAG
+      end if;
+      null;
+   end loop;
+   <<Quit>>
+   return;
 
 .. _Improper_Returns:
 
@@ -869,6 +1699,61 @@ This rule supports the stylistic convention that each subprogram
 should have no more than one point of normal return.
 
 This rule has no parameters.
+
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 4, 15, 19
+
+   procedure Proc (I : in out Integer) is
+   begin
+      if I = 0 then
+         return;                          --  FLAG
+      end if;
+
+      I := I * (I + 1);
+   end Proc;
+
+   function Factorial (I : Natural) return Positive is
+   begin
+      if I = 0 then
+         return 1;
+      else
+         return I * Factorial (I - 1);    --  FLAG
+      end if;
+   exception
+      when Constraint_Error =>
+         return Natural'Last;             --  FLAG
+   end Factorial;
+
+
+.. _Local_USE_Clauses:
+
+``Local_USE_Clauses``
+^^^^^^^^^^^^^^^^^^^^^
+
+.. index:: Local_USE_Clauses
+
+Use clauses that are not parts of compilation unit context clause are
+flagged. The rule has an optional parameter for +R option:
+
+*Except_USE_TYPE_Clauses*
+  Do not flag local use type clauses.
+
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 4, 7
+
+   with Pack1;
+   with Pack2;
+   procedure Proc is
+      use Pack1;               --  FLAG
+
+      procedure Inner is
+         use type Pack2.T;     --  FLAG (if Except_USE_TYPE_Clauses is not set)
+      ...
+
 
 .. _Maximum_Parameters:
 
@@ -897,6 +1782,78 @@ This rule has the following (mandatory) parameters for the ``+R`` option:
   Positive integer specifying the maximum allowed total number of
   subprogram formal parameters.
 
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 6, 8
+
+   package Foo is
+
+      procedure Proc_1 (I : in out Integer);
+      procedure Proc_2 (I, J : in out Integer);
+      procedure Proc_3 (I, J, K : in out Integer);
+      procedure Proc_4 (I, J, K, L : in out Integer); --  FLAG (if rule parameter is 3)
+
+      function Fun_4                                  --  FLAG (if rule parameter is 3)
+        (I : Integer;
+         J : Integer;
+         K : Integer;
+         L : Integer) return Integer is (I + J * K - L);
+
+   end Foo;
+
+.. _Misplaced_Representation_Items:
+
+``Misplaced_Representation_Items``
+^^^^^^^^^^^^^^^^^^^^^^
+
+.. index:: Misplaced_Representation_Items
+
+Flag a representation item if there is any Ada construct except
+another representation item for the same entity between this clause
+and the declaration of the entity it applies to. A representation item
+in the context of this rule is either a representation clause or one of
+the following representation pragmas:
+
+*
+  Atomic   J.15.8(9/3)
+
+*
+  Atomic_Components   J.15.8(9/3)
+
+*
+  Independent   J.15.8(9/3)
+
+*
+  Independent_Components   J.15.8(9/3)
+
+*
+  Pack   J.15.3(1/3)
+
+*
+  Unchecked_Union   J.15.6(1/3)
+
+*
+  Volatile   J.15.8(9/3)
+
+*
+  Volatile_Components   J.15.8(9/3)
+
+This rule has no parameters.
+
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 5
+
+   type Int1 is range 0 .. 1024;
+   type Int2 is range 0 .. 1024;
+
+   for Int2'Size use 16;         --  NO FLAG
+   for Int1'Size use 16;         --  FLAG
+
+
+
 .. _Nested_Subprograms:
 
 ``Nested_Subprograms``
@@ -915,6 +1872,26 @@ completed by null procedure declarations are not flagged.
 
 This rule has no parameters.
 
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 4, 6
+
+   procedure Bar (I, J : in out Integer) is
+
+      procedure Foo (K : Integer) is null;
+      procedure Proc1;                    --  FLAG
+
+      procedure Proc2 is separate;        --  FLAG
+
+      procedure Proc1 is
+      begin
+         I := I + J;
+      end Proc1;
+
+   begin
+
+
 .. _Non_Short_Circuit_Operators:
 
 ``Non_Short_Circuit_Operators``
@@ -930,6 +1907,17 @@ operators for modular types or boolean array types are not flagged.
 
 This rule has no parameters.
 
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 1, 3
+
+   B1 := I > 0 and J > 0;       --  FLAG
+   B2 := I < 0 and then J < 0;
+   B3 := I > J or J > 0;        --  FLAG
+   B4 := I < J or else I < 0;
+
+
 .. _Null_Paths:
 
 ``Null_Paths``
@@ -941,6 +1929,31 @@ Flag a statement sequence that is a component of an IF, CASE or LOOP
 statement if this sequences consists of NULL statements only.
 
 This rule has no parameters.
+
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 4, 13, 17
+
+   if I > 10 then
+      J := 5;
+   elsif I > 0 then
+      null;                 --  FLAG
+   else
+     J := J + 1;
+   end if;
+
+   case J is
+      when 1 =>
+         I := I + 1;
+      when 2 =>
+         null;              --  FLAG
+      when 3 =>
+         J := J + 1;
+      when others =>
+         null;              --  FLAG
+   end case;
+
 
 .. _Objects_Of_Anonymous_Types:
 
@@ -956,6 +1969,30 @@ and parameter specifications are not flagged. Formal object declarations
 defined with anonymous access definitions are flagged.
 
 This rule has no parameters.
+
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 5, 8, 12
+
+   package Foo is
+      type Arr is array (1 .. 10) of Integer;
+      type Acc is access Integer;
+
+      A : array (1 .. 10) of Integer;  --  FLAG
+      B : Arr;
+
+      C : access Integer;              --  FLAG
+      D : Acc;
+
+      generic
+         F1 : access Integer;          --  FLAG
+         F2 : Acc;
+      procedure Proc_G
+        (P1 : access Integer;
+         P2 : Acc);
+   end Foo;
+
 
 .. _OTHERS_In_Aggregates:
 
@@ -975,6 +2012,43 @@ exactly one component; for example, ``(1..1 => 0, others => 1)``.
 
 This rule has no parameters.
 
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 22, 25, 29
+
+   package Foo is
+      type Arr is array (1 .. 10) of Integer;
+
+      type Rec is record
+         C1 : Integer;
+         C2 : Integer;
+         C3 : Integer;
+         C4 : Integer;
+      end record;
+
+      type Tagged_Rec is tagged record
+         C1 : Integer;
+      end record;
+
+      type New_Tagged_Rec is new Tagged_Rec with record
+         C2 : Integer;
+         C3 : Integer;
+         C4 : Integer;
+      end record;
+
+      Arr_Var1 : Arr := (others => 1);
+      Arr_Var2 : Arr := (1 => 1, 2=> 2, others => 0);  --  FLAG
+
+      Rec_Var1 : Rec := (C1 => 1, others => 0);
+      Rec_Var2 : Rec := (1, 2, others => 3);           --  FLAG
+
+      Tagged_Rec_Var : Tagged_Rec := (C1 => 1);
+
+      New_Tagged_Rec_Var : New_Tagged_Rec := (Tagged_Rec_Var with others => 0); -- FLAG
+   end Foo;
+
+
 .. _OTHERS_In_CASE_Statements:
 
 ``OTHERS_In_CASE_Statements``
@@ -986,6 +2060,21 @@ Flag any use of an ``others`` choice in a ``case`` statement.
 
 This rule has no parameters.
 
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 6
+
+   case J is
+      when 1 =>
+         I := I + 1;
+      when 3 =>
+         J := J + 1;
+      when others =>        --  FLAG
+         null;
+   end case;
+
+
 .. _OTHERS_In_Exception_Handlers:
 
 ``OTHERS_In_Exception_Handlers``
@@ -996,6 +2085,64 @@ This rule has no parameters.
 Flag any use of an ``others`` choice in an exception handler.
 
 This rule has no parameters.
+
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 4
+
+   exception
+      when Constraint_Error =>
+         I:= Integer'Last;
+      when others =>                   --  FLAG
+         I := I_Old;
+         raise;
+
+
+.. _Outbound_Protected_Assignments:
+
+``Outbound_Protected_Assignments``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. index:: Outbound_Protected_Assignments
+
+Flag an assignment statement located in a protected body if the
+variable name in the left part of the statement denotes an object
+declared outssided ourside this protected type or object.
+
+This rule has no parameters.
+
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 17
+
+   package Pack is
+      Var : Integer;
+
+      protected P is
+         entry E (I : in out Integer);
+         procedure P (I : Integer);
+      private
+         Flag : Boolean;
+      end P;
+
+   end Pack;
+   package body Pack is
+      protected body P is
+         entry E (I : in out Integer) when Flag is
+         begin
+            I   := Var + I;
+            Var := I;           --  FLAG
+         end E;
+
+         procedure P (I : Integer) is
+         begin
+            Flag := I > 0;
+         end P;
+      end P;
+   end Pack;
+
 
 .. _Overly_Nested_Control_Structures:
 
@@ -1031,6 +2178,27 @@ if it is not a positive integer, ``+R`` option is ignored.
 If more than one  option is specified for the gnatcheck call,
 the later option and new parameter override the previous one(s).
 
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 6
+
+   if I > 0 then
+       for Idx in I .. J loop
+          if J < 0 then
+             case I is
+                when 1 =>
+                   if Idx /= 0 then  --  FLAG (if rule parameter is 3)
+                      J := J / Idx;
+                   end if;
+                when others =>
+                   J := J + Idx;
+             end case;
+          end if;
+       end loop;
+   end if;
+
+
 .. _POS_On_Enumeration_Types:
 
 ``POS_On_Enumeration_Types``
@@ -1043,6 +2211,22 @@ type (including types derived from enumeration types).
 
 This rule has no parameters.
 
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 3, 5, 7
+
+   procedure Bar (Ch1, Ch2 : Character; I : in out Integer) is
+   begin
+      if Ch1'Pos in 32 .. 126           --  FLAG
+        and then
+         Ch2'Pos not in 0 .. 31         --  FLAG
+      then
+         I := (Ch1'Pos + Ch2'Pos) / 2;  --  FLAG (twice)
+      end if;
+   end Bar;
+
+
 .. _Positional_Actuals_For_Defaulted_Generic_Parameters:
 
 ``Positional_Actuals_For_Defaulted_Generic_Parameters``
@@ -1054,6 +2238,40 @@ Flag each generic actual parameter corresponding to a generic formal
 parameter with a default initialization, if positional notation is used.
 
 This rule has no parameters.
+
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 23-25
+
+   package Foo is
+      function Fun_1 (I : Integer) return Integer;
+      function Fun_2 (I : Integer) return Integer;
+
+      generic
+         I_Par1 : Integer;
+         I_Par2 : Integer := 1;
+         with function Fun_1 (I : Integer) return Integer is <>;
+         with function Fun_3 (I : Integer) return Integer is Fun_2;
+      package Pack_G is
+         Var_1 : Integer := I_Par1;
+         Var_2 : Integer := I_Par2;
+         Var_3 : Integer := Fun_1 (Var_1);
+         Var_4 : Integer := Fun_3 (Var_2);
+      end Pack_G;
+
+      package Pack_I_1 is new Pack_G (1);
+
+      package Pact_I_2 is new Pack_G
+        (2, I_Par2 => 3, Fun_1 => Fun_2, Fun_3 => Fun_1);
+
+      package Pack_I_3 is new Pack_G (1,
+                                      2,            --  FLAG
+                                      Fun_2,        --  FLAG
+                                      Fun_1);       --  FLAG
+
+   end Foo;
+
 
 .. _Positional_Actuals_For_Defaulted_Parameters:
 
@@ -1068,6 +2286,20 @@ notation is used.
 
 This rule has no parameters.
 
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 7
+
+      procedure Proc (I : in out Integer; J : Integer := 0) is
+      begin
+         I := I + J;
+      end Proc;
+
+   begin
+      Proc (Var1, Var2);   --  FLAG
+
+
 .. _Positional_Components:
 
 ``Positional_Components``
@@ -1079,6 +2311,26 @@ Flag each array, record and extension aggregate that includes positional
 notation.
 
 This rule has no parameters.
+
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 11, 12
+
+   package Foo is
+      type Arr is array (1 .. 10) of Integer;
+
+      type Rec is record
+         C_Int  : Integer;
+         C_Bool : Boolean;
+         C_Char : Character;
+      end record;
+
+      Var_Rec_1 : Rec := (C_Int => 1, C_Bool => True, C_Char => 'a');
+      Var_Rec_2 : Rec := (2, C_Bool => False, C_Char => 'b');   --  FLAG
+      Var_Rec_3 : Rec := (1, True, 'c');                        --  FLAG
+   end Foo;
+
 
 .. _Positional_Generic_Parameters:
 
@@ -1092,6 +2344,25 @@ the generic unit being instantiated has exactly one generic formal
 parameter.
 
 This rule has no parameters.
+
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 10
+
+   with Ada.Text_IO; use Ada.Text_IO;
+   with Ada.Unchecked_Conversion;
+   procedure Bar (I : in out Integer) is
+      type My_Int is range -12345 .. 12345;
+
+      function To_My_Int is new Ada.Unchecked_Conversion
+        (Source => Integer, Target => My_Int);
+
+      function To_Integer is new Ada.Unchecked_Conversion
+        (My_Int, Integer);                                --  FLAG (twice)
+
+      package My_Int_IO is new  Ada.Text_IO.Integer_IO (My_Int);
+
 
 .. _Positional_Parameters:
 
@@ -1128,7 +2399,35 @@ This rule has the following (optional) parameters for the ``+R`` option:
   associations that can be replaced with named associations
   according to language rules are flagged
 
-This rule has no parameters.
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 17, 21
+
+   procedure Bar (I : in out Integer) is
+      function My_Max (Left, Right : Integer) return Integer renames Integer'Max;
+
+      procedure Proc1 (I : in out Integer) is
+      begin
+         I := I + 1;
+      end Proc1;
+
+      procedure Proc2 (I, J : in out Integer) is
+      begin
+         I := I + J;
+      end Proc2;
+
+      L, M : Integer := 1;
+   begin
+      Proc1 (L);
+      Proc2 (L, M);                              --  FLAG (twice)
+      Proc2 (I => M, J => L);
+
+      L := Integer'Max (10, M);
+      M := My_Max (100, Right => L);             --  FLAG
+
+   end Bar;
+
 
 .. _Recursive_Subprograms:
 
@@ -1152,7 +2451,46 @@ are flagged.
 This rule does not take into account subprogram calls in aspect
 definitions.
 
+The rule has an optional parameters for ``+R`` option:
+
+*Skip_Dispatching_Calls*
+   Do not take into account dispatching calls when building and analyzing
+   call chains.
+
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 1
+
+   function Factorial (N : Natural) return Positive is  --  FLAG
+   begin
+      if N = 0 then
+         return 1;
+      else
+         return N * Factorial (N - 1);
+      end if;
+   end Factorial;
+
+.. _Single_Value_Enumeration_Types:
+
+``Single_Value_Enumeration_Types``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. index:: Single_Value_Enumeration_Types
+
+Flag an enumeration type definition if it contains a single enumeration
+literal specification
+
 This rule has no parameters.
+
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 2
+
+   type Enum3 is (A, B, C);
+   type Enum1 is (D);      --  FLAG
+
 
 .. _Unchecked_Address_Conversions:
 
@@ -1172,6 +2510,25 @@ checked inside expanded generics.
 
 This rule has no parameters.
 
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 9
+
+   with Ada.Unchecked_Conversion;
+   with System;
+   package Foo is
+      type My_Address is new System.Address;
+
+      type My_Integer is new Integer;
+      type My_Access is access all My_Integer;
+
+      function Address_To_Access is new Ada.Unchecked_Conversion  --  FLAG
+        (Source => My_Address,
+         Target => My_Access);
+   end Foo;
+
+
 .. _Unchecked_Conversions_As_Actuals:
 
 ``Unchecked_Conversions_As_Actuals``
@@ -1185,6 +2542,36 @@ entry parameter specification.
 
 This rule has no parameters.
 
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 11, 22
+
+   with Ada.Unchecked_Conversion;
+   procedure Bar (I : in out Integer) is
+      type T1 is array (1 .. 10) of Integer;
+      type T2 is array (1 .. 10) of Integer;
+
+      function UC is new Ada.Unchecked_Conversion (T1, T2);
+
+      Var1 : T1 := (others => 1);
+      Var2 : T2 := (others => 2);
+
+      procedure Init (X : out T2; Y : T2 := UC (Var1)) is   --  FLAG
+      begin
+         X := Y;
+      end Init;
+
+      procedure Ident (X : T2; Y : out T2) is
+      begin
+         Y := X;
+      end Ident;
+
+   begin
+      Ident (UC (Var1), Var2);                              --  FLAG
+   end Bar;
+
+
 .. _Unconditional_Exits:
 
 ``Unconditional_Exits``
@@ -1196,10 +2583,28 @@ Flag unconditional ``exit`` statements.
 
 This rule has no parameters.
 
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 8
+
+   procedure Find_A (S : String; Idx : out Natural) is
+   begin
+      Idx := 0;
+
+      for J in S'Range loop
+         if S (J) = 'A' then
+            Idx := J;
+            exit;             --  FLAG
+         end if;
+      end loop;
+   end Find_A;
+
+
 .. _Uninitialized_Global_Variables:
 
 ``Uninitialized_Global_Variables``
-^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. index:: Uninitialized_Global_Variables
 
@@ -1210,6 +2615,17 @@ declarations and declarations of objects of limited types.
 
 This rule has no parameters.
 
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 2
+
+   package Foo is
+      Var1 : Integer;      --  FLAG
+      Var2 : Integer := 0;
+   end Foo;
+
+
 .. _Unnamed_Blocks_And_Loops:
 
 ``Unnamed_Blocks_And_Loops``
@@ -1217,9 +2633,41 @@ This rule has no parameters.
 
 .. index:: Unnamed_Blocks_And_Loops
 
-Flag each unnamed block statement and loop statement.
+Flag each unnamed block statement. Flag a unnamed loop loop statement if this
+statement is enclosed by another loop statement or if it encloses another
+loop statement.
 
 The rule has no parameters.
+
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 5, 10, 14
+
+   procedure Bar (S : in out String) is
+      I : Integer := 1;
+   begin
+      if S'Length > 10 then
+         declare                                  --  FLAG
+            S1   : String (S'Range);
+            Last : Positive := S1'Last;
+            Idx  : Positive := 0;
+         begin
+            for J in S'Range loop                 --  FLAG
+               S1 (Last - Idx) := S (J);
+               Idx             := Idx + 1;
+
+               for K in S'Range loop              --  FLAG
+                  S (K) := Character'Succ (S (K));
+               end loop;
+
+            end loop;
+
+            S := S1;
+         end;
+      end if;
+   end Bar;
+
 
 .. _USE_PACKAGE_Clauses:
 
@@ -1232,6 +2680,16 @@ Flag all ``use`` clauses for packages; ``use type`` clauses are
 not flagged.
 
 This rule has no parameters.
+
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 2
+
+   with Ada.Text_IO;
+   use Ada.Text_IO;                               --  FLAG
+   procedure Bar (S : in out String) is
+
 
 .. _Readability:
 
@@ -1424,6 +2882,20 @@ the definition of exemption sections are:
 *Exclude*
   Exempts check for defining names for which casing schemes are specified in exception
   dictionaries
+
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 4, 7
+
+   --  if the rule is activated as '+RIdentifier_Casing:Type=upper,others=mixed'
+   package Foo is
+      type ENUM_1 is (A1, B1, C1);
+      type Enum_2 is (A2, B2, C2);      --  FLAG
+
+      Var1 : Enum_1 := A1;
+      VAR2 : ENUM_2 := A2;              --  FLAG
+   end Foo;
 
 
 .. _Identifier_Prefixes:
@@ -1685,6 +3157,23 @@ the definition of exemption sections are:
   Exempts check that only names of specific kinds of entities have prefixes
   specified for these kinds
 
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 4, 7, 10
+
+   --  if the rule is activated as '+RIdentifier_Prefixes:Type=Type_,Constant=Const_,ExceptioN=X_'
+   package Foo is
+      type Type_Enum_1 is (A1, B1, C1);
+      type Enum_2      is (A2, B2, C2);         --  FLAG
+
+      Const_C1 : constant Type_Enum_1 := A1;
+      Const2   : constant Enum_2      := A2;    --  FLAG
+
+      X_Exc_1 : exception;
+      Exc_2   : exception;                      --  FLAG
+   end Foo;
+
 
 .. _Identifier_Suffixes:
 
@@ -1826,6 +3315,12 @@ The rule may have the following parameters:
     Specifies the suffix for objects that have an access type
     (including types derived from access types).
 
+*
+  Interrupt_Suffix=\ *string*
+
+    Specifies the suffix for protected subprograms used as
+    interrupt handlers.
+
 
 *
   For the ``-R`` option:
@@ -1886,6 +3381,10 @@ The rule may have the following parameters:
     this disables checks for such objects. It does not disable
     any other checks for this rule
 
+*Interrupt_Suffix*
+    Removes the suffix specified for protected subprograms used
+    as interrupt handlers. It does not disable any other checks
+    for this rule.
 
 If more than one parameter is used, parameters must be separated by commas.
 
@@ -1941,6 +3440,46 @@ the definition of exemption sections are:
 *Renaming*
   Exempts check for package renaming name suffixes
 
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 3, 6, 9
+
+   --  if the rule is activated as '+RIdentifier_Suffixes:Access_Suffix=_PTR,Type_Suffix=_T,Constant_Suffix=_C'
+   package Foo is
+      type Int   is range 0 .. 100;      --  FLAG
+      type Int_T is range 0 .. 100;
+
+      type Int_A   is access Int;        --  FLAG
+      type Int_PTR is access Int;
+
+      Const   : constant Int := 1;       --  FLAG
+      Const_C : constant Int := 1;
+
+   end Foo;
+
+
+.. _Max_Identifier_Length:
+
+``Max_Identifier_Length``
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. index:: Max_Identifier_Length
+
+Flag any defining identifier that has length longer than specified by
+the rule parameter. The rule has a mandatory parameter for +R option:
+
+*N*
+   The maximal allowed identifier length specification.
+
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 2
+
+   type My_Type is range -100 .. 100;
+   My_Variable_With_A_Long_Name : My_Type;  -- FLAG (if rule parameter is 27 or smaller)
+
 
 .. _Misnamed_Controlling_Parameters:
 
@@ -1960,6 +3499,19 @@ declaration.
 
 This rule has no parameters.
 
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 5, 6
+
+   package Foo is
+      type T is tagged private;
+
+      procedure P1 (This : in out T);
+      procedure P2 (That : in out T);              --  FLAG
+      procedure P1 (I : Integer; This : in out T); --  FLAG
+
+
 .. _Name_Clashes:
 
 ``Name_Clashes``
@@ -1977,13 +3529,8 @@ identifiers from all the dictionary files provided as the rule parameters.
 
 This rule has the following (mandatory) parameters for the ``+R`` option:
 
-
-
 *dictionary_file*
   The name of a dictionary file.
-
-This rule is enabled by default, but without setting any corresponding
-dictionary file(s); thus the default effect is to do no checks.
 
 A dictionary file is a plain text file. The maximum line length for this file
 is 1024 characters.  If the line is longer than this limit, extra characters
@@ -1999,6 +3546,91 @@ a list of identifiers separated by space or HT characters.
 A comment is an Ada-style comment (from ``--`` to end-of-line).
 Identifiers must follow the Ada syntax for identifiers.
 A line containing one or more identifiers may end with a comment.
+
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 2, 3
+
+   --  If the dictionary file contains names 'One' and 'Two":
+   One          : constant Integer := 1;     --  FLAG
+   Two          : constant Float   := 2.0;   --  FLAG
+   Constant_One : constant Float   := 1.0;
+
+
+.. _Object_Declarations_Out_Of_Order:
+
+``Object_Declarations_Out_Of_Order``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. index:: Object_Declarations_Out_Of_Order
+
+Flag any object declaration that is located in a library unit body if
+this is preceding by a declaration of a program unit spec, stub or body.
+
+This rule has no parameters.
+
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 4
+
+   procedure Proc is
+      procedure Proc1 is separate;
+
+      I : Integer;    -- FLAG
+
+
+.. _One_Construct_Per_Line:
+
+``One_Construct_Per_Line``
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. index:: One_Construct_Per_Line
+
+Flag any statement, declaration or representation clause if the code
+line where this construct starts contains some other Ada code symbols
+preceding or following this construct. The following constructs are not
+flagged:
+
+*
+  enumeration literal specification;
+
+*
+  parameter specifications;
+
+*
+  discriminant specifications;
+
+*
+  mod clauses;
+
+*
+  loop parameter specification;
+
+*
+  entry index specification;
+
+*
+  choice parameter specification;
+
+In case if we have two or more declarations/statements/clauses on a
+line and if there is no Ada code preceding the first construct, the
+first construct is flagged
+
+This rule has no parameters.
+
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 5
+
+   procedure Swap (I, J : in out Integer) is
+      Tmp : Integer;
+   begin
+      Tmp := I;
+      I := J; J := Tmp;      --  FLAG
+   end Swap;
 
 .. _Uncommented_BEGIN_In_Package_Bodies:
 
@@ -2020,6 +3652,30 @@ diagnostic message is attached to the line containing the first statement.
 
 This rule has no parameters.
 
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 15
+
+   package body Foo is
+      procedure Proc (I : out Integer) is
+      begin
+         I := Var;
+      end Proc;
+
+      package body Inner is
+         procedure Inner_Proc (I : out Integer) is
+         begin
+            I := Inner_Var;
+         end  ;
+      begin  -- Inner
+         Inner_Var := 1;
+      end Inner;
+   begin                 --  FLAG
+      Var := Inner.Inner_Var + 1;
+   end Foo;
+
+
 .. _Source_Code_Presentation:
 
 Source Code Presentation
@@ -2038,6 +3694,27 @@ Feature Usage Rules
 The rules in this section can be used to enforce specific
 usage patterns for a variety of language features.
 
+.. _Abort_Statements:
+
+``Abort_Statements``
+--------------------
+
+.. index:: Abort_Statements
+
+Flag abort statements.
+
+This rule has no parameters.
+
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 2
+
+   if Flag then
+      abort T;    --  FLAG
+   end if;
+
+
 .. _Abstract_Type_Declarations:
 
 ``Abstract_Type_Declarations``
@@ -2049,6 +3726,18 @@ Flag all declarations of abstract types. For an abstract private
 type, both the private and full type declarations are flagged.
 
 This rule has no parameters.
+
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 2, 5
+
+   package Foo is
+      type Figure is abstract tagged private;              --  FLAG
+      procedure Move (X : in out Figure) is abstract;
+   private
+      type Figure is abstract tagged null record;          --  FLAG
+   end Foo;
 
 .. _Anonymous_Subtypes:
 
@@ -2084,8 +3773,9 @@ flagged (since ``1..N`` is formally a 'range'):
 
 
 .. code-block:: ada
+   :emphasize-lines: 1
 
-  for I in 1 .. N loop
+  for I in 1 .. N loop   --  FLAG
      ...
   end loop;
 
@@ -2094,10 +3784,11 @@ Declaring an explicit subtype solves the problem:
 
 
 .. code-block:: ada
+   :emphasize-lines: 3
 
   subtype S is Integer range 1..N;
   ...
-  for I in S loop
+  for I in S loop        --  NO FLAG
      ...
   end loop;
 
@@ -2114,6 +3805,22 @@ This rule has no parameters.
 Flag each block statement.
 
 This rule has no parameters.
+
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 2
+
+   if I /= J then
+      declare             --  FLAG
+         Tmp : Integer;
+      begin
+         TMP := I;
+         I   := J;
+         J   := Tmp;
+      end;
+   end if;
+
 
 .. _Complex_Inlined_Subprograms:
 
@@ -2148,6 +3855,28 @@ This rule has the following (mandatory) parameter for the ``+R`` option:
 *N*
   Positive integer specifying the maximum allowed total number of statements
   in the subprogram body.
+
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 3
+
+   procedure Swap (I, J : in out Integer) with Inline => True;
+
+   procedure Swap (I, J : in out Integer) is   --  FLAG
+   begin
+
+      if I /= J then
+         declare
+            Tmp : Integer;
+         begin
+            TMP := I;
+            I   := J;
+            J   := Tmp;
+         end;
+      end if;
+
+   end Swap;
 
 .. _Conditional_Expressions:
 
@@ -2261,7 +3990,13 @@ This rule has the following (optional) parameters for the ``+R`` option:
 *
   ``Refined_Post``
 
+.. rubric:: Example
 
+.. code-block:: ada
+   :emphasize-lines: 1
+
+   Var1 : Integer := (if I > J then 1 else 0);  --  FLAG
+   Var2 : Integer := I + J;
 
 
 .. _Controlled_Type_Declarations:
@@ -2280,6 +4015,16 @@ component is not checked.
 
 This rule has no parameters.
 
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 3
+
+   with Ada.Finalization;
+   package Foo is
+      type Resource is new Ada.Finalization.Controlled with private;  --  FLAG
+
+
 .. _Declarations_In_Blocks:
 
 ``Declarations_In_Blocks``
@@ -2292,6 +4037,21 @@ block with an empty *declarative_part* or with a *declarative part*
 containing only pragmas and/or ``use`` clauses is not flagged.
 
 This rule has no parameters.
+
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 2
+
+   if I /= J then
+      declare                       --  FLAG
+         Tmp : Integer;
+      begin
+         TMP := I;
+         I   := J;
+         J   := Tmp;
+      end;
+   end if;
 
 .. _Deeply_Nested_Inlining:
 
@@ -2317,6 +4077,40 @@ This rule has the following (mandatory) parameter for the ``+R`` option:
   Positive integer specifying the maximum level of nested calls to
   subprograms to which pragma Inline has been applied.
 
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 1
+
+   procedure P1 (I : in out integer) with Inline => True;   --  FLAG
+   procedure P2 (I : in out integer) with Inline => True;
+   procedure P3 (I : in out integer) with Inline => True;
+   procedure P4 (I : in out integer) with Inline => True;
+
+   procedure P1 (I : in out integer) is
+   begin
+      I := I + 1;
+      P2 (I);
+   end;
+
+   procedure P2 (I : in out integer) is
+   begin
+      I := I + 1;
+      P3 (I);
+   end;
+
+   procedure P3 (I : in out integer) is
+   begin
+      I := I + 1;
+      P4 (I);
+   end;
+
+   procedure P4 (I : in out integer) is
+   begin
+      I := I + 1;
+   end;
+
+
 .. _Default_Parameters:
 
 ``Default_Parameters``
@@ -2330,6 +4124,15 @@ protected subprograms) and in task and protected entries (including accept
 statements and entry bodies).
 
 This rule has no parameters.
+
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 1
+
+   procedure P (I : in out Integer; J : Integer := 0);   --  FLAG
+   procedure Q (I : in out Integer; J : Integer);
+
 
 .. _Discriminated_Records:
 
@@ -2345,6 +4148,28 @@ checked. Task and protected type declarations also are not checked.
 
 This rule has no parameters.
 
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 5, 9
+
+   type Idx is range 1 .. 100;
+   type Arr is array (Idx range <>) of Integer;
+   subtype Arr_10 is Arr (1 .. 10);
+
+   type Rec_1 (D : Idx) is record        --  FLAG
+      A : Arr (1 .. D);
+   end record;
+
+   type Rec_2 (D : Idx) is record        --  FLAG
+      B : Boolean;
+   end record;
+
+   type Rec_3 is record
+      B : Boolean;
+   end record;
+
+
 .. _Explicit_Full_Discrete_Ranges:
 
 ``Explicit_Full_Discrete_Ranges``
@@ -2355,6 +4180,21 @@ This rule has no parameters.
 Flag each discrete range that has the form ``A'First .. A'Last``.
 
 This rule has no parameters.
+
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 3
+
+      subtype Idx is Integer range 1 .. 100;
+   begin
+      for J in Idx'First .. Idx'Last loop   --  FLAG
+         K := K + J;
+      end loop;
+
+      for J in Idx loop
+         L := L + J;
+      end loop;
 
 
 .. _Expression_Functions:
@@ -2369,6 +4209,16 @@ Flag each expression function declared in a package specification
 specifications).
 
 This rule has no parameters.
+
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 3
+
+   package Foo is
+
+      function F (I : Integer) return Integer is   --  FLAG
+        (if I > 0 then I - 1 else I + 1);
 
 
 .. _Fixed_Equality_Checks:
@@ -2387,6 +4237,24 @@ are not flagged.
 
 This rule has no parameters.
 
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 11
+
+   package Pack is
+        type Speed is delta 0.01 range 0.0 .. 10_000.0;
+        function Get_Speed return Speed;
+   end Pack;
+
+   with Pack; use Pack;
+   procedure Process is
+        Speed1 : Speed := Get_Speed;
+        Speed2 : Speed := Get_Speed;
+
+        Flag : Boolean := Speed1 = Speed2;     --  FLAG
+
+
 .. _Float_Equality_Checks:
 
 ``Float_Equality_Checks``
@@ -2394,7 +4262,8 @@ This rule has no parameters.
 
 .. index:: Float_Equality_Checks
 
-Flag all calls to the predefined equality operations for floating-point types.
+Flag all calls to the predefined equality operations for floating-point types
+and private types whose completions are floating-point types.
 Both '``=``' and '``/=``' operations are checked.
 User-defined equality operations are not flagged, nor are uses of operators
 that are renamings of the predefined equality operations.
@@ -2402,6 +4271,25 @@ Also, the '``=``' and '``/=``' operations for fixed-point types
 are not flagged.
 
 This rule has no parameters.
+
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 11
+
+   package Pack is
+        type Speed is digits 0.01 range 0.0 .. 10_000.0;
+        function Get_Speed return Speed;
+   end Pack;
+
+   with Pack; use Pack;
+   procedure Process is
+        Speed1 : Speed := Get_Speed;
+        Speed2 : Speed := Get_Speed;
+
+        Flag : Boolean := Speed1 = Speed2;     --  FLAG
+
+
 
 .. _Function_Style_Procedures:
 
@@ -2426,6 +4314,14 @@ Protected procedures are not flagged. Null procedures also are not flagged.
 
 This rule has no parameters.
 
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 2
+
+   procedure Cannot_be_a_function (A, B : out Boolean);
+   procedure Can_be_a_function (A : out Boolean);           --  FLAG
+
 .. _Generics_In_Subprograms:
 
 ``Generics_In_Subprograms``
@@ -2442,6 +4338,19 @@ generic unit is flagged.
 
 This rule has no parameters.
 
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 3
+
+   procedure Proc is
+
+      generic                                --  FLAG
+         type FT is range <>;
+      function F_G (I : FT) return FT;
+
+
+
 .. _Implicit_IN_Mode_Parameters:
 
 ``Implicit_IN_Mode_Parameters``
@@ -2454,6 +4363,16 @@ Note that ``access`` parameters, although they technically behave
 like ``in`` parameters, are not flagged.
 
 This rule has no parameters.
+
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 1
+
+   procedure Proc1 (I :    Integer);          --  FLAG
+   procedure Proc2 (I : in Integer);
+   procedure Proc3 (I :    access Integer);
+
 
 .. _Improperly_Located_Instantiations:
 
@@ -2470,6 +4389,16 @@ bodies of protected subprograms are flagged.
 
 This rule has no parameters.
 
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 3
+
+   with Ada.Text_IO; use Ada.Text_IO;
+   procedure Proc is
+      package My_Int_IO is new Integer_IO (Integer);   --  FLAG
+
+
 .. _Library_Level_Subprograms:
 
 ``Library_Level_Subprograms``
@@ -2482,6 +4411,11 @@ subprogram instantiations).
 
 This rule has no parameters.
 
+.. code-block:: ada
+   :emphasize-lines: 2
+
+   with Ada.Text_IO; use Ada.Text_IO;
+   procedure Proc is                         --  FLAG
 
 .. _Membership_Tests:
 
@@ -2498,6 +4432,9 @@ This rule has the following (optional) parameters for the ``+R`` option:
   Flag only those membership test expressions that have more than one
   membership choice in the membership choice list.
 
+*Float_Types_Only*
+  Flag only those membership test expressions that checks objects of floating
+  point type and private types whose completions are floating-point types.
 
 *Except_Assertions*
   Do not flag a membership test expression if it is a subcomponent
@@ -2599,7 +4536,17 @@ This rule has the following (optional) parameters for the ``+R`` option:
   ``Refined_Post``
 
 
-These two parameters are independent on each other.
+These three parameters are independent on each other.
+
+
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 3
+
+   procedure Proc (S : in out Speed) is
+   begin
+      if S in Low .. High then      --  FLAG
 
 
 .. _Non_Qualified_Aggregates:
@@ -2618,6 +4565,38 @@ Aggregates of anonymous array types are not flagged.
 
 This rule has no parameters.
 
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 3
+
+   type Arr is array (1 .. 10) of Integer;
+
+   Var1 : Arr := (1 => 10, 2 => 20, others => 30);             --  FLAG
+   Var2 : array (1 .. 10) of Integer := (1 => 10, 2 => 20, others => 30);
+
+.. _Number_Declarations:
+
+``Number_Declarations``
+---------------------
+
+.. index:: Number_Declarations
+
+Number declarations are flagged.
+
+This rule has no parameters.
+
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 1, 2
+
+   Num1 : constant := 13;                 --  FLAG
+   Num2 : constant := 1.3;                --  FLAG
+
+   Const1 : constant Integer := 13;
+   Const2 : constant Float := 1.3;
+
 .. _Numeric_Indexing:
 
 ``Numeric_Indexing``
@@ -2632,6 +4611,17 @@ Literals that are subcomponents of index expressions are not flagged
 
 
 This rule has no parameters.
+
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 5
+
+   procedure Proc is
+      type Arr is array (1 .. 10) of Integer;
+      Var : Arr;
+   begin
+      Var (1) := 10;       --  FLAG
 
 
 .. _Numeric_Literals:
@@ -2685,6 +4675,16 @@ It disables the rule and restores its default operation mode.
 If the ``+R`` option subsequently appears, will be 1, and the check will
 not be limited by statements only.
 
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 3
+
+   C1 : constant Integer := 10;
+   V1 :          Integer := C1;
+   V2 :          Integer := 20;      --  FLAG
+
+
 .. _Parameters_Out_Of_Order:
 
 ``Parameters_Out_Of_Order``
@@ -2717,6 +4717,13 @@ The following constructs are checked:
 Subprogram renamings are not checked.
 
 This rule has no parameters.
+
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 1
+
+   procedure Proc1 (I : in out Integer; B : Boolean) is    --  FLAG
 
 
 .. _Predicate_Testing:
@@ -2838,6 +4845,44 @@ This rule has the following (optional) parameters for the ``+R`` option:
   ``Refined_Post``
 
 
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 7
+
+   with Support; use Support;
+   package Pack is
+      subtype Even is Integer with Dynamic_Predicate => Even mod 2 = 0;
+
+      subtype Small_Even is Even range -100 .. 100;
+
+      B1 : Boolean := Ident (101) in Small_Even;      --  FLAG
+
+
+.. _Relative_Delay_Statements:
+
+``Relative_Delay_Statements``
+----------------------------------
+
+.. index:: Relative_Delay_Statements
+
+Relative delay statements are flagged. Delay until statements are not
+flagged.
+
+This rule has no parameters.
+
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 4
+
+   if I > 0 then
+      delay until Current_Time + Big_Delay;
+   else
+      delay Small_Delay;                      --  FLAG
+   end if;
+
+
 .. _Representation_Specifications:
 
 ``Representation_Specifications``
@@ -2848,10 +4893,27 @@ This rule has the following (optional) parameters for the ``+R`` option:
 Flag each record representation clause, enumeration representation
 clause and representation attribute clause. Flag each aspect definition
 that defines a representation aspect. Also flag any pragma that is
-classifiead by the Ada Standard as a representation pragma, and the
+classified by the Ada Standard as a representation pragma, and the
 definition of the corresponding aspects.
 
 This rule has no parameters.
+
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 5, 8, 11
+
+   type State         is (A,M,W,P);
+   type Mode          is (Fix, Dec, Exp, Signif);
+
+   type Byte_Mask     is array (0..7)  of Boolean
+     with Component_Size => 1;                                --  FLAG
+
+   type State_Mask    is array (State) of Boolean
+     with Component_Size => 1;                                --  FLAG
+
+   type Mode_Mask     is array (Mode)  of Boolean;
+   for Mode_Mask'Component_Size use 1;                        --  FLAG
 
 
 .. _Quantified_Expressions:
@@ -2966,7 +5028,17 @@ This rule has the following (optional) parameters for the ``+R`` option:
 *
   ``Refined_Post``
 
+.. rubric:: Example
 
+.. code-block:: ada
+   :emphasize-lines: 5, 6
+
+   subtype Ind is Integer range 1 .. 10;
+   type Matrix is array (Ind, Ind) of Integer;
+
+   function Check_Matrix (M : Matrix) return Boolean is
+     (for some I in Ind =>                               --  FLAG
+        (for all J in Ind => M (I, J) = 0));             --  FLAG
 
 
 .. _Raising_Predefined_Exceptions:
@@ -2982,6 +5054,15 @@ Flag each ``raise`` statement that raises a predefined exception
 
 This rule has no parameters.
 
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 2
+
+   begin
+      raise Constraint_Error;    --  FLAG
+
+
 .. _Subprogram_Access:
 
 ``Subprogram_Access``
@@ -2994,6 +5075,17 @@ syntax category, and all access definitions that define access to
 subprogram.
 
 This rule has no parameters.
+
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 1, 5
+
+   type Proc_A is access procedure ( I : Integer);       --  FLAG
+
+   procedure Proc
+     (I       : Integer;
+      Process : access procedure (J : in out Integer));  --  FLAG
 
 
 .. _Too_Many_Dependencies:
@@ -3013,6 +5105,20 @@ This rule has the following (mandatory) parameters for the ``+R`` option:
 *N*
   Positive integer specifying the maximal number of dependencies when
   the library item or subunit is not flagged.
+
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 8
+
+   --  if rule parameter is 5 or smaller:
+   with Pack1;
+   with Pack2;
+   with Pack3;
+   with Pack4;
+   with Pack5;
+   with Pack6;
+   procedure Main is               --  FLAG
 
 
 .. _Unassigned_OUT_Parameters:
@@ -3052,6 +5158,21 @@ This rule has no parameters.
    can have ``out`` parameters). It is not a replacement for rigorous check for
    uninitialized access provided by advanced static analysis tools.
 
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 1
+
+   procedure Proc                --  FLAG
+     (I    : Integer;
+      Out1 : out Integer;
+      Out2 : out Integer)
+   is
+   begin
+      Out1 := I + 1;
+   end Proc;
+
+
 .. _Unconstrained_Array_Returns:
 
 ``Unconstrained_Array_Returns``
@@ -3077,6 +5198,40 @@ This rule has the following (optional) parameters for the ``+R`` option:
 *Except_String*
   Do not flag functions that return the predefined ``String`` type or a type
   derived from it, directly or indirectly.
+
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 4
+
+   type Arr is array (Integer range <>) of Integer;
+   subtype Arr_S is Arr (1 .. 10);
+
+   function F1 (I : Integer) return Arr;      --  FLAG
+   function F2 (I : Integer) return Arr_S;
+
+
+.. _Unconstrained_Arrays:
+
+``Unconstrained_Arrays``
+------------------------
+
+.. index:: Unconstrained_Arrays
+
+Unconstrained array definitions are flagged.
+
+This rule has no parameters.
+
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 3
+
+   type Idx is range -100 .. 100;
+
+   type U_Arr is array (Idx range <>) of Integer;      --  FLAG
+   type C_Arr is array (Idx) of Integer;
+
 
 Metrics-Related Rules
 =====================
@@ -3133,6 +5288,31 @@ upper bound.  A program unit that is an executable body exceeding this limit wil
 The Ada essential complexity metric is a McCabe cyclomatic complexity metric counted
 for the code that is reduced by excluding all the pure structural Ada control statements.
 
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 2
+
+   --  if the rule parameter is 3 or less
+   procedure Proc (I : in out Integer; S : String) is   --  FLAG
+   begin
+      if I in 1 .. 10 then
+         for J in S'Range loop
+
+            if S (J) = ' ' then
+               if I > 10 then
+                  exit;
+               else
+                  I := 10;
+               end if;
+            end if;
+
+            I := I + Character'Pos (S (J));
+         end loop;
+      end if;
+   end Proc;
+
+
 .. _Metrics_Cyclomatic_Complexity:
 
 ``Metrics_Cyclomatic_Complexity``
@@ -3148,6 +5328,33 @@ in `http://www.mccabe.com/pdf/mccabe-nist235r.pdf <http://www.mccabe.com/pdf/mcc
 The goal of cyclomatic complexity metric is to estimate the number
 of independent paths in the control flow graph that in turn gives the number
 of tests needed to satisfy paths coverage testing completeness criterion.
+
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 2
+
+   --  if the rule parameter is 6 or less
+   procedure Proc (I : in out Integer; S : String) is   --  FLAG
+   begin
+      if I in 1 .. 10 then
+         for J in S'Range loop
+
+            if S (J) = ' ' then
+               if I < 10 then
+                  I := 10;
+               end if;
+            end if;
+
+            I := I + Character'Pos (S (J));
+         end loop;
+      elsif S = "abs" then
+         if I > 0 then
+            I := I + 1;
+         end if;
+      end if;
+   end Proc;
+
 
 .. _Metrics_LSLOC:
 
@@ -3167,6 +5374,25 @@ rule to specific constructs:
 
 *Subprograms*
    Check the rule for subprogram bodies only.
+
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 2
+
+   --  if the rule parameter is 20 or less
+   package Pack is                             --  FLAG
+      procedure Proc1 (I : in out Integer);
+      procedure Proc2 (I : in out Integer);
+      procedure Proc3 (I : in out Integer);
+      procedure Proc4 (I : in out Integer);
+      procedure Proc5 (I : in out Integer);
+      procedure Proc6 (I : in out Integer);
+      procedure Proc7 (I : in out Integer);
+      procedure Proc8 (I : in out Integer);
+      procedure Proc9 (I : in out Integer);
+      procedure Proc10 (I : in out Integer);
+   end Pack;
 
 SPARK Ada Rules
 ===============
@@ -3292,6 +5518,16 @@ are likewise not detected.
 
 This rule has no parameters.
 
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 3
+
+      procedure Proc (Flag_1 : Boolean; Flag_2 : Boolean; I : in out Integer) is
+      begin
+         if Flag_1 >= Flag_2 then     --  FLAG
+
+
 .. _Expanded_Loop_Exit_Names:
 
 ``Expanded_Loop_Exit_Names``
@@ -3302,6 +5538,22 @@ This rule has no parameters.
 Flag all expanded loop names in ``exit`` statements.
 
 This rule has no parameters.
+
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 6
+
+   procedure Proc (S : in out String) is
+   begin
+      Search : for J in S'Range loop
+         if S (J) = ' ' then
+            S (J) := '_';
+            exit Proc.Search;            --  FLAG
+         end if;
+      end loop Search;
+   end Proc;
+
 
 .. _Non_SPARK_Attributes:
 
@@ -3366,6 +5618,17 @@ any other attribute is flagged.
 
 This rule has no parameters.
 
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 4
+
+   type Integer_A is access all Integer;
+
+   Var : aliased Integer := 1;
+   Var_A : Integer_A := Var'Access;  --  FLAG
+
+
 .. _Non_Tagged_Derived_Types:
 
 ``Non_Tagged_Derived_Types``
@@ -3376,6 +5639,18 @@ This rule has no parameters.
 Flag all derived type declarations that do not have a record extension part.
 
 This rule has no parameters.
+
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 5
+
+   type Coordinates is record
+      X, Y, Z : Float;
+   end record;
+
+   type Hidden_Coordinates is new Coordinates;   --  FLAG
+
 
 .. _Outer_Loop_Exits:
 
@@ -3388,6 +5663,21 @@ Flag each ``exit`` statement containing a loop name that is not the name
 of the immediately enclosing ``loop`` statement.
 
 This rule has no parameters.
+
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 5
+
+   Outer : for J in S1'Range loop
+      for K in S2'Range loop
+         if S1 (J) = S2 (K) then
+            Detected := True;
+            exit Outer;                     --  FLAG
+         end if;
+      end loop;
+   end loop Outer;
+
 
 .. _Overloaded_Operators:
 
@@ -3403,6 +5693,18 @@ renaming declaration, only renaming-as-declaration is checked
 
 This rule has no parameters.
 
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 6
+
+   type Rec is record
+      C1 : Integer;
+      C2 : Float;
+   end record;
+
+   function "<" (Left, Right : Rec) return Boolean;    --  FLAG
+
 .. _Slices:
 
 ``Slices``
@@ -3414,12 +5716,22 @@ Flag all uses of array slicing
 
 This rule has no parameters.
 
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 2
+
+   procedure Proc (S : in out String; L, R : Positive) is
+      Tmp : String := S (L .. R);        --  FLAG
+   begin
+
+
 .. _Universal_Ranges:
 
 ``Universal_Ranges``
 --------------------
 
-.. index:: Universal_Ranges rule
+.. index:: Universal_Ranges
 
 Flag discrete ranges that are a part of an index constraint, constrained
 array definition, or ``for``-loop parameter specification, and whose bounds
@@ -3428,3 +5740,13 @@ bound of a specific type (such as ``1 .. N``, where ``N`` is a variable
 or an expression of non-universal type) are not flagged.
 
 This rule has no parameters.
+
+.. rubric:: Example
+
+.. code-block:: ada
+   :emphasize-lines: 4
+
+   L : Positive := 1;
+
+   S1 : String (L .. 10);
+   S2 : String (1 .. 10);     --  FLAG

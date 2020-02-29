@@ -7,7 +7,7 @@
 --                                 S p e c                                  --
 --                                                                          --
 --                                                                          --
---            Copyright (C) 1995-2017, Free Software Foundation, Inc.       --
+--            Copyright (C) 1995-2018, Free Software Foundation, Inc.       --
 --                                                                          --
 -- ASIS-for-GNAT is free software; you can redistribute it and/or modify it --
 -- under terms of the  GNU General Public License  as published by the Free --
@@ -343,6 +343,28 @@ package A4G.A_Sem is
    --  extension, it does not follow the language visibility rules, so it may
    --  contain names that have no definition and other things that make
    --  problems for ASIS.
+
+   function Is_Class_Wide_Clone (E : Entity_Id) return Boolean;
+   --  Checks if E is a subprogram entity that has been artificially built
+   --  for internal compiler needs. We need this function here because it
+   --  seems that Einfo.Is_Class_Wide_Clone does not work properly in all
+   --  cases needed for ASIS.
+
+   function Get_Original_For_Class_Wide_Clone
+     (E    : Entity_Id)
+      return Entity_Id;
+   --  If Is_Class_Wide_Clone (E), tries to locate the subprogram entity for
+   --  that E has been created as class-wide clone. Returns Empty if this
+   --  attempt is not successful. If not Is_Class_Wide_Clone (E) then returns
+   --  E.
+
+   function Get_Orig_Body_For_Class_Wide_Clode
+     (N    : Node_Id)
+      return Node_Id;
+   --  N is of N_Subprogram_Body kind and this is the body of class-wide
+   --  clone, returns the N_Subprogram_Body node representing the body of the
+   --  subprogram for that the class-wide clone has been created. Otherwise
+   --  returns the argument unchanged.
 
    --------------------------------------------------------------------
    -- Queies for processing arguments of SPARK-specific pragmas that --

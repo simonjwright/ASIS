@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2013-2018, AdaCore                     --
+--                     Copyright (C) 2013-2019, AdaCore                     --
 --                                                                          --
 -- Asis Utility Library (ASIS UL) is free software; you can redistribute it --
 -- and/or  modify  it  under  terms  of  the  GNU General Public License as --
@@ -26,6 +26,7 @@ pragma Ada_2012;
 
 with Ada.Characters.Handling;    use Ada.Characters.Handling;
 with Ada.Containers.Ordered_Sets;
+with Ada.Environment_Variables;
 with Ada.Strings;                use Ada.Strings;
 with Ada.Strings.Fixed;          use Ada.Strings.Fixed;
 with Ada.Text_IO;                use Ada.Text_IO;
@@ -371,8 +372,8 @@ package body ASIS_UL.Projects is
       Dummy_Proj_File_Name : constant String :=
         Tool_Temp_Dir.all & Directory_Separator & "closure.gpr";
 
-      Old_Mapping_Option : constant String :=
-        "-gnatem=" & Get_Mapping_File_Name;
+      Old_Config_Option : constant String :=
+        "-gnatec=" & Get_Config_File_Name;
 
       F : File_Type;
 
@@ -427,13 +428,13 @@ package body ASIS_UL.Projects is
 
       Create_Mapping_File (My_Project);
       Create_Configuration_File (My_Project);
-      --  and we have to correct mapping file option in the argument list used
-      --  to create the trees
+      --  and we have to correct configuration file option in the argument list
+      --  used to create the trees
 
       for J in Arg_List'Range loop
-         if Arg_List (J).all = Old_Mapping_Option then
+         if Arg_List (J).all = Old_Config_Option then
             Free (Arg_List (J));
-            Arg_List (J) := new String'("-gnatem=" & Get_Mapping_File_Name);
+            Arg_List (J) := new String'("-gnatec=" & Get_Config_File_Name);
             exit;
          end if;
       end loop;
@@ -488,9 +489,7 @@ package body ASIS_UL.Projects is
           (My_Project.Root_Project);
    begin
       Store_Config_File_Name (Config_Name);
-      --  We do not store the corresponding '=gnatem=...' option here - if we
-      --  are in parallel tree creation mode, we need a separate mapping file
-      --  for each thread
+      Store_Option ("-gnatec=" & Config_Name);
    end Create_Configuration_File;
 
    -------------------------
@@ -503,7 +502,9 @@ package body ASIS_UL.Projects is
           (My_Project.Root_Project);
    begin
       Store_Mapping_File_Name (Mapping_Name);
-      Store_Option ("-gnatem=" & Mapping_Name);
+      --  We do not store the corresponding '=gnatem=...' option here - if we
+      --  are in parallel tree creation mode, we need a separate mapping file
+      --  for each thread
    end Create_Mapping_File;
 
    --------------------------------
@@ -1103,9 +1104,12 @@ package body ASIS_UL.Projects is
       elsif Option = "-gnat83"
         or else Option = "-gnat95"
         or else Option = "-gnat05"
+        or else Option = "-gnat2005"
         or else Option = "-gnat12"
+        or else Option = "-gnat2012"
         or else Option = "-gnatdm"
         or else Option = "-gnatd.V"
+        or else Option = "-gnatd.M"
         or else Option = "-gnatI"
         or else
          Has_Prefix (Option, Prefix => "--RTS=")
@@ -1142,7 +1146,7 @@ package body ASIS_UL.Projects is
 
       Register_Tool_Attributes (My_Project);
       Initialize_Environment;
-      Set_External_Values;
+      Set_External_Values (My_Project);
 
       if Aggregated_Project then
          Load_Aggregated_Project (My_Project);
@@ -1301,10 +1305,11 @@ package body ASIS_UL.Projects is
    -- Set_External_Values --
    -------------------------
 
-   procedure Set_External_Values is
+   procedure Set_External_Values (My_Project : Arg_Project_Type) is
       use X_Vars_Sets;
-      C        : Cursor;
-      Next_Var : X_Var_Record;
+      C            : Cursor;
+      Next_Var     : X_Var_Record;
+      GPR_TOOL_Set : Boolean := False;
    begin
       C := First (X_Vars);
 
@@ -1315,9 +1320,23 @@ package body ASIS_UL.Projects is
          Project_Env.Change_Environment
            (Next_Var.Var_Name.all, Next_Var.Var_Value.all);
 
+         if Next_Var.Var_Name.all = "GPR_TOOL" then
+            GPR_TOOL_Set := True;
+         end if;
+
          C := Next (C);
 
       end loop;
+
+      --  Set GPR_TOOL, if needed
+      if not Ada.Environment_Variables.Exists ("GPR_TOOL")
+        and then
+         not GPR_TOOL_Set
+      then
+         Project_Env.Change_Environment
+           ("GPR_TOOL",
+            To_Lower (Tool_Package_Name (My_Project)));
+      end if;
 
    end Set_External_Values;
 
@@ -2023,6 +2042,8 @@ package body ASIS_UL.Projects is
    begin
       if First_Idx = 0 then
          First_Idx := Tool_Name'First;
+      else
+         First_Idx := First_Idx + 1;
       end if;
 
       return Result (First_Idx .. Last_Idx);

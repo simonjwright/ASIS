@@ -31,13 +31,16 @@ GNATcheck Reference Manual
       9.1.2.10 `Too_Many_Primitives'
       9.1.2.11 `Visible_Components'
     9.1.3 Portability
-      9.1.3.1 `Forbidden_Attributes'
-      9.1.3.2 `Forbidden_Pragmas'
-      9.1.3.3 `Implicit_SMALL_For_Fixed_Point_Types'
-      9.1.3.4 `No_Scalar_Storage_Order_Specified'
-      9.1.3.5 `Predefined_Numeric_Types'
-      9.1.3.6 `Printable_ASCII'
-      9.1.3.7 `Separate_Numeric_Error_Handlers'
+      9.1.3.1 `Bit_Records_Without_Layout_Definition'
+      9.1.3.2 `Forbidden_Attributes'
+      9.1.3.3 `Forbidden_Pragmas'
+      9.1.3.4 `Implicit_SMALL_For_Fixed_Point_Types'
+      9.1.3.5 `Incomplete_Representation_Specifications'
+      9.1.3.6 `No_Explicit_Real_Range'
+      9.1.3.7 `No_Scalar_Storage_Order_Specified'
+      9.1.3.8 `Predefined_Numeric_Types'
+      9.1.3.9 `Printable_ASCII'
+      9.1.3.10 `Separate_Numeric_Error_Handlers'
     9.1.4 Program Structure
       9.1.4.1 `Deep_Library_Hierarchy'
       9.1.4.2 `Deeply_Nested_Generics'
@@ -45,81 +48,94 @@ GNATcheck Reference Manual
       9.1.4.4 `Non_Visible_Exceptions'
       9.1.4.5 `Raising_External_Exceptions'
     9.1.5 Programming Practice
-      9.1.5.1 `Anonymous_Arrays'
-      9.1.5.2 `Binary_Case_Statements'
-      9.1.5.3 `Default_Values_For_Record_Components'
-      9.1.5.4 `Deriving_From_Predefined_Type'
-      9.1.5.5 `Enumeration_Ranges_In_CASE_Statements'
-      9.1.5.6 `Enumeration_Representation_Clauses'
-      9.1.5.7 `Exceptions_As_Control_Flow'
-      9.1.5.8 `Exits_From_Conditional_Loops'
-      9.1.5.9 `EXIT_Statements_With_No_Loop_Name'
-      9.1.5.10 `Global_Variables'
-      9.1.5.11 `GOTO_Statements'
-      9.1.5.12 `Improper_Returns'
-      9.1.5.13 `Maximum_Parameters'
-      9.1.5.14 `Nested_Subprograms'
-      9.1.5.15 `Non_Short_Circuit_Operators'
-      9.1.5.16 `Null_Paths'
-      9.1.5.17 `Objects_Of_Anonymous_Types'
-      9.1.5.18 `OTHERS_In_Aggregates'
-      9.1.5.19 `OTHERS_In_CASE_Statements'
-      9.1.5.20 `OTHERS_In_Exception_Handlers'
-      9.1.5.21 `Overly_Nested_Control_Structures'
-      9.1.5.22 `POS_On_Enumeration_Types'
-      9.1.5.23 `Positional_Actuals_For_Defaulted_Generic_Parameters'
-      9.1.5.24 `Positional_Actuals_For_Defaulted_Parameters'
-      9.1.5.25 `Positional_Components'
-      9.1.5.26 `Positional_Generic_Parameters'
-      9.1.5.27 `Positional_Parameters'
-      9.1.5.28 `Recursive_Subprograms'
-      9.1.5.29 `Unchecked_Address_Conversions'
-      9.1.5.30 `Unchecked_Conversions_As_Actuals'
-      9.1.5.31 `Unconditional_Exits'
-      9.1.5.32 `Uninitialized_Global_Variables'
-      9.1.5.33 `Unnamed_Blocks_And_Loops'
-      9.1.5.34 `USE_PACKAGE_Clauses'
+      9.1.5.1 `Address_Specifications_For_Initialized_Objects'
+      9.1.5.2 `Address_Specifications_For_Local_Objects'
+      9.1.5.3 `Anonymous_Arrays'
+      9.1.5.4 `Binary_Case_Statements'
+      9.1.5.5 `Default_Values_For_Record_Components'
+      9.1.5.6 `Deriving_From_Predefined_Type'
+      9.1.5.7 `Enumeration_Ranges_In_CASE_Statements'
+      9.1.5.8 `Enumeration_Representation_Clauses'
+      9.1.5.9 `Exceptions_As_Control_Flow'
+      9.1.5.10 `Exits_From_Conditional_Loops'
+      9.1.5.11 `EXIT_Statements_With_No_Loop_Name'
+      9.1.5.12 `Global_Variables'
+      9.1.5.13 `GOTO_Statements'
+      9.1.5.14 `Improper_Returns'
+      9.1.5.15 `Local_USE_Clauses'
+      9.1.5.16 `Maximum_Parameters'
+      9.1.5.17 `Misplaced_Representation_Items'
+      9.1.5.18 `Nested_Subprograms'
+      9.1.5.19 `Non_Short_Circuit_Operators'
+      9.1.5.20 `Null_Paths'
+      9.1.5.21 `Objects_Of_Anonymous_Types'
+      9.1.5.22 `OTHERS_In_Aggregates'
+      9.1.5.23 `OTHERS_In_CASE_Statements'
+      9.1.5.24 `OTHERS_In_Exception_Handlers'
+      9.1.5.25 `Outbound_Protected_Assignments'
+      9.1.5.26 `Overly_Nested_Control_Structures'
+      9.1.5.27 `POS_On_Enumeration_Types'
+      9.1.5.28 `Positional_Actuals_For_Defaulted_Generic_Parameters'
+      9.1.5.29 `Positional_Actuals_For_Defaulted_Parameters'
+      9.1.5.30 `Positional_Components'
+      9.1.5.31 `Positional_Generic_Parameters'
+      9.1.5.32 `Positional_Parameters'
+      9.1.5.33 `Recursive_Subprograms'
+      9.1.5.34 `Single_Value_Enumeration_Types'
+      9.1.5.35 `Unchecked_Address_Conversions'
+      9.1.5.36 `Unchecked_Conversions_As_Actuals'
+      9.1.5.37 `Unconditional_Exits'
+      9.1.5.38 `Uninitialized_Global_Variables'
+      9.1.5.39 `Unnamed_Blocks_And_Loops'
+      9.1.5.40 `USE_PACKAGE_Clauses'
     9.1.6 Readability
       9.1.6.1 `Identifier_Casing'
       9.1.6.2 `Identifier_Prefixes'
       9.1.6.3 `Identifier_Suffixes'
-      9.1.6.4 `Misnamed_Controlling_Parameters'
-      9.1.6.5 `Name_Clashes'
-      9.1.6.6 `Uncommented_BEGIN_In_Package_Bodies'
+      9.1.6.4 `Max_Identifier_Length'
+      9.1.6.5 `Misnamed_Controlling_Parameters'
+      9.1.6.6 `Name_Clashes'
+      9.1.6.7 `Object_Declarations_Out_Of_Order'
+      9.1.6.8 `One_Construct_Per_Line'
+      9.1.6.9 `Uncommented_BEGIN_In_Package_Bodies'
     9.1.7 Source Code Presentation
   9.2 Feature Usage Rules
-    9.2.1 `Abstract_Type_Declarations'
-    9.2.2 `Anonymous_Subtypes'
-    9.2.3 `Blocks'
-    9.2.4 `Complex_Inlined_Subprograms'
-    9.2.5 `Conditional_Expressions'
-    9.2.6 `Controlled_Type_Declarations'
-    9.2.7 `Declarations_In_Blocks'
-    9.2.8 `Deeply_Nested_Inlining'
-    9.2.9 `Default_Parameters'
-    9.2.10 `Discriminated_Records'
-    9.2.11 `Explicit_Full_Discrete_Ranges'
-    9.2.12 `Expression_Functions'
-    9.2.13 `Fixed_Equality_Checks'
-    9.2.14 `Float_Equality_Checks'
-    9.2.15 `Function_Style_Procedures'
-    9.2.16 `Generics_In_Subprograms'
-    9.2.17 `Implicit_IN_Mode_Parameters'
-    9.2.18 `Improperly_Located_Instantiations'
-    9.2.19 `Library_Level_Subprograms'
-    9.2.20 `Membership_Tests'
-    9.2.21 `Non_Qualified_Aggregates'
-    9.2.22 `Numeric_Indexing'
-    9.2.23 `Numeric_Literals'
-    9.2.24 `Parameters_Out_Of_Order'
-    9.2.25 `Predicate_Testing'
-    9.2.26 `Representation_Specifications'
-    9.2.27 `Quantified_Expressions'
-    9.2.28 `Raising_Predefined_Exceptions'
-    9.2.29 `Subprogram_Access'
-    9.2.30 `Too_Many_Dependencies'
-    9.2.31 `Unassigned_OUT_Parameters'
-    9.2.32 `Unconstrained_Array_Returns'
+    9.2.1 `Abort_Statements'
+    9.2.2 `Abstract_Type_Declarations'
+    9.2.3 `Anonymous_Subtypes'
+    9.2.4 `Blocks'
+    9.2.5 `Complex_Inlined_Subprograms'
+    9.2.6 `Conditional_Expressions'
+    9.2.7 `Controlled_Type_Declarations'
+    9.2.8 `Declarations_In_Blocks'
+    9.2.9 `Deeply_Nested_Inlining'
+    9.2.10 `Default_Parameters'
+    9.2.11 `Discriminated_Records'
+    9.2.12 `Explicit_Full_Discrete_Ranges'
+    9.2.13 `Expression_Functions'
+    9.2.14 `Fixed_Equality_Checks'
+    9.2.15 `Float_Equality_Checks'
+    9.2.16 `Function_Style_Procedures'
+    9.2.17 `Generics_In_Subprograms'
+    9.2.18 `Implicit_IN_Mode_Parameters'
+    9.2.19 `Improperly_Located_Instantiations'
+    9.2.20 `Library_Level_Subprograms'
+    9.2.21 `Membership_Tests'
+    9.2.22 `Non_Qualified_Aggregates'
+    9.2.23 `Number_Declarations'
+    9.2.24 `Numeric_Indexing'
+    9.2.25 `Numeric_Literals'
+    9.2.26 `Parameters_Out_Of_Order'
+    9.2.27 `Predicate_Testing'
+    9.2.28 `Relative_Delay_Statements'
+    9.2.29 `Representation_Specifications'
+    9.2.30 `Quantified_Expressions'
+    9.2.31 `Raising_Predefined_Exceptions'
+    9.2.32 `Subprogram_Access'
+    9.2.33 `Too_Many_Dependencies'
+    9.2.34 `Unassigned_OUT_Parameters'
+    9.2.35 `Unconstrained_Array_Returns'
+    9.2.36 `Unconstrained_Arrays'
   9.3 Metrics-Related Rules
     9.3.1 `Metrics_Essential_Complexity'
     9.3.2 `Metrics_Cyclomatic_Complexity'
@@ -143,16 +159,16 @@ Index
 GNATcheck Reference Manual
 **************************
 
-     GNATcheck Reference Manual 2018, May 24, 2018
+     GNATcheck Reference Manual 2019, May 18, 2019
 
      AdaCore
 
-     Copyright (C) 2008-2018, AdaCore
+     Copyright (C) 2008-2019, AdaCore
 
 `GNAT, The GNU Ada Development Environment'
 
     The GNAT Ada Compiler 
-    Version 2018 
+    Version 2019 
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.1 or
@@ -785,6 +801,18 @@ the protected definition are also checked.
 
 This rule has no parameters.
 
+Example
+.......
+
+    protected PO is
+       entry Get (I :     Integer);
+       entry Put (I : out Integer);    --  FLAG
+       procedure Reset;
+       function Check return Boolean;
+    private
+       Val : Integer := 0;
+    end PO;
+
 9.1.1.2 `Volatile_Objects_Without_Address_Clauses'
 ..................................................
 
@@ -797,6 +825,25 @@ the GNAT compiler considers this object as volatile because of some
 code generation reasons.
 
 This rule has no parameters.
+
+Example
+.......
+
+    with Interfaces, System, System.Storage_Elements;
+    package Foo is
+       Variable: Interfaces.Unsigned_8
+          with Address => System.Storage_Elements.To_Address (0), Volatile;
+
+       Variable1: Interfaces.Unsigned_8                                --  FLAG
+          with Volatile;
+
+       type My_Int is range 1 .. 32 with Volatile;
+
+       Variable3 : My_Int;                                             --  FLAG
+
+       Variable4 : My_Int
+         with Address => Variable3'Address;
+    end Foo;
 
 9.1.2 Object Orientation
 ------------------------
@@ -812,6 +859,17 @@ controlling result and no controlling parameter. If a declaration is a
 completion of another declaration then it is not flagged.
 
 This rule has no parameters.
+
+Example
+.......
+
+    type T is tagged record
+       I : Integer;
+    end record;
+
+    function Fun (I : Integer) return T;                -- FLAG
+    function Bar (J : Integer) return T renames Fun;    -- FLAG
+    function Foo (K : Integer) return T is ((I => K));  -- FLAG
 
 9.1.2.2 `Deep_Inheritance_Hierarchies'
 ......................................
@@ -848,10 +906,22 @@ This rule has the following (mandatory) parameter for the `+R' option:
      any inheritance hierarchy. If the rule parameter is set to -1, the
      rule flags all the declarations of tagged and interface types.
 
+Example
+.......
+
+    type I0 is interface;
+    type I1 is interface and I0;
+    type I2 is interface and I1;
+
+    type T0 is tagged null record;
+    type T1 is new T0 and I0 with null record;
+    type T2 is new T0 and I1 with null record;
+    type T3 is new T0 and I2 with null record; -- FLAG (if rule parameter is 2)
+
 9.1.2.3 `Direct_Calls_To_Primitives'
 ....................................
 
-Flag any nondispatching call to a dispatching primitive operation,
+Flag any non-dispatching call to a dispatching primitive operation,
 except for:
 
    * a call to the corresponding primitive of the parent type.  (This
@@ -866,9 +936,51 @@ except for:
 This rule has the following (optional) parameters for the `+R' option:
 
 `Except_Constructors'
-     Do not flag nondispatching calls to functions if the function has a
-     controlling result and no controlling parameters (in a traditional
-     OO sense such functions may be considered as constructors).
+     Do not flag non-dispatching calls to functions if the function has
+     a controlling result and no controlling parameters (in a
+     traditional OO sense such functions may be considered as
+     constructors).
+
+Example
+.......
+
+    package Root is
+       type T_Root is tagged private;
+
+       procedure Primitive_1 (X : in out T_Root);
+       procedure Primitive_2 (X : in out T_Root);
+    private
+       type T_Root is tagged record
+          Comp : Integer;
+       end record;
+    end Root;
+
+    package Root.Child is
+       type T_Child is new T_Root with private;
+
+       procedure Primitive_1 (X : in out T_Child);
+       procedure Primitive_2 (X : in out T_Child);
+    private
+       type T_Child is new T_Root with record
+          B : Boolean;
+       end record;
+    end Root.Child;
+
+    package body Root.Child is
+
+       procedure Primitive_1 (X : in out T_Child) is
+       begin
+          Primitive_1 (T_Root (X));      --  NO FLAG
+          Primitive_2 (T_Root (X));      --  FLAG
+          Primitive_2 (X);               --  FLAG
+       end Primitive_1;
+
+       procedure Primitive_2 (X : in out T_Child) is
+       begin
+          X.Comp  := X.Comp + 1;
+       end Primitive_2;
+
+    end Root.Child;
 
 9.1.2.4 `Downward_View_Conversions'
 ...................................
@@ -876,6 +988,39 @@ This rule has the following (optional) parameters for the `+R' option:
 Flag downward view conversions.
 
 This rule has no parameters.
+
+Example
+.......
+
+    package Foo is
+       type T1 is tagged private;
+       procedure Proc1 (X : in out T1'Class);
+
+       type T2 is new T1 with private;
+       procedure Proc2 (X : in out T2'Class);
+
+    private
+       type T1 is tagged record
+          C : Integer := 0;
+       end record;
+
+       type T2 is new T1 with null record;
+    end Foo;
+
+    package body Foo is
+
+       procedure Proc1 (X : in out T1'Class) is
+          Var : T2 := T2 (X);                   --  FLAG
+       begin
+          Proc2 (T2'Class (X));                 --  FLAG
+       end Proc1;
+
+       procedure Proc2 (X : in out T2'Class) is
+       begin
+          X.C := X.C + 1;
+       end Proc2;
+
+    end Foo;
 
 9.1.2.5 `No_Inherited_Classwide_Pre'
 ....................................
@@ -886,6 +1031,37 @@ have (explicitly defined or inherited) Pre'Class aspect defined for it.
 
 This rule has no parameters.
 
+Example
+.......
+
+    package Foo is
+
+       type Int is interface;
+       function Test (X : Int) return Boolean is abstract;
+       procedure Proc (I : in out Int) is abstract with Pre'Class => Test (I);
+
+       type Int1 is interface;
+       procedure Proc (I : in out Int1) is abstract;
+
+       type T is tagged private;
+
+        type NT1 is new T and Int with private;
+        function Test (X : NT1) return Boolean;        --  FLAG
+        procedure Proc (X : in out NT1);
+
+        type NT2 is new T and Int1 with private;
+        procedure Proc (X : in out NT2);               --  FLAG
+
+       private
+       type T is tagged record
+          I : Integer;
+       end record;
+
+       type NT1 is new T and Int with null record;
+       type NT2 is new T and Int1 with null record;
+
+    end Foo;
+
 9.1.2.6 `Specific_Pre_Post'
 ...........................
 
@@ -893,6 +1069,33 @@ Flag a declaration of a primitive operation of a tagged type if this
 declaration contains specification of Pre or/and Post aspect.
 
 This rule has no parameters.
+
+Example
+.......
+
+    type T is tagged private;
+    function Check1 (X : T) return Boolean;
+    function Check2 (X : T) return Boolean;
+
+    procedure Proc1 (X : in out T)           --  FLAG
+       with Pre => Check1 (X);
+
+    procedure Proc2 (X : in out T)           --  FLAG
+       with Post => Check2 (X);
+
+    function Fun1 (X : T) return Integer     --  FLAG
+       with Pre  => Check1 (X),
+            Post => Check2 (X);
+
+    function Fun2 (X : T) return Integer
+       with Pre'Class  => Check1 (X),
+            Post'Class => Check2 (X);
+
+    function Fun3 (X : T) return Integer     --  FLAG
+       with Pre'Class  => Check1 (X),
+            Post'Class => Check2 (X),
+            Pre        => Check1 (X),
+            Post       => Check2 (X);
 
 9.1.2.7 `Specific_Parent_Type_Invariant'
 ........................................
@@ -904,6 +1107,37 @@ private extension declaration.
 
 This rule has no parameters.
 
+Example
+.......
+
+    package Pack1 is
+       type PT1 is tagged private;
+       type PT2 is tagged private
+         with Type_Invariant => Invariant_2 (PT2);
+
+       function Invariant_2   (X : PT2) return Boolean;
+
+    private
+       type PT1 is tagged record
+          I : Integer;
+       end record;
+
+       type PT2 is tagged record
+          I : Integer;
+       end record;
+
+       type PT1_N is new PT1 with null record;
+       type PT2_N is new PT2 with null record;    --  FLAG
+    end Pack1;
+
+    package Pack2 is
+       type N_PT1 is new Pack1.PT1 with private;
+       type N_PT2 is new Pack1.PT2 with private;  --  FLAG
+    private
+       type N_PT1 is new Pack1.PT1 with null record;
+       type N_PT2 is new Pack1.PT2 with null record;
+    end Pack2;
+
 9.1.2.8 `Specific_Type_Invariants'
 ..................................
 
@@ -914,6 +1148,21 @@ Definitions of (non-class-wide) Type_Invariant aspect that are parts of
 declarations of non-tagged types are not flagged.
 
 This rule has no parameters.
+
+Example
+.......
+
+    type PT is private
+       with Type_Invariant => Test_PT (PT);
+    function Test_PT (X : PT) return Boolean;
+
+    type TPT1 is tagged private
+       with Type_Invariant => Test_TPT1 (TPT1);        --  FLAG
+    function Test_TPT1 (X : TPT1) return Boolean;
+
+    type TPT2 is tagged private
+       with Type_Invariant'Class => Test_TPT2 (TPT2);
+    function Test_TPT2 (X : TPT2) return Boolean;
 
 9.1.2.9 `Too_Many_Parents'
 ..........................
@@ -931,12 +1180,27 @@ This rule has the following (mandatory) parameters for the `+R' option:
      Positive integer specifying the maximal allowed number of
      parents/progenitors.
 
+Example
+.......
+
+    type I1 is interface;
+    type I2 is interface;
+    type I3 is interface;
+    type I4 is interface;
+
+    type T_Root is tagged private;
+
+    type T_1 is new T_Root with private;
+    type T_2 is new T_Root and I1 with private;
+    type T_3 is new T_Root and I1 and I2 with private;
+    type T_4 is new T_Root and I1 and I2 and I3 with private; -- FLAG (if rule parameter is 3 or less)
+
 9.1.2.10 `Too_Many_Primitives'
 ..............................
 
 Flag any tagged type declaration that has more than N user-defined
 primitive operations (counting both inherited and not overridden and
-explicitly declared, not counting predefined operators), Do not flag
+explicitly declared, not counting predefined operators). Do not flag
 type declarations that are completions of private type or extension
 declarations.
 
@@ -945,6 +1209,32 @@ This rule has the following (mandatory) parameters for the `+R' option:
 `N'
      Positive integer specifying the maximal number of primitives when
      the type is not flagged.
+
+Example
+.......
+
+    package Foo is
+       type PT is tagged private;     --  FLAG (if rule parameter is 3 or less)
+
+       procedure P1 (X : in out PT);
+       procedure P2 (X : in out PT) is null;
+       function F1 (X : PT) return Integer;
+       function F2 (X : PT) return Integer is (F1 (X) + 1);
+
+       type I1 is interface;
+
+       procedure P1 (X : in out I1) is abstract;
+       procedure P2 (X : in out I1) is null;
+
+       type I2 is interface and I1;   --  FLAG (if rule parameter is 3 or less)
+       function F1 (X : I2) return Integer is abstract;
+       function F2 (X : I2) return Integer is abstract;
+
+    private
+       type PT is tagged record
+          I : Integer;
+       end record;
+    end Foo;
 
 9.1.2.11 `Visible_Components'
 .............................
@@ -960,7 +1250,43 @@ packages or in local (generic) packages are not flagged. `Record
 definitions' in private packages, in package bodies, and in the main
 subprogram body are not flagged.
 
-This rule has no parameters.
+This rule has the following (optional) parameters for the `+R' option:
+
+`Tagged_Only'
+     Only declarations of tagged types are flagged.
+
+Example
+.......
+
+    with Types;
+    package Foo is
+       type Null_Record is null record;                                    --  FLAG
+
+       type Not_Null_Record is record                                      --  FLAG
+          I : Integer;
+          B : Boolean;
+       end record;
+
+       type Tagged_Not_Null_Record is tagged record                        --  FLAG
+          I : Integer;
+          B : Boolean;
+       end record;
+
+       type Private_Extension is new Types.Tagged_Private with private;
+
+       type NoN_Private_Extension is new Types.Tagged_Private with record  --  FLAG
+          B : Boolean;
+       end record;
+
+    private
+       type Rec is tagged record
+          I : Integer;
+       end record;
+
+       type Private_Extension is new Types.Tagged_Private with record
+          C : Rec;
+       end record;
+    end Foo;
 
 9.1.3 Portability
 -----------------
@@ -968,7 +1294,27 @@ This rule has no parameters.
 The rules in this subsection may be used to enforce various feature
 usages that support program portability.
 
-9.1.3.1 `Forbidden_Attributes'
+9.1.3.1 `Bit_Records_Without_Layout_Definition'
+...............................................
+
+Flag record type declarations if a record has a component of a modular
+type and the record type does not have a record representation clause
+applied to it.
+
+This rule has no parameters.
+
+Example
+.......
+
+    package Pack is
+       type My_Mod is mod 8;
+
+       type My_Rec is record   --  FLAG
+          I : My_Mod;
+       end record;
+    end Pack;
+
+9.1.3.2 `Forbidden_Attributes'
 ..............................
 
 Flag each use of the specified attributes. The attributes to be
@@ -1035,7 +1381,21 @@ in the definition of exemption sections are `Attribute_Designators'.
 Each `Attribute_Designator' used as a rule exemption parameter should
 denote a predefined or GNAT-specific attribute.
 
-9.1.3.2 `Forbidden_Pragmas'
+Example
+.......
+
+    --  if the rule is activated as +RForbidden_Attributes:Range,First,Last
+    procedure Foo is
+       type Arr is array (1 .. 10) of Integer;
+       Arr_Var : Arr;
+
+       subtype Ind is Integer range Arr'First .. Arr'Last; --  FLAG (twice)
+    begin
+
+       for J in Arr'Range loop                             --  FLAG
+          Arr_Var (J) := Integer'Succ (J);
+
+9.1.3.3 `Forbidden_Pragmas'
 ...........................
 
 Flag each use of the specified pragmas.  The pragmas to be detected are
@@ -1107,7 +1467,21 @@ in the definition of exemption sections are pragma names. Each name
 used as a rule exemption parameter should denote a predefined or
 GNAT-specific pragma.
 
-9.1.3.3 `Implicit_SMALL_For_Fixed_Point_Types'
+Example
+.......
+
+    --  if the rule is activated as +RForbidden_Pragmas:Pack
+    package Foo is
+
+       type Arr is array (1 .. 8) of Boolean;
+       pragma Pack (Arr);                      --  FLAG
+
+       I : Integer;
+       pragma Atomic (I);
+
+    end Foo;
+
+9.1.3.4 `Implicit_SMALL_For_Fixed_Point_Types'
 ..............................................
 
 Flag each fixed point type declaration that lacks an explicit
@@ -1117,7 +1491,57 @@ point type declarations are not checked.
 
 This rule has no parameters.
 
-9.1.3.4 `No_Scalar_Storage_Order_Specified'
+Example
+.......
+
+    package Foo is
+       type Fraction is delta 0.01 range -1.0 .. 1.0;
+       type Fraction1 is delta 0.01 range -1.0 .. 1.0; --  FLAG
+
+       type Money is delta 0.01 digits 15;
+
+       for Fraction'Small use 0.01;
+    end Foo;
+
+9.1.3.5 `Incomplete_Representation_Specifications'
+..................................................
+
+Flag all record types that have a layout representation specification
+but without Size and Pack representation specifications.
+
+This rule has no parameters.
+
+Example
+.......
+
+    package Pack is
+       type Rec is record  --  FLAG
+          I : Integer;
+          B : Boolean;
+       end record;
+
+       for Rec use record
+          I at 0 range 0 ..31;
+          B at 4 range 0 .. 7;
+       end record;
+    end Pack;
+
+9.1.3.6 `No_Explicit_Real_Range'
+................................
+
+Flag a declaration of a floating point type or a decimal fixed point
+type, including types derived from them if no explicit range
+specification is provided for the type.
+
+This rule has no parameters.
+
+Example
+.......
+
+    type F1 is digits 8;                           --  FLAG
+    type F2 is delta 0.01 digits 8;                --  FLAG
+
+9.1.3.7 `No_Scalar_Storage_Order_Specified'
 ...........................................
 
 Flag each record type declaration, record extension declaration, and
@@ -1128,7 +1552,34 @@ ancestors has an explicitly specified Scalar_Storage_Order attribute.
 
 This rule has no parameters.
 
-9.1.3.5 `Predefined_Numeric_Types'
+Example
+.......
+
+    with System;
+    package Foo is
+
+       type Rec1 is  record     --  FLAG
+          I : Integer;
+       end record;
+
+       for Rec1 use
+          record
+             I at 0 range 0 .. 31;
+          end record;
+
+       type Rec2 is  record
+          I : Integer;
+       end record;
+
+       for Rec2 use
+          record
+             I at 0 range 0 .. 31;
+          end record;
+
+       pragma Attribute_Definition (Scalar_Storage_Order, Rec2, System.Low_Order_First);
+    end Foo;
+
+9.1.3.8 `Predefined_Numeric_Types'
 ..................................
 
 Flag each explicit use of the name of any numeric type or subtype
@@ -1151,7 +1602,24 @@ predefined packages (such as `System.Any_Priority' or
 
 This rule has no parameters.
 
-9.1.3.6 `Printable_ASCII'
+Example
+.......
+
+    package Foo is
+       I : Integer;                               -- FLAG
+       F : Float;                                 -- FLAG
+       B : Boolean;
+
+       type Arr is array (1 .. 5) of Short_Float; -- FLAG
+
+       type Res is record
+          C1 : Long_Integer;                      -- FLAG
+          C2 : Character;
+       end record;
+
+    end Foo;
+
+9.1.3.9 `Printable_ASCII'
 .........................
 
 Flag source code text characters that are not part of the printable
@@ -1164,8 +1632,8 @@ first (leftmost) character and says that there are more in this line.
 
 This rule has no parameters.
 
-9.1.3.7 `Separate_Numeric_Error_Handlers'
-.........................................
+9.1.3.10 `Separate_Numeric_Error_Handlers'
+..........................................
 
 Flags each exception handler that contains a choice for the predefined
 `Constraint_Error' exception, but does not contain the choice for the
@@ -1173,6 +1641,14 @@ predefined `Numeric_Error' exception, or that contains the choice for
 `Numeric_Error', but does not contain the choice for `Constraint_Error'.
 
 This rule has no parameters.
+
+Example
+.......
+
+    exception
+       when Constraint_Error =>  --  FLAG
+          Clean_Up;
+    end;
 
 9.1.4 Program Structure
 -----------------------
@@ -1195,6 +1671,13 @@ This rule has the following (mandatory) parameters for the `+R' option:
      Positive integer specifying the maximal number of ancestors when
      the unit is not flagged.
 
+Example
+.......
+
+    package Parent.Child1.Child2 is  -- FLAG  (if rule parameter is 1)
+       I : Integer;
+    end;
+
 9.1.4.2 `Deeply_Nested_Generics'
 ................................
 
@@ -1210,6 +1693,24 @@ This rule has the following (mandatory) parameters for the `+R' option:
      Nonnegative integer specifying the maximum nesting level for a
      generic declaration.
 
+Example
+.......
+
+    package Foo is
+
+       generic
+       package P_G_0 is
+          generic
+          package P_G_1 is
+             generic              --  FLAG (if rule parameter is 1)
+             package P_G_2 is
+                I  : Integer;
+             end;
+          end;
+       end;
+
+    end Foo;
+
 9.1.4.3 `Local_Packages'
 ........................
 
@@ -1217,6 +1718,15 @@ Flag all local packages declared in package and generic package specs.
 Local packages in bodies are not flagged.
 
 This rule has no parameters.
+
+Example
+.......
+
+    package Foo is
+       package Inner is    --  FLAG
+          I : Integer;
+       end Inner;
+    end Foo;
 
 9.1.4.4 `Non_Visible_Exceptions'
 ................................
@@ -1244,6 +1754,33 @@ Renamings of local exceptions are not flagged.
 
 This rule has no parameters.
 
+Example
+.......
+
+    procedure Bar is
+       Var : Integer :=- 13;
+
+       procedure Inner (I : in out Integer) is
+          Inner_Exception_1 : exception;          --  FLAG
+          Inner_Exception_2 : exception;
+       begin
+          if I = 0 then
+             raise Inner_Exception_1;
+          elsif I = 1 then
+             raise Inner_Exception_2;
+          else
+             I := I - 1;
+          end if;
+       exception
+          when Inner_Exception_2 =>
+             I := 0;
+             raise;                               --  FLAG
+       end Inner;
+
+    begin
+       Inner (Var);
+    end Bar;
+
 9.1.4.5 `Raising_External_Exceptions'
 .....................................
 
@@ -1254,13 +1791,75 @@ neither a predefined exception nor an exception that is also declared
 
 This rule has no parameters.
 
+Example
+.......
+
+    package Exception_Declarations is
+       Ex : exception;
+    end Exception_Declarations;
+    package Foo is
+       procedure Proc (I : in out Integer);
+    end Foo;
+    with Exception_Declarations;
+    package body Foo is
+       procedure Proc (I : in out Integer) is
+       begin
+          if I < 0 then
+             raise Exception_Declarations.Ex;   --  FLAG
+          else
+             I := I - 1;
+          end if;
+       end Proc;
+    end Foo;
+
 9.1.5 Programming Practice
 --------------------------
 
 The rules in this subsection may be used to enforce feature usages that
 relate to program maintainability.
 
-9.1.5.1 `Anonymous_Arrays'
+9.1.5.1 `Address_Specifications_For_Initialized_Objects'
+........................................................
+
+Flag address clauses and address aspect definitions if they are applied
+to object declarations with explicit initializations.
+
+This rule has no parameters.
+
+Example
+.......
+
+    I : Integer := 0;
+    Var0 : Integer with Address => I'Address;
+
+    Var1 : Integer := 10;
+    for Var1'Address use Var0'Address;             --  FLAG
+
+9.1.5.2 `Address_Specifications_For_Local_Objects'
+..................................................
+
+Flag address clauses and address aspect definitions if they are applied
+to data objects declared in local subprogram bodies. Data objects
+declared in library subprogram bodies are not flagged.
+
+This rule has no parameters.
+
+Example
+.......
+
+    package Pack is
+       Var : Integer;
+       procedure Proc (I : in out Integer);
+    end Pack;
+    package body Pack is
+       procedure Proc (I : in out Integer) is
+          Tmp : Integer with Address => Pack.Var'Address;   --  FLAG
+       begin
+          I := Tmp;
+       end Proc;
+    end Pack;
+
+9.1.5.3 `Anonymous_Arrays'
 ..........................
 
 Flag all anonymous array type definitions (by Ada semantics these can
@@ -1268,7 +1867,14 @@ only occur in object declarations).
 
 This rule has no parameters.
 
-9.1.5.2 `Binary_Case_Statements'
+Example
+.......
+
+    type Arr is array (1 .. 10) of Integer;
+    Var1 : Arr;
+    Var2 : array (1 .. 10) of Integer;      --  FLAG
+
+9.1.5.4 `Binary_Case_Statements'
 ................................
 
 Flag a case statement if this statement has only two alternatives, one
@@ -1277,7 +1883,17 @@ or the `OTHERS' choice.
 
 This rule has no parameters.
 
-9.1.5.3 `Default_Values_For_Record_Components'
+Example
+.......
+
+    case Var is                   --  FLAG
+       when 1 =>
+          Var := Var + 1;
+       when others =>
+          null;
+    end case;
+
+9.1.5.5 `Default_Values_For_Record_Components'
 ..............................................
 
 Flag a record component declaration if it contains a default expression.
@@ -1286,7 +1902,22 @@ not flag discriminant specifications.
 
 This rule has no parameters.
 
-9.1.5.4 `Deriving_From_Predefined_Type'
+Example
+.......
+
+    type Rec (D : Natural := 0) is record
+       I : Integer := 0;                    -- FLAG
+       B : Boolean;
+
+       case D is
+          when 0 =>
+             C : Character := 'A';          -- FLAG
+          when others =>
+             F : Float;
+       end case;
+    end record;
+
+9.1.5.6 `Deriving_From_Predefined_Type'
 .......................................
 
 Flag derived type declaration if the ultimate ancestor type is a
@@ -1295,7 +1926,17 @@ extensions. The rule is checked inside expanded generics.
 
 This rule has no parameters.
 
-9.1.5.5 `Enumeration_Ranges_In_CASE_Statements'
+Example
+.......
+
+    package Foo is
+       type T is private;
+       type My_String is new String;  --  FLAG
+    private
+       type T is new Integer;         --  FLAG
+    end Foo;
+
+9.1.5.7 `Enumeration_Ranges_In_CASE_Statements'
 ...............................................
 
 Flag each use of a range of enumeration literals as a choice in a
@@ -1312,14 +1953,37 @@ new literal.
 
 This rule has no parameters.
 
-9.1.5.6 `Enumeration_Representation_Clauses'
+Example
+.......
+
+    procedure Bar (I : in out Integer) is
+       type Enum is (A, B, C, D, E);
+       type Arr is array (A .. C) of Integer;
+
+       function F (J : Integer) return Enum is separate;
+    begin
+       case F (I) is
+          when Arr'Range  =>  --  FLAG
+             I := I + 1;
+          when D .. E =>      --  FLAG
+             null;
+       end case;
+    end Bar;
+
+9.1.5.8 `Enumeration_Representation_Clauses'
 ............................................
 
 Flag enumeration representation clauses.
 
 This rule has no parameters.
 
-9.1.5.7 `Exceptions_As_Control_Flow'
+Example
+.......
+
+    type Enum1 is (A1, B1, C1);
+    for Enum1 use (A1 => 1, B1 => 11, C1 => 111);     --  FLAG
+
+9.1.5.9 `Exceptions_As_Control_Flow'
 ....................................
 
 Flag each place where an exception is explicitly raised and handled in
@@ -1328,8 +1992,24 @@ package body, task body or entry body is not flagged.
 
 The rule has no parameters.
 
-9.1.5.8 `Exits_From_Conditional_Loops'
-......................................
+Example
+.......
+
+    procedure Bar (I : in out Integer) is
+
+    begin
+       if I = Integer'Last then
+          raise Constraint_Error;    --  FLAG
+       else
+         I := I - 1;
+       end if;
+    exception
+       when Constraint_Error =>
+          I := Integer'First;
+    end Bar;
+
+9.1.5.10 `Exits_From_Conditional_Loops'
+.......................................
 
 Flag any exit statement if it transfers the control out of a `for' loop
 or a `while' loop. This includes cases when the `exit' statement
@@ -1339,15 +2019,41 @@ some `for' or `while' loop, but transfers the control from some outer
 
 The rule has no parameters.
 
-9.1.5.9 `EXIT_Statements_With_No_Loop_Name'
-...........................................
+Example
+.......
+
+    function Bar (S : String) return Natural is
+       Result : Natural := 0;
+    begin
+       for J in S'Range loop
+          exit when S (J) = '@';  --  FLAG
+          Result := Result + J;
+       end loop;
+
+       return 0;
+    end Bar;
+
+9.1.5.11 `EXIT_Statements_With_No_Loop_Name'
+............................................
 
 Flag each `exit' statement that does not specify the name of the loop
 being exited.
 
 The rule has no parameters.
 
-9.1.5.10 `Global_Variables'
+Example
+.......
+
+    procedure Bar (I, J : in out Integer) is
+    begin
+       loop
+          exit when I < J;  --  FLAG
+          I := I - 1;
+          J := J + 1;
+       end loop;
+    end Bar;
+
+9.1.5.12 `Global_Variables'
 ...........................
 
 Flag any variable declaration that appears immediately within the
@@ -1361,14 +2067,36 @@ This rule has the following (optional) parameters for the `+R' option:
      Do not flag variable declarations in private library (generic)
      packages and in package private parts.
 
-9.1.5.11 `GOTO_Statements'
+Example
+.......
+
+    package Foo is
+        Var1 : Integer;    --  FLAG
+        procedure Proc;
+    private
+        Var2 : Boolean;    --  FLAG
+    end Foo;
+
+9.1.5.13 `GOTO_Statements'
 ..........................
 
 Flag each occurrence of a `goto' statement.
 
 This rule has no parameters.
 
-9.1.5.12 `Improper_Returns'
+Example
+.......
+
+    for K in 1 .. 10 loop
+       if K = 6 then
+          goto Quit; -- FLAG
+       end if;
+       null;
+    end loop;
+    <<Quit>>
+    return;
+
+9.1.5.14 `Improper_Returns'
 ...........................
 
 Flag each explicit `return' statement in procedures, and multiple
@@ -1381,7 +2109,52 @@ have no more than one point of normal return.
 
 This rule has no parameters.
 
-9.1.5.13 `Maximum_Parameters'
+Example
+.......
+
+    procedure Proc (I : in out Integer) is
+    begin
+       if I = 0 then
+          return;                          --  FLAG
+       end if;
+
+       I := I * (I + 1);
+    end Proc;
+
+    function Factorial (I : Natural) return Positive is
+    begin
+       if I = 0 then
+          return 1;
+       else
+          return I * Factorial (I - 1);    --  FLAG
+       end if;
+    exception
+       when Constraint_Error =>
+          return Natural'Last;             --  FLAG
+    end Factorial;
+
+9.1.5.15 `Local_USE_Clauses'
+............................
+
+Use clauses that are not parts of compilation unit context clause are
+flagged. The rule has an optional parameter for +R option:
+
+`Except_USE_TYPE_Clauses'
+     Do not flag local use type clauses.
+
+Example
+.......
+
+    with Pack1;
+    with Pack2;
+    procedure Proc is
+       use Pack1;               --  FLAG
+
+       procedure Inner is
+          use type Pack2.T;     --  FLAG (if Except_USE_TYPE_Clauses is not set)
+       ...
+
+9.1.5.16 `Maximum_Parameters'
 .............................
 
 Flag any subprogram declaration, subprogram body declaration, expression
@@ -1401,7 +2174,61 @@ This rule has the following (mandatory) parameters for the `+R' option:
      Positive integer specifying the maximum allowed total number of
      subprogram formal parameters.
 
-9.1.5.14 `Nested_Subprograms'
+Example
+.......
+
+    package Foo is
+
+       procedure Proc_1 (I : in out Integer);
+       procedure Proc_2 (I, J : in out Integer);
+       procedure Proc_3 (I, J, K : in out Integer);
+       procedure Proc_4 (I, J, K, L : in out Integer); --  FLAG (if rule parameter is 3)
+
+       function Fun_4                                  --  FLAG (if rule parameter is 3)
+         (I : Integer;
+          J : Integer;
+          K : Integer;
+          L : Integer) return Integer is (I + J * K - L);
+
+    end Foo;
+
+9.1.5.17 `Misplaced_Representation_Items'
+.........................................
+
+Flag a representation item if there is any Ada construct except another
+representation item for the same entity between this clause and the
+declaration of the entity it applies to. A representation item in the
+context of this rule is either a representation clause or one of the
+following representation pragmas:
+
+   * Atomic   J.15.8(9/3)
+
+   * Atomic_Components   J.15.8(9/3)
+
+   * Independent   J.15.8(9/3)
+
+   * Independent_Components   J.15.8(9/3)
+
+   * Pack   J.15.3(1/3)
+
+   * Unchecked_Union   J.15.6(1/3)
+
+   * Volatile   J.15.8(9/3)
+
+   * Volatile_Components   J.15.8(9/3)
+
+This rule has no parameters.
+
+Example
+.......
+
+    type Int1 is range 0 .. 1024;
+    type Int2 is range 0 .. 1024;
+
+    for Int2'Size use 16;         --  NO FLAG
+    for Int1'Size use 16;         --  FLAG
+
+9.1.5.18 `Nested_Subprograms'
 .............................
 
 Flag any subprogram declaration, subprogram body declaration, subprogram
@@ -1415,7 +2242,24 @@ completed by null procedure declarations are not flagged.
 
 This rule has no parameters.
 
-9.1.5.15 `Non_Short_Circuit_Operators'
+Example
+.......
+
+    procedure Bar (I, J : in out Integer) is
+
+       procedure Foo (K : Integer) is null;
+       procedure Proc1;                    --  FLAG
+
+       procedure Proc2 is separate;        --  FLAG
+
+       procedure Proc1 is
+       begin
+          I := I + J;
+       end Proc1;
+
+    begin
+
+9.1.5.19 `Non_Short_Circuit_Operators'
 ......................................
 
 Flag all calls to predefined `and' and `or' operators for any boolean
@@ -1425,7 +2269,15 @@ renaming declarations are not flagged. Calls to predefined `and' and
 
 This rule has no parameters.
 
-9.1.5.16 `Null_Paths'
+Example
+.......
+
+    B1 := I > 0 and J > 0;       --  FLAG
+    B2 := I < 0 and then J < 0;
+    B3 := I > J or J > 0;        --  FLAG
+    B4 := I < J or else I < 0;
+
+9.1.5.20 `Null_Paths'
 .....................
 
 Flag a statement sequence that is a component of an IF, CASE or LOOP
@@ -1433,7 +2285,29 @@ statement if this sequences consists of NULL statements only.
 
 This rule has no parameters.
 
-9.1.5.17 `Objects_Of_Anonymous_Types'
+Example
+.......
+
+    if I > 10 then
+       J := 5;
+    elsif I > 0 then
+       null;                 --  FLAG
+    else
+      J := J + 1;
+    end if;
+
+    case J is
+       when 1 =>
+          I := I + 1;
+       when 2 =>
+          null;              --  FLAG
+       when 3 =>
+          J := J + 1;
+       when others =>
+          null;              --  FLAG
+    end case;
+
+9.1.5.21 `Objects_Of_Anonymous_Types'
 .....................................
 
 Flag any object declaration located immediately within a package
@@ -1444,7 +2318,28 @@ defined with anonymous access definitions are flagged.
 
 This rule has no parameters.
 
-9.1.5.18 `OTHERS_In_Aggregates'
+Example
+.......
+
+    package Foo is
+       type Arr is array (1 .. 10) of Integer;
+       type Acc is access Integer;
+
+       A : array (1 .. 10) of Integer;  --  FLAG
+       B : Arr;
+
+       C : access Integer;              --  FLAG
+       D : Acc;
+
+       generic
+          F1 : access Integer;          --  FLAG
+          F2 : Acc;
+       procedure Proc_G
+         (P1 : access Integer;
+          P2 : Acc);
+    end Foo;
+
+9.1.5.22 `OTHERS_In_Aggregates'
 ...............................
 
 Flag each use of an `others' choice in extension aggregates.  In record
@@ -1458,21 +2353,115 @@ component; for example, `(1..1 => 0, others => 1)'.
 
 This rule has no parameters.
 
-9.1.5.19 `OTHERS_In_CASE_Statements'
+Example
+.......
+
+    package Foo is
+       type Arr is array (1 .. 10) of Integer;
+
+       type Rec is record
+          C1 : Integer;
+          C2 : Integer;
+          C3 : Integer;
+          C4 : Integer;
+       end record;
+
+       type Tagged_Rec is tagged record
+          C1 : Integer;
+       end record;
+
+       type New_Tagged_Rec is new Tagged_Rec with record
+          C2 : Integer;
+          C3 : Integer;
+          C4 : Integer;
+       end record;
+
+       Arr_Var1 : Arr := (others => 1);
+       Arr_Var2 : Arr := (1 => 1, 2=> 2, others => 0);  --  FLAG
+
+       Rec_Var1 : Rec := (C1 => 1, others => 0);
+       Rec_Var2 : Rec := (1, 2, others => 3);           --  FLAG
+
+       Tagged_Rec_Var : Tagged_Rec := (C1 => 1);
+
+       New_Tagged_Rec_Var : New_Tagged_Rec := (Tagged_Rec_Var with others => 0); -- FLAG
+    end Foo;
+
+9.1.5.23 `OTHERS_In_CASE_Statements'
 ....................................
 
 Flag any use of an `others' choice in a `case' statement.
 
 This rule has no parameters.
 
-9.1.5.20 `OTHERS_In_Exception_Handlers'
+Example
+.......
+
+    case J is
+       when 1 =>
+          I := I + 1;
+       when 3 =>
+          J := J + 1;
+       when others =>        --  FLAG
+          null;
+    end case;
+
+9.1.5.24 `OTHERS_In_Exception_Handlers'
 .......................................
 
 Flag any use of an `others' choice in an exception handler.
 
 This rule has no parameters.
 
-9.1.5.21 `Overly_Nested_Control_Structures'
+Example
+.......
+
+    exception
+       when Constraint_Error =>
+          I:= Integer'Last;
+       when others =>                   --  FLAG
+          I := I_Old;
+          raise;
+
+9.1.5.25 `Outbound_Protected_Assignments'
+.........................................
+
+Flag an assignment statement located in a protected body if the
+variable name in the left part of the statement denotes an object
+declared outssided ourside this protected type or object.
+
+This rule has no parameters.
+
+Example
+.......
+
+    package Pack is
+       Var : Integer;
+
+       protected P is
+          entry E (I : in out Integer);
+          procedure P (I : Integer);
+       private
+          Flag : Boolean;
+       end P;
+
+    end Pack;
+    package body Pack is
+       protected body P is
+          entry E (I : in out Integer) when Flag is
+          begin
+             I   := Var + I;
+             Var := I;           --  FLAG
+          end E;
+
+          procedure P (I : Integer) is
+          begin
+             Flag := I > 0;
+          end P;
+       end P;
+    end Pack;
+
+9.1.5.26 `Overly_Nested_Control_Structures'
 ...........................................
 
 Flag each control structure whose nesting level exceeds the value
@@ -1506,7 +2495,25 @@ positive integer, `+R' option is ignored.
 If more than one  option is specified for the gnatcheck call, the later
 option and new parameter override the previous one(s).
 
-9.1.5.22 `POS_On_Enumeration_Types'
+Example
+.......
+
+    if I > 0 then
+        for Idx in I .. J loop
+           if J < 0 then
+              case I is
+                 when 1 =>
+                    if Idx /= 0 then  --  FLAG (if rule parameter is 3)
+                       J := J / Idx;
+                    end if;
+                 when others =>
+                    J := J + Idx;
+              end case;
+           end if;
+        end loop;
+    end if;
+
+9.1.5.27 `POS_On_Enumeration_Types'
 ...................................
 
 Flag `'Pos' attribute in case if the attribute prefix has an enumeration
@@ -1514,7 +2521,20 @@ type (including types derived from enumeration types).
 
 This rule has no parameters.
 
-9.1.5.23 `Positional_Actuals_For_Defaulted_Generic_Parameters'
+Example
+.......
+
+    procedure Bar (Ch1, Ch2 : Character; I : in out Integer) is
+    begin
+       if Ch1'Pos in 32 .. 126           --  FLAG
+         and then
+          Ch2'Pos not in 0 .. 31         --  FLAG
+       then
+          I := (Ch1'Pos + Ch2'Pos) / 2;  --  FLAG (twice)
+       end if;
+    end Bar;
+
+9.1.5.28 `Positional_Actuals_For_Defaulted_Generic_Parameters'
 ..............................................................
 
 Flag each generic actual parameter corresponding to a generic formal
@@ -1522,7 +2542,38 @@ parameter with a default initialization, if positional notation is used.
 
 This rule has no parameters.
 
-9.1.5.24 `Positional_Actuals_For_Defaulted_Parameters'
+Example
+.......
+
+    package Foo is
+       function Fun_1 (I : Integer) return Integer;
+       function Fun_2 (I : Integer) return Integer;
+
+       generic
+          I_Par1 : Integer;
+          I_Par2 : Integer := 1;
+          with function Fun_1 (I : Integer) return Integer is <>;
+          with function Fun_3 (I : Integer) return Integer is Fun_2;
+       package Pack_G is
+          Var_1 : Integer := I_Par1;
+          Var_2 : Integer := I_Par2;
+          Var_3 : Integer := Fun_1 (Var_1);
+          Var_4 : Integer := Fun_3 (Var_2);
+       end Pack_G;
+
+       package Pack_I_1 is new Pack_G (1);
+
+       package Pact_I_2 is new Pack_G
+         (2, I_Par2 => 3, Fun_1 => Fun_2, Fun_3 => Fun_1);
+
+       package Pack_I_3 is new Pack_G (1,
+                                       2,            --  FLAG
+                                       Fun_2,        --  FLAG
+                                       Fun_1);       --  FLAG
+
+    end Foo;
+
+9.1.5.29 `Positional_Actuals_For_Defaulted_Parameters'
 ......................................................
 
 Flag each actual parameter to a subprogram or entry call where the
@@ -1531,7 +2582,18 @@ notation is used.
 
 This rule has no parameters.
 
-9.1.5.25 `Positional_Components'
+Example
+.......
+
+       procedure Proc (I : in out Integer; J : Integer := 0) is
+       begin
+          I := I + J;
+       end Proc;
+
+    begin
+       Proc (Var1, Var2);   --  FLAG
+
+9.1.5.30 `Positional_Components'
 ................................
 
 Flag each array, record and extension aggregate that includes positional
@@ -1539,7 +2601,24 @@ notation.
 
 This rule has no parameters.
 
-9.1.5.26 `Positional_Generic_Parameters'
+Example
+.......
+
+    package Foo is
+       type Arr is array (1 .. 10) of Integer;
+
+       type Rec is record
+          C_Int  : Integer;
+          C_Bool : Boolean;
+          C_Char : Character;
+       end record;
+
+       Var_Rec_1 : Rec := (C_Int => 1, C_Bool => True, C_Char => 'a');
+       Var_Rec_2 : Rec := (2, C_Bool => False, C_Char => 'b');   --  FLAG
+       Var_Rec_3 : Rec := (1, True, 'c');                        --  FLAG
+    end Foo;
+
+9.1.5.31 `Positional_Generic_Parameters'
 ........................................
 
 Flag each positional actual generic parameter except for the case when
@@ -1548,7 +2627,23 @@ parameter.
 
 This rule has no parameters.
 
-9.1.5.27 `Positional_Parameters'
+Example
+.......
+
+    with Ada.Text_IO; use Ada.Text_IO;
+    with Ada.Unchecked_Conversion;
+    procedure Bar (I : in out Integer) is
+       type My_Int is range -12345 .. 12345;
+
+       function To_My_Int is new Ada.Unchecked_Conversion
+         (Source => Integer, Target => My_Int);
+
+       function To_Integer is new Ada.Unchecked_Conversion
+         (My_Int, Integer);                                --  FLAG (twice)
+
+       package My_Int_IO is new  Ada.Text_IO.Integer_IO (My_Int);
+
+9.1.5.32 `Positional_Parameters'
 ................................
 
 Flag each positional parameter notation in a subprogram or entry call,
@@ -1576,9 +2671,34 @@ This rule has the following (optional) parameters for the `+R' option:
      associations that can be replaced with named associations
      according to language rules are flagged
 
-This rule has no parameters.
+Example
+.......
 
-9.1.5.28 `Recursive_Subprograms'
+    procedure Bar (I : in out Integer) is
+       function My_Max (Left, Right : Integer) return Integer renames Integer'Max;
+
+       procedure Proc1 (I : in out Integer) is
+       begin
+          I := I + 1;
+       end Proc1;
+
+       procedure Proc2 (I, J : in out Integer) is
+       begin
+          I := I + J;
+       end Proc2;
+
+       L, M : Integer := 1;
+    begin
+       Proc1 (L);
+       Proc2 (L, M);                              --  FLAG (twice)
+       Proc2 (I => M, J => L);
+
+       L := Integer'Max (10, M);
+       M := My_Max (100, Right => L);             --  FLAG
+
+    end Bar;
+
+9.1.5.33 `Recursive_Subprograms'
 ................................
 
 Flags specs (and bodies that act as specs) of recursive subprograms. A
@@ -1596,9 +2716,39 @@ flagged.
 This rule does not take into account subprogram calls in aspect
 definitions.
 
+The rule has an optional parameters for `+R' option:
+
+`Skip_Dispatching_Calls'
+     Do not take into account dispatching calls when building and
+     analyzing call chains.
+
+Example
+.......
+
+    function Factorial (N : Natural) return Positive is  --  FLAG
+    begin
+       if N = 0 then
+          return 1;
+       else
+          return N * Factorial (N - 1);
+       end if;
+    end Factorial;
+
+9.1.5.34 `Single_Value_Enumeration_Types'
+.........................................
+
+Flag an enumeration type definition if it contains a single enumeration
+literal specification
+
 This rule has no parameters.
 
-9.1.5.29 `Unchecked_Address_Conversions'
+Example
+.......
+
+    type Enum3 is (A, B, C);
+    type Enum1 is (D);      --  FLAG
+
+9.1.5.35 `Unchecked_Address_Conversions'
 ........................................
 
 Flag instantiations of `Ada.Unchecked_Conversion' if the actual for the
@@ -1612,7 +2762,23 @@ checked inside expanded generics.
 
 This rule has no parameters.
 
-9.1.5.30 `Unchecked_Conversions_As_Actuals'
+Example
+.......
+
+    with Ada.Unchecked_Conversion;
+    with System;
+    package Foo is
+       type My_Address is new System.Address;
+
+       type My_Integer is new Integer;
+       type My_Access is access all My_Integer;
+
+       function Address_To_Access is new Ada.Unchecked_Conversion  --  FLAG
+         (Source => My_Address,
+          Target => My_Access);
+    end Foo;
+
+9.1.5.36 `Unchecked_Conversions_As_Actuals'
 ...........................................
 
 Flag call to instantiation of `Ada.Unchecked_Conversion' if it is an
@@ -1621,14 +2787,56 @@ subprogram or entry parameter specification.
 
 This rule has no parameters.
 
-9.1.5.31 `Unconditional_Exits'
+Example
+.......
+
+    with Ada.Unchecked_Conversion;
+    procedure Bar (I : in out Integer) is
+       type T1 is array (1 .. 10) of Integer;
+       type T2 is array (1 .. 10) of Integer;
+
+       function UC is new Ada.Unchecked_Conversion (T1, T2);
+
+       Var1 : T1 := (others => 1);
+       Var2 : T2 := (others => 2);
+
+       procedure Init (X : out T2; Y : T2 := UC (Var1)) is   --  FLAG
+       begin
+          X := Y;
+       end Init;
+
+       procedure Ident (X : T2; Y : out T2) is
+       begin
+          Y := X;
+       end Ident;
+
+    begin
+       Ident (UC (Var1), Var2);                              --  FLAG
+    end Bar;
+
+9.1.5.37 `Unconditional_Exits'
 ..............................
 
 Flag unconditional `exit' statements.
 
 This rule has no parameters.
 
-9.1.5.32 `Uninitialized_Global_Variables'
+Example
+.......
+
+    procedure Find_A (S : String; Idx : out Natural) is
+    begin
+       Idx := 0;
+
+       for J in S'Range loop
+          if S (J) = 'A' then
+             Idx := J;
+             exit;             --  FLAG
+          end if;
+       end loop;
+    end Find_A;
+
+9.1.5.38 `Uninitialized_Global_Variables'
 .........................................
 
 Flag an object declaration located immediately within a package
@@ -1638,19 +2846,63 @@ declarations and declarations of objects of limited types.
 
 This rule has no parameters.
 
-9.1.5.33 `Unnamed_Blocks_And_Loops'
+Example
+.......
+
+    package Foo is
+       Var1 : Integer;      --  FLAG
+       Var2 : Integer := 0;
+    end Foo;
+
+9.1.5.39 `Unnamed_Blocks_And_Loops'
 ...................................
 
-Flag each unnamed block statement and loop statement.
+Flag each unnamed block statement. Flag a unnamed loop loop statement
+if this statement is enclosed by another loop statement or if it
+encloses another loop statement.
 
 The rule has no parameters.
 
-9.1.5.34 `USE_PACKAGE_Clauses'
+Example
+.......
+
+    procedure Bar (S : in out String) is
+       I : Integer := 1;
+    begin
+       if S'Length > 10 then
+          declare                                  --  FLAG
+             S1   : String (S'Range);
+             Last : Positive := S1'Last;
+             Idx  : Positive := 0;
+          begin
+             for J in S'Range loop                 --  FLAG
+                S1 (Last - Idx) := S (J);
+                Idx             := Idx + 1;
+
+                for K in S'Range loop              --  FLAG
+                   S (K) := Character'Succ (S (K));
+                end loop;
+
+             end loop;
+
+             S := S1;
+          end;
+       end if;
+    end Bar;
+
+9.1.5.40 `USE_PACKAGE_Clauses'
 ..............................
 
 Flag all `use' clauses for packages; `use type' clauses are not flagged.
 
 This rule has no parameters.
+
+Example
+.......
+
+    with Ada.Text_IO;
+    use Ada.Text_IO;                               --  FLAG
+    procedure Bar (S : in out String) is
 
 9.1.6 Readability
 -----------------
@@ -1800,6 +3052,18 @@ the definition of exemption sections are:
 `Exclude'
      Exempts check for defining names for which casing schemes are
      specified in exception dictionaries
+
+Example
+.......
+
+    --  if the rule is activated as '+RIdentifier_Casing:Type=upper,others=mixed'
+    package Foo is
+       type ENUM_1 is (A1, B1, C1);
+       type Enum_2 is (A2, B2, C2);      --  FLAG
+
+       Var1 : Enum_1 := A1;
+       VAR2 : ENUM_2 := A2;              --  FLAG
+    end Foo;
 
 9.1.6.2 `Identifier_Prefixes'
 .............................
@@ -2017,6 +3281,21 @@ the definition of exemption sections are:
      Exempts check that only names of specific kinds of entities have
      prefixes specified for these kinds
 
+Example
+.......
+
+    --  if the rule is activated as '+RIdentifier_Prefixes:Type=Type_,Constant=Const_,ExceptioN=X_'
+    package Foo is
+       type Type_Enum_1 is (A1, B1, C1);
+       type Enum_2      is (A2, B2, C2);         --  FLAG
+
+       Const_C1 : constant Type_Enum_1 := A1;
+       Const2   : constant Enum_2      := A2;    --  FLAG
+
+       X_Exc_1 : exception;
+       Exc_2   : exception;                      --  FLAG
+    end Foo;
+
 9.1.6.3 `Identifier_Suffixes'
 .............................
 
@@ -2130,6 +3409,11 @@ The rule may have the following parameters:
           Specifies the suffix for objects that have an access type
           (including types derived from access types).
 
+   * Interrupt_Suffix=`string'
+
+          Specifies the suffix for protected subprograms used as
+          interrupt handlers.
+
    * For the `-R' option:
 
 `All_Suffixes'
@@ -2177,6 +3461,11 @@ The rule may have the following parameters:
      disables checks for such objects. It does not disable any other
      checks for this rule
 
+`Interrupt_Suffix'
+     Removes the suffix specified for protected subprograms used as
+     interrupt handlers. It does not disable any other checks for this
+     rule.
+
 If more than one parameter is used, parameters must be separated by
 commas.
 
@@ -2223,7 +3512,38 @@ the definition of exemption sections are:
 `Renaming'
      Exempts check for package renaming name suffixes
 
-9.1.6.4 `Misnamed_Controlling_Parameters'
+Example
+.......
+
+    --  if the rule is activated as '+RIdentifier_Suffixes:Access_Suffix=_PTR,Type_Suffix=_T,Constant_Suffix=_C'
+    package Foo is
+       type Int   is range 0 .. 100;      --  FLAG
+       type Int_T is range 0 .. 100;
+
+       type Int_A   is access Int;        --  FLAG
+       type Int_PTR is access Int;
+
+       Const   : constant Int := 1;       --  FLAG
+       Const_C : constant Int := 1;
+
+    end Foo;
+
+9.1.6.4 `Max_Identifier_Length'
+...............................
+
+Flag any defining identifier that has length longer than specified by
+the rule parameter. The rule has a mandatory parameter for +R option:
+
+`N'
+     The maximal allowed identifier length specification.
+
+Example
+.......
+
+    type My_Type is range -100 .. 100;
+    My_Variable_With_A_Long_Name : My_Type;  -- FLAG (if rule parameter is 27 or smaller)
+
+9.1.6.5 `Misnamed_Controlling_Parameters'
 .........................................
 
 Flag a declaration of a dispatching operation, if the first parameter is
@@ -2238,7 +3558,17 @@ prior subprogram declaration.
 
 This rule has no parameters.
 
-9.1.6.5 `Name_Clashes'
+Example
+.......
+
+    package Foo is
+       type T is tagged private;
+
+       procedure P1 (This : in out T);
+       procedure P2 (That : in out T);              --  FLAG
+       procedure P1 (I : Integer; This : in out T); --  FLAG
+
+9.1.6.6 `Name_Clashes'
 ......................
 
 Check that certain names are not used as defining identifiers. The
@@ -2254,9 +3584,6 @@ This rule has the following (mandatory) parameters for the `+R' option:
 
 `dictionary_file'
      The name of a dictionary file.
-
-This rule is enabled by default, but without setting any corresponding
-dictionary file(s); thus the default effect is to do no checks.
 
 A dictionary file is a plain text file. The maximum line length for
 this file is 1024 characters.  If the line is longer than this limit,
@@ -2274,7 +3601,69 @@ A comment is an Ada-style comment (from `--' to end-of-line).
 Identifiers must follow the Ada syntax for identifiers.  A line
 containing one or more identifiers may end with a comment.
 
-9.1.6.6 `Uncommented_BEGIN_In_Package_Bodies'
+Example
+.......
+
+    --  If the dictionary file contains names 'One' and 'Two":
+    One          : constant Integer := 1;     --  FLAG
+    Two          : constant Float   := 2.0;   --  FLAG
+    Constant_One : constant Float   := 1.0;
+
+9.1.6.7 `Object_Declarations_Out_Of_Order'
+..........................................
+
+Flag any object declaration that is located in a library unit body if
+this is preceding by a declaration of a program unit spec, stub or body.
+
+This rule has no parameters.
+
+Example
+.......
+
+    procedure Proc is
+       procedure Proc1 is separate;
+
+       I : Integer;    -- FLAG
+
+9.1.6.8 `One_Construct_Per_Line'
+................................
+
+Flag any statement, declaration or representation clause if the code
+line where this construct starts contains some other Ada code symbols
+preceding or following this construct. The following constructs are not
+flagged:
+
+   * enumeration literal specification;
+
+   * parameter specifications;
+
+   * discriminant specifications;
+
+   * mod clauses;
+
+   * loop parameter specification;
+
+   * entry index specification;
+
+   * choice parameter specification;
+
+In case if we have two or more declarations/statements/clauses on a
+line and if there is no Ada code preceding the first construct, the
+first construct is flagged
+
+This rule has no parameters.
+
+Example
+.......
+
+    procedure Swap (I, J : in out Integer) is
+       Tmp : Integer;
+    begin
+       Tmp := I;
+       I := J; J := Tmp;      --  FLAG
+    end Swap;
+
+9.1.6.9 `Uncommented_BEGIN_In_Package_Bodies'
 .............................................
 
 Flags each package body with declarations and a statement part that
@@ -2290,6 +3679,27 @@ attached to the line containing the first statement.
 
 This rule has no parameters.
 
+Example
+.......
+
+    package body Foo is
+       procedure Proc (I : out Integer) is
+       begin
+          I := Var;
+       end Proc;
+
+       package body Inner is
+          procedure Inner_Proc (I : out Integer) is
+          begin
+             I := Inner_Var;
+          end  ;
+       begin  -- Inner
+          Inner_Var := 1;
+       end Inner;
+    begin                 --  FLAG
+       Var := Inner.Inner_Var + 1;
+    end Foo;
+
 9.1.7 Source Code Presentation
 ------------------------------
 
@@ -2302,7 +3712,21 @@ category.
 The rules in this section can be used to enforce specific usage
 patterns for a variety of language features.
 
-9.2.1 `Abstract_Type_Declarations'
+9.2.1 `Abort_Statements'
+------------------------
+
+Flag abort statements.
+
+This rule has no parameters.
+
+Example
+.......
+
+    if Flag then
+       abort T;    --  FLAG
+    end if;
+
+9.2.2 `Abstract_Type_Declarations'
 ----------------------------------
 
 Flag all declarations of abstract types. For an abstract private type,
@@ -2310,7 +3734,17 @@ both the private and full type declarations are flagged.
 
 This rule has no parameters.
 
-9.2.2 `Anonymous_Subtypes'
+Example
+.......
+
+    package Foo is
+       type Figure is abstract tagged private;              --  FLAG
+       procedure Move (X : in out Figure) is abstract;
+    private
+       type Figure is abstract tagged null record;          --  FLAG
+    end Foo;
+
+9.2.3 `Anonymous_Subtypes'
 --------------------------
 
 Flag all uses of anonymous subtypes except for the following:
@@ -2337,28 +3771,31 @@ subtype names there.
 An effect of this rule is that `for' loops such as the following are
 flagged (since `1..N' is formally a 'range'):
 
-    for I in 1 .. N loop
-       ...
-    end loop;
-
 Declaring an explicit subtype solves the problem:
-
-    subtype S is Integer range 1..N;
-    ...
-    for I in S loop
-       ...
-    end loop;
 
 This rule has no parameters.
 
-9.2.3 `Blocks'
+9.2.4 `Blocks'
 --------------
 
 Flag each block statement.
 
 This rule has no parameters.
 
-9.2.4 `Complex_Inlined_Subprograms'
+Example
+.......
+
+    if I /= J then
+       declare             --  FLAG
+          Tmp : Integer;
+       begin
+          TMP := I;
+          I   := J;
+          J   := Tmp;
+       end;
+    end if;
+
+9.2.5 `Complex_Inlined_Subprograms'
 -----------------------------------
 
 Flag a subprogram (or generic subprogram, or instantiation of a
@@ -2383,7 +3820,27 @@ This rule has the following (mandatory) parameter for the `+R' option:
      Positive integer specifying the maximum allowed total number of
      statements in the subprogram body.
 
-9.2.5 `Conditional_Expressions'
+Example
+.......
+
+    procedure Swap (I, J : in out Integer) with Inline => True;
+
+    procedure Swap (I, J : in out Integer) is   --  FLAG
+    begin
+
+       if I /= J then
+          declare
+             Tmp : Integer;
+          begin
+             TMP := I;
+             I   := J;
+             J   := Tmp;
+          end;
+       end if;
+
+    end Swap;
+
+9.2.6 `Conditional_Expressions'
 -------------------------------
 
 Flag use of conditional expression.
@@ -2456,7 +3913,13 @@ This rule has the following (optional) parameters for the `+R' option:
 
    * `Refined_Post'
 
-9.2.6 `Controlled_Type_Declarations'
+Example
+.......
+
+    Var1 : Integer := (if I > J then 1 else 0);  --  FLAG
+    Var2 : Integer := I + J;
+
+9.2.7 `Controlled_Type_Declarations'
 ------------------------------------
 
 Flag all declarations of controlled types. A declaration of a private
@@ -2468,7 +3931,14 @@ type that itself is not a descendant of a type declared in
 
 This rule has no parameters.
 
-9.2.7 `Declarations_In_Blocks'
+Example
+.......
+
+    with Ada.Finalization;
+    package Foo is
+       type Resource is new Ada.Finalization.Controlled with private;  --  FLAG
+
+9.2.8 `Declarations_In_Blocks'
 ------------------------------
 
 Flag all block statements containing local declarations. A `declare'
@@ -2477,7 +3947,20 @@ containing only pragmas and/or `use' clauses is not flagged.
 
 This rule has no parameters.
 
-9.2.8 `Deeply_Nested_Inlining'
+Example
+.......
+
+    if I /= J then
+       declare                       --  FLAG
+          Tmp : Integer;
+       begin
+          TMP := I;
+          I   := J;
+          J   := Tmp;
+       end;
+    end if;
+
+9.2.9 `Deeply_Nested_Inlining'
 ------------------------------
 
 Flag a subprogram (or generic subprogram) if pragma Inline has been
@@ -2495,8 +3978,39 @@ This rule has the following (mandatory) parameter for the `+R' option:
      Positive integer specifying the maximum level of nested calls to
      subprograms to which pragma Inline has been applied.
 
-9.2.9 `Default_Parameters'
---------------------------
+Example
+.......
+
+    procedure P1 (I : in out integer) with Inline => True;   --  FLAG
+    procedure P2 (I : in out integer) with Inline => True;
+    procedure P3 (I : in out integer) with Inline => True;
+    procedure P4 (I : in out integer) with Inline => True;
+
+    procedure P1 (I : in out integer) is
+    begin
+       I := I + 1;
+       P2 (I);
+    end;
+
+    procedure P2 (I : in out integer) is
+    begin
+       I := I + 1;
+       P3 (I);
+    end;
+
+    procedure P3 (I : in out integer) is
+    begin
+       I := I + 1;
+       P4 (I);
+    end;
+
+    procedure P4 (I : in out integer) is
+    begin
+       I := I + 1;
+    end;
+
+9.2.10 `Default_Parameters'
+---------------------------
 
 Flag all default expressions in parameters specifications. All parameter
 specifications are checked: in subprograms (including formal, generic
@@ -2505,7 +4019,13 @@ accept statements and entry bodies).
 
 This rule has no parameters.
 
-9.2.10 `Discriminated_Records'
+Example
+.......
+
+    procedure P (I : in out Integer; J : Integer := 0);   --  FLAG
+    procedure Q (I : in out Integer; J : Integer);
+
+9.2.11 `Discriminated_Records'
 ------------------------------
 
 Flag all declarations of record types with discriminants. Only the
@@ -2516,14 +4036,46 @@ are not checked.
 
 This rule has no parameters.
 
-9.2.11 `Explicit_Full_Discrete_Ranges'
+Example
+.......
+
+    type Idx is range 1 .. 100;
+    type Arr is array (Idx range <>) of Integer;
+    subtype Arr_10 is Arr (1 .. 10);
+
+    type Rec_1 (D : Idx) is record        --  FLAG
+       A : Arr (1 .. D);
+    end record;
+
+    type Rec_2 (D : Idx) is record        --  FLAG
+       B : Boolean;
+    end record;
+
+    type Rec_3 is record
+       B : Boolean;
+    end record;
+
+9.2.12 `Explicit_Full_Discrete_Ranges'
 --------------------------------------
 
 Flag each discrete range that has the form `A'First .. A'Last'.
 
 This rule has no parameters.
 
-9.2.12 `Expression_Functions'
+Example
+.......
+
+       subtype Idx is Integer range 1 .. 100;
+    begin
+       for J in Idx'First .. Idx'Last loop   --  FLAG
+          K := K + J;
+       end loop;
+
+       for J in Idx loop
+          L := L + J;
+       end loop;
+
+9.2.13 `Expression_Functions'
 -----------------------------
 
 Flag each expression function declared in a package specification
@@ -2532,7 +4084,15 @@ specifications).
 
 This rule has no parameters.
 
-9.2.13 `Fixed_Equality_Checks'
+Example
+.......
+
+    package Foo is
+
+       function F (I : Integer) return Integer is   --  FLAG
+         (if I > 0 then I - 1 else I + 1);
+
+9.2.14 `Fixed_Equality_Checks'
 ------------------------------
 
 Flag all calls to the predefined equality operations for fixed-point
@@ -2543,18 +4103,49 @@ renamings of the predefined equality operations.  Also, the '`='' and
 
 This rule has no parameters.
 
-9.2.14 `Float_Equality_Checks'
+Example
+.......
+
+    package Pack is
+         type Speed is delta 0.01 range 0.0 .. 10_000.0;
+         function Get_Speed return Speed;
+    end Pack;
+
+    with Pack; use Pack;
+    procedure Process is
+         Speed1 : Speed := Get_Speed;
+         Speed2 : Speed := Get_Speed;
+
+         Flag : Boolean := Speed1 = Speed2;     --  FLAG
+
+9.2.15 `Float_Equality_Checks'
 ------------------------------
 
 Flag all calls to the predefined equality operations for floating-point
-types.  Both '`='' and '`/='' operations are checked.  User-defined
-equality operations are not flagged, nor are uses of operators that are
+types and private types whose completions are floating-point types.
+Both '`='' and '`/='' operations are checked.  User-defined equality
+operations are not flagged, nor are uses of operators that are
 renamings of the predefined equality operations.  Also, the '`='' and
 '`/='' operations for fixed-point types are not flagged.
 
 This rule has no parameters.
 
-9.2.15 `Function_Style_Procedures'
+Example
+.......
+
+    package Pack is
+         type Speed is digits 0.01 range 0.0 .. 10_000.0;
+         function Get_Speed return Speed;
+    end Pack;
+
+    with Pack; use Pack;
+    procedure Process is
+         Speed1 : Speed := Get_Speed;
+         Speed2 : Speed := Get_Speed;
+
+         Flag : Boolean := Speed1 = Speed2;     --  FLAG
+
+9.2.16 `Function_Style_Procedures'
 ----------------------------------
 
 Flag each procedure that can be rewritten as a function. A procedure
@@ -2573,7 +4164,13 @@ flagged.
 
 This rule has no parameters.
 
-9.2.16 `Generics_In_Subprograms'
+Example
+.......
+
+    procedure Cannot_be_a_function (A, B : out Boolean);
+    procedure Can_be_a_function (A : out Boolean);           --  FLAG
+
+9.2.17 `Generics_In_Subprograms'
 --------------------------------
 
 Flag each declaration of a generic unit in a subprogram. Generic
@@ -2584,7 +4181,16 @@ subprogram body, the generic unit is flagged.
 
 This rule has no parameters.
 
-9.2.17 `Implicit_IN_Mode_Parameters'
+Example
+.......
+
+    procedure Proc is
+
+       generic                                --  FLAG
+          type FT is range <>;
+       function F_G (I : FT) return FT;
+
+9.2.18 `Implicit_IN_Mode_Parameters'
 ------------------------------------
 
 Flag each occurrence of a formal parameter with an implicit `in' mode.
@@ -2593,7 +4199,14 @@ Note that `access' parameters, although they technically behave like
 
 This rule has no parameters.
 
-9.2.18 `Improperly_Located_Instantiations'
+Example
+.......
+
+    procedure Proc1 (I :    Integer);          --  FLAG
+    procedure Proc2 (I : in Integer);
+    procedure Proc3 (I :    access Integer);
+
+9.2.19 `Improperly_Located_Instantiations'
 ------------------------------------------
 
 Flag all generic instantiations in library-level package specs
@@ -2604,7 +4217,14 @@ in the bodies of protected subprograms are flagged.
 
 This rule has no parameters.
 
-9.2.19 `Library_Level_Subprograms'
+Example
+.......
+
+    with Ada.Text_IO; use Ada.Text_IO;
+    procedure Proc is
+       package My_Int_IO is new Integer_IO (Integer);   --  FLAG
+
+9.2.20 `Library_Level_Subprograms'
 ----------------------------------
 
 Flag all library-level subprograms (including generic subprogram
@@ -2612,7 +4232,10 @@ instantiations).
 
 This rule has no parameters.
 
-9.2.20 `Membership_Tests'
+    with Ada.Text_IO; use Ada.Text_IO;
+    procedure Proc is                         --  FLAG
+
+9.2.21 `Membership_Tests'
 -------------------------
 
 Flag use of membership test expression.
@@ -2622,6 +4245,11 @@ This rule has the following (optional) parameters for the `+R' option:
 `Multi_Alternative_Only'
      Flag only those membership test expressions that have more than one
      membership choice in the membership choice list.
+
+`Float_Types_Only'
+     Flag only those membership test expressions that checks objects of
+     floating point type and private types whose completions are
+     floating-point types.
 
 `Except_Assertions'
      Do not flag a membership test expression if it is a subcomponent
@@ -2689,9 +4317,16 @@ This rule has the following (optional) parameters for the `+R' option:
 
    * `Refined_Post'
 
-These two parameters are independent on each other.
+These three parameters are independent on each other.
 
-9.2.21 `Non_Qualified_Aggregates'
+Example
+.......
+
+    procedure Proc (S : in out Speed) is
+    begin
+       if S in Low .. High then      --  FLAG
+
+9.2.22 `Non_Qualified_Aggregates'
 ---------------------------------
 
 Flag each non-qualified aggregate.  A non-qualified aggregate is an
@@ -2702,7 +4337,31 @@ anonymous array types are not flagged.
 
 This rule has no parameters.
 
-9.2.22 `Numeric_Indexing'
+Example
+.......
+
+    type Arr is array (1 .. 10) of Integer;
+
+    Var1 : Arr := (1 => 10, 2 => 20, others => 30);             --  FLAG
+    Var2 : array (1 .. 10) of Integer := (1 => 10, 2 => 20, others => 30);
+
+9.2.23 `Number_Declarations'
+----------------------------
+
+Number declarations are flagged.
+
+This rule has no parameters.
+
+Example
+.......
+
+    Num1 : constant := 13;                 --  FLAG
+    Num2 : constant := 1.3;                --  FLAG
+
+    Const1 : constant Integer := 13;
+    Const2 : constant Float := 1.3;
+
+9.2.24 `Numeric_Indexing'
 -------------------------
 
 Flag numeric literals, including those preceded by a predefined unary
@@ -2712,7 +4371,16 @@ Literals that are subcomponents of index expressions are not flagged
 
 This rule has no parameters.
 
-9.2.23 `Numeric_Literals'
+Example
+.......
+
+    procedure Proc is
+       type Arr is array (1 .. 10) of Integer;
+       Var : Arr;
+    begin
+       Var (1) := 10;       --  FLAG
+
+9.2.25 `Numeric_Literals'
 -------------------------
 
 Flag each use of a numeric literal except for the following:
@@ -2753,7 +4421,14 @@ and restores its default operation mode.  If the `+R' option
 subsequently appears, will be 1, and the check will not be limited by
 statements only.
 
-9.2.24 `Parameters_Out_Of_Order'
+Example
+.......
+
+    C1 : constant Integer := 10;
+    V1 :          Integer := C1;
+    V2 :          Integer := 20;      --  FLAG
+
+9.2.26 `Parameters_Out_Of_Order'
 --------------------------------
 
 Flag each subprogram and entry declaration whose formal parameters are
@@ -2784,7 +4459,12 @@ Subprogram renamings are not checked.
 
 This rule has no parameters.
 
-9.2.25 `Predicate_Testing'
+Example
+.......
+
+    procedure Proc1 (I : in out Integer; B : Boolean) is    --  FLAG
+
+9.2.27 `Predicate_Testing'
 --------------------------
 
 Flag a subtype mark if it denotes a subtype defined with (static or
@@ -2862,18 +4542,61 @@ This rule has the following (optional) parameters for the `+R' option:
 
    * `Refined_Post'
 
-9.2.26 `Representation_Specifications'
+Example
+.......
+
+    with Support; use Support;
+    package Pack is
+       subtype Even is Integer with Dynamic_Predicate => Even mod 2 = 0;
+
+       subtype Small_Even is Even range -100 .. 100;
+
+       B1 : Boolean := Ident (101) in Small_Even;      --  FLAG
+
+9.2.28 `Relative_Delay_Statements'
+----------------------------------
+
+Relative delay statements are flagged. Delay until statements are not
+flagged.
+
+This rule has no parameters.
+
+Example
+.......
+
+    if I > 0 then
+       delay until Current_Time + Big_Delay;
+    else
+       delay Small_Delay;                      --  FLAG
+    end if;
+
+9.2.29 `Representation_Specifications'
 --------------------------------------
 
 Flag each record representation clause, enumeration representation
 clause and representation attribute clause. Flag each aspect definition
 that defines a representation aspect. Also flag any pragma that is
-classifiead by the Ada Standard as a representation pragma, and the
+classified by the Ada Standard as a representation pragma, and the
 definition of the corresponding aspects.
 
 This rule has no parameters.
 
-9.2.27 `Quantified_Expressions'
+Example
+.......
+
+    type State         is (A,M,W,P);
+    type Mode          is (Fix, Dec, Exp, Signif);
+
+    type Byte_Mask     is array (0..7)  of Boolean
+      with Component_Size => 1;                                --  FLAG
+
+    type State_Mask    is array (State) of Boolean
+      with Component_Size => 1;                                --  FLAG
+
+    type Mode_Mask     is array (Mode)  of Boolean;
+    for Mode_Mask'Component_Size use 1;                        --  FLAG
+
+9.2.30 `Quantified_Expressions'
 -------------------------------
 
 Flag use of quantified expression.
@@ -2946,7 +4669,17 @@ This rule has the following (optional) parameters for the `+R' option:
 
    * `Refined_Post'
 
-9.2.28 `Raising_Predefined_Exceptions'
+Example
+.......
+
+    subtype Ind is Integer range 1 .. 10;
+    type Matrix is array (Ind, Ind) of Integer;
+
+    function Check_Matrix (M : Matrix) return Boolean is
+      (for some I in Ind =>                               --  FLAG
+         (for all J in Ind => M (I, J) = 0));             --  FLAG
+
+9.2.31 `Raising_Predefined_Exceptions'
 --------------------------------------
 
 Flag each `raise' statement that raises a predefined exception (i.e.,
@@ -2955,7 +4688,13 @@ one of the exceptions `Constraint_Error', `Numeric_Error',
 
 This rule has no parameters.
 
-9.2.29 `Subprogram_Access'
+Example
+.......
+
+    begin
+       raise Constraint_Error;    --  FLAG
+
+9.2.32 `Subprogram_Access'
 --------------------------
 
 Flag all constructs that belong to access_to_subprogram_definition
@@ -2964,7 +4703,16 @@ subprogram.
 
 This rule has no parameters.
 
-9.2.30 `Too_Many_Dependencies'
+Example
+.......
+
+    type Proc_A is access procedure ( I : Integer);       --  FLAG
+
+    procedure Proc
+      (I       : Integer;
+       Process : access procedure (J : in out Integer));  --  FLAG
+
+9.2.33 `Too_Many_Dependencies'
 ------------------------------
 
 Flag a library item or a subunit that immediately depends on more than
@@ -2978,7 +4726,19 @@ This rule has the following (mandatory) parameters for the `+R' option:
      Positive integer specifying the maximal number of dependencies when
      the library item or subunit is not flagged.
 
-9.2.31 `Unassigned_OUT_Parameters'
+Example
+.......
+
+    --  if rule parameter is 5 or smaller:
+    with Pack1;
+    with Pack2;
+    with Pack3;
+    with Pack4;
+    with Pack5;
+    with Pack6;
+    procedure Main is               --  FLAG
+
+9.2.34 `Unassigned_OUT_Parameters'
 ----------------------------------
 
 Flag procedures' `out' parameters that are not assigned.
@@ -3011,7 +4771,19 @@ This rule has no parameters.
      is not a replacement for rigorous check for uninitialized access
      provided by advanced static analysis tools.
 
-9.2.32 `Unconstrained_Array_Returns'
+Example
+.......
+
+    procedure Proc                --  FLAG
+      (I    : Integer;
+       Out1 : out Integer;
+       Out2 : out Integer)
+    is
+    begin
+       Out1 := I + 1;
+    end Proc;
+
+9.2.35 `Unconstrained_Array_Returns'
 ------------------------------------
 
 Flag each function returning an unconstrained array. Function
@@ -3029,6 +4801,30 @@ This rule has the following (optional) parameters for the `+R' option:
 `Except_String'
      Do not flag functions that return the predefined `String' type or
      a type derived from it, directly or indirectly.
+
+Example
+.......
+
+    type Arr is array (Integer range <>) of Integer;
+    subtype Arr_S is Arr (1 .. 10);
+
+    function F1 (I : Integer) return Arr;      --  FLAG
+    function F2 (I : Integer) return Arr_S;
+
+9.2.36 `Unconstrained_Arrays'
+-----------------------------
+
+Unconstrained array definitions are flagged.
+
+This rule has no parameters.
+
+Example
+.......
+
+    type Idx is range -100 .. 100;
+
+    type U_Arr is array (Idx range <>) of Integer;      --  FLAG
+    type C_Arr is array (Idx) of Integer;
 
 9.3 Metrics-Related Rules
 =========================
@@ -3073,6 +4869,28 @@ The Ada essential complexity metric is a McCabe cyclomatic complexity
 metric counted for the code that is reduced by excluding all the pure
 structural Ada control statements.
 
+Example
+.......
+
+    --  if the rule parameter is 3 or less
+    procedure Proc (I : in out Integer; S : String) is   --  FLAG
+    begin
+       if I in 1 .. 10 then
+          for J in S'Range loop
+
+             if S (J) = ' ' then
+                if I > 10 then
+                   exit;
+                else
+                   I := 10;
+                end if;
+             end if;
+
+             I := I + Character'Pos (S (J));
+          end loop;
+       end if;
+    end Proc;
+
 9.3.2 `Metrics_Cyclomatic_Complexity'
 -------------------------------------
 
@@ -3085,6 +4903,30 @@ The McCabe cyclomatic complexity metric is defined in
 complexity metric is to estimate the number of independent paths in the
 control flow graph that in turn gives the number of tests needed to
 satisfy paths coverage testing completeness criterion.
+
+Example
+.......
+
+    --  if the rule parameter is 6 or less
+    procedure Proc (I : in out Integer; S : String) is   --  FLAG
+    begin
+       if I in 1 .. 10 then
+          for J in S'Range loop
+
+             if S (J) = ' ' then
+                if I < 10 then
+                   I := 10;
+                end if;
+             end if;
+
+             I := I + Character'Pos (S (J));
+          end loop;
+       elsif S = "abs" then
+          if I > 0 then
+             I := I + 1;
+          end if;
+       end if;
+    end Proc;
 
 9.3.3 `Metrics_LSLOC'
 ---------------------
@@ -3101,6 +4943,23 @@ restrict the rule to specific constructs:
 
 `Subprograms'
      Check the rule for subprogram bodies only.
+
+Example
+.......
+
+    --  if the rule parameter is 20 or less
+    package Pack is                             --  FLAG
+       procedure Proc1 (I : in out Integer);
+       procedure Proc2 (I : in out Integer);
+       procedure Proc3 (I : in out Integer);
+       procedure Proc4 (I : in out Integer);
+       procedure Proc5 (I : in out Integer);
+       procedure Proc6 (I : in out Integer);
+       procedure Proc7 (I : in out Integer);
+       procedure Proc8 (I : in out Integer);
+       procedure Proc9 (I : in out Integer);
+       procedure Proc10 (I : in out Integer);
+    end Pack;
 
 9.4 SPARK Ada Rules
 ===================
@@ -3190,12 +5049,32 @@ not detected.
 
 This rule has no parameters.
 
+Example
+.......
+
+       procedure Proc (Flag_1 : Boolean; Flag_2 : Boolean; I : in out Integer) is
+       begin
+          if Flag_1 >= Flag_2 then     --  FLAG
+
 9.4.3 `Expanded_Loop_Exit_Names'
 --------------------------------
 
 Flag all expanded loop names in `exit' statements.
 
 This rule has no parameters.
+
+Example
+.......
+
+    procedure Proc (S : in out String) is
+    begin
+       Search : for J in S'Range loop
+          if S (J) = ' ' then
+             S (J) := '_';
+             exit Proc.Search;            --  FLAG
+          end if;
+       end loop Search;
+    end Proc;
 
 9.4.4 `Non_SPARK_Attributes'
 ----------------------------
@@ -3304,6 +5183,14 @@ other attribute is flagged.
 
 This rule has no parameters.
 
+Example
+.......
+
+    type Integer_A is access all Integer;
+
+    Var : aliased Integer := 1;
+    Var_A : Integer_A := Var'Access;  --  FLAG
+
 9.4.5 `Non_Tagged_Derived_Types'
 --------------------------------
 
@@ -3312,6 +5199,15 @@ part.
 
 This rule has no parameters.
 
+Example
+.......
+
+    type Coordinates is record
+       X, Y, Z : Float;
+    end record;
+
+    type Hidden_Coordinates is new Coordinates;   --  FLAG
+
 9.4.6 `Outer_Loop_Exits'
 ------------------------
 
@@ -3319,6 +5215,18 @@ Flag each `exit' statement containing a loop name that is not the name
 of the immediately enclosing `loop' statement.
 
 This rule has no parameters.
+
+Example
+.......
+
+    Outer : for J in S1'Range loop
+       for K in S2'Range loop
+          if S1 (J) = S2 (K) then
+             Detected := True;
+             exit Outer;                     --  FLAG
+          end if;
+       end loop;
+    end loop Outer;
 
 9.4.7 `Overloaded_Operators'
 ----------------------------
@@ -3330,12 +5238,29 @@ only renaming-as-declaration is checked
 
 This rule has no parameters.
 
+Example
+.......
+
+    type Rec is record
+       C1 : Integer;
+       C2 : Float;
+    end record;
+
+    function "<" (Left, Right : Rec) return Boolean;    --  FLAG
+
 9.4.8 `Slices'
 --------------
 
 Flag all uses of array slicing
 
 This rule has no parameters.
+
+Example
+.......
+
+    procedure Proc (S : in out String; L, R : Positive) is
+       Tmp : String := S (L .. R);        --  FLAG
+    begin
 
 9.4.9 `Universal_Ranges'
 ------------------------
@@ -3347,6 +5272,14 @@ one bound of a specific type (such as `1 .. N', where `N' is a variable
 or an expression of non-universal type) are not flagged.
 
 This rule has no parameters.
+
+Example
+.......
+
+    L : Positive := 1;
+
+    S1 : String (L .. 10);
+    S2 : String (1 .. 10);     --  FLAG
 
 10 Example of `gnatcheck' Usage
 *******************************
@@ -3512,171 +5445,205 @@ have the following content:
 This section contains an alphabetized list of all the predefined
 GNATcheck rules.
 
-   * *note Abstract_Type_Declarations: b4.
+   * *note Abort_Statements: cc.
 
-   * *note Anonymous_Arrays: 60.
+   * *note Abstract_Type_Declarations: ce.
 
-   * *note Anonymous_Subtypes: b6.
+   * *note Address_Specifications_For_Initialized_Objects: 66.
 
-   * *note Binary_Case_Statements: 61.
+   * *note Address_Specifications_For_Local_Objects: 67.
 
-   * *note Blocks: b9.
+   * *note Anonymous_Arrays: 6a.
 
-   * *note Boolean_Relational_Operators: ff.
+   * *note Anonymous_Subtypes: d1.
 
-   * *note Complex_Inlined_Subprograms: ba.
+   * *note Binary_Case_Statements: 6b.
 
-   * *note Conditional_Expressions: bd.
+   * *note Bit_Records_Without_Layout_Definition: 44.
+
+   * *note Blocks: d3.
+
+   * *note Boolean_Relational_Operators: 11f.
+
+   * *note Complex_Inlined_Subprograms: d5.
+
+   * *note Conditional_Expressions: d7.
 
    * *note Constructors: 2c.
 
-   * *note Controlled_Type_Declarations: bf.
+   * *note Controlled_Type_Declarations: d9.
 
-   * *note Declarations_In_Blocks: c1.
+   * *note Declarations_In_Blocks: db.
 
    * *note Deep_Inheritance_Hierarchies: 2e.
 
-   * *note Deep_Library_Hierarchy: 53.
+   * *note Deep_Library_Hierarchy: 5a.
 
-   * *note Deeply_Nested_Generics: 56.
+   * *note Deeply_Nested_Generics: 5c.
 
-   * *note Deeply_Nested_Inlining: c3.
+   * *note Deeply_Nested_Inlining: dd.
 
-   * *note Default_Parameters: c5.
+   * *note Default_Parameters: df.
 
-   * *note Default_Values_For_Record_Components: 64.
+   * *note Default_Values_For_Record_Components: 6e.
 
-   * *note Deriving_From_Predefined_Type: 66.
+   * *note Deriving_From_Predefined_Type: 6f.
 
    * *note Direct_Calls_To_Primitives: 2f.
 
-   * *note Discriminated_Records: c7.
+   * *note Discriminated_Records: e0.
 
    * *note Downward_View_Conversions: 31.
 
-   * *note Enumeration_Ranges_In_CASE_Statements: 68.
+   * *note Enumeration_Ranges_In_CASE_Statements: 71.
 
-   * *note Enumeration_Representation_Clauses: 6a.
+   * *note Enumeration_Representation_Clauses: 74.
 
-   * *note Exceptions_As_Control_Flow: 6c.
+   * *note Exceptions_As_Control_Flow: 76.
 
-   * *note Exits_From_Conditional_Loops: 6d.
+   * *note Exits_From_Conditional_Loops: 78.
 
-   * *note EXIT_Statements_With_No_Loop_Name: 6f.
+   * *note EXIT_Statements_With_No_Loop_Name: 7a.
 
-   * *note Expanded_Loop_Exit_Names: 100.
+   * *note Expanded_Loop_Exit_Names: 120.
 
-   * *note Explicit_Full_Discrete_Ranges: c8.
+   * *note Explicit_Full_Discrete_Ranges: e2.
 
-   * *note Expression_Functions: cb.
+   * *note Expression_Functions: e5.
 
-   * *note Fixed_Equality_Checks: cc.
+   * *note Fixed_Equality_Checks: e7.
 
-   * *note Float_Equality_Checks: ce.
+   * *note Float_Equality_Checks: e9.
 
-   * *note Forbidden_Attributes: 44.
+   * *note Forbidden_Attributes: 46.
 
-   * *note Forbidden_Pragmas: 46.
+   * *note Forbidden_Pragmas: 48.
 
-   * *note Function_Style_Procedures: d1.
+   * *note Function_Style_Procedures: eb.
 
-   * *note Generics_In_Subprograms: d3.
+   * *note Generics_In_Subprograms: ec.
 
-   * *note GOTO_Statements: 74.
+   * *note GOTO_Statements: 7e.
 
-   * *note Implicit_IN_Mode_Parameters: d5.
+   * *note Implicit_IN_Mode_Parameters: ee.
 
-   * *note Implicit_SMALL_For_Fixed_Point_Types: 47.
+   * *note Implicit_SMALL_For_Fixed_Point_Types: 4a.
 
-   * *note Improperly_Located_Instantiations: d7.
+   * *note Improperly_Located_Instantiations: f0.
 
-   * *note Improper_Returns: 76.
+   * *note Improper_Returns: 7f.
 
-   * *note Maximum_Parameters: 78.
+   * *note Incomplete_Representation_Specifications: 4c.
 
-   * *note Library_Level_Subprograms: d9.
+   * *note Maximum_Parameters: 84.
 
-   * *note Local_Packages: 58.
+   * *note Library_Level_Subprograms: f3.
 
-   * *note Metrics_Cyclomatic_Complexity: f7.
+   * *note Local_Packages: 5e.
 
-   * *note Metrics_Essential_Complexity: f5.
+   * *note Local_USE_Clauses: 82.
 
-   * *note Metrics_LSLOC: fa.
+   * *note Metrics_Cyclomatic_Complexity: 117.
 
-   * *note Misnamed_Controlling_Parameters: ab.
+   * *note Metrics_Essential_Complexity: 115.
 
-   * *note Identifier_Suffixes: aa.
+   * *note Metrics_LSLOC: 119.
 
-   * *note Membership_Tests: da.
+   * *note Misnamed_Controlling_Parameters: bf.
+
+   * *note Identifier_Suffixes: bc.
+
+   * *note Max_Identifier_Length: bd.
+
+   * *note Membership_Tests: f4.
+
+   * *note Misplaced_Representation_Items: 85.
 
    * *note Multiple_Entries_In_Protected_Definitions: 25.
 
-   * *note Name_Clashes: ad.
+   * *note Name_Clashes: c1.
 
-   * *note Nested_Subprograms: 7a.
+   * *note Nested_Subprograms: 87.
+
+   * *note No_Explicit_Real_Range: 4e.
 
    * *note No_Inherited_Classwide_Pre: 33.
 
-   * *note Non_Qualified_Aggregates: dd.
+   * *note No_Scalar_Storage_Order_Specified: 4f.
 
-   * *note Non_Short_Circuit_Operators: 7c.
+   * *note Non_Qualified_Aggregates: f6.
 
-   * *note Non_SPARK_Attributes: 103.
+   * *note Non_Short_Circuit_Operators: 89.
 
-   * *note Non_Tagged_Derived_Types: 105.
+   * *note Non_SPARK_Attributes: 122.
 
-   * *note Non_Visible_Exceptions: 5a.
+   * *note Non_Tagged_Derived_Types: 125.
 
-   * *note Null_Paths: 7e.
+   * *note Non_Visible_Exceptions: 5f.
 
-   * *note Numeric_Literals: e0.
+   * *note Number_Declarations: f8.
 
-   * *note Objects_Of_Anonymous_Types: 7f.
+   * *note Null_Paths: 8c.
 
-   * *note OTHERS_In_Aggregates: 81.
+   * *note Numeric_Indexing: fb.
 
-   * *note OTHERS_In_CASE_Statements: 83.
+   * *note Numeric_Literals: fc.
 
-   * *note OTHERS_In_Exception_Handlers: 86.
+   * *note Object_Declarations_Out_Of_Order: c4.
 
-   * *note Outer_Loop_Exits: 106.
+   * *note Objects_Of_Anonymous_Types: 8e.
 
-   * *note Overloaded_Operators: 108.
+   * *note One_Construct_Per_Line: c6.
 
-   * *note Overly_Nested_Control_Structures: 87.
+   * *note OTHERS_In_Aggregates: 90.
 
-   * *note Parameters_Out_Of_Order: e2.
+   * *note OTHERS_In_CASE_Statements: 91.
 
-   * *note POS_On_Enumeration_Types: 89.
+   * *note OTHERS_In_Exception_Handlers: 94.
 
-   * *note Positional_Actuals_For_Defaulted_Generic_Parameters: 8c.
+   * *note Outbound_Protected_Assignments: 95.
 
-   * *note Positional_Actuals_For_Defaulted_Parameters: 8d.
+   * *note Outer_Loop_Exits: 127.
 
-   * *note Positional_Components: 8f.
+   * *note Overloaded_Operators: 129.
 
-   * *note Positional_Generic_Parameters: 91.
+   * *note Overly_Nested_Control_Structures: 97.
 
-   * *note Positional_Parameters: 93.
+   * *note Parameters_Out_Of_Order: fe.
 
-   * *note Predicate_Testing: e5.
+   * *note POS_On_Enumeration_Types: 9a.
 
-   * *note Predefined_Numeric_Types: 4b.
+   * *note Positional_Actuals_For_Defaulted_Generic_Parameters: 9b.
 
-   * *note Printable_ASCII: 4e.
+   * *note Positional_Actuals_For_Defaulted_Parameters: 9d.
 
-   * *note Representation_Specifications: e7.
+   * *note Positional_Components: a0.
 
-   * *note Quantified_Expressions: e9.
+   * *note Positional_Generic_Parameters: a2.
 
-   * *note Raising_External_Exceptions: 5b.
+   * *note Positional_Parameters: a3.
 
-   * *note Raising_Predefined_Exceptions: eb.
+   * *note Predicate_Testing: 101.
 
-   * *note Separate_Numeric_Error_Handlers: 4f.
+   * *note Predefined_Numeric_Types: 51.
 
-   * *note Slices: 10b.
+   * *note Printable_ASCII: 53.
+
+   * *note Relative_Delay_Statements: 102.
+
+   * *note Representation_Specifications: 104.
+
+   * *note Quantified_Expressions: 106.
+
+   * *note Raising_External_Exceptions: 61.
+
+   * *note Raising_Predefined_Exceptions: 108.
+
+   * *note Separate_Numeric_Error_Handlers: 55.
+
+   * *note Single_Value_Enumeration_Types: a7.
+
+   * *note Slices: 12b.
 
    * *note Specific_Parent_Type_Invariant: 38.
 
@@ -3684,35 +5651,37 @@ GNATcheck rules.
 
    * *note Specific_Type_Invariants: 39.
 
-   * *note Subprogram_Access: ec.
+   * *note Subprogram_Access: 10a.
 
-   * *note Too_Many_Dependencies: ef.
+   * *note Too_Many_Dependencies: 10d.
 
    * *note Too_Many_Primitives: 3e.
 
    * *note Too_Many_Parents: 3c.
 
-   * *note Unassigned_OUT_Parameters: f1.
+   * *note Unassigned_OUT_Parameters: 10f.
 
-   * *note Uncommented_BEGIN_In_Package_Bodies: b0.
+   * *note Uncommented_BEGIN_In_Package_Bodies: c7.
 
-   * *note Recursive_Subprograms: 96.
+   * *note Recursive_Subprograms: a6.
 
-   * *note Unchecked_Address_Conversions: 97.
+   * *note Unchecked_Address_Conversions: a9.
 
-   * *note Unchecked_Conversions_As_Actuals: 9a.
+   * *note Unchecked_Conversions_As_Actuals: ac.
 
-   * *note Unconditional_Exits: 9b.
+   * *note Unconditional_Exits: ae.
 
-   * *note Unconstrained_Array_Returns: f3.
+   * *note Unconstrained_Array_Returns: 110.
 
-   * *note Uninitialized_Global_Variables: 9d.
+   * *note Unconstrained_Arrays: 112.
 
-   * *note Universal_Ranges: 10c.
+   * *note Uninitialized_Global_Variables: b0.
 
-   * *note Unnamed_Blocks_And_Loops: 9f.
+   * *note Universal_Ranges: 12c.
 
-   * *note USE_PACKAGE_Clauses: a1.
+   * *note Unnamed_Blocks_And_Loops: b1.
+
+   * *note USE_PACKAGE_Clauses: b3.
 
    * *note Visible_Components: 3f.
 
@@ -4174,167 +6143,183 @@ permit their use in free software.
 Index
 *****
 
-+R (gnatcheck):                                See 5.        (line  490)
--a:                                            See 4.        (line  364)
--check-redefinition:                           See 4.        (line  439)
--files:                                        See 4.        (line  424)
--from (gnatcheck):                             See 5.        (line  508)
--h:                                            See 4.        (line  378)
--help:                                         See 4.        (line  324)
--ignore:                                       See 4.        (line  431)
--include-file=file:                            See 4.        (line  444)
--incremental gnatpp:                           See 4.        (line  369)
--j:                                            See 4.        (line  381)
--l:                                            See 4.        (line  388)
--log:                                          See 4.        (line  394)
--m:                                            See 4.        (line  401)
--no_objects_dir:                               See 4.        (line  356)
--nt:                                           See 4.        (line  420)
--o:                                            See 4.        (line  454)
--ox:                                           See 4.        (line  457)
--P file:                                       See 4.        (line  327)
--q:                                            See 4.        (line  407)
--R (gnatcheck):                                See 5.        (line  504)
--RTS=rts-path:                                 See 4.        (line  360)
--s:                                            See 4.        (line  412)
--show-rule:                                    See 4.        (line  435)
--subdirs=dir:                                  See 4.        (line  349)
--t:                                            See 4.        (line  447)
--U:                                            See 4.        (line  332)
--U main_unit:                                  See 4.        (line  338)
--v:                                            See 4.        (line  450)
--version:                                      See 4.        (line  319)
--write-rules:                                  See 4.        (line  461)
--xml:                                          See 4.        (line  416)
--Xname=value:                                  See 4.        (line  344)
-Abstract_Type_Declarations:                    See 9.2.1.    (line 2308)
-Annotated_Comments:                            See 9.4.1.    (line 3114)
-Anonymous_Arrays:                              See 9.1.5.1.  (line 1266)
-Anonymous_Subtypes:                            See 9.2.2.    (line 2316)
-ASIS:                                          See 2.        (line  219)
-Binary_Case_Statements:                        See 9.1.5.2.  (line 1274)
-Blocks:                                        See 9.2.3.    (line 2357)
-Boolean_Relational_Operators:                  See 9.4.2.    (line 3181)
-Coding standard file (for gnatcheck):          See 5.        (line  526)
-Complex_Inlined_Subprograms:                   See 9.2.4.    (line 2364)
-Conditional_Expressions:                       See 9.2.5.    (line 2389)
-Constructors:                                  See 9.1.2.1.  (line  810)
-Controlled_Type_Declarations:                  See 9.2.6.    (line 2462)
-Declarations_In_Blocks:                        See 9.2.7.    (line 2474)
-Deep_Inheritance_Hierarchies:                  See 9.1.2.2.  (line  819)
-Deep_Library_Hierarchy:                        See 9.1.4.1.  (line 1186)
-Deeply_Nested_Generics:                        See 9.1.4.2.  (line 1201)
-Deeply_Nested_Inlining:                        See 9.2.8.    (line 2483)
-Default_Parameters:                            See 9.2.9.    (line 2501)
-Default_Values_For_Record_Components:          See 9.1.5.3.  (line 1283)
-Deriving_From_Predefined_Type:                 See 9.1.5.4.  (line 1292)
-Direct_Calls_To_Primitives:                    See 9.1.2.3.  (line  854)
-Discriminated_Records:                         See 9.2.10.   (line 2511)
-Downward_View_Conversions:                     See 9.1.2.4.  (line  876)
-Enumeration_Ranges_In_CASE_Statements:         See 9.1.5.5.  (line 1301)
-Enumeration_Representation_Clauses:            See 9.1.5.6.  (line 1318)
-Exceptions_As_Control_Flow:                    See 9.1.5.7.  (line 1325)
-EXIT_Statements_With_No_Loop_Name:             See 9.1.5.9.  (line 1345)
-Exits_From_Conditional_Loops:                  See 9.1.5.8.  (line 1334)
-Expanded_Loop_Exit_Names:                      See 9.4.3.    (line 3196)
-Explicit_Full_Discrete_Ranges:                 See 9.2.11.   (line 2522)
-Expression_Functions:                          See 9.2.12.   (line 2529)
-Feature usage related rules:                   See 9.2.      (line 2302)
-Fixed_Equality_Checks:                         See 9.2.13.   (line 2538)
-Float_Equality_Checks:                         See 9.2.14.   (line 2549)
-Forbidden_Attributes:                          See 9.1.3.1.  (line  974)
-Forbidden_Pragmas:                             See 9.1.3.2.  (line 1041)
-Format of the Report File:                     See 3.        (line  273)
-Function_Style_Procedures:                     See 9.2.15.   (line 2560)
-Generics_In_Subprograms:                       See 9.2.16.   (line 2579)
-Global_Variables:                              See 9.1.5.10. (line 1353)
-gnatcheck annotations rules:                   See 8.2.      (line  716)
-GOTO_Statements:                               See 9.1.5.11. (line 1367)
-Identifier_Casing:                             See 9.1.6.1.  (line 1664)
-Identifier_Prefixes:                           See 9.1.6.2.  (line 1807)
-Identifier_Suffixes:                           See 9.1.6.3.  (line 2023)
-Implicit_IN_Mode_Parameters:                   See 9.2.17.   (line 2590)
-Implicit_SMALL_For_Fixed_Point_Types:          See 9.1.3.3.  (line 1113)
-Improper_Returns:                              See 9.1.5.12. (line 1374)
-Improperly_Located_Instantiations:             See 9.2.18.   (line 2599)
-Library_Level_Subprograms:                     See 9.2.19.   (line 2610)
-Local_Packages:                                See 9.1.4.3.  (line 1216)
-Maximum_Parameters:                            See 9.1.5.13. (line 1387)
-Membership_Tests:                              See 9.2.20.   (line 2618)
-Metrics-related rules:                         See 9.3.      (line 3036)
-Metrics_Cyclomatic_Complexity:                 See 9.3.2.    (line 3079)
-Metrics_Essential_Complexity:                  See 9.3.1.    (line 3068)
-Metrics_LSLOC:                                 See 9.3.3.    (line 3092)
-Misnamed_Controlling_Parameters:               See 9.1.6.4.  (line 2229)
-Multiple_Entries_In_Protected_Definitions:     See 9.1.1.1.  (line  780)
-Name_Clashes:                                  See 9.1.6.5.  (line 2244)
-Nested_Subprograms:                            See 9.1.5.14. (line 1407)
-No_Inherited_Classwide_Pre:                    See 9.1.2.5.  (line  883)
-No_Scalar_Storage_Order_Specified:             See 9.1.3.4.  (line 1123)
-Non_Qualified_Aggregates:                      See 9.2.21.   (line 2697)
-Non_Short_Circuit_Operators:                   See 9.1.5.15. (line 1421)
-Non_SPARK_Attributes:                          See 9.4.4.    (line 3203)
-Non_Tagged_Derived_Types:                      See 9.4.5.    (line 3310)
-Non_Visible_Exceptions rule:                   See 9.1.4.4.  (line 1224)
-Null_Paths:                                    See 9.1.5.16. (line 1431)
-Numeric_Indexing:                              See 9.2.22.   (line 2708)
-Numeric_Literals:                              See 9.2.23.   (line 2718)
-Object-Orientation related rules:              See 9.1.2.    (line  804)
-Objects_Of_Anonymous_Types:                    See 9.1.5.17. (line 1439)
-OTHERS_In_Aggregates:                          See 9.1.5.18. (line 1450)
-OTHERS_In_CASE_Statements:                     See 9.1.5.19. (line 1464)
-OTHERS_In_Exception_Handlers:                  See 9.1.5.20. (line 1471)
-Outer_Loop_Exits:                              See 9.4.6.    (line 3318)
-Overloaded_Operators:                          See 9.4.7.    (line 3326)
-Overly_Nested_Control_Structures:              See 9.1.5.21. (line 1478)
-Parameters_Out_Of_Order:                       See 9.2.24.   (line 2759)
-Portability-related rules:                     See 9.1.3.    (line  968)
-POS_On_Enumeration_Types:                      See 9.1.5.22. (line 1512)
-Positional_Actuals_For_Defaulted_Generic_Parameters:See 9.1.5.23.
-                                                             (line 1520)
-Positional_Actuals_For_Defaulted_Parameters:   See 9.1.5.24. (line 1528)
-Positional_Components:                         See 9.1.5.25. (line 1537)
-Positional_Generic_Parameters:                 See 9.1.5.26. (line 1545)
-Positional_Parameters:                         See 9.1.5.27. (line 1554)
-Predefined Rules:                              See 9.        (line  750)
-Predefined_Numeric_Types:                      See 9.1.3.5.  (line 1134)
-Predicate_Testing:                             See 9.2.25.   (line 2790)
-Printable_ASCII:                               See 9.1.3.6.  (line 1157)
-Program Structure related rules:               See 9.1.4.    (line 1180)
-Programming Practice related rules:            See 9.1.5.    (line 1260)
-Quantified_Expressions:                        See 9.2.27.   (line 2879)
-Raising_External_Exceptions:                   See 9.1.4.5.  (line 1250)
-Raising_Predefined_Exceptions:                 See 9.2.28.   (line 2952)
-Readability-related rules:                     See 9.1.6.    (line 1658)
-Recursive_Subprograms:                         See 9.1.5.28. (line 1584)
-Representation_Specifications:                 See 9.2.26.   (line 2868)
-Rule exemption:                                See 8.        (line  638)
-Separate_Numeric_Error_Handlers:               See 9.1.3.7.  (line 1170)
-Slices:                                        See 9.4.8.    (line 3336)
-Source code presentation related rules:        See 9.1.7.    (line 2296)
-SPARK Ada related rules:                       See 9.4.      (line 3108)
-Specific_Parent_Type_Invariant:                See 9.1.2.7.  (line  900)
-Specific_Pre_Post:                             See 9.1.2.6.  (line  892)
-Specific_Type_Invariants:                      See 9.1.2.8.  (line  910)
-Style-related rules:                           See 9.1.      (line  767)
-Subprogram_Access:                             See 9.2.29.   (line 2961)
-Tasking-related rules:                         See 9.1.1.    (line  774)
-Too_Many_Dependencies:                         See 9.2.30.   (line 2970)
-Too_Many_Parents:                              See 9.1.2.9.  (line  921)
-Too_Many_Primitives:                           See 9.1.2.10. (line  937)
-Unassigned_OUT_Parameters:                     See 9.2.31.   (line 2984)
-Unchecked_Address_Conversions:                 See 9.1.5.29. (line 1604)
-Unchecked_Conversions_As_Actuals:              See 9.1.5.30. (line 1618)
-Uncommented_BEGIN_In_Package_Bodies:           See 9.1.6.6.  (line 2280)
-Unconditional_Exits:                           See 9.1.5.31. (line 1627)
-Unconstrained_Array_Returns:                   See 9.2.32.   (line 3017)
-Uninitialized_Global_Variables:                See 9.1.5.32. (line 1634)
-Universal_Ranges rule:                         See 9.4.9.    (line 3343)
-Unnamed_Blocks_And_Loops:                      See 9.1.5.33. (line 1644)
-USE_PACKAGE_Clauses:                           See 9.1.5.34. (line 1651)
-Using pragma Annotate to control rule exemption:See 8.1.     (line  659)
-Visible_Components:                            See 9.1.2.11. (line  952)
-Volatile_Objects_Without_Address_Clauses:      See 9.1.1.2.  (line  791)
++R (gnatcheck):                                See 5.        (line  506)
+-a:                                            See 4.        (line  380)
+-check-redefinition:                           See 4.        (line  455)
+-files:                                        See 4.        (line  440)
+-from (gnatcheck):                             See 5.        (line  524)
+-h:                                            See 4.        (line  394)
+-help:                                         See 4.        (line  340)
+-ignore:                                       See 4.        (line  447)
+-include-file=file:                            See 4.        (line  460)
+-incremental gnatpp:                           See 4.        (line  385)
+-j:                                            See 4.        (line  397)
+-l:                                            See 4.        (line  404)
+-log:                                          See 4.        (line  410)
+-m:                                            See 4.        (line  417)
+-no_objects_dir:                               See 4.        (line  372)
+-nt:                                           See 4.        (line  436)
+-o:                                            See 4.        (line  470)
+-ox:                                           See 4.        (line  473)
+-P file:                                       See 4.        (line  343)
+-q:                                            See 4.        (line  423)
+-R (gnatcheck):                                See 5.        (line  520)
+-RTS=rts-path:                                 See 4.        (line  376)
+-s:                                            See 4.        (line  428)
+-show-rule:                                    See 4.        (line  451)
+-subdirs=dir:                                  See 4.        (line  365)
+-t:                                            See 4.        (line  463)
+-U:                                            See 4.        (line  348)
+-U main_unit:                                  See 4.        (line  354)
+-v:                                            See 4.        (line  466)
+-version:                                      See 4.        (line  335)
+-write-rules:                                  See 4.        (line  477)
+-xml:                                          See 4.        (line  432)
+-Xname=value:                                  See 4.        (line  360)
+Abort_Statements:                              See 9.2.1.    (line 3718)
+Abstract_Type_Declarations:                    See 9.2.2.    (line 3732)
+Address_Specifications_For_Initialized_Objects:See 9.1.5.1.  (line 1824)
+Address_Specifications_For_Local_Objects:      See 9.1.5.2.  (line 1841)
+Annotated_Comments:                            See 9.4.1.    (line 4973)
+Anonymous_Arrays:                              See 9.1.5.3.  (line 1865)
+Anonymous_Subtypes:                            See 9.2.3.    (line 3750)
+ASIS:                                          See 2.        (line  235)
+Binary_Case_Statements:                        See 9.1.5.4.  (line 1880)
+Bit_Records_Without_Layout_Definition:         See 9.1.3.1.  (line 1300)
+Blocks:                                        See 9.2.4.    (line 3781)
+Boolean_Relational_Operators:                  See 9.4.2.    (line 5040)
+Coding standard file (for gnatcheck):          See 5.        (line  542)
+Complex_Inlined_Subprograms:                   See 9.2.5.    (line 3801)
+Conditional_Expressions:                       See 9.2.6.    (line 3846)
+Constructors:                                  See 9.1.2.1.  (line  857)
+Controlled_Type_Declarations:                  See 9.2.7.    (line 3925)
+Declarations_In_Blocks:                        See 9.2.8.    (line 3944)
+Deep_Inheritance_Hierarchies:                  See 9.1.2.2.  (line  877)
+Deep_Library_Hierarchy:                        See 9.1.4.1.  (line 1662)
+Deeply_Nested_Generics:                        See 9.1.4.2.  (line 1684)
+Deeply_Nested_Inlining:                        See 9.2.9.    (line 3966)
+Default_Parameters:                            See 9.2.10.   (line 4015)
+Default_Values_For_Record_Components:          See 9.1.5.5.  (line 1899)
+Deriving_From_Predefined_Type:                 See 9.1.5.6.  (line 1923)
+Direct_Calls_To_Primitives:                    See 9.1.2.3.  (line  924)
+Discriminated_Records:                         See 9.2.11.   (line 4031)
+Downward_View_Conversions:                     See 9.1.2.4.  (line  988)
+Enumeration_Ranges_In_CASE_Statements:         See 9.1.5.7.  (line 1942)
+Enumeration_Representation_Clauses:            See 9.1.5.8.  (line 1976)
+Exceptions_As_Control_Flow:                    See 9.1.5.9.  (line 1989)
+EXIT_Statements_With_No_Loop_Name:             See 9.1.5.11. (line 2039)
+Exits_From_Conditional_Loops:                  See 9.1.5.10. (line 2014)
+Expanded_Loop_Exit_Names:                      See 9.4.3.    (line 5062)
+Explicit_Full_Discrete_Ranges:                 See 9.2.12.   (line 4061)
+Expression_Functions:                          See 9.2.13.   (line 4081)
+Feature usage related rules:                   See 9.2.      (line 3712)
+Fixed_Equality_Checks:                         See 9.2.14.   (line 4098)
+Float_Equality_Checks:                         See 9.2.15.   (line 4124)
+Forbidden_Attributes:                          See 9.1.3.2.  (line 1320)
+Forbidden_Pragmas:                             See 9.1.3.3.  (line 1401)
+Format of the Report File:                     See 3.        (line  289)
+Function_Style_Procedures:                     See 9.2.16.   (line 4151)
+Generics_In_Subprograms:                       See 9.2.17.   (line 4176)
+Global_Variables:                              See 9.1.5.12. (line 2059)
+gnatcheck annotations rules:                   See 8.2.      (line  732)
+GOTO_Statements:                               See 9.1.5.13. (line 2083)
+Identifier_Casing:                             See 9.1.6.1.  (line 2916)
+Identifier_Prefixes:                           See 9.1.6.2.  (line 3071)
+Identifier_Suffixes:                           See 9.1.6.3.  (line 3302)
+Implicit_IN_Mode_Parameters:                   See 9.2.18.   (line 4196)
+Implicit_SMALL_For_Fixed_Point_Types:          See 9.1.3.4.  (line 1487)
+Improper_Returns:                              See 9.1.5.14. (line 2102)
+Improperly_Located_Instantiations:             See 9.2.19.   (line 4212)
+Incomplete_Representation_Specifications:      See 9.1.3.5.  (line 1509)
+Library_Level_Subprograms:                     See 9.2.20.   (line 4230)
+Local_Packages:                                See 9.1.4.3.  (line 1717)
+Local_USE_Clauses:                             See 9.1.5.15. (line 2139)
+Max_Identifier_Length:                         See 9.1.6.4.  (line 3534)
+Maximum_Parameters:                            See 9.1.5.16. (line 2160)
+Membership_Tests:                              See 9.2.21.   (line 4241)
+Metrics-related rules:                         See 9.3.      (line 4832)
+Metrics_Cyclomatic_Complexity:                 See 9.3.2.    (line 4897)
+Metrics_Essential_Complexity:                  See 9.3.1.    (line 4864)
+Metrics_LSLOC:                                 See 9.3.3.    (line 4934)
+Misnamed_Controlling_Parameters:               See 9.1.6.5.  (line 3549)
+Misplaced_Representation_Items:                See 9.1.5.17. (line 2198)
+Multiple_Entries_In_Protected_Definitions:     See 9.1.1.1.  (line  796)
+Name_Clashes:                                  See 9.1.6.6.  (line 3574)
+Nested_Subprograms:                            See 9.1.5.18. (line 2234)
+No_Explicit_Real_Range:                        See 9.1.3.6.  (line 1532)
+No_Inherited_Classwide_Pre:                    See 9.1.2.5.  (line 1028)
+No_Scalar_Storage_Order_Specified:             See 9.1.3.7.  (line 1547)
+Non_Qualified_Aggregates:                      See 9.2.22.   (line 4332)
+Non_Short_Circuit_Operators:                   See 9.1.5.19. (line 2265)
+Non_SPARK_Attributes:                          See 9.4.4.    (line 5082)
+Non_Tagged_Derived_Types:                      See 9.4.5.    (line 5197)
+Non_Visible_Exceptions:                        See 9.1.4.4.  (line 1734)
+Null_Paths:                                    See 9.1.5.20. (line 2283)
+Number_Declarations:                           See 9.2.23.   (line 4351)
+Numeric_Indexing:                              See 9.2.24.   (line 4367)
+Numeric_Literals:                              See 9.2.25.   (line 4386)
+Object-Orientation related rules:              See 9.1.2.    (line  851)
+Object_Declarations_Out_Of_Order:              See 9.1.6.7.  (line 3615)
+Objects_Of_Anonymous_Types:                    See 9.1.5.21. (line 2313)
+One_Construct_Per_Line:                        See 9.1.6.8.  (line 3631)
+OTHERS_In_Aggregates:                          See 9.1.5.22. (line 2345)
+OTHERS_In_CASE_Statements:                     See 9.1.5.23. (line 2393)
+OTHERS_In_Exception_Handlers:                  See 9.1.5.24. (line 2412)
+Outbound_Protected_Assignments:                See 9.1.5.25. (line 2429)
+Outer_Loop_Exits:                              See 9.4.6.    (line 5214)
+Overloaded_Operators:                          See 9.4.7.    (line 5234)
+Overly_Nested_Control_Structures:              See 9.1.5.26. (line 2467)
+Parameters_Out_Of_Order:                       See 9.2.26.   (line 4434)
+Portability-related rules:                     See 9.1.3.    (line 1294)
+POS_On_Enumeration_Types:                      See 9.1.5.27. (line 2519)
+Positional_Actuals_For_Defaulted_Generic_Parameters:See 9.1.5.28.
+                                                             (line 2540)
+Positional_Actuals_For_Defaulted_Parameters:   See 9.1.5.29. (line 2579)
+Positional_Components:                         See 9.1.5.30. (line 2599)
+Positional_Generic_Parameters:                 See 9.1.5.31. (line 2624)
+Positional_Parameters:                         See 9.1.5.32. (line 2649)
+Predefined Rules:                              See 9.        (line  766)
+Predefined_Numeric_Types:                      See 9.1.3.8.  (line 1585)
+Predicate_Testing:                             See 9.2.27.   (line 4470)
+Printable_ASCII:                               See 9.1.3.9.  (line 1625)
+Program Structure related rules:               See 9.1.4.    (line 1656)
+Programming Practice related rules:            See 9.1.5.    (line 1818)
+Quantified_Expressions:                        See 9.2.30.   (line 4602)
+Raising_External_Exceptions:                   See 9.1.4.5.  (line 1787)
+Raising_Predefined_Exceptions:                 See 9.2.31.   (line 4685)
+Readability-related rules:                     See 9.1.6.    (line 2910)
+Recursive_Subprograms:                         See 9.1.5.33. (line 2704)
+Relative_Delay_Statements:                     See 9.2.28.   (line 4559)
+Representation_Specifications:                 See 9.2.29.   (line 4576)
+Rule exemption:                                See 8.        (line  654)
+Separate_Numeric_Error_Handlers:               See 9.1.3.10. (line 1638)
+Single_Value_Enumeration_Types:                See 9.1.5.34. (line 2740)
+Slices:                                        See 9.4.8.    (line 5254)
+Source code presentation related rules:        See 9.1.7.    (line 3706)
+SPARK Ada related rules:                       See 9.4.      (line 4967)
+Specific_Parent_Type_Invariant:                See 9.1.2.7.  (line 1103)
+Specific_Pre_Post:                             See 9.1.2.6.  (line 1068)
+Specific_Type_Invariants:                      See 9.1.2.8.  (line 1144)
+Style-related rules:                           See 9.1.      (line  783)
+Subprogram_Access:                             See 9.2.32.   (line 4700)
+Tasking-related rules:                         See 9.1.1.    (line  790)
+Too_Many_Dependencies:                         See 9.2.33.   (line 4718)
+Too_Many_Parents:                              See 9.1.2.9.  (line 1170)
+Too_Many_Primitives:                           See 9.1.2.10. (line 1201)
+Unassigned_OUT_Parameters:                     See 9.2.34.   (line 4744)
+Unchecked_Address_Conversions:                 See 9.1.5.35. (line 2754)
+Unchecked_Conversions_As_Actuals:              See 9.1.5.36. (line 2784)
+Uncommented_BEGIN_In_Package_Bodies:           See 9.1.6.9.  (line 3669)
+Unconditional_Exits:                           See 9.1.5.37. (line 2820)
+Unconstrained_Array_Returns:                   See 9.2.35.   (line 4789)
+Unconstrained_Arrays:                          See 9.2.36.   (line 4817)
+Uninitialized_Global_Variables:                See 9.1.5.38. (line 2842)
+Universal_Ranges:                              See 9.4.9.    (line 5268)
+Unnamed_Blocks_And_Loops:                      See 9.1.5.39. (line 2860)
+USE_PACKAGE_Clauses:                           See 9.1.5.40. (line 2896)
+Using pragma Annotate to control rule exemption:See 8.1.     (line  675)
+Visible_Components:                            See 9.1.2.11. (line 1242)
+Volatile_Objects_Without_Address_Clauses:      See 9.1.1.2.  (line  819)
 
 
 Local Variables:

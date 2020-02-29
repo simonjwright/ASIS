@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 1995-2014, Free Software Foundation, Inc.       --
+--            Copyright (C) 1995-2019, Free Software Foundation, Inc.       --
 --                                                                          --
 -- ASIS-for-GNAT is free software; you can redistribute it and/or modify it --
 -- under terms of the  GNU General Public License  as published by the Free --
@@ -38,6 +38,8 @@
 with Ada.Calendar;       use Ada.Calendar;
 
 with Asis.Extensions;    use Asis.Extensions;
+
+with A4G.A_Opt;          use A4G.A_Opt;
 
 package Asis.Set_Get is
 
@@ -225,7 +227,7 @@ package Asis.Set_Get is
    function Character_Code     (E : Element) return Char_Code;
    function Obtained           (E : Element) return ASIS_OS_Time;
 
-   function Location      (E : Asis.Element) return Source_Ptr;
+   function Location           (E : Element) return Source_Ptr;
    --  this function returns not relative (as Rel_Sloc does), but
    --  "absolute" location of the source position corresponding
    --  to the Node on which E is based. This function is
@@ -234,6 +236,8 @@ package Asis.Set_Get is
    function Valid             (E : Element) return Boolean;
    --  checks, if the argument is valid, that is, if the enclosing
    --  Context of its enclosing Unit is opened
+
+   function DDA_Mode (E : Element) return DDA_Modes;
 
    pragma Inline (Node);
    pragma Inline (R_Node);

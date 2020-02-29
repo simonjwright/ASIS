@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2011-2017, AdaCore                     --
+--                     Copyright (C) 2011-2019, AdaCore                     --
 --                                                                          --
 -- GNATTEST  is  free  software;  you  can redistribute it and/or modify it --
 -- under terms of the  GNU  General Public License as published by the Free --
@@ -57,6 +57,7 @@ with GNATtest.Environment;           use GNATtest.Environment;
 with GNATtest.Skeleton.Source_Table;
 
 with GNATCOLL.VFS;                use GNATCOLL.VFS;
+with GNATCOLL.VFS_Utils;          use GNATCOLL.VFS_Utils;
 with GNATCOLL.Traces;             use GNATCOLL.Traces;
 
 package body GNATtest.Harness.Generator is
@@ -223,8 +224,12 @@ package body GNATtest.Harness.Generator is
    --  of the deeper nesting.
 
    procedure Generate_Common_Harness_Files;
-   --  Generates aggregate project and a makefile for separate drivers,
-   --  supress.adc for them and test_drivers.list.
+   --  Generates aggregate project and a makefile for separate drivers
+   --  and test_drivers.list.
+
+   procedure Generate_Global_Config_Pragmas_File;
+   --  Generates files containing pragmas suppressing pre and postconditions
+   --  and possibly manipulating ghost policy.
 
    procedure Generate_Gnattest_Common_Prj;
    --  Generates abstract project file gnattest_common that contains different
@@ -455,6 +460,9 @@ package body GNATtest.Harness.Generator is
       Put_New_Line;
       Put_New_Line;
       S_Put (0, "package " & New_Unit_Name & " is");
+      Put_New_Line;
+      Put_New_Line;
+      S_Put (0, "use AUnit.Test_Suites;");
       Put_New_Line;
       Put_New_Line;
       S_Put (3, "function Suite return AUnit.Test_Suites.Access_Test_Suite;");
@@ -732,7 +740,7 @@ package body GNATtest.Harness.Generator is
          for Depth in 1 .. Data.LTR_List.Element (K).Inheritance_Depth loop
             S_Put
               (6,
-               "Result.Add_Test ("                              &
+               "Add_Test (Result'Access, "                      &
                Test_Case_Prefix                                 &
                Positive_Image (Current_TT_Number)               &
                "_"                                              &
@@ -800,6 +808,9 @@ package body GNATtest.Harness.Generator is
       Put_New_Line;
       Put_New_Line;
       S_Put (0, "package " & New_Unit_Name & " is");
+      Put_New_Line;
+      Put_New_Line;
+      S_Put (0, "use AUnit.Test_Suites;");
       Put_New_Line;
       Put_New_Line;
       S_Put (3, "function Suite return AUnit.Test_Suites.Access_Test_Suite;");
@@ -1048,7 +1059,7 @@ package body GNATtest.Harness.Generator is
 
             S_Put
               (6,
-               "Result.Add_Test ("                        &
+               "Add_Test (Result'Access, "                &
                Test_Case_Prefix                           &
                Positive_Image (Type_Number)               &
                "_"                                        &
@@ -1331,7 +1342,7 @@ package body GNATtest.Harness.Generator is
             Put_New_Line;
             S_Put
               (6,
-               "Result.Add_Test ("
+               "Add_Test (Result'Access, "
                & Data.Test_Unit_Full_Name.all
                & "."
                & Common_Suite_Name
@@ -1339,7 +1350,7 @@ package body GNATtest.Harness.Generator is
             Put_New_Line;
             S_Put
               (6,
-               "Result.Add_Test ("
+               "Add_Test (Result'Access, "
                & Data.Test_Unit_Full_Name.all
                & "."
                & Substitution_Suite_Name
@@ -1432,6 +1443,9 @@ package body GNATtest.Harness.Generator is
          S_Put (0, GT_Marker_Begin);
          Put_New_Line;
 
+         S_Put (0, "pragma Ada_2005;");
+         Put_New_Line;
+         Put_New_Line;
          S_Put (0, "with AUnit.Test_Suites; use AUnit.Test_Suites;");
          Put_New_Line;
          if not Stub_Mode_ON then
@@ -1496,7 +1510,7 @@ package body GNATtest.Harness.Generator is
                 & "'Access);");
          Put_New_Line;
          Put_New_Line;
-         S_Put (6, "Result.Add_Test (Local_Test_Case'Access);");
+         S_Put (6, "Add_Test (Result'Access, Local_Test_Case'Access);");
          Put_New_Line;
          Put_New_Line;
          S_Put (6, "return Result'Unchecked_Access;");
@@ -1703,6 +1717,9 @@ package body GNATtest.Harness.Generator is
          S_Put (0, GT_Marker_Begin);
          Put_New_Line;
 
+         S_Put (0, "pragma Ada_2005;");
+         Put_New_Line;
+         Put_New_Line;
          S_Put (0, "with AUnit.Test_Suites; use AUnit.Test_Suites;");
          Put_New_Line;
          S_Put (0, "with AUnit.Test_Caller;");
@@ -1838,7 +1855,7 @@ package body GNATtest.Harness.Generator is
          for I in 1 .. Current_Type.Max_Inheritance_Depth loop
             S_Put
               (6,
-               "Result.Add_Test (Local_Test_Case_"
+               "Add_Test (Result'Access, Local_Test_Case_"
                & Trim (Integer'Image (I), Both)
                & "'Access);");
             Put_New_Line;
@@ -2107,6 +2124,9 @@ package body GNATtest.Harness.Generator is
             "for Runtime (""Ada"") use Gnattest_Common'Runtime (""Ada"");");
          Put_New_Line;
          Put_New_Line;
+         S_Put (3, "package Builder renames Gnattest_Common.Builder;");
+         Put_New_Line;
+         Put_New_Line;
          S_Put (3, "package GNATtest is");
          Put_New_Line;
          S_Put (3, "for GNATTest_Mapping_File use ""gnattest.xml"";");
@@ -2129,13 +2149,6 @@ package body GNATtest.Harness.Generator is
             end if;
          end loop;
 
-         if Driver_Per_Unit then
-            for I in reverse S1'Range loop
-               if S1 (I) = '/' then
-                  return S1 (S1'First .. I - 1);
-               end if;
-            end loop;
-         end if;
          return S1;
       end Path_To_Unix;
 
@@ -2203,10 +2216,12 @@ package body GNATtest.Harness.Generator is
       loop
          P := Separate_Projects.Element (K);
          declare
+            Rel_Pth : constant Filesystem_String :=
+              Relative_Path
+                (Create (+P.Path_TD.all),
+                 Create (+Harness_Dir.all));
             Pth : constant String :=
-              +Relative_Path
-              (Create (+P.Path_TD.all),
-               Create (+Harness_Dir.all));
+              (if Driver_Per_Unit then +Dir_Name (Rel_Pth) else +Rel_Pth);
          begin
             S_Put
                 (0,
@@ -2222,7 +2237,7 @@ package body GNATtest.Harness.Generator is
       Put_New_Line;
       S_Put (0, "GNATCOV_LEVEL=stmt+decision");
       Put_New_Line;
-      S_Put (0, "GNATCOV_OUTPUT_FMT=dhtml");
+      S_Put (0, "GNATCOV_OUTPUT_FMT=dhtml --output-dir=dhtml-report");
       Put_New_Line;
       Put_New_Line;
       S_Put (0, ".PHONY: all");
@@ -2233,7 +2248,11 @@ package body GNATtest.Harness.Generator is
       Put_New_Line;
       Put_New_Line;
 
-      S_Put (0, "%-build: %/test_driver.gpr");
+      if Driver_Per_Unit then
+         S_Put (0, "%-build: %/test_driver.gpr");
+      else
+         S_Put (0, "%-build: %");
+      end if;
       Put_New_Line;
       S_Put
         (0,
@@ -2269,19 +2288,28 @@ package body GNATtest.Harness.Generator is
            (0,
             ASCII.HT
             & "$(GNATCOV) coverage --save-checkpoint=$*-gnattest.ckpt "
-            & "-a $(GNATCOV_OUTPUT_FMT) --level=$(GNATCOV_LEVEL) "
+            & "--level=$(GNATCOV_LEVEL) "
             & "-P$*/test_driver.gpr $*-gnattest.trace");
          Put_New_Line;
          Put_New_Line;
 
          S_Put (0, "gnatcov-consolidate: $(CKPTS)");
          Put_New_Line;
-         S_Put
-           (0,
-            ASCII.HT
-            & "$(GNATCOV) coverage -P../../../ops.gpr $(patsubst %,-C "
-            & "%-gnattest.ckpt,$(PRJS)) -a $(GNATCOV_OUTPUT_FMT) "
-            & "--level=$(GNATCOV_LEVEL)");
+         declare
+            Pth : constant String :=
+              +Relative_Path
+              (Create (+Source_Prj.all),
+               Create (+Harness_Dir.all));
+         begin
+            S_Put
+              (0,
+               ASCII.HT
+               & "$(GNATCOV) coverage -P"
+               & Path_To_Unix (Pth)
+               & " $(patsubst %,-C "
+               & "%-gnattest.ckpt,$(PRJS)) -a $(GNATCOV_OUTPUT_FMT) "
+               & "--level=$(GNATCOV_LEVEL)");
+         end;
          Put_New_Line;
          Put_New_Line;
 
@@ -2294,7 +2322,11 @@ package body GNATtest.Harness.Generator is
       Put_New_Line;
       Put_New_Line;
 
-      S_Put (0, "%-clean: %/test_driver.gpr");
+      if Driver_Per_Unit then
+         S_Put (0, "%-clean: %/test_driver.gpr");
+      else
+         S_Put (0, "%-clean: %");
+      end if;
       Put_New_Line;
       S_Put
         (0,
@@ -2304,15 +2336,8 @@ package body GNATtest.Harness.Generator is
 
       Close_File;
 
-      --  suppress.adc
-      Create (Harness_Dir.all & "suppress.adc");
-      S_Put (0, "pragma Assertion_Policy (Pre => Ignore);");
-      Put_New_Line;
-      S_Put (0, "pragma Assertion_Policy (Post => Ignore);");
-      Put_New_Line;
-      S_Put (0, "pragma Assertion_Policy (Ghost => Check);");
-      Put_New_Line;
-      Close_File;
+      --  suppress.adc & suppress_no_ghost.adc
+      Generate_Global_Config_Pragmas_File;
 
       --  Executable list
       Create (Harness_Dir.all & "test_drivers.list");
@@ -2340,6 +2365,33 @@ package body GNATtest.Harness.Generator is
 
       Generate_Aggregate_Project;
    end Generate_Common_Harness_Files;
+
+   -----------------------------------------
+   -- Generate_Global_Config_Pragmas_File --
+   -----------------------------------------
+
+   procedure Generate_Global_Config_Pragmas_File is
+   begin
+      if not Is_Regular_File (Harness_Dir.all & "suppress.adc") then
+         Create (Harness_Dir.all & "suppress.adc");
+         S_Put (0, "pragma Assertion_Policy (Pre => Ignore);");
+         Put_New_Line;
+         S_Put (0, "pragma Assertion_Policy (Post => Ignore);");
+         Put_New_Line;
+         S_Put (0, "pragma Assertion_Policy (Ghost => Check);");
+         Put_New_Line;
+         Close_File;
+      end if;
+
+      if not Is_Regular_File (Harness_Dir.all & "suppress_no_ghost.adc") then
+         Create (Harness_Dir.all & "suppress_no_ghost.adc");
+         S_Put (0, "pragma Assertion_Policy (Pre => Ignore);");
+         Put_New_Line;
+         S_Put (0, "pragma Assertion_Policy (Post => Ignore);");
+         Put_New_Line;
+         Close_File;
+      end if;
+   end Generate_Global_Config_Pragmas_File;
 
    ----------------------------------
    -- Generate_Gnattest_Common_Prj --
@@ -2388,9 +2440,44 @@ package body GNATtest.Harness.Generator is
       end;
 
       Put_New_Line;
+      S_Put
+        (3,
+         "type TD_Compilation_Type is (""contract-checks"","
+         & """no-contract-checks"", ""no-config-file"");");
+      Put_New_Line;
+      if Has_Test_Cases then
+         S_Put
+           (3,
+            "TD_Compilation : TD_Compilation_Type := external "
+            & "(""TEST_DRIVER_BUILD_MODE"", ""contract-checks"");");
+      else
+         S_Put
+           (3,
+            "TD_Compilation : TD_Compilation_Type := external "
+            & "(""TEST_DRIVER_BUILD_MODE"", ""no-config-file"");");
+      end if;
+      Put_New_Line;
+
+      Put_New_Line;
       S_Put (3, "package Builder is");
       Put_New_Line;
-      S_Put (6, "for Global_Configuration_Pragmas use ""suppress.adc"";");
+      S_Put (6, "case TD_Compilation is");
+      Put_New_Line;
+      S_Put (9, "when ""contract-checks"" =>");
+      Put_New_Line;
+      S_Put (12, "for Global_Configuration_Pragmas use ""suppress.adc"";");
+      Put_New_Line;
+      S_Put (9, "when ""no-contract-checks"" =>");
+      Put_New_Line;
+      S_Put
+        (12,
+         "for Global_Configuration_Pragmas use ""suppress_no_ghost.adc"";");
+      Put_New_Line;
+      S_Put (9, "when ""no-config-file"" =>");
+      Put_New_Line;
+      S_Put (12, "null;");
+      Put_New_Line;
+      S_Put (6, "end case;");
       Put_New_Line;
       S_Put (3, "end Builder;");
       Put_New_Line;
@@ -2412,11 +2499,26 @@ package body GNATtest.Harness.Generator is
       Put_New_Line;
       Put_New_Line;
 
+      S_Put (3, "Contract_Switches := ();");
+      Put_New_Line;
+      S_Put (3, "case TD_Compilation is");
+      Put_New_Line;
+      S_Put (6, "when ""contract-checks"" =>");
+      Put_New_Line;
+      S_Put (9, "Contract_Switches := (""-gnata"");");
+      Put_New_Line;
+      S_Put (6, "when others =>");
+      Put_New_Line;
+      S_Put (9, "null;");
+      Put_New_Line;
+      S_Put (3, "end case;");
+      Put_New_Line;
+
       S_Put (3, "package Compiler is");
       Put_New_Line;
       S_Put (6, "for Default_Switches (""ada"") use");
       Put_New_Line;
-      S_Put (8, "(""-g"", ""-gnatyM0"", ""-gnata""");
+      S_Put (8, "(""-g"", ""-gnatyM0""");
       declare
          Cur : List_Of_Strings.Cursor := Inherited_Switches.First;
       begin
@@ -2427,7 +2529,7 @@ package body GNATtest.Harness.Generator is
          end loop;
          Inherited_Switches.Clear;
       end;
-      S_Put (0, ");");
+      S_Put (0, ") & Contract_Switches;");
       Put_New_Line;
       S_Put (3, "end Compiler;");
       Put_New_Line;
@@ -3140,6 +3242,9 @@ package body GNATtest.Harness.Generator is
              " is");
       Put_New_Line;
       Put_New_Line;
+      S_Put (3, "use AUnit.Test_Suites;");
+      Put_New_Line;
+      Put_New_Line;
 
       if not Data.Generic_Kind then
 
@@ -3436,7 +3541,7 @@ package body GNATtest.Harness.Generator is
 
          if Data.Generic_Kind then
             S_Put (6,
-                   "Result.Add_Test ("                                       &
+                   "Add_Test (Result'Access, "                               &
                    Test_Case_Prefix                                          &
                    Positive_Image (K)                                        &
                    "_"                                                       &
@@ -3446,7 +3551,7 @@ package body GNATtest.Harness.Generator is
                    ");");
          else
             S_Put (6,
-                   "Result.Add_Test ("                                       &
+                   "Add_Test (Result'Access, "                               &
                    Test_Case_Prefix                                          &
                    Positive_Image (K)                                        &
                    "_"                                                       &
@@ -3465,7 +3570,7 @@ package body GNATtest.Harness.Generator is
 
          if Data.Generic_Kind then
             S_Put (6,
-                   "Result.Add_Test ("                                       &
+                   "Add_Test (Result'Access, "                               &
                    Test_Case_Prefix                                          &
                    Positive_Image (K)                                        &
                    "i_"                                                      &
@@ -3475,7 +3580,7 @@ package body GNATtest.Harness.Generator is
                    ");");
          else
             S_Put (6,
-                   "Result.Add_Test ("                                       &
+                   "Add_Test (Result'Access, "                               &
                    Test_Case_Prefix                                          &
                    Positive_Image (K)                                        &
                    "i_"                                                      &
@@ -3494,7 +3599,7 @@ package body GNATtest.Harness.Generator is
       for K in Data.TC_List.First_Index .. Data.TC_List.Last_Index loop
          S_Put
            (6,
-            "Result.Add_Test (new " &
+            "Add_Test (Result'Access, new " &
             Data.TC_List.Element (K).Nesting.all &
             "." &
             Data.TC_List.Element (K).Name.all &
@@ -4301,16 +4406,7 @@ package body GNATtest.Harness.Generator is
 
       Close_File;
 
-      if Suppress_Contacts then
-         Create (Harness_Dir.all & "suppress.adc");
-         S_Put (0, "pragma Assertion_Policy (Pre => Ignore);");
-         Put_New_Line;
-         S_Put (0, "pragma Assertion_Policy (Post => Ignore);");
-         Put_New_Line;
-         S_Put (0, "pragma Assertion_Policy (Ghost => Check);");
-         Put_New_Line;
-         Close_File;
-      end if;
+      Generate_Global_Config_Pragmas_File;
    end Project_Creator;
 
    -----------------------------
@@ -4459,7 +4555,7 @@ package body GNATtest.Harness.Generator is
 
          S_Put
            (6,
-            "Result.Add_Test (" &
+            "Add_Test (Result'Access, " &
             List_Of_Strings.Element (Iterator) &
             ".Suite);");
          Put_New_Line;

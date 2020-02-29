@@ -133,6 +133,14 @@ package GNATtest.Common is
    --  This is needed for i.e. library procedure declarations that import
    --  testable packages that are part of the closure.
 
+   Excluded_Files : String_Set.Set;
+   --  Due to dynamic nature of closure computation we may need to store
+   --  the list of excluded sources till the very end.
+
+   procedure Report_Exclusions_Not_Found;
+   --  Report files from exclusion list that were not matched by any source
+   --  and clears the list.
+
    --------------------
    -- Stub exclusion --
    --------------------

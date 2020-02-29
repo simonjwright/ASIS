@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                        Copyright (C) 2018, AdaCore                       --
+--                      Copyright (C) 2018-2019, AdaCore                    --
 --                                                                          --
 -- Asis Utility Library (ASIS UL) is free software; you can redistribute it --
 -- and/or  modify  it  under  terms  of  the  GNU General Public License as --
@@ -68,7 +68,7 @@ package ASIS_UL.Projects.Aggregate is
    --  This iterator should be used when all the (non-aggregate) projects are
    --  stored in internal data structures. This iterator is to be used to
    --  iterate through these projects, each of these projects is loaded and
-   --  andlyzed, and all the extracted data is stored in internal database.
+   --  analyzed, and all the extracted data is stored in internal database.
 
    procedure Start_Prj_Iterator with
      Pre => Num_Of_Aggregated_Projects > 1;
@@ -94,9 +94,11 @@ package ASIS_UL.Projects.Aggregate is
    --  Iterates through the projects being aggregated and spawns the tool
    --  for each of them
    --
-   --  !!! Currently this procedure is entirely gnatcheck-specific!!!
-   --
-   --  ??? more docs needed
+   --  Currently this procedure is gnatcheck-specific - tt creates report files
+   --  that are specific for gnatcheck tool (one specific report for each
+   --  project being aggregated and an umbrella report that lists all the
+   --  (non-aggregate) project that have been processed and corresponding
+   --  report files.
 
    ------------
    --  Debug --

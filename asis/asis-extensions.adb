@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 1995-2018, Free Software Foundation, Inc.       --
+--            Copyright (C) 1995-2019, Free Software Foundation, Inc.       --
 --                                                                          --
 -- ASIS-for-GNAT is free software; you can redistribute it and/or modify it --
 -- under terms of the  GNU General Public License  as published by the Free --
@@ -304,9 +304,11 @@ package body Asis.Extensions is
          Instantiation := Declaration;
 
          while not (Declaration_Kind (Instantiation) in
-                      A_Function_Instantiation  |
-                      A_Package_Instantiation   |
-                      A_Procedure_Instantiation
+                      A_Function_Instantiation             |
+                      A_Package_Instantiation              |
+                      A_Procedure_Instantiation            |
+                      A_Formal_Package_Declaration         |
+                      A_Formal_Package_Declaration_With_Box
                    and then
                      not Is_Part_Of_Instance (Instantiation))
          loop
@@ -2735,9 +2737,13 @@ package body Asis.Extensions is
       if Expression_Kind (Element) in An_Identifier | A_Character_Literal then
          Tmp := R_Node (Element);
 
-         if Nkind (Tmp) in N_Identifier | N_Character_Literal
+         if (Nkind (Tmp) = N_Identifier
            and then
-            not Present (Entity (Tmp))
+            not Present (Entity (Tmp)))
+          or else
+            (Nkind (Tmp) = N_Character_Literal
+           and then
+            not Present (Etype (Tmp)))
          then
             Tmp := Parent (Tmp);
 
@@ -4846,6 +4852,27 @@ package body Asis.Extensions is
 
       return Result;
    end Overrides_Type_Operator;
+
+   -----------------
+   -- Pos_In_List --
+   -----------------
+
+   function Pos_In_List
+     (E       : Asis.Element;
+      In_List : Asis.Element_List)
+      return    ASIS_Natural
+   is
+      Result : ASIS_Natural := 0;
+   begin
+      for J in In_List'Range loop
+         if Is_Equal (E, In_List (J)) then
+            Result := J;
+            exit;
+         end if;
+      end loop;
+
+      return Result;
+   end Pos_In_List;
 
    -------------------
    -- Pragmas_After --

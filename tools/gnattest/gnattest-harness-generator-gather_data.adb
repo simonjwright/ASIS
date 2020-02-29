@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2011-2017, AdaCore                     --
+--                     Copyright (C) 2011-2018, AdaCore                     --
 --                                                                          --
 -- GNATTEST  is  free  software;  you  can redistribute it and/or modify it --
 -- under terms of the  GNU  General Public License as published by the Free --
@@ -33,7 +33,7 @@ procedure Gather_Data
 
    Number_Of_Test_Types : Natural := 0;
 
-   Processed_Unit : Asis.Compilation_Unit := The_Unit;
+   Processed_Unit : constant Asis.Compilation_Unit := The_Unit;
 
    Unit_SF_Name : String_Access;
    --  Stores the full name of the file containing the unit.
@@ -538,38 +538,6 @@ begin
      new String'(Base_Name (To_String (Text_Name (Processed_Unit))));
 
    case Declaration_Kind (Unit_Declaration (Processed_Unit)) is
-
-      when A_Package_Body_Declaration =>
-
-         Tmp_Element := Corresponding_Declaration
-           (Unit_Declaration (Processed_Unit));
-
-         --  Subunits containing separate package bodies are of no interest.
-         if Is_Nil (Tmp_Element) then
-            Set_Source_Status (Unit_SF_Name.all, Bad_Content);
-            Apropriate_Source := False;
-            return;
-         end if;
-
-         Tmp_CU := Enclosing_Compilation_Unit (Tmp_Element);
-
-         if Source_Present (Base_Name (To_String (Text_Name (Tmp_CU)))) then
-            case Get_Source_Status (Base_Name (To_String (Text_Name (Tmp_CU))))
-            is
-               when Processed         |
-                    Processed_In_Vain =>
-                  Set_Source_Status (Unit_SF_Name.all, Processed);
-                  Apropriate_Source := False;
-                  return;
-
-               when others =>
-                  Set_Source_Status (Unit_SF_Name.all, Processed);
-            end case;
-         end if;
-         Processed_Unit := Tmp_CU;
-         Free (Unit_SF_Name);
-         Unit_SF_Name :=
-           new String'(Base_Name (To_String (Text_Name (Processed_Unit))));
 
       when A_Package_Declaration         |
            A_Generic_Package_Declaration =>

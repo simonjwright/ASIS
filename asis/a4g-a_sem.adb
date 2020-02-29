@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 1995-2017, Free Software Foundation, Inc.       --
+--            Copyright (C) 1995-2019, Free Software Foundation, Inc.       --
 --                                                                          --
 -- ASIS-for-GNAT is free software; you can redistribute it and/or modify it --
 -- under terms of the  GNU General Public License  as published by the Free --
@@ -655,6 +655,19 @@ package body A4G.A_Sem is
       Arg_Node      := R_Node (Call);
       Arg_Node_Kind := Nkind (Arg_Node);
       Tmp_Node      := Node (Call);
+
+      --  First, handling for a special case when a call to attribute function
+      --  is rewritten if it is a part of a type conversion:
+      --
+      --     Integer (Float'Rounding (A_Record.A_Field))
+
+      if Nkind (Tmp_Node) = N_Attribute_Reference
+        and then
+         Is_Rewrite_Substitution (Arg_Node)
+      then
+         return Nil_Element;
+      end if;
+
       --  Rewritten node should know everything. But if in case of a function
       --  call this node is the result of compile-time optimization,
       --  we have to work with original node only:
@@ -681,6 +694,14 @@ package body A4G.A_Sem is
           (Pass_Generic_Actual (Parent (Parent ((Entity (Tmp_Node)))))))))
       then
          Arg_Node      := Node (Call);
+         Arg_Node_Kind := Nkind (Arg_Node);
+      end if;
+
+      if Arg_Node_Kind = N_Qualified_Expression
+        and then
+         Is_Rewrite_Substitution (Arg_Node)
+      then
+         Arg_Node      := Sinfo.Expression (Arg_Node);
          Arg_Node_Kind := Nkind (Arg_Node);
       end if;
 
@@ -789,7 +810,11 @@ package body A4G.A_Sem is
 
          when N_Indexed_Component =>
             Result_Node := Generalized_Indexing (Arg_Node);
-            Result_Node := Prefix (Prefix (Result_Node));
+
+            if Nkind (Result_Node) = N_Explicit_Dereference then
+               Result_Node := Prefix (Prefix (Result_Node));
+            end if;
+
             Result_Node := Sinfo.Name (Result_Node);
             Result_Node := Entity (Result_Node);
          when others =>
@@ -814,6 +839,8 @@ package body A4G.A_Sem is
       end if;
 
       pragma Assert (Present (Result_Node));
+
+      Result_Node := Get_Original_For_Class_Wide_Clone (Result_Node);
 
       --  it is possible, that for a subprogram defined by a stub, the
       --  subprogram body declaration from the corresponding subunit is
@@ -1374,6 +1401,103 @@ package body A4G.A_Sem is
 
    end Get_Instance_Name;
 
+   ----------------------------------------
+   -- Get_Orig_Body_For_Class_Wide_Clode --
+   ----------------------------------------
+
+   function Get_Orig_Body_For_Class_Wide_Clode
+     (N    : Node_Id)
+      return Node_Id
+   is
+      E      : Entity_Id;
+      Result : Node_Id := N;
+   begin
+      if Nkind (N) /= N_Subprogram_Body then
+         return N;
+      end if;
+
+      if Present (Corresponding_Spec (N)) then
+         E := Corresponding_Spec (N);
+      else
+         E := Specification (N);
+         E := Defining_Unit_Name (E);
+      end if;
+
+      if Nkind (E) not in N_Entity then
+         return N;
+      end if;
+
+      if Is_Class_Wide_Clone (E) then
+         Result := Get_Original_For_Class_Wide_Clone (E);
+         pragma Assert (Present (Result));
+
+         Result := Parent (Parent (Result));
+
+         if Nkind (Result) /= N_Subprogram_Body then
+            Result := Corresponding_Body (Result);
+            Result := Parent (Parent (Result));
+         end if;
+      end if;
+
+      pragma Assert (Nkind (Result) = N_Subprogram_Body);
+
+      return Result;
+
+   end Get_Orig_Body_For_Class_Wide_Clode;
+
+   ---------------------------------------
+   -- Get_Original_For_Class_Wide_Clone --
+   ---------------------------------------
+
+   function Get_Original_For_Class_Wide_Clone
+     (E     : Entity_Id)
+      return Entity_Id
+   is
+      Result : Entity_Id := E;
+      Scp    : Node_Id;
+      Tmp    : Node_Id;
+   begin
+      if Is_Class_Wide_Clone (E) then
+         Result := Empty;
+         Scp    := Scope (E);
+         Tmp    := First_Entity (Scp);
+
+         while Present (Tmp) loop
+            if Is_Subprogram (Tmp)
+              and then
+               Class_Wide_Clone (Tmp) = E
+            then
+               Result := Tmp;
+               exit;
+            end if;
+
+            Tmp := Next_Entity (Tmp);
+         end loop;
+
+         if No (Result)
+           and then
+            Ekind (Scp) in E_Package | E_Generic_Package | Concurrent_Kind
+         then
+            Tmp := First_Private_Entity (Scp);
+
+            while Present (Tmp) loop
+               if Is_Subprogram (Tmp)
+                 and then
+                  Class_Wide_Clone (Tmp) = E
+               then
+                  Result := Tmp;
+                  exit;
+               end if;
+
+               Tmp := Next_Entity (Tmp);
+            end loop;
+         end if;
+
+      end if;
+
+      return Result;
+   end Get_Original_For_Class_Wide_Clone;
+
    ------------------
    -- Is_Anonymous --
    ------------------
@@ -1674,6 +1798,34 @@ package body A4G.A_Sem is
 
       return Result;
    end Is_Based_On_Same_Node;
+
+   -------------------------
+   -- Is_Class_Wide_Clone --
+   -------------------------
+
+   function Is_Class_Wide_Clone (E : Entity_Id) return Boolean is
+      Result : Boolean := False;
+   begin
+      if Einfo.Is_Subprogram (E)
+       and then
+         not Comes_From_Source (E)
+      then
+         if Einfo.Is_Class_Wide_Clone (E) then
+            return True;
+         else
+            declare
+               E_Name_String : constant String  := Get_Name_String (Chars (E));
+               Last          : constant Natural := E_Name_String'Last;
+            begin
+               Result := E_Name_String'Length >= 3
+                        and then
+                         E_Name_String (Last - 1 .. Last) = "CL";
+            end;
+         end if;
+      end if;
+
+      return Result;
+   end Is_Class_Wide_Clone;
 
    -------------------------
    -- Is_Derived_Rep_Item --

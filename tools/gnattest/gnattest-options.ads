@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2011-2018, AdaCore                     --
+--                     Copyright (C) 2011-2019, AdaCore                     --
 --                                                                          --
 -- GNATTEST  is  free  software;  you  can redistribute it and/or modify it --
 -- under terms of the  GNU  General Public License as published by the Free --
@@ -77,9 +77,6 @@ package GNATtest.Options is
 
    Verbose : Boolean := False;
    --  Verbose mode.
-
-   Suppress_Contacts : Boolean := True;
-   --  to be removed;
 
    Harness_Only : Boolean := False;
    --  Indicates than argument files should be treated as tests but not as
@@ -156,11 +153,13 @@ package GNATtest.Options is
 
    Test_Case_Only : Boolean := False;
 
+   Has_Test_Cases : Boolean := False;
+
    Strict_Execution : Boolean := False;
    --  Return failure exit status if at least one of the sources
    --  could not be compiled.
 
-   Main_Unit : String_Access := null;
+   Main_Units : String_Set.Set := String_Set.Empty_Set;
 
    Environment_Dir : String_Access := null;
 

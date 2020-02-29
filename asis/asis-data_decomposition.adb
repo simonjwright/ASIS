@@ -6,25 +6,23 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 1995-2014, Free Software Foundation, Inc.       --
+--            Copyright (C) 1995-2019, Free Software Foundation, Inc.       --
 --                                                                          --
 -- ASIS-for-GNAT is free software; you can redistribute it and/or modify it --
 -- under terms of the  GNU General Public License  as published by the Free --
--- Software Foundation;  either version 2,  or  (at your option)  any later --
--- version. ASIS-for-GNAT is distributed  in the hope  that it will be use- --
--- ful, but WITHOUT ANY WARRANTY; without even the implied warranty of MER- --
--- CHANTABILITY or  FITNESS FOR A  PARTICULAR PURPOSE.  See the GNU General --
--- Public License for more details.  You should have received a copy of the --
--- GNU  General  Public  License  distributed with  ASIS-for-GNAT; see file --
--- COPYING.  If not,  write  to the  Free Software Foundation,  51 Franklin --
--- Street, Fifth Floor, Boston, MA 02110-1301, USA.                         --
+-- Software  Foundation;  either version 3,  or (at your option)  any later --
+-- version.  ASIS-for-GNAT  is  distributed  in  the  hope  that it will be --
+-- useful,  but  WITHOUT ANY WARRANTY; without even the implied warranty of --
+-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                     --
 --                                                                          --
 --                                                                          --
 --                                                                          --
 --                                                                          --
 --                                                                          --
---                                                                          --
---                                                                          --
+-- You should have  received  a copy of the  GNU General Public License and --
+-- a copy of the  GCC Runtime Library Exception  distributed with GNAT; see --
+-- the files COPYING3 and COPYING.RUNTIME respectively.  If not, see        --
+-- <http://www.gnu.org/licenses/>.                                          --
 --                                                                          --
 -- ASIS-for-GNAT was originally developed  by the ASIS-for-GNAT team at the --
 -- Software  Engineering  Laboratory  of  the Swiss  Federal  Institute  of --
@@ -32,33 +30,38 @@
 -- Scientific  Research  Computer  Center of  Moscow State University (SRCC --
 -- MSU), Russia,  with funding partially provided  by grants from the Swiss --
 -- National  Science  Foundation  and  the  Swiss  Academy  of  Engineering --
--- Sciences.  ASIS-for-GNAT is now maintained by AdaCore                    --
+-- Sciences.  ASIS-for-GNAT is now maintained by  AdaCore                   --
 -- (http://www.adacore.com).                                                --
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Ada.Characters.Handling;          use Ada.Characters.Handling;
 with Ada.Unchecked_Conversion;
-with System;                          use System;
+with System;                           use System;
 
-with Asis.Declarations;               use Asis.Declarations;
-with Asis.Definitions;                use Asis.Definitions;
-with Asis.Elements;                   use Asis.Elements;
-with Asis.Errors;                     use Asis.Errors;
-with Asis.Exceptions;                 use Asis.Exceptions;
+with Asis.Compilation_Units;           use Asis.Compilation_Units;
+with Asis.Declarations;                use Asis.Declarations;
+with Asis.Definitions;                 use Asis.Definitions;
+with Asis.Elements;                    use Asis.Elements;
+with Asis.Errors;                      use Asis.Errors;
+with Asis.Exceptions;                  use Asis.Exceptions;
 
-with Asis.Data_Decomposition.Aux;     use Asis.Data_Decomposition.Aux;
-with Asis.Data_Decomposition.Set_Get; use Asis.Data_Decomposition.Set_Get;
-with Asis.Data_Decomposition.Vcheck;  use Asis.Data_Decomposition.Vcheck;
-with Asis.Set_Get;                    use Asis.Set_Get;
+with Asis.Data_Decomposition.Aux;      use Asis.Data_Decomposition.Aux;
+with Asis.Data_Decomposition.Set_Get;  use Asis.Data_Decomposition.Set_Get;
+with Asis.Data_Decomposition.gnatRj;   use Asis.Data_Decomposition.gnatRj;
+with Asis.Data_Decomposition.Vcheck;   use Asis.Data_Decomposition.Vcheck;
+with Asis.Set_Get;                     use Asis.Set_Get;
 
-with A4G.Asis_Tables;                 use A4G.Asis_Tables;
-with A4G.DDA_Aux;                     use A4G.DDA_Aux;
-with A4G.Vcheck;                      use A4G.Vcheck;
+with A4G.A_Opt;                        use A4G.A_Opt;
+with A4G.Asis_Tables;                  use A4G.Asis_Tables;
+with A4G.DDA_Aux;                      use A4G.DDA_Aux;
+with A4G.Vcheck;                       use A4G.Vcheck;
 
-with Atree;                           use Atree;
-with Einfo;                           use Einfo;
-with Sinfo;                           use Sinfo;
-with Uintp;                           use Uintp;
+with Atree;                            use Atree;
+with Einfo;                            use Einfo;
+with Repinfo.Input;                    use Repinfo.Input;
+with Sinfo;                            use Sinfo;
+with Uintp;                            use Uintp;
 
 package body Asis.Data_Decomposition is
 
@@ -266,6 +269,8 @@ package body Asis.Data_Decomposition is
         Type_Model_Kind (Type_Definition);
 
       Is_Dynamic_Array : Boolean := False;
+      Success          : Boolean;
+
    begin
 
       Check_Validity
@@ -284,6 +289,37 @@ package body Asis.Data_Decomposition is
             Wrong_Kind => Arg_Kind);
       end if;
 
+      if DDA_Mode (Type_Definition) = gnatR then
+
+         if Declaration_Kind (Enclosing_Element (Type_Definition)) in
+              A_Variable_Declaration |
+              A_Constant_Declaration
+         then
+            --  Should we try to remove this limitation???
+
+            Raise_ASIS_Inappropriate_Element
+              (Package_Name & "Array_Components (from Type_Definition), " &
+               "gnatR DDA vode cannot process array definitions from "    &
+               "object declarations",
+               Wrong_Kind => Arg_Kind);
+         end if;
+
+         Set_Repinfo_File (Type_Definition, Success);
+
+         if not Success then
+            Set_Error_Status
+              (Status    => Data_Error,
+               Diagnosis => Package_Name                                   &
+                           "Record_Components (from Type_Definition): "    &
+                            "cannot locate file with representation "      &
+                            "information for "                             &
+                            To_String (Text_Name
+                              (Enclosing_Compilation_Unit
+                                 (Type_Definition))));
+            raise ASIS_Failed;
+         end if;
+      end if;
+
       if Arg_Type_Model_Kind = A_Simple_Dynamic_Model then
          Is_Dynamic_Array := True;
       end if;
@@ -293,7 +329,8 @@ package body Asis.Data_Decomposition is
           Enclosing_Record_Component => Nil_Record_Component,
           Parent_Indication          => Nil_Element,
           Parent_First_Bit_Offset    => 0,
-          Dynamic_Array              => Is_Dynamic_Array);
+          Dynamic_Array              => Is_Dynamic_Array,
+          Context_DDA_Mode          => DDA_Mode (Type_Definition));
 
    exception
       when ASIS_Inappropriate_Element =>
@@ -1195,7 +1232,6 @@ package body Asis.Data_Decomposition is
      (Component : Array_Component)
       return      Record_Component_List
    is
-      Discr_Part : Asis.Element;
       Type_Def   : Asis.Element;
    begin
 
@@ -1213,15 +1249,29 @@ package body Asis.Data_Decomposition is
       Type_Def   := Component_Indication (Component);
       Type_Def   := Asis.Definitions.Subtype_Mark (Type_Def);
       Type_Def   := Type_Definition_From_Subtype_Mark (Type_Def);
-      Discr_Part := Discriminant_Part_From_Type_Definition (Type_Def);
 
-      Set_Named_Components (Discr_Part, New_List);
+      declare
+         Discr_Specs : constant Asis.Element_List :=
+           Discriminant_Specs_From_Type_Definition (Type_Def);
+      begin
+         if Is_Nil (Discr_Specs) then
+            return Nil_Record_Component_List;
+         else
+            Asis_Element_Table.Init;
+
+            for J in Discr_Specs'Range loop
+               Set_Named_Components (Discr_Specs (J), Append);
+            end loop;
+
+         end if;
+      end;
 
       Set_Parent_Type_Definition (Type_Def);
       Set_Record_Type_Entity     (Component);
 
       Set_Record_Components_From_Names
-        (Parent_First_Bit => Component.First_Bit,
+        (Context_DDA_Mode => DDA_Mode (Type_Def),
+         Parent_First_Bit => Component.First_Bit,
          Discriminants    => True);
 
       return Record_Component_List (
@@ -1256,7 +1306,6 @@ package body Asis.Data_Decomposition is
      (Component : Record_Component)
       return      Record_Component_List
    is
-      Discr_Part : Asis.Element;
       Type_Def   : Asis.Element;
    begin
 
@@ -1277,15 +1326,29 @@ package body Asis.Data_Decomposition is
       Type_Def := Asis.Definitions.Component_Subtype_Indication (Type_Def);
       Type_Def := Asis.Definitions.Subtype_Mark (Type_Def);
       Type_Def := Type_Definition_From_Subtype_Mark (Type_Def);
-      Discr_Part := Discriminant_Part_From_Type_Definition (Type_Def);
 
-      Set_Named_Components (Discr_Part, New_List);
+      declare
+         Discr_Specs : constant Asis.Element_List :=
+           Discriminant_Specs_From_Type_Definition (Type_Def);
+      begin
+         if Is_Nil (Discr_Specs) then
+            return Nil_Record_Component_List;
+         else
+            Asis_Element_Table.Init;
+
+            for J in Discr_Specs'Range loop
+               Set_Named_Components (Discr_Specs (J), Append);
+            end loop;
+
+         end if;
+      end;
 
       Set_Parent_Type_Definition (Type_Def);
       Set_Record_Type_Entity     (Component);
 
       Set_Record_Components_From_Names
-        (Parent_First_Bit => Component.First_Bit,
+        (Context_DDA_Mode => DDA_Mode (Type_Def),
+         Parent_First_Bit => Component.First_Bit,
          Discriminants    => True);
 
       return Record_Component_List (
@@ -1322,7 +1385,6 @@ package body Asis.Data_Decomposition is
       return            Record_Component_List
    is
       Arg_Kind : constant Internal_Element_Kinds := Int_Kind (Type_Definition);
-      Discr_Part : Element;
    begin
 
       Check_Validity
@@ -1337,14 +1399,28 @@ package body Asis.Data_Decomposition is
             Wrong_Kind => Int_Kind (Type_Definition));
       end if;
 
-      Discr_Part := Discriminant_Part_From_Type_Definition (Type_Definition);
+      declare
+         Discr_Specs : constant Asis.Element_List :=
+           Discriminant_Specs_From_Type_Definition (Type_Definition);
+      begin
+         if Is_Nil (Discr_Specs) then
+            return Nil_Record_Component_List;
+         else
+            Asis_Element_Table.Init;
 
-      Set_Named_Components (Discr_Part, New_List);
+            for J in Discr_Specs'Range loop
+               Set_Named_Components (Discr_Specs (J), Append);
+            end loop;
+
+         end if;
+      end;
 
       Set_Parent_Type_Definition (Type_Definition);
       Set_Record_Type_Entity;
 
-      Set_Record_Components_From_Names (Discriminants => True);
+      Set_Record_Components_From_Names
+        (Context_DDA_Mode => DDA_Mode (Type_Definition),
+         Discriminants    => True);
 
       return Record_Component_List (
          RC_Table (1 .. Record_Component_Table.Last));
@@ -2272,7 +2348,8 @@ package body Asis.Data_Decomposition is
       Set_Record_Type_Entity     (Component);
 
       Set_Record_Components_From_Names
-        (Parent_First_Bit => Component.First_Bit);
+        (Context_DDA_Mode => DDA_Mode (Comp_Type),
+         Parent_First_Bit => Component.First_Bit);
 
       return Record_Component_List (
          RC_Table (1 .. Record_Component_Table.Last));
@@ -2332,6 +2409,13 @@ package body Asis.Data_Decomposition is
 
       Comp_Type := Component_Indication (Component);
 
+      if DDA_Mode (Comp_Type) = gnatR then
+         Set_Error_Status
+           (Status    => Not_Implemented_Error,
+            Diagnosis => "Data stream is not supported in -gnatR mode");
+         raise ASIS_Failed;
+      end if;
+
       Comp_Type := Component_Type_Definition (Comp_Type);
 
       if Int_Kind (Comp_Type) = A_Private_Type_Definition then
@@ -2359,7 +2443,9 @@ package body Asis.Data_Decomposition is
          raise;
       when ASIS_Failed =>
 
-         if Status_Indicator = Unhandled_Exception_Error then
+         if Status_Indicator in
+              Unhandled_Exception_Error | Not_Implemented_Error
+         then
             Add_Call_Information
               (Outer_Call =>
                  Package_Name &
@@ -2417,7 +2503,8 @@ package body Asis.Data_Decomposition is
       Set_Record_Type_Entity     (Component);
 
       Set_Record_Components_From_Names
-        (Parent_First_Bit => Component.First_Bit);
+        (Context_DDA_Mode => DDA_Mode (Comp_Type),
+         Parent_First_Bit => Component.First_Bit);
 
       return Record_Component_List (
          RC_Table (1 .. Record_Component_Table.Last));
@@ -2476,6 +2563,13 @@ package body Asis.Data_Decomposition is
 
       Comp_Type := Component_Declaration (Component);
 
+      if DDA_Mode (Comp_Type) = gnatR then
+         Set_Error_Status
+           (Status    => Not_Implemented_Error,
+            Diagnosis => "Data stream is not supported in -gnatR mode");
+         raise ASIS_Failed;
+      end if;
+
       Comp_Type := Component_Type_Definition (Comp_Type);
 
       if Int_Kind (Comp_Type) = A_Private_Type_Definition then
@@ -2500,7 +2594,9 @@ package body Asis.Data_Decomposition is
          raise;
       when ASIS_Failed =>
 
-         if Status_Indicator = Unhandled_Exception_Error then
+         if Status_Indicator in
+              Unhandled_Exception_Error | Not_Implemented_Error
+         then
             Add_Call_Information
               (Outer_Call =>
                  Package_Name &
@@ -2528,6 +2624,7 @@ package body Asis.Data_Decomposition is
       return            Record_Component_List
    is
       Arg_Kind : constant Internal_Element_Kinds := Int_Kind (Type_Definition);
+      Success  :          Boolean;
    begin
 
       Check_Validity
@@ -2544,11 +2641,29 @@ package body Asis.Data_Decomposition is
             Wrong_Kind => Arg_Kind);
       end if;
 
+      if DDA_Mode (Type_Definition) = gnatR then
+         Set_Repinfo_File (Type_Definition, Success);
+
+         if not Success then
+            Set_Error_Status
+              (Status    => Data_Error,
+               Diagnosis => Package_Name                                   &
+                           "Record_Components (from Type_Definition): "    &
+                            "cannot locate file with representation "      &
+                            "information for "                             &
+                            To_String (Text_Name
+                              (Enclosing_Compilation_Unit
+                                 (Type_Definition))));
+            raise ASIS_Failed;
+         end if;
+      end if;
+
       Set_All_Named_Components   (Type_Definition);
       Set_Parent_Type_Definition (Type_Definition);
       Set_Record_Type_Entity;
 
-      Set_Record_Components_From_Names;
+      Set_Record_Components_From_Names
+        (Context_DDA_Mode => DDA_Mode (Type_Definition));
 
       return Record_Component_List (
          RC_Table (1 .. Record_Component_Table.Last));
@@ -2606,11 +2721,20 @@ package body Asis.Data_Decomposition is
              Wrong_Kind => Arg_Kind);
       end if;
 
+      if DDA_Mode (Type_Definition) = gnatR then
+         Set_Error_Status
+           (Status    => Not_Implemented_Error,
+            Diagnosis => "Data stream is not supported in -gnatR mode");
+         raise ASIS_Failed;
+      end if;
+
       Set_All_Named_Components   (Type_Definition);
       Set_Parent_Type_Definition (Type_Definition);
       Set_Record_Type_Entity;
 
-      Set_Record_Components_From_Names (Data_Stream => Data_Stream);
+      Set_Record_Components_From_Names
+        (Context_DDA_Mode => DDA_Mode (Type_Definition),
+         Data_Stream      => Data_Stream);
 
       return Record_Component_List (
          RC_Table (1 .. Record_Component_Table.Last));
@@ -2620,7 +2744,9 @@ package body Asis.Data_Decomposition is
          raise;
       when ASIS_Failed =>
 
-         if Status_Indicator = Unhandled_Exception_Error then
+         if Status_Indicator in
+              Unhandled_Exception_Error | Not_Implemented_Error
+         then
             Add_Call_Information
               (Argument   => Type_Definition,
                Outer_Call =>
@@ -2765,6 +2891,8 @@ package body Asis.Data_Decomposition is
    is
       Arg_Kind : constant Internal_Element_Kinds := Int_Kind (Type_Definition);
       Type_Ent : Node_Id;
+
+      Success  : Boolean;
    begin
       Check_Validity
         (Type_Definition, Package_Name & "Size (from Type_Definition)");
@@ -2779,26 +2907,52 @@ package body Asis.Data_Decomposition is
             Wrong_Kind => Arg_Kind);
       end if;
 
-      --  The idea is to compute a type (or subtype) entity node
-      --  (it may correspond to implicit type created by the compiler)
-      --  and to get the size information from it
+      case DDA_Mode (Type_Definition) is
+         when Normal =>
+            --  The idea is to compute a type (or subtype) entity node
+            --  (it may correspond to implicit type created by the compiler)
+            --  and to get the size information from it
 
-      if Arg_Kind in Internal_Type_Kinds then
-         Type_Ent := R_Node (Type_Definition);
-         Type_Ent := Defining_Identifier (Parent (Type_Ent));
-      else
-         Type_Ent := Subtype_Entity (Type_Definition);
-      end if;
+            if Arg_Kind in Internal_Type_Kinds then
+               Type_Ent := R_Node (Type_Definition);
+               Type_Ent := Defining_Identifier (Parent (Type_Ent));
+            else
+               Type_Ent := Subtype_Entity (Type_Definition);
+            end if;
 
-      --  If the size is greater than ASIS_Natural'Last, we return
-      --  ASIS_Natural'Last. That's a wrong answer, but it's the closest we can
-      --  get given the spec of this function.
+            --  If the size is greater than ASIS_Natural'Last, we return
+            --  ASIS_Natural'Last. That's a wrong answer, but it's the closest
+            --  we can get given the spec of this function.
 
-      if UI_Is_In_Int_Range (Get_Esize (Type_Ent)) then
-         return ASIS_Natural (UI_To_Int (Get_Esize (Type_Ent)));
-      else
-         return ASIS_Natural'Last;
-      end if;
+            if UI_Is_In_Int_Range (Get_Esize (Type_Ent)) then
+               return ASIS_Natural (UI_To_Int (Get_Esize (Type_Ent)));
+            else
+               return ASIS_Natural'Last;
+            end if;
+
+         when gnatR =>
+            Set_Repinfo_File (Type_Definition, Success);
+
+            if not Success then
+               Set_Error_Status
+                 (Status    => Data_Error,
+                  Diagnosis => Package_Name & "Size (from Type_Definition): " &
+                               "cannot locate file with representation "      &
+                               "information for "                             &
+                               To_String (Text_Name
+                                 (Enclosing_Compilation_Unit
+                                    (Type_Definition))));
+               raise ASIS_Failed;
+            end if;
+
+            declare
+               Type_Name : constant String :=
+                  To_Lower (Get_Entity_Name (Type_Definition));
+            begin
+               return ASIS_Natural (UI_To_Int (Get_JSON_Esize (Type_Name)));
+            end;
+
+      end case;
 
    exception
       when ASIS_Inappropriate_Element =>

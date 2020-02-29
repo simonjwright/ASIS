@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 1995-2017, Free Software Foundation, Inc.       --
+--            Copyright (C) 1995-2019, Free Software Foundation, Inc.       --
 --                                                                          --
 -- ASIS-for-GNAT is free software; you can redistribute it and/or modify it --
 -- under terms of the  GNU General Public License  as published by the Free --
@@ -43,6 +43,7 @@
 --  It also contains routines for creating lists of record and array
 --  components
 
+with A4G.A_Opt;       use A4G.A_Opt;
 with A4G.Asis_Tables; use A4G.Asis_Tables;
 with A4G.DDA_Aux;     use A4G.DDA_Aux;
 
@@ -152,7 +153,8 @@ private package Asis.Data_Decomposition.Set_Get is
    --  the procedure resets Asis_Element_Table.
 
    procedure Set_Record_Components_From_Names
-     (Parent_First_Bit : ASIS_Natural  := 0;
+     (Context_DDA_Mode : DDA_Modes     := Normal;
+      Parent_First_Bit : ASIS_Natural  := 0;
       Data_Stream      : Portable_Data := Nil_Portable_Data;
       Discriminants    : Boolean       := False);
    --  Supposing that an appropriate list of component defining names is set
@@ -181,8 +183,9 @@ private package Asis.Data_Decomposition.Set_Get is
       Parent_Indication          : Element          := Nil_Element;
       Parent_Discriminants       : Discrim_List     := Null_Discrims;
       Parent_First_Bit_Offset    : ASIS_Natural     := 0;
-      Dynamic_Array              : Boolean          := False)
-      return Array_Component;
+      Dynamic_Array              : Boolean          := False;
+      Context_DDA_Mode           : DDA_Modes        := Normal)
+      return                       Array_Component;
    --  Sets and returns an Array_Component value. Array_Type_Definition
    --  parameter should represent a (constrained or unconstrained) array type
    --  definition or a derived type definition for which an ancestor type is

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2008-2018, AdaCore                     --
+--                     Copyright (C) 2008-2019, AdaCore                     --
 --                                                                          --
 -- GNATCHECK  is  free  software;  you can redistribute it and/or modify it --
 -- under terms of the  GNU  General Public License as published by the Free --
@@ -1055,7 +1055,7 @@ package body Gnatcheck.Rules.Custom_2 is
       Rule.Name        := new String'("Maximum_Parameters");
       Rule.Rule_Status := Fully_Implemented;
       Rule.Help_Info   := new String
-       '("maxumum number of subprogram parameters");
+       '("maximum number of subprogram parameters");
       Rule.Diagnosis   := new String'("too many formal parameters (%1%)");
    end Init_Rule;
 
@@ -1147,6 +1147,8 @@ package body Gnatcheck.Rules.Custom_2 is
             return "Except_Assertions";
          when 2 =>
             return "Multi_Alternative_Only";
+         when 3 =>
+            return "Float_Types_Only";
          when others =>
             return "";
       end case;
@@ -1169,6 +1171,8 @@ package body Gnatcheck.Rules.Custom_2 is
          Result := 1;
       elsif Normalized_Exc_Name = "multi_alternative_only" then
          Result := 2;
+      elsif Normalized_Exc_Name = "float_types_only" then
+         Result := 3;
       end if;
 
       return Result;
@@ -1203,6 +1207,7 @@ package body Gnatcheck.Rules.Custom_2 is
       Detected     : Boolean := False;
       Enclosing_El : Asis.Element;
       Steps_Up     : Elmt_Idx;
+      Tmp          : Asis.Element;
 
       pragma Unreferenced (Control);
 
@@ -1237,6 +1242,10 @@ package body Gnatcheck.Rules.Custom_2 is
             State.Detected  := True;
          end if;
 
+         if State.Detected and then Rule.Exceptions (3) then
+            Tmp := Membership_Test_Expression (Element);
+            State.Detected := Is_Float (Tmp);
+         end if;
       end if;
    end Rule_Check_Pre_Op;
 
@@ -2058,6 +2067,45 @@ package body Gnatcheck.Rules.Custom_2 is
    -- Visible_Components --
    ------------------------
 
+   -----------------------------------------
+   -- Exception_Name (Visible_Components) --
+   -----------------------------------------
+
+   overriding function Exception_Name
+     (Rule      : Visible_Components_Rule_Type;
+      Exc_Index : Exception_Index)
+      return      String
+   is
+      pragma Unreferenced (Rule);
+   begin
+      case Exc_Index is
+         when 1 =>
+            return "Tagged_Only";
+         when others =>
+            return "";
+      end case;
+   end Exception_Name;
+
+   -------------------------------------------
+   -- Exception_Number (Visible_Components) --
+   -------------------------------------------
+
+   overriding function Exception_Number
+     (Rule     : Visible_Components_Rule_Type;
+      Exc_Name : String)
+      return     Exception_Numbers
+   is
+      pragma Unreferenced (Rule);
+      Result : Exception_Numbers := Not_An_Exception;
+      Normalized_Exc_Name : constant String := To_Lower (Exc_Name);
+   begin
+      if Normalized_Exc_Name = "tagged_only" then
+         Result := 1;
+      end if;
+
+      return Result;
+   end Exception_Number;
+
    ------------------------------------
    -- Init_Rule (Visible_Components) --
    ------------------------------------
@@ -2084,14 +2132,14 @@ package body Gnatcheck.Rules.Custom_2 is
       Control : in out Traverse_Control;
       State   : in out Rule_Traversal_State)
    is
-      pragma Unreferenced (Rule, Control);
+      pragma Unreferenced (Control);
    begin
 
       if Defines_Components (Element)
         and then
          Is_Publically_Accessible (Element)
       then
-         State.Detected  := True;
+         State.Detected := not Rule.Exceptions (1) or else Is_Tagged (Element);
       end if;
 
    end Rule_Check_Pre_Op;

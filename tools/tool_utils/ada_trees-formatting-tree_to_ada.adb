@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2012-2017, AdaCore                     --
+--                     Copyright (C) 2012-2019, AdaCore                     --
 --                                                                          --
 -- Gnat2xml is free software; you can redistribute it and/or modify it      --
 -- under terms of the  GNU General Public License  as published by the Free --
@@ -3255,6 +3255,10 @@ is
    end Init_Template_Table;
 
    procedure Init_Pp_Off_And_On is
+      pragma Warnings (Off);
+      --  Suppress warning about useless use clause
+      use type GNAT.OS_Lib.String_Access;
+      pragma Warnings (On);
    begin
       if Options.Pp_Off_String /= null then
          pragma Assert (Options.Pp_Off_String.all /= "");

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 1995-2014, Free Software Foundation, Inc.       --
+--            Copyright (C) 1995-2019, Free Software Foundation, Inc.       --
 --                                                                          --
 -- ASIS-for-GNAT is free software; you can redistribute it and/or modify it --
 -- under terms of the  GNU General Public License  as published by the Free --
@@ -37,6 +37,9 @@
 
 with Ada.Characters.Handling; use Ada.Characters.Handling;
 
+with Asis.Elements;
+with Asis.Extensions.Iterator;
+
 with A4G.A_Sem;               use A4G.A_Sem;
 with A4G.Contt;               use A4G.Contt;
 with A4G.Contt.UT;            use A4G.Contt.UT;
@@ -45,6 +48,7 @@ with A4G.GNAT_Int;            use A4G.GNAT_Int;
 with A4G.Knd_Conv;            use A4G.Knd_Conv;
 
 with Atree;                   use Atree;
+with Einfo;                   use Einfo;
 with Sinfo;                   use Sinfo;
 with Stand;                   use Stand;
 with Uintp;                   use Uintp;
@@ -58,6 +62,44 @@ package body Asis.Set_Get is
    function Element_In_Current_Tree (E : Element) return Boolean;
    --  Checks if the currently accessed tree is the tree from which the
    --  argument has been obtained.
+
+   type Check_State is record
+      E    : Asis.Element;
+      Found : Boolean;
+   end record;
+
+   procedure Check_Element
+     (Element :        Asis.Element;
+      Control : in out Traverse_Control;
+      State   : in out Check_State);
+   --  ???
+
+   procedure No_Op
+     (Element :        Asis.Element;
+      Control : in out Traverse_Control;
+      State   : in out Check_State) is null;
+
+   procedure Refind_Element is new Asis.Extensions.Iterator.Traverse_Unit
+     (State_Information => Check_State,
+      Pre_Operation     => Check_Element,
+      Post_Operation    => No_Op);
+
+   -------------------
+   -- Check_Element --
+   -------------------
+
+   procedure Check_Element
+     (Element :        Asis.Element;
+      Control : in out Traverse_Control;
+      State   : in out Check_State)
+   is
+   begin
+      if Asis.Elements.Is_Equal (State.E, Element) then
+         State.E     := Element;
+         State.Found := True;
+         Control     := Terminate_Immediately;
+      end if;
+   end Check_Element;
 
    ---------------------
    -- To_Program_Text --
@@ -396,48 +438,168 @@ package body Asis.Set_Get is
    -- Get --
    ---------
 
-   function Node   (E : Element) return Node_Id is
+   function Node (E : Element) return Node_Id is
+      Tmp     : Asis.Element := E;
+      State   : Check_State;
+      Control : Traverse_Control;
    begin
+
       if E.Internal_Kind /= Not_An_Element and then
          not Element_In_Current_Tree (E)
       then
-         Reset_Tree (E.Enclosing_Context, E.Enclosing_Tree);
+
+         if
+            E.Special_Case /= From_Limited_View
+         and then
+            not E.Is_Part_Of_Implicit
+         and then
+            not E.Is_Part_Of_Inherited
+         and then
+            not E.Is_Part_Of_Instance
+         and then
+            Unit_In_Current_Tree (Encl_Cont_Id (E), Encl_Unit_Id (E))
+         then
+            Control := Continue;
+            State   := (E => E, Found => False);
+            Refind_Element
+              (Unit    => Asis.Elements.Enclosing_Compilation_Unit (E),
+               Control => Control,
+               State   => State);
+
+            if State.Found then
+               Tmp := State.E;
+            else
+               Reset_Tree (E.Enclosing_Context, E.Enclosing_Tree);
+            end if;
+         else
+            Reset_Tree (E.Enclosing_Context, E.Enclosing_Tree);
+         end if;
       end if;
 
-      return E.Node;
+      return Tmp.Node;
    end Node;
 
    function R_Node (E : Element) return Node_Id is
+      Tmp     : Asis.Element := E;
+      State   : Check_State;
+      Control : Traverse_Control;
    begin
+
       if E.Internal_Kind /= Not_An_Element and then
          not Element_In_Current_Tree (E)
       then
-         Reset_Tree (E.Enclosing_Context, E.Enclosing_Tree);
+
+         if
+            E.Special_Case /= From_Limited_View
+         and then
+            not E.Is_Part_Of_Implicit
+         and then
+            not E.Is_Part_Of_Inherited
+         and then
+            not E.Is_Part_Of_Instance
+         and then
+            Unit_In_Current_Tree (Encl_Cont_Id (E), Encl_Unit_Id (E))
+         then
+            Control := Continue;
+            State   := (E => E, Found => False);
+            Refind_Element
+              (Unit    => Asis.Elements.Enclosing_Compilation_Unit (E),
+               Control => Control,
+               State   => State);
+
+            if State.Found then
+               Tmp := State.E;
+            else
+               Reset_Tree (E.Enclosing_Context, E.Enclosing_Tree);
+            end if;
+         else
+            Reset_Tree (E.Enclosing_Context, E.Enclosing_Tree);
+         end if;
       end if;
 
-      return E.R_Node;
+      return Tmp.R_Node;
    end R_Node;
 
    function Node_Field_1 (E : Element) return Node_Id is
+      Tmp     : Asis.Element := E;
+      State   : Check_State;
+      Control : Traverse_Control;
    begin
+
       if E.Internal_Kind /= Not_An_Element and then
          not Element_In_Current_Tree (E)
       then
-         Reset_Tree (E.Enclosing_Context, E.Enclosing_Tree);
+
+         if
+            E.Special_Case /= From_Limited_View
+         and then
+            not E.Is_Part_Of_Implicit
+         and then
+            not E.Is_Part_Of_Inherited
+         and then
+            not E.Is_Part_Of_Instance
+         and then
+            Unit_In_Current_Tree (Encl_Cont_Id (E), Encl_Unit_Id (E))
+         then
+            Control := Continue;
+            State   := (E => E, Found => False);
+            Refind_Element
+              (Unit    => Asis.Elements.Enclosing_Compilation_Unit (E),
+               Control => Control,
+               State   => State);
+
+            if State.Found then
+               Tmp := State.E;
+            else
+               Reset_Tree (E.Enclosing_Context, E.Enclosing_Tree);
+            end if;
+         else
+            Reset_Tree (E.Enclosing_Context, E.Enclosing_Tree);
+         end if;
       end if;
 
-      return E.Node_Field_1;
+      return Tmp.Node_Field_1;
    end Node_Field_1;
 
    function Node_Field_2 (E : Element) return Node_Id is
+      Tmp     : Asis.Element := E;
+      State   : Check_State;
+      Control : Traverse_Control;
    begin
+
       if E.Internal_Kind /= Not_An_Element and then
          not Element_In_Current_Tree (E)
       then
-         Reset_Tree (E.Enclosing_Context, E.Enclosing_Tree);
+
+         if
+            E.Special_Case /= From_Limited_View
+         and then
+            not E.Is_Part_Of_Implicit
+         and then
+            not E.Is_Part_Of_Inherited
+         and then
+            not E.Is_Part_Of_Instance
+         and then
+            Unit_In_Current_Tree (Encl_Cont_Id (E), Encl_Unit_Id (E))
+         then
+            Control := Continue;
+            State   := (E => E, Found => False);
+            Refind_Element
+              (Unit    => Asis.Elements.Enclosing_Compilation_Unit (E),
+               Control => Control,
+               State   => State);
+
+            if State.Found then
+               Tmp := State.E;
+            else
+               Reset_Tree (E.Enclosing_Context, E.Enclosing_Tree);
+            end if;
+         else
+            Reset_Tree (E.Enclosing_Context, E.Enclosing_Tree);
+         end if;
       end if;
 
-      return E.Node_Field_2;
+      return Tmp.Node_Field_2;
    end Node_Field_2;
 
    function Node_Value (E : Element) return Node_Id is
@@ -550,6 +712,14 @@ package body Asis.Set_Get is
       return Is_Opened (E.Enclosing_Context) and then
              Later (Opened_At (E.Enclosing_Context), E.Obtained);
    end Valid;
+
+   function DDA_Mode (E : Element) return DDA_Modes is
+      C : constant Context_Id := Encl_Cont_Id (E);
+   begin
+      Reset_Context (C);
+
+      return DDA_Mode (C);
+   end DDA_Mode;
 
    ---------
    -- Set --
@@ -760,6 +930,17 @@ package body Asis.Set_Get is
                Nkind (Parent (Node)) = N_Compilation_Unit
          then
             --  Library-level instantiation
+            Result := False;
+         elsif Result
+              and then
+               Kind = N_Subprogram_Body
+              and then
+               (No (Corresponding_Spec (Node))
+               or else
+                Ekind (Corresponding_Spec (Node)) not in
+                  Generic_Subprogram_Kind)
+         then
+            --  non-generic subprogram
             Result := False;
          end if;
 

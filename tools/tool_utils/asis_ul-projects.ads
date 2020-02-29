@@ -300,7 +300,7 @@ package ASIS_UL.Projects is
    --  generates any error or warning message, because here we do not know
    --  values of external variables.
 
-   procedure Set_External_Values;
+   procedure Set_External_Values (My_Project : Arg_Project_Type);
    --  For each value of an external variable that has been stored as a result
    --  of the initial parameter processing, changes environment accordingly.
    --  Any inconsistencies coming from improper values of scenario variables

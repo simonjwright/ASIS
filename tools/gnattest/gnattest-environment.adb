@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2011-2018, AdaCore                     --
+--                     Copyright (C) 2011-2019, AdaCore                     --
 --                                                                          --
 -- GNATTEST  is  free  software;  you  can redistribute it and/or modify it --
 -- under terms of the  GNU  General Public License as published by the Free --
@@ -33,6 +33,8 @@ with Asis.Ada_Environments;      use Asis.Ada_Environments;
 with Ada.Characters.Handling;    use Ada.Characters.Handling;
 with Ada.Strings;                use Ada.Strings;
 with Ada.Strings.Fixed;          use Ada.Strings.Fixed;
+
+with Ada.Environment_Variables;  use Ada.Environment_Variables;
 
 with GNAT.OS_Lib;                use GNAT.OS_Lib;
 with GNAT.Command_Line;          use GNAT.Command_Line;
@@ -71,13 +73,17 @@ package body GNATtest.Environment is
    Show_Passed_Tests_Set : Boolean := False;
    Add_Exit_Status_Set   : Boolean := False;
    Inheritance_Check_Set : Boolean := False;
+   U_Set, R_Set          : Boolean := False;
+   Recursiveness_Set     : Boolean := False;
 
    Run_Dir : String_Access;
    --  Directory from which the tool was called.
 
    Env   : Project_Environment_Access;
 
-   Recursive_Sources : Boolean := False;
+   Root : Project_Type;
+
+   Recursive_Sources : Boolean := True;
 
    Object_Dir : String_Access;
 
@@ -174,8 +180,6 @@ package body GNATtest.Environment is
    --  Treats all the source dirs from project as -I option parameters.
    --  Also sets the value of Source_Dirs_Conflict flag.
 
-   procedure Add_Test_Paths;
-
    procedure Register_Gnattest_Specific_Attributes;
 
    procedure Get_Gnattest_Specific_Attributes
@@ -183,26 +187,6 @@ package body GNATtest.Environment is
 
    function Has_Command_Line_Support return Boolean;
    --  Checks whether current run-time library has command line support or not.
-
-   --------------------
-   -- Add_Test_Paths --
-   --------------------
-
-   procedure Add_Test_Paths is
-      Tmp : String_Access;
-   begin
-      GNATtest.Skeleton.Source_Table.Reset_Source_Iterator;
-      loop
-         Tmp := new String'(GNATtest.Skeleton.Source_Table.Next_Source_Name);
-         if Tmp.all = "" then
-            Free (Tmp);
-            exit;
-         end if;
-
-         Store_I_Option (Get_Source_Output_Dir (Tmp.all));
-         Free (Tmp);
-      end loop;
-   end Add_Test_Paths;
 
    ------------------------------
    -- Update_Path_With_Project --
@@ -437,8 +421,6 @@ package body GNATtest.Environment is
       Files : File_Array_Access;
       V_F   : Virtual_File;
 
-      Excluded_Files : String_Set.Set;
-
       procedure Add_AUnit_Paths;
       --  Creates a dummy project file importing aunit, then trying to load it.
       --  If the attempt fails that means that AUnit is not on default project
@@ -535,6 +517,7 @@ package body GNATtest.Environment is
 
       procedure Set_Ext_Values is
          Var_Name, Var_Val : String_Access;
+         GPR_TOOL_Set : Boolean := False;
       begin
 
          SB_Cur := Ext_Var_Buffer.First;
@@ -561,10 +544,20 @@ package body GNATtest.Environment is
 
             Env.Change_Environment (Var_Name.all, Var_Val.all);
 
+            if Var_Name.all = "GPR_TOOL" then
+               GPR_TOOL_Set := True;
+            end if;
+
             List_Of_Strings.Next (SB_Cur);
             Free (Var_Name);
             Free (Var_Val);
          end loop;
+
+         if not GPR_TOOL_Set
+           and then not Ada.Environment_Variables.Exists ("GPR_TOOL")
+         then
+            Env.Change_Environment ("GPR_TOOL", "gnattest");
+         end if;
 
       end Set_Ext_Values;
 
@@ -713,247 +706,146 @@ package body GNATtest.Environment is
 
       Set_Ext_Values;
 
-      if Source_Prj.all /= "" then
-
-         declare
-            procedure Errors (S : String);
-            procedure Errors (S : String) is
-            begin
-               if Index (S, " not a regular file") /= 0 then
-                  Report_Err ("gnattest: project file "
-                              & Source_Prj.all & " does not exist");
-               elsif Index (S, "is illegal for typed string") /= 0 then
-                  Error (S);
-                  raise Parameter_Error;
-               else
-                  Report_Err (S);
-               end if;
-            end Errors;
+      declare
+         procedure Errors (S : String);
+         procedure Errors (S : String) is
          begin
-            Source_Project_Tree.Load
-              (GNATCOLL.VFS.Create (+Source_Prj.all),
-               Env,
-               Packages_To_Check   =>
-                  new String_List'(1 => new String'("gnattest")),
-               Recompute_View      => False,
-               Errors              => Errors'Unrestricted_Access);
-         exception
-            when Invalid_Project =>
+            if Index (S, " not a regular file") /= 0 then
+               Report_Err ("gnattest: project file "
+                           & Source_Prj.all & " does not exist");
+            elsif Index (S, "is illegal for typed string") /= 0 then
+               Error (S);
                raise Parameter_Error;
-         end;
-         Free (Source_Prj);
-         Source_Prj := new String'
-           (Source_Project_Tree.Root_Project.Project_Path.Display_Full_Name);
-
-         if Is_Aggregate_Project (Source_Project_Tree.Root_Project) then
-            Report_Err ("gnattest: aggregate projects are not supported");
+            else
+               Report_Err (S);
+            end if;
+         end Errors;
+      begin
+         Source_Project_Tree.Load
+           (GNATCOLL.VFS.Create (+Source_Prj.all),
+            Env,
+            Packages_To_Check   =>
+               new String_List'(1 => new String'("gnattest")),
+            Recompute_View      => False,
+            Errors              => Errors'Unrestricted_Access);
+      exception
+         when Invalid_Project =>
             raise Parameter_Error;
+      end;
+      Free (Source_Prj);
+      Source_Prj := new String'
+        (Source_Project_Tree.Root_Project.Project_Path.Display_Full_Name);
+
+      if Is_Aggregate_Project (Source_Project_Tree.Root_Project) then
+         Report_Err ("gnattest: aggregate projects are not supported");
+         raise Parameter_Error;
+      end if;
+
+      Source_Project_Tree.Recompute_View
+        (Errors => Supress_Output'Unrestricted_Access);
+
+      if Target.all = "" then
+         declare
+            Target_From_Project : constant String :=
+              Source_Project_Tree.Root_Project.Get_Target
+                (Default_To_Host => False);
+         begin
+            if Target_From_Project /= "" then
+               Free (Target);
+               Target := new String'(Target_From_Project);
+            end if;
+         end;
+      end if;
+
+      Run_Dir := new String'
+        (Normalize_Pathname (Name => Get_Current_Dir,
+                             Case_Sensitive => False));
+      Create_Temp_Dir
+        (Source_Project_Tree.Root_Project.Object_Dir.Display_Full_Name);
+
+      if
+        GNATtest.Options.RTS_Path.all /= "" or else
+        Attribute_Value
+          (Source_Project_Tree.Root_Project, Runtime_Attribute, "ada") /= ""
+      then
+         if Env.Predefined_Object_Path = Empty_File_Array then
+            if GNATtest.Options.RTS_Path.all /= "" then
+               Report_Err
+                 ("object path not found for runtime " &
+                    GNATtest.Options.RTS_Path.all);
+            else
+               Report_Err
+                 ("object path not found for runtime "
+                  & Attribute_Value
+                    (Source_Project_Tree.Root_Project,
+                     Runtime_Attribute,
+                     "ada"));
+            end if;
+            raise Fatal_Error;
          end if;
-
-         Source_Project_Tree.Recompute_View
-           (Errors => Supress_Output'Unrestricted_Access);
-
-         if Target.all = "" then
-            declare
-               Target_From_Project : constant String :=
-                 Source_Project_Tree.Root_Project.Get_Target
-                   (Default_To_Host => False);
-            begin
-               if Target_From_Project /= "" then
-                  Free (Target);
-                  Target := new String'(Target_From_Project);
-               end if;
-            end;
-         end if;
-
-         Run_Dir := new String'
-           (Normalize_Pathname (Name => Get_Current_Dir,
-                                Case_Sensitive => False));
-         Create_Temp_Dir
-           (Source_Project_Tree.Root_Project.Object_Dir.Display_Full_Name);
-
-         if
-           GNATtest.Options.RTS_Path.all /= "" or else
-           Attribute_Value
-             (Source_Project_Tree.Root_Project, Runtime_Attribute, "ada") /= ""
-         then
-            if Env.Predefined_Object_Path = Empty_File_Array then
-               if GNATtest.Options.RTS_Path.all /= "" then
-                  Report_Err
-                    ("object path not found for runtime " &
-                       GNATtest.Options.RTS_Path.all);
-               else
-                  Report_Err
-                    ("object path not found for runtime "
-                     & Attribute_Value
+         declare
+            Files : constant GNATCOLL.VFS.File_Array :=
+              Env.Predefined_Object_Path;
+            Obj_Path : constant String :=
+              Files (Files'First).Display_Full_Name;
+            Idx : Integer;
+         begin
+            Idx := Index (Obj_Path, Directory_Separator & "adalib");
+            if Idx = 0 then
+               Report_Err ("cannot locate runtime at " & Obj_Path);
+               raise Fatal_Error;
+            else
+               ASIS_UL.Compiler_Options.Store_Option
+                 ("--RTS="
+                  & Obj_Path (Obj_Path'First .. Idx - 1));
+               if GNATtest.Options.RTS_Path.all = "" then
+                  --  We might as well update it.
+                  Free (GNATtest.Options.RTS_Path);
+                  GNATtest.Options.RTS_Path := new String'
+                    (Obj_Path (Obj_Path'First .. Idx - 1));
+                  RTS_Attribute_Val := new String'
+                    (Attribute_Value
                        (Source_Project_Tree.Root_Project,
                         Runtime_Attribute,
                         "ada"));
                end if;
-               raise Fatal_Error;
-            end if;
-            declare
-               Files : constant GNATCOLL.VFS.File_Array :=
-                 Env.Predefined_Object_Path;
-               Obj_Path : constant String :=
-                 Files (Files'First).Display_Full_Name;
-               Idx : Integer;
-            begin
-               Idx := Index (Obj_Path, Directory_Separator & "adalib");
-               if Idx = 0 then
-                  Report_Err ("cannot locate runtime at " & Obj_Path);
-                  raise Fatal_Error;
-               else
-                  ASIS_UL.Compiler_Options.Store_Option
-                    ("--RTS="
-                     & Obj_Path (Obj_Path'First .. Idx - 1));
-                  if GNATtest.Options.RTS_Path.all = "" then
-                     --  We might as well update it.
-                     Free (GNATtest.Options.RTS_Path);
-                     GNATtest.Options.RTS_Path := new String'
-                       (Obj_Path (Obj_Path'First .. Idx - 1));
-                     RTS_Attribute_Val := new String'
-                       (Attribute_Value
-                          (Source_Project_Tree.Root_Project,
-                           Runtime_Attribute,
-                           "ada"));
-                  end if;
-               end if;
-            end;
-         end if;
-
-         Update_Path_With_Project
-           (Source_Project_Tree.Root_Project.Source_Dirs (Recursive => True));
-         Set_Gnattest_Generated_Present (Source_Project_Tree);
-
-         Get_Gnattest_Specific_Attributes (Source_Project_Tree);
-
-         --  Gather the list of sources to exclude from processing.
-         if Excluded_Files_List /= null then
-            declare
-               F : File_Type;
-               S : String_Access;
-               F_Path : constant String :=
-                 Normalize_Pathname
-                   (Name           => Excluded_Files_List.all,
-                    Case_Sensitive => False);
-            begin
-               if not Is_Regular_File (F_Path) then
-                  Report_Err ("gnattest: cannot find " & F_Path);
-                  raise Parameter_Error;
-               end if;
-               Open (F, In_File, F_Path);
-               while not End_Of_File (F) loop
-                  S := new String'(Get_Line (F));
-                  if not Is_Comment (S.all) then
-                     Excluded_Files.Include (Trim (Base_Name (S.all), Both));
-                  end if;
-                  Free (S);
-               end loop;
-               Close (F);
-            end;
-         end if;
-
-         if Harness_Only and then Main_Unit /= null then
-            Report_Err
-              ("options --harness-only and --U main are incompatible");
-            raise Parameter_Error;
-         end if;
-
-         --  --additional-tests and --harness-only are not yet supported in
-         --  --separate-drivers mode.
-         --  --stub and --harness-only make no sense at the same time.
-         --  --additional-tests is not (yet?) supported in --stub mode.
-         if Stub_Mode_ON then
-            if Harness_Only then
-               Report_Err
-                 ("options --harness-only and --stub are incompatible");
-               raise Parameter_Error;
-            end if;
-            if Additional_Tests_Prj /= null then
-               Report_Err
-                 ("options --additional-tests and --stub are incompatible");
-               raise Parameter_Error;
-            end if;
-
-            --  We also need to change default dirs is they have not been
-            --  changed explicitly.
-            if not Tests_Dir_Set then
-               Free (Test_Dir_Name);
-               Test_Dir_Name := new String'
-                 ("gnattest_stub" & Directory_Separator & "tests");
-            end if;
-            if not Stub_Dir_Set then
-               Free (Stub_Dir_Name);
-               Stub_Dir_Name := new String'
-                 ("gnattest_stub" & Directory_Separator & "stubs");
-            end if;
-            if not Harness_Dir_Set then
-               Free (Harness_Dir);
-               Harness_Dir := new String'
-                 ("gnattest_stub" & Directory_Separator & "harness");
-            end if;
-         end if;
-         if Separate_Drivers then
-            if Harness_Only then
-               Report_Err
-                 ("options --harness-only and --separate-drivers "
-                  & "are incompatible");
-               raise Parameter_Error;
-            end if;
-            if Additional_Tests_Prj /= null then
-               Report_Err
-                 ("options --additional-tests and --separate-drivers "
-                  & "are incompatible");
-               raise Parameter_Error;
-            end if;
-         end if;
-         Add_AUnit_Paths;
-
-         --  Checking if argument project has IDE package specified.
-         declare
-            S : constant Attribute_Pkg_String := Build (Ide_Package, "");
-         begin
-            if Has_Attribute (Source_Project_Tree.Root_Project, S) then
-               IDE_Package_Present := True;
-            else
-               IDE_Package_Present := False;
             end if;
          end;
-
-         --  Checking if argument project has Make package specified.
-         declare
-            S : constant Attribute_Pkg_String := Build ("make", "");
-         begin
-            if Has_Attribute (Source_Project_Tree.Root_Project, S) then
-               Make_Package_Present := True;
-            else
-               Make_Package_Present := False;
-            end if;
-         end;
-
-         if Stub_Mode_ON then
-            GNATtest.Skeleton.Source_Table.Initialize_Project_Table;
-         end if;
-
-         Object_Dir := new String'
-           (Source_Project_Tree.Root_Project.Object_Dir.Display_Full_Name);
-
-         if Output_M = Separate_Root then
-            if Separate_Root_Dir.all = Harness_Dir.all then
-               Report_Err
-                 ("gnattest: harness dir and separate root"
-                  & " dir should not be the same");
-               raise Parameter_Error;
-            end if;
-         end if;
-
-      else
-         Report_Err ("gnattest: project file not specified");
-         raise Parameter_Error;
       end if;
 
-      No_Command_Line := not Has_Command_Line_Support;
+      Root := Source_Project_Tree.Root_Project;
+
+      Update_Path_With_Project
+        (Source_Project_Tree.Root_Project.Source_Dirs (Recursive => True));
+      Set_Gnattest_Generated_Present (Source_Project_Tree);
+
+      Get_Gnattest_Specific_Attributes (Source_Project_Tree);
+
+      --  Gather the list of sources to exclude from processing.
+      if Excluded_Files_List /= null then
+         declare
+            F : File_Type;
+            S : String_Access;
+            F_Path : constant String :=
+              Normalize_Pathname
+                (Name           => Excluded_Files_List.all,
+                 Case_Sensitive => False);
+         begin
+            if not Is_Regular_File (F_Path) then
+               Report_Err ("gnattest: cannot find " & F_Path);
+               raise Parameter_Error;
+            end if;
+            Open (F, In_File, F_Path);
+            while not End_Of_File (F) loop
+               S := new String'(Get_Line (F));
+               if not Is_Comment (S.all) then
+                  Excluded_Files.Include (Trim (Base_Name (S.all), Both));
+               end if;
+               Free (S);
+            end loop;
+            Close (F);
+         end;
+      end if;
 
       --  Processing -files argument
       if Files_List /= null then
@@ -976,6 +868,102 @@ package body GNATtest.Environment is
          end;
       end if;
 
+      if Harness_Only and then U_Set and then not Source_Buffer.Is_Empty then
+         Report_Err
+           ("options --harness-only and -U <mains> are incompatible");
+         raise Parameter_Error;
+      end if;
+
+      --  --additional-tests and --harness-only are not yet supported in
+      --  --separate-drivers mode.
+      --  --stub and --harness-only make no sense at the same time.
+      --  --additional-tests is not (yet?) supported in --stub mode.
+      if Stub_Mode_ON then
+         if Harness_Only then
+            Report_Err
+              ("options --harness-only and --stub are incompatible");
+            raise Parameter_Error;
+         end if;
+         if Additional_Tests_Prj /= null then
+            Report_Err
+              ("options --additional-tests and --stub are incompatible");
+            raise Parameter_Error;
+         end if;
+
+         --  We also need to change default dirs is they have not been
+         --  changed explicitly.
+         if not Tests_Dir_Set then
+            Free (Test_Dir_Name);
+            Test_Dir_Name := new String'
+              ("gnattest_stub" & Directory_Separator & "tests");
+         end if;
+         if not Stub_Dir_Set then
+            Free (Stub_Dir_Name);
+            Stub_Dir_Name := new String'
+              ("gnattest_stub" & Directory_Separator & "stubs");
+         end if;
+         if not Harness_Dir_Set then
+            Free (Harness_Dir);
+            Harness_Dir := new String'
+              ("gnattest_stub" & Directory_Separator & "harness");
+         end if;
+      end if;
+      if Separate_Drivers then
+         if Harness_Only then
+            Report_Err
+              ("options --harness-only and --separate-drivers "
+               & "are incompatible");
+            raise Parameter_Error;
+         end if;
+         if Additional_Tests_Prj /= null then
+            Report_Err
+              ("options --additional-tests and --separate-drivers "
+               & "are incompatible");
+            raise Parameter_Error;
+         end if;
+      end if;
+      Add_AUnit_Paths;
+
+      --  Checking if argument project has IDE package specified.
+      declare
+         S : constant Attribute_Pkg_String := Build (Ide_Package, "");
+      begin
+         if Has_Attribute (Source_Project_Tree.Root_Project, S) then
+            IDE_Package_Present := True;
+         else
+            IDE_Package_Present := False;
+         end if;
+      end;
+
+      --  Checking if argument project has Make package specified.
+      declare
+         S : constant Attribute_Pkg_String := Build ("make", "");
+      begin
+         if Has_Attribute (Source_Project_Tree.Root_Project, S) then
+            Make_Package_Present := True;
+         else
+            Make_Package_Present := False;
+         end if;
+      end;
+
+      if Stub_Mode_ON then
+         GNATtest.Skeleton.Source_Table.Initialize_Project_Table;
+      end if;
+
+      Object_Dir := new String'
+        (Source_Project_Tree.Root_Project.Object_Dir.Display_Full_Name);
+
+      if Output_M = Separate_Root then
+         if Separate_Root_Dir.all = Harness_Dir.all then
+            Report_Err
+              ("gnattest: harness dir and separate root"
+               & " dir should not be the same");
+            raise Parameter_Error;
+         end if;
+      end if;
+
+      No_Command_Line := not Has_Command_Line_Support;
+
       --  need to check if given file is a source file of argument project
       Files := new File_Array'
         (Source_Project_Tree.Root_Project.Source_Dirs (True));
@@ -995,6 +983,7 @@ package body GNATtest.Environment is
                & " is not part of "
                & Base_Name (Source_Prj.all)
                & " or its dependencies");
+            raise Parameter_Error;
          elsif not
            Excluded_Files.Contains (List_Of_Strings.Element (SB_Cur))
          then
@@ -1004,14 +993,30 @@ package body GNATtest.Environment is
             V_F := Source_Project_Tree.Create
               (+List_Of_Strings.Element (SB_Cur));
 
-            if Harness_Only then
-               GNATtest.Harness.Source_Table.Add_Source_To_Process
-                 (V_F.Display_Full_Name);
-            else
-               GNATtest.Skeleton.Source_Table.Add_Source_To_Process
-                 (V_F.Display_Full_Name);
-            end if;
+            if Is_Externally_Built (V_F) then
 
+               Report_Err
+                 (Base_Name (List_Of_Strings.Element (SB_Cur))
+                  & " is part of externally built project "
+                  & Project (Source_Project_Tree.Info (V_F)).Name
+                  & "; skipping");
+
+            else
+
+               if U_Set then
+                  Main_Units.Include (V_F.Display_Full_Name);
+               else
+                  if Harness_Only then
+                     GNATtest.Harness.Source_Table.Add_Source_To_Process
+                       (V_F.Display_Full_Name);
+                  else
+                     GNATtest.Skeleton.Source_Table.Add_Source_To_Process
+                       (V_F.Display_Full_Name);
+                  end if;
+
+               end if;
+
+            end if;
          else
 
             Excluded_Files.Exclude (List_Of_Strings.Element (SB_Cur));
@@ -1023,36 +1028,31 @@ package body GNATtest.Environment is
 
       Source_Buffer.Clear;
 
-      if Harness_Dir /= null then
+      --  Processing harness dir specification
 
-         if not Is_Absolute_Path (GNATCOLL.VFS.Create (+Harness_Dir.all)) then
-            Tmp := new String'(Object_Dir.all & Harness_Dir.all);
-            Free (Harness_Dir);
-            Harness_Dir := Tmp;
-            Tmp := null;
-         end if;
+      if not Is_Absolute_Path (GNATCOLL.VFS.Create (+Harness_Dir.all)) then
+         Tmp := new String'(Object_Dir.all & Harness_Dir.all);
+         Free (Harness_Dir);
+         Harness_Dir := Tmp;
+         Tmp := null;
+      end if;
 
-         if Is_Regular_File (Harness_Dir.all) then
-            Report_Err ("gnattest: cannot create harness directory");
-            raise Parameter_Error;
-         elsif not Is_Directory (Harness_Dir.all) then
-
-            declare
-               Dir : File_Array_Access;
-            begin
-               Append (Dir, GNATCOLL.VFS.Create (+Harness_Dir.all));
-               Create_Dirs (Dir);
-            exception
-               when Directory_Error =>
-                  Report_Err ("gnattest: cannot create harness directory");
-                  raise Parameter_Error;
-            end;
-
-         end if;
-
-      else
-         Report_Err ("gnattest: harness directory not specified");
+      if Is_Regular_File (Harness_Dir.all) then
+         Report_Err ("gnattest: cannot create harness directory");
          raise Parameter_Error;
+      elsif not Is_Directory (Harness_Dir.all) then
+
+         declare
+            Dir : File_Array_Access;
+         begin
+            Append (Dir, GNATCOLL.VFS.Create (+Harness_Dir.all));
+            Create_Dirs (Dir);
+         exception
+            when Directory_Error =>
+               Report_Err ("gnattest: cannot create harness directory");
+               raise Parameter_Error;
+         end;
+
       end if;
 
       Tmp := new String'(Normalize_Pathname
@@ -1064,13 +1064,12 @@ package body GNATtest.Environment is
 
       Change_Dir (Temp_Dir.all);
 
-      if Main_Unit = null then
-         Get_Naming_Info (Source_Project_Tree);
-      end if;
       Set_Inherited_Switches (Source_Project_Tree);
       Set_Asis_Mode (Source_Project_Tree);
 
       if Harness_Only then
+         --  Filling up harness source table.
+
          if GNATtest.Harness.Source_Table.SF_Table_Empty then
 
             if Source_Prj.all = "" then
@@ -1132,9 +1131,31 @@ package body GNATtest.Environment is
 
          end if;
       else
+         --  Filling up skeletons source table OR mains (if any).
+         --  First we need to check if project has any Mains.
+
+         --  need to check if there were argument sources!
+         if
+           GNATtest.Skeleton.Source_Table.SF_Table_Empty
+           and then not U_Set and then not R_Set and then Recursive_Sources
+           and then Root.Has_Attribute (Main_Attribute)
+           and then Attribute_Value (Root, Main_Attribute) /= null
+         then
+            declare
+               Mains : constant String_List :=
+                 Attribute_Value (Root, Main_Attribute).all;
+
+               V_F : Virtual_File;
+            begin
+               for Main of Mains loop
+                  V_F := Source_Project_Tree.Create (+Main.all);
+                  Main_Units.Include (V_F.Display_Full_Name);
+               end loop;
+            end;
+         end if;
 
          if GNATtest.Skeleton.Source_Table.SF_Table_Empty
-           and then Main_Unit = null
+           and then Main_Units.Is_Empty
          then
 
             declare
@@ -1199,7 +1220,7 @@ package body GNATtest.Environment is
 
          end if;
 
-         if Stub_Mode_ON or else Main_Unit /= null then
+         if Stub_Mode_ON or else not Main_Units.Is_Empty then
             Files := Source_Project_Tree.Root_Project.Source_Files
               (Recursive => True);
 
@@ -1255,7 +1276,7 @@ package body GNATtest.Environment is
             Process_Exclusion_Lists;
          end if;
 
-         if Main_Unit /= null then
+         if not Main_Units.Is_Empty then
             --  We need to replace the project file with a dummy "extends all"
             --  wrapper.
 
@@ -1286,7 +1307,6 @@ package body GNATtest.Environment is
                Source_Project_Tree.Unload;
                Env.Set_Object_Subdir (+Closure_Subdir_Name);
                Source_Project_Tree.Load (Create (+Dummy_Proj_File_Name), Env);
-               Get_Naming_Info (Source_Project_Tree);
 
             exception
                when others =>
@@ -1297,7 +1317,7 @@ package body GNATtest.Environment is
          end if;
       end if;
 
-      Add_Test_Paths;
+      Get_Naming_Info (Source_Project_Tree);
 
       if Additional_Tests_Prj /= null then
 
@@ -1371,20 +1391,9 @@ package body GNATtest.Environment is
          Store_I_Option (Harness_Dir.all & Directory_Separator & "common");
       end if;
 
-      if not Excluded_Files.Is_Empty then
-         declare
-            use String_Set;
-            Cur : String_Set.Cursor := Excluded_Files.First;
-         begin
-            while Cur /= String_Set.No_Element loop
-               Report_Std
-                 ("warning: exemption: source " & String_Set.Element (Cur)
-                  & " not found");
-               Next (Cur);
-            end loop;
-         end;
+      if Main_Units.Is_Empty then
+         Report_Exclusions_Not_Found;
       end if;
-      Excluded_Files.Clear;
 
       --  Disregard the fact that Process_cargs_Section calls Set_Arg_List and
       --  Process_ADA_PRJ_INCLUDE_FILE already, whithout their explicit call
@@ -1404,46 +1413,39 @@ package body GNATtest.Environment is
          Set_Tree_Creator (Dummy_Project);
       end;
 
-      if Main_Unit /= null then
+      if not Main_Units.Is_Empty then
          declare
-            VF  : constant GNATCOLL.VFS.Virtual_File :=
-              Source_Project_Tree.Create (+Main_Unit.all);
+            VF : GNATCOLL.VFS.Virtual_File;
 
             Success : Boolean;
          begin
-            if VF = No_File then
-               Report_Err ("gnattest (error): " & Main_Unit.all
-                           & " is not a source of argument project");
-               raise Parameter_Error;
-            end if;
+            for Main_Unit of Main_Units loop
+               VF := Source_Project_Tree.Create (+Main_Unit);
 
-            Trace (Me, "main normalized: " & VF.Display_Full_Name);
-            Free (Main_Unit);
-            Main_Unit := new String'(VF.Display_Full_Name);
+               case Source_Project_Tree.Info (VF).Unit_Part is
+                  when Unit_Spec =>
+                     null;
 
-            case Source_Project_Tree.Info (VF).Unit_Part is
-               when Unit_Spec =>
-                  null;
+                  when Unit_Body =>
+                     Trace (Me, "We need a special tree creation call");
+                     Change_Dir
+                       (Temp_Dir.all
+                        & Directory_Separator & Closure_Subdir_Name);
+                     Create_ALI (Main_Unit, Success);
+                     if not Success then
+                        Report_Err
+                          ("gnattest (error): "
+                           & "cannot calculate closure");
+                        raise Fatal_Error;
+                     end if;
+                     Change_Dir (Temp_Dir.all);
 
-               when Unit_Body =>
-                  Trace (Me, "We need a special tree creation call");
-                  Change_Dir
-                    (Temp_Dir.all & Directory_Separator & Closure_Subdir_Name);
-                  Create_ALI (Main_Unit.all, Success);
-                  if not Success then
+                  when others =>
                      Report_Err
                        ("gnattest (error): "
-                        & "cannot calculate closure");
-                     raise Fatal_Error;
-                  end if;
-                  Change_Dir (Temp_Dir.all);
-
-               when others =>
-                  Report_Err
-                    ("gnattest (error): "
-                     & "cannot calculate closure for a separate");
-            end case;
-
+                        & "cannot calculate closure for a separate");
+               end case;
+            end loop;
          end;
 
          declare
@@ -1452,10 +1454,24 @@ package body GNATtest.Environment is
                      Recursive        => True,
                      Direct_Only      => False,
                      Include_Extended => True);
+
+            function Is_Temp_Subdir (VF : Virtual_File) return Boolean is
+              (Index (VF.Display_Full_Name, Closure_Subdir_Name) /= 0);
+            --  To be sure that we are not deleting anything not temporary.
          begin
             while Current (Iter) /= No_Project loop
-               Closure_Subdirs_To_Clean.Append
-                 (Current (Iter).Object_Dir.Display_Full_Name);
+               if Is_Temp_Subdir (Current (Iter).Object_Dir) then
+                  Closure_Subdirs_To_Clean.Append
+                    (Current (Iter).Object_Dir.Display_Full_Name);
+               end if;
+               if Is_Temp_Subdir (Current (Iter).Executables_Directory) then
+                  Closure_Subdirs_To_Clean.Append
+                    (Current (Iter).Executables_Directory.Display_Full_Name);
+               end if;
+               if Is_Temp_Subdir (Current (Iter).Library_Directory) then
+                  Closure_Subdirs_To_Clean.Append
+                    (Current (Iter).Library_Directory.Display_Full_Name);
+               end if;
                Next (Iter);
             end loop;
          end;
@@ -2130,8 +2146,13 @@ package body GNATtest.Environment is
          if Has_Attribute (Proj, Attr) then
             GT_Switches := Attribute_Value (Proj, Attr);
             for I in GT_Switches'Range loop
-               if GT_Switches (I).all = "-r" then
-                  Recursive_Sources := True;
+               if not Recursiveness_Set then
+                  if GT_Switches (I).all in "-r" | "-U" then
+                     Recursive_Sources := True;
+                  end if;
+                  if GT_Switches (I).all in "--no-subprojects" then
+                     Recursive_Sources := False;
+                  end if;
                end if;
                if GT_Switches (I).all = "-q" then
                   Quiet := True;
@@ -2538,7 +2559,6 @@ package body GNATtest.Environment is
 
    procedure Scan_Parameters is
       Multiple_Output : Boolean := False;
-      Main_Unit_Set   : Boolean := False;
 
       Possible_Switches : constant String :=
         "h d? P: q -tests-root= "
@@ -2546,7 +2566,7 @@ package body GNATtest.Environment is
         & "-separates "
         & "-no-separates "
         & "-transition "
-        & "-subdir= -subdirs= r v X? U: "
+        & "-subdir= -subdirs= r v X? U "
         & "-harness-only "
         & "-stub "
         & "-separate-drivers? "
@@ -2571,7 +2591,8 @@ package body GNATtest.Environment is
         & "-reporter= "
         & "-test-case-only "
         & "-strict "
-        & "-copy-environment=";
+        & "-copy-environment= "
+        & "-no-subprojects";
 
       Ignore_Arg : String_Access := new String'("");
 
@@ -2713,8 +2734,9 @@ package body GNATtest.Environment is
                exit;
 
             when 'U' =>
-               Main_Unit := new String'(Parameter);
-               Main_Unit_Set := True;
+               Recursive_Sources := True;
+               U_Set := True;
+               Recursiveness_Set := True;
                Report_Switch (Full_Switch, Generation);
 
             when 'd' =>
@@ -2762,6 +2784,8 @@ package body GNATtest.Environment is
             when 'r' =>
                Recursive_Sources := True;
                Report_Switch (Full_Switch, Generation);
+               Recursiveness_Set := True;
+               R_Set := True;
 
             when '-' =>
                if Full_Switch = "-additional-tests" then
@@ -3042,6 +3066,12 @@ package body GNATtest.Environment is
                   Report_Switch (Full_Switch, Aggregation);
                end if;
 
+               if Full_Switch = "-no-subprojects" then
+                  Recursive_Sources := False;
+                  Report_Switch (Full_Switch, Generation);
+                  Recursiveness_Set := False;
+               end if;
+
             when 'X' =>
                Ext_Var_Buffer.Append (Parameter);
 
@@ -3058,13 +3088,7 @@ package body GNATtest.Environment is
                exit;
             end if;
             if Temp /= Ignore_Arg.all or else GNATtest_Mode = Aggregation then
-               if Main_Unit_Set then
-                  Report_Err
-                    ("cannot specify argument sources after -U is used");
-                  raise Parameter_Error;
-               else
-                  Source_Buffer.Append (Temp);
-               end if;
+               Source_Buffer.Append (Temp);
             end if;
          end;
       end loop;

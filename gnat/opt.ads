@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -746,9 +746,9 @@ package Opt is
    --  file name with extension stripped.
 
    Generate_C_Code : Boolean := False;
-   --  GNAT
+   --  GNAT, GNATBIND
    --  If True, the Cprint circuitry to generate C code output is activated.
-   --  Set True by use of -gnateg or -gnatd.V.
+   --  Set True by use of -gnateg or -gnatd.V for GNAT, and -G for GNATBIND.
 
    Generate_CodePeer_Messages : Boolean := False;
    --  GNAT
@@ -947,6 +947,11 @@ package Opt is
    --  Set to True when the pre-18.x access-before-elaboration model is to be
    --  used. Modified by use of -gnatH.
 
+   Legacy_Elaboration_Order : Boolean := False;
+   --  GNATBIND
+   --  Set to True when the pre-20.x elaboration-order model is to be used.
+   --  Modified by use of -H.
+
    Link_Only : Boolean := False;
    --  GNATMAKE, GPRBUILD
    --  Set to True to skip compile and bind steps (except when Bind_Only is
@@ -986,26 +991,27 @@ package Opt is
    --  the list of object dependencies (-M switch). Output depends if -a switch
    --  is used or not. This list can be used directly in a Makefile.
 
-   List_Representation_Info : Int range 0 .. 3 := 0;
+   List_Representation_Info : Int range 0 .. 4 := 0;
    --  GNAT
    --  Set non-zero by -gnatR switch to list representation information.
    --  The settings are as follows:
    --
    --    0 = no listing of representation information (default as above)
-   --    1 = list rep info for user defined record and array types
-   --    2 = list rep info for all user defined types and objects
+   --    1 = list rep info for user-defined record and array types
+   --    2 = list rep info for all user-defined types and objects
    --    3 = like 2, but variable fields are decoded symbolically
+   --    4 = like 3, but list rep info for relevant compiler-generated types
 
    List_Representation_Info_To_File : Boolean := False;
    --  GNAT
-   --  Set true by -gnatRs switch. Causes information from -gnatR/1/2/3/m to be
+   --  Set true by -gnatRs switch. Causes information from -gnatR[1-4]m to be
    --  written to file.rep (where file is the name of the source file) instead
    --  of stdout. For example, if file x.adb is compiled using -gnatR2s then
    --  representation info is written to x.adb.ref.
 
    List_Representation_Info_To_JSON : Boolean := False;
    --  GNAT
-   --  Set true by -gnatRj switch. Causes information from -gnatR/1/2/3/m to be
+   --  Set true by -gnatRj switch. Causes information from -gnatR[1-4]m to be
    --  output in the JSON data interchange format.
 
    List_Representation_Info_Mechanisms : Boolean := False;
@@ -1114,6 +1120,12 @@ package Opt is
    --  Maximum number of processes that should be spawned to carry out
    --  compilations.
 
+   Minimal_Binder : Boolean := False;
+   --  GNATBIND
+   --  Set to True to suppress the generation of objects by the binder that
+   --  are not strictly required for a program to run. Intended for ZFP
+   --  applications that have tight memory constraints.
+
    Minimal_Recompilation : Boolean := False;
    --  GNATMAKE
    --  Set to True if minimal recompilation mode requested
@@ -1215,6 +1227,11 @@ package Opt is
    --  Set to True with switch --single-compile-per-obj-dir. When True, there
    --  cannot be simultaneous compilations with the object files in the same
    --  object directory, if project files are used.
+
+   OpenAcc_Enabled : Boolean := False;
+   --  GNAT
+   --  Indicates whether OpenAcc pragmas should be taken into account. Set to
+   --  True by the use of -fopenacc.
 
    type Operating_Mode_Type is (Check_Syntax, Check_Semantics, Generate_Code);
    pragma Ordered (Operating_Mode_Type);
@@ -1973,7 +1990,7 @@ package Opt is
    --  set by the command line switches -gnat83/95/2005/2012, and possibly
    --  modified by the use of configuration pragmas Ada_*. This switch is used
    --  to set the initial value for Ada_Version mode at the start of analysis
-   --  of a unit.  Note however that the setting of this flag is ignored for
+   --  of a unit. Note however that the setting of this flag is ignored for
    --  internal and predefined units (which are always compiled in the most up
    --  to date version of Ada).
 
@@ -2148,11 +2165,20 @@ package Opt is
    type Config_Switches_Type is private;
    --  Type used to save values of the switches set from Config values
 
-   procedure Save_Opt_Config_Switches (Save : out Config_Switches_Type);
-   --  This procedure saves the current values of the switches which are
-   --  initialized from the above Config values.
+   procedure Register_Config_Switches;
+   --  This procedure is called after processing the gnat.adc file and other
+   --  configuration pragma files to record the values of the Config switches,
+   --  as possibly modified by the use of command line switches and pragmas
+   --  appearing in these files.
 
-   procedure Set_Opt_Config_Switches
+   procedure Restore_Config_Switches (Save : Config_Switches_Type);
+   --  This procedure restores a set of switch values previously saved by a
+   --  call to Save_Config_Switches.
+
+   function Save_Config_Switches return Config_Switches_Type;
+   --  Return the current state of all configuration-related attributes
+
+   procedure Set_Config_Switches
      (Internal_Unit : Boolean;
       Main_Unit     : Boolean);
    --  This procedure sets the switches to the appropriate initial values. The
@@ -2163,16 +2189,6 @@ package Opt is
    --  are normally set false by default for an internal unit, except when the
    --  internal unit is the main unit, in which case we use the command line
    --  settings.
-
-   procedure Restore_Opt_Config_Switches (Save : Config_Switches_Type);
-   --  This procedure restores a set of switch values previously saved by a
-   --  call to Save_Opt_Config_Switches (Save).
-
-   procedure Register_Opt_Config_Switches;
-   --  This procedure is called after processing the gnat.adc file and other
-   --  configuration pragma files to record the values of the Config switches,
-   --  as possibly modified by the use of command line switches and pragmas
-   --  appearing in these files.
 
    ------------------------
    -- Other Global Flags --
@@ -2341,7 +2357,6 @@ package Opt is
    --------------------------
 
 private
-
    --  The following type is used to save and restore settings of switches in
    --  Opt that represent the configuration (i.e. result of config pragmas).
 

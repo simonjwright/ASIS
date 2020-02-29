@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 1995-2018, Free Software Foundation, Inc.       --
+--            Copyright (C) 1995-2019, Free Software Foundation, Inc.       --
 --                                                                          --
 -- ASIS-for-GNAT is free software; you can redistribute it and/or modify it --
 -- under terms of the  GNU General Public License  as published by the Free --
@@ -1325,6 +1325,14 @@ package Asis.Extensions is
    --  element lists, we simply compute the components twice - first time
    --  to get to know the overall number of components, and second
    --  time to fill in the result Element_List
+
+   function Pos_In_List
+     (E       : Asis.Element;
+      In_List : Asis.Element_List)
+      return    ASIS_Natural;
+   --  Returns the index of of E in In_List. If In_List contins more than one
+   --  element that Is_Equal to E, returns the index of the leftmost one.
+   --  Returns 0 is E is not an element of In_List.
 
    generic
       type From is (<>);

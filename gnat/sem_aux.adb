@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1324,6 +1324,19 @@ package body Sem_Aux is
       end if;
    end Is_Limited_View;
 
+   ----------------------------
+   -- Is_Protected_Operation --
+   ----------------------------
+
+   function Is_Protected_Operation (E : Entity_Id) return Boolean is
+   begin
+      return
+        Is_Entry (E)
+          or else (Is_Subprogram (E)
+                    and then Nkind (Parent (Unit_Declaration_Node (E))) =
+                               N_Protected_Definition);
+   end Is_Protected_Operation;
+
    ----------------------
    -- Nearest_Ancestor --
    ----------------------
@@ -1472,7 +1485,8 @@ package body Sem_Aux is
       return Has_Constrained_Partial_View (Typ)
         or else (In_Generic_Body (Scop)
                   and then Is_Generic_Type (Base_Type (Typ))
-                  and then Is_Private_Type (Base_Type (Typ))
+                  and then (Is_Private_Type (Base_Type (Typ))
+                             or else Is_Derived_Type (Base_Type (Typ)))
                   and then not Is_Tagged_Type (Typ)
                   and then not (Is_Array_Type (Typ)
                                  and then not Is_Constrained (Typ))

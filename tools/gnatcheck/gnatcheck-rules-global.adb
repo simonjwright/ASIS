@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2009-2017, AdaCore                     --
+--                     Copyright (C) 2009-2018, AdaCore                     --
 --                                                                          --
 -- GNATCHECK  is  free  software;  you can redistribute it and/or modify it --
 -- under terms of the  GNU  General Public License as published by the Free --
@@ -25,6 +25,7 @@
 
 pragma Ada_2012;
 
+with Ada.Characters.Handling;    use Ada.Characters.Handling;
 with Ada.Strings.Fixed;          use Ada.Strings.Fixed;
 
 with Asis.Elements;                  use Asis.Elements;
@@ -398,7 +399,7 @@ package body Gnatcheck.Rules.Global is
             """ label="""                    &
             Rule.Help_Info.all               &
             """ min="""                      &
-            Image (1)                           &
+            Image (1)                        &
             """ max=""99999"""               &
             " default="""                    &
             Image (0)                        &
@@ -436,10 +437,13 @@ package body Gnatcheck.Rules.Global is
    ---------------------------------------------------
 
    procedure Init_Global_Structure (Rule : Recursive_Subprograms_Rule_Type) is
-      pragma Unreferenced (Rule);
    begin
       ASIS_UL.Global_State.CG.Conditions.Set_Unconditional_Call_Graph (True);
       ASIS_UL.Options.Do_Transitive_Closure := True;
+
+      if Rule.Skip_Dispatching_Calls then
+         Skip_Dispatching_Calls := True;
+      end if;
    end Init_Global_Structure;
 
    ---------------------------------------
@@ -455,6 +459,113 @@ package body Gnatcheck.Rules.Global is
       Rule.Help_Info   := new String'("recursion (call graph cycles)");
       Rule.Diagnosis   := new String'("recursive subprogram");
    end Init_Rule;
+
+   ------------------------------------------------
+   -- Print_Rule_To_File (Recursive_Subprograms) --
+   ------------------------------------------------
+
+   overriding procedure Print_Rule_To_File
+     (Rule         : Recursive_Subprograms_Rule_Type;
+      Rule_File    : File_Type;
+      Indent_Level : Natural := 0)
+   is
+   begin
+      Print_Rule_To_File (Rule_Template (Rule), Rule_File, Indent_Level);
+
+      if Rule.Skip_Dispatching_Calls then
+         Put (Rule_File, ": Skip_Dispatching_Calls");
+      end if;
+
+   end Print_Rule_To_File;
+
+   ----------------------------------------------------
+   -- Process_Rule_Parameter (Recursive_Subprograms) --
+   ----------------------------------------------------
+
+   overriding procedure Process_Rule_Parameter
+    (Rule       : in out Recursive_Subprograms_Rule_Type;
+     Param      :        String;
+     Enable     :        Boolean;
+     Defined_At : String)
+   is
+   begin
+      if Param = "" then
+
+         if Enable then
+            Rule.Rule_State := Enabled;
+            Rule.Defined_At := Enter_String (Defined_At);
+         else
+            Rule.Skip_Dispatching_Calls := False;
+            Rule.Rule_State             := Disabled;
+         end if;
+
+      else
+
+         if Enable then
+
+            if To_Lower (Param) = "skip_dispatching_calls" then
+
+               if Gnatcheck.Options.Check_Param_Redefinition
+                 and then
+                  Rule.Rule_State = Enabled
+                 and then
+                  Rule.Skip_Dispatching_Calls = True
+               then
+                  Error
+                   ("redefining at " &
+                    (if Defined_At = "" then
+                        "command line"
+                     else
+                        Defined_At) &
+                    " exception case for rule " & Rule.Name.all &
+                    " defined at "  &
+                    (if Rule.Defined_At = Nil_String_Loc then
+                        "command line"
+                     else
+                        Get_String (Rule.Defined_At)));
+               end if;
+
+               Rule.Skip_Dispatching_Calls := True;
+               Rule.Rule_State := Enabled;
+               Rule.Defined_At := Enter_String (Defined_At);
+
+            else
+               Error ("(" & Rule.Name.all & ") wrong parameter: " &
+                      Param);
+               Rule.Rule_State := Disabled;
+            end if;
+
+         else
+            Error ("(" & Rule.Name.all & ") no parameter allowed for -R");
+            Rule.Skip_Dispatching_Calls := False;
+            Rule.Rule_State := Disabled;
+         end if;
+
+      end if;
+
+   end Process_Rule_Parameter;
+
+   --------------------------------------------
+   -- XML_Print_Rule (Recursive_Subprograms) --
+   --------------------------------------------
+
+   overriding procedure XML_Print_Rule
+     (Rule         : Recursive_Subprograms_Rule_Type;
+      Indent_Level : Natural := 0)
+   is
+   begin
+      XML_Report
+        ("<rule id=""" & Rule_Name (Rule) & """>",
+         Indent_Level);
+
+      if Rule.Skip_Dispatching_Calls then
+         XML_Report
+           ("<parameter>Skip_Dispatching_Calls""</parameter>",
+            Indent_Level + 1);
+      end if;
+
+      XML_Report ("</rule>", Indent_Level);
+   end XML_Print_Rule;
 
    ---------------------------
    -- Side_Effect_Functions --

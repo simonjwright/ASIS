@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2004-2017, AdaCore                     --
+--                     Copyright (C) 2004-2019, AdaCore                     --
 --                                                                          --
 -- GNATCHECK  is  free  software;  you can redistribute it and/or modify it --
 -- under terms of the  GNU  General Public License as published by the Free --
@@ -125,6 +125,14 @@ package body Gnatcheck.ASIS_Utilities is
    --  statement. Skips traversal of declarations, expressions and simple
    --  statements
 
+   procedure Look_For_Modular_Component_Pre_Op
+     (Element :        Asis.Element;
+      Control : in out Traverse_Control;
+      State   : in out Boolean);
+   --  Actual for Traverse_Element instantiation.
+   --  Terminates the traversal and sets State ON when visiting a component
+   --  declaration that defines a component of a modular type
+
    procedure Empty_Bool_Post_Op
      (Element :        Asis.Element;
       Control : in out Traverse_Control;
@@ -136,9 +144,17 @@ package body Gnatcheck.ASIS_Utilities is
      (State_Information => Boolean,
       Pre_Operation     => Look_For_Loop_Pre_Op,
       Post_Operation    => Empty_Bool_Post_Op);
-   --  Looks for a lood statement enclosed by its Element argument and sets
+   --  Looks for a loop statement enclosed by its Element argument and sets
    --  the result of the search to its State parameter. Declarations are not
    --  searched.
+
+   procedure Look_For_Modular_Component is new Traverse_Element
+     (State_Information => Boolean,
+      Pre_Operation     => Look_For_Modular_Component_Pre_Op,
+      Post_Operation    => Empty_Bool_Post_Op);
+   --  Looks for a component declaration that defines a component of a modular
+   --  type. If such a component declaration is foubd sets State ON, otherwise
+   --  State is set OFF.
 
    procedure Check_For_Discr_Reference
      (Element :        Asis.Element;
@@ -622,6 +638,54 @@ package body Gnatcheck.ASIS_Utilities is
 
    end Contains_Loop;
 
+   --------------------------------
+   -- Contains_Modular_Component --
+   --------------------------------
+
+   function Contains_Modular_Component
+     (Type_Decl : Asis.Element)
+      return      Boolean
+   is
+      Result  : Boolean := False;
+      Tmp     : Asis.Element;
+      Control : Traverse_Control := Continue;
+   begin
+      if Declaration_Kind (Type_Decl) /= An_Ordinary_Type_Declaration then
+         return False;
+      end if;
+
+      Tmp := Discriminant_Part (Type_Decl);
+
+      if Definition_Kind (Tmp) = A_Known_Discriminant_Part then
+         declare
+            Discrs : constant Asis.Element_List := Discriminants (Tmp);
+         begin
+            for J in Discrs'Range loop
+               Tmp := Object_Declaration_View (Discrs (J));
+
+               if Flat_Element_Kind (Tmp) not in Flat_Access_Definition_Kinds
+                 and then
+                  Is_Modular_Type (Tmp)
+               then
+                  Result := True;
+                  exit;
+               end if;
+            end loop;
+         end;
+      end if;
+
+      if not Result then
+         Tmp := Type_Declaration_View (Type_Decl);
+
+         Look_For_Modular_Component
+           (Element => Tmp,
+           Control  => Control,
+           State    => Result);
+      end if;
+
+      return Result;
+   end Contains_Modular_Component;
+
    ---------------------------------
    -- Contract_Contains_Pre_Class --
    ---------------------------------
@@ -855,6 +919,57 @@ package body Gnatcheck.ASIS_Utilities is
       end if;
 
    end Encl_Scope_Full_Name;
+
+   --------------------
+   -- Enclosing_List --
+   --------------------
+
+   function Enclosing_List return Asis.Element_List is
+      EE : constant Asis.Element := Get_Enclosing_Element;
+   begin
+
+      if Is_Nil (EE) then
+         return Nil_Element_List;
+      else
+         return Components (EE);
+      end if;
+
+   end Enclosing_List;
+
+   --------------------------
+   -- Entity_From_Rep_Item --
+   --------------------------
+
+   function Entity_From_Rep_Item
+     (Rep_Item : Asis.Element)
+      return     Asis.Element
+   is
+      Ent_Name : Asis.Element;
+   begin
+      if not Is_Representation_Item (Rep_Item) then
+         Raise_ASIS_Inappropriate_Element
+           (Diagnosis =>
+              "Gnatcheck.ASIS_Utilities.Is_Representation_Item",
+            Wrong_Kind => Int_Kind (Rep_Item));
+      end if;
+
+      if Clause_Kind (Rep_Item) = A_Representation_Clause then
+         Ent_Name := Representation_Clause_Name (Rep_Item);
+      else
+         declare
+            Params : constant Asis.Element_List :=
+              Pragma_Argument_Associations (Rep_Item);
+         begin
+            Ent_Name := Params (Params'First);
+            Ent_Name := Actual_Parameter (Ent_Name);
+         end;
+
+      end if;
+
+      Ent_Name := Normalize_Reference (Ent_Name);
+
+      return Corresponding_Name_Declaration (Ent_Name);
+   end Entity_From_Rep_Item;
 
    ---------------------------------
    -- From_Subtype_With_Predicate --
@@ -1201,6 +1316,31 @@ package body Gnatcheck.ASIS_Utilities is
       return Result;
    end Get_Corresponding_Definition;
 
+   -----------------------------
+   -- Get_Encl_Protected_Body --
+   -----------------------------
+
+   function Get_Encl_Protected_Body return Asis.Element is
+      Result  : Asis.Element := Nil_Element;
+      Step_Up : Elmt_Idx     := 0;
+      Tmp     : Asis.Element := Get_Enclosing_Element (Step_Up);
+   begin
+
+      while not Is_Nil (Tmp) loop
+
+         if Declaration_Kind (Tmp) = A_Protected_Body_Declaration then
+            Result := Tmp;
+            exit;
+         end if;
+
+         Step_Up := Step_Up + 1;
+         Tmp := Get_Enclosing_Element (Step_Up);
+
+      end loop;
+
+      return Result;
+   end Get_Encl_Protected_Body;
+
    ------------------
    -- Get_Handlers --
    ------------------
@@ -1255,6 +1395,44 @@ package body Gnatcheck.ASIS_Utilities is
 
       return Result;
    end Get_Name_Definition;
+
+   -----------------
+   -- Get_Obj_Dcl --
+   -----------------
+
+   function Get_Obj_Dcl (El : Asis.Element) return Asis.Element is
+      Result : Asis.Element := Nil_Element;
+   begin
+      case Flat_Element_Kind (El) is
+         when A_Function_Call =>
+            null;
+         when An_Identifier =>
+            Result := Corresponding_Name_Declaration (El);
+         when An_Explicit_Dereference |
+              An_Indexed_Component    |
+              A_Slice                 =>
+            Result := Get_Obj_Dcl (Prefix (El));
+         when A_Selected_Component =>
+            --  The hard case: A.B may be the reference to the variable B
+            --  declared in package A, or it may be the reference to the
+            --  component B of a record object A
+
+            Result := Corresponding_Name_Declaration (Selector (El));
+
+            if Declaration_Kind (Result) = A_Component_Declaration then
+               Result := Get_Obj_Dcl (Prefix (El));
+            end if;
+
+         when others =>
+            pragma Assert (False);
+      end case;
+
+      if Declaration_Kind (Result) = An_Object_Renaming_Declaration then
+         Result := Get_Obj_Dcl (Renamed_Entity (Result));
+      end if;
+
+      return Result;
+   end Get_Obj_Dcl;
 
    ------------------------
    -- Get_Overridden_Ops --
@@ -1888,6 +2066,57 @@ package body Gnatcheck.ASIS_Utilities is
       return Result;
    end Has_Predicate;
 
+   -----------------------------
+   -- Has_Range_Specification --
+   -----------------------------
+
+   function Has_Range_Specification (El : Asis.Element) return Boolean is
+      Result : Boolean;
+      Tmp    : Asis.Element := Type_Declaration_View (El);
+      Constr : Asis.Element;
+   begin
+      --  The hardest case is a derived type declaration - we have to check
+      --  all the chain of derivation and subtyping up to ansestor to see if
+      --  there is a range constraint somewhere. So, if we use the recursion,
+      --  we may have three kinds of arguments:
+      --
+      --   * a floating point type or a decimal fixed point type declaration;
+      --   * a derived type declaration
+      --   * a subtype declaration
+
+      case Flat_Element_Kind (Tmp) is
+         when A_Floating_Point_Definition      |
+              A_Decimal_Fixed_Point_Definition =>
+            Result := not Is_Nil (Real_Range_Constraint (Tmp));
+
+         when A_Subtype_Indication =>
+            Constr := Subtype_Constraint (Tmp);
+
+            if Constraint_Kind (Constr) = A_Simple_Expression_Range then
+               Result := True;
+            else
+               Tmp    := Corresponding_First_Subtype (El);
+               Result := Has_Range_Specification (Tmp);
+            end if;
+
+         when A_Derived_Type_Definition =>
+            Constr := Parent_Subtype_Indication (Tmp);
+            Constr := Subtype_Constraint (Constr);
+
+            if Constraint_Kind (Constr) = A_Simple_Expression_Range then
+               Result := True;
+            else
+               Tmp    := Corresponding_Parent_Subtype (Tmp);
+               Result := Has_Range_Specification (Tmp);
+            end if;
+
+         when others =>
+            pragma Assert (False);
+      end case;
+
+      return Result;
+   end Has_Range_Specification;
+
    ------------------------------
    -- Has_Statements_And_Decls --
    ------------------------------
@@ -1902,6 +2131,37 @@ package body Gnatcheck.ASIS_Utilities is
 
       return Result;
    end Has_Statements_And_Decls;
+
+   ------------------------------
+   -- Is_Address_Specification --
+   ------------------------------
+
+   function Is_Address_Specification (El : Asis.Element) return Boolean is
+      Result : Boolean := False;
+      Tmp    : Asis.Element;
+   begin
+      case Flat_Element_Kind (El) is
+         when An_Attribute_Definition_Clause =>
+            Tmp    := Representation_Clause_Name (El);
+            Result := Attribute_Kind (Tmp) = An_Address_Attribute;
+
+         when An_At_Clause =>
+            Result := True;
+
+         when An_Aspect_Specification =>
+            Tmp := Aspect_Mark (El);
+
+            if Expression_Kind (Tmp) = An_Identifier then
+               Result := To_Lower_Case (Asis.Expressions.Name_Image (Tmp)) =
+                           "address";
+            end if;
+
+         when others =>
+            null;
+      end case;
+
+      return Result;
+   end Is_Address_Specification;
 
    -----------------
    -- Is_Ancestor --
@@ -2033,10 +2293,11 @@ package body Gnatcheck.ASIS_Utilities is
             Arg_Node := R_Node (Call);
          end if;
 
-         if Nkind (Arg_Node) = N_Type_Conversion and then
+         if Nkind (Arg_Node) in N_Type_Conversion | N_Qualified_Expression
+           and then
             not Comes_From_Source (Arg_Node)
          then
-            --  Implicit conversion added by front-end
+            --  Implicit conversion/qyulification added by front-end
             Arg_Node := Sinfo.Expression (Arg_Node);
          end if;
 
@@ -2333,6 +2594,16 @@ package body Gnatcheck.ASIS_Utilities is
       Source_T := R_Node (Source);
       Source_T := Etype (Source_T);
 
+      while Ekind (Source_T) in
+              E_Class_Wide_Subtype          |
+              E_Record_Subtype              |
+              E_Record_Subtype_With_Private |
+              E_Private_Subtype             |
+              E_Limited_Private_Subtype
+      loop
+         Source_T := Etype (Source_T);
+      end loop;
+
       --  We are interested in view conversions in the context of
       --  Downward_View_Conversions gnatcheck rule, so both source and target
       --  types should be tagged
@@ -2344,6 +2615,16 @@ package body Gnatcheck.ASIS_Utilities is
       Target   := Converted_Or_Qualified_Subtype_Mark (Element);
       Target_T := R_Node (Target);
       Target_T := Etype (Target_T);
+
+      while Ekind (Target_T) in
+              E_Class_Wide_Subtype          |
+              E_Record_Subtype              |
+              E_Record_Subtype_With_Private |
+              E_Private_Subtype             |
+              E_Limited_Private_Subtype
+      loop
+         Target_T := Etype (Target_T);
+      end loop;
 
       if Ekind (Source_T) = E_Class_Wide_Type then
          Source_T := Etype (Source_T);
@@ -2536,7 +2817,17 @@ package body Gnatcheck.ASIS_Utilities is
 
       if Asis.Extensions.Is_True_Expression (Expr) then
          Type_Entity := Etype (R_Node (Expr));
-         Result      := Ekind (Type_Entity) in Float_Kind;
+
+         while Present (Type_Entity)
+             and then
+               Ekind (Type_Entity) in E_Private_Type | E_Private_Subtype
+         loop
+            Type_Entity := Full_View (Type_Entity);
+         end loop;
+
+         Result := Present (Type_Entity)
+                  and then
+                   Ekind (Type_Entity) in Float_Kind;
       end if;
 
       return Result;
@@ -2606,6 +2897,71 @@ package body Gnatcheck.ASIS_Utilities is
       return Result;
    end Is_Handled;
 
+   --------------------------
+   -- Is_Interrupt_Handler --
+   --------------------------
+
+   function Is_Interrupt_Handler (Proc : Asis.Element) return Boolean is
+      Result : Boolean := False;
+      Tmp    : Asis.Element;
+   begin
+      if Declaration_Kind (Proc) = A_Procedure_Declaration
+        and then
+         Definition_Kind (Enclosing_Element (Proc)) = A_Protected_Definition
+        and then
+         Parameter_Profile (Proc)'Length = 0
+      then
+
+         --  Check for aspects Attach_Handler or Interrupt_Handler first
+         declare
+            Asps : constant Asis.Element_List := Aspect_Specifications (Proc);
+         begin
+            for J in Asps'Range loop
+               Tmp := Aspect_Mark (Asps (J));
+
+               if To_Lower_Case (Asis.Expressions.Name_Image (Tmp)) in
+                    "attach_handler" | "interrupt_handler"
+               then
+                  Result := True;
+                  exit;
+               end if;
+            end loop;
+         end;
+
+         if not Result then
+            --  Check for pragmas Attach_Handler or Interrupt_Handler
+            declare
+               Dcls : constant Asis.Element_List :=
+                 Pragmas (Enclosing_Element (Proc));
+            begin
+               for J in Dcls'Range loop
+                  if To_Lower_Case (Pragma_Name_Image (Dcls (J))) in
+                       "attach_handler" | "interrupt_handler"
+                  then
+                     declare
+                        Pars : constant Asis.Element_List :=
+                          Pragma_Argument_Associations (Dcls (J));
+                     begin
+                        Tmp := Actual_Parameter (Pars (Pars'First));
+
+                        if To_Lower_Case (Asis.Expressions.Name_Image (Tmp)) =
+                           To_Lower_Case
+                             (Defining_Name_Image (First_Name (Proc)))
+                        then
+                           Result := True;
+                           exit;
+                        end if;
+                     end;
+                  end if;
+               end loop;
+            end;
+         end if;
+
+      end if;
+
+      return Result;
+   end Is_Interrupt_Handler;
+
    ----------------
    -- Is_Limited --
    ----------------
@@ -2637,44 +2993,63 @@ package body Gnatcheck.ASIS_Utilities is
    end Is_Limited;
 
    --------------------
+   -- Is_Local --
+   --------------------
+
+   function Is_Local
+     (Dcl            : Asis.Element;
+      Protected_Body : Asis.Element)
+      return Boolean
+   is
+      Result         :          Boolean      := False;
+      Encl_El        :          Asis.Element := Enclosing_Element (Dcl);
+      Protected_Spec : constant Asis.Element :=
+        Corresponding_Declaration (Protected_Body);
+   begin
+      while not Is_Nil (Encl_El) loop
+         if Is_Equal (Encl_El, Protected_Body)
+           or else
+            Is_Equal (Encl_El, Protected_Spec)
+         then
+            Result := True;
+            exit;
+         end if;
+
+         Encl_El := Enclosing_Element (Encl_El);
+      end loop;
+
+      return Result;
+   end Is_Local;
+
+   --------------------
    -- Is_Named_Scope --
    --------------------
 
    function Is_Named_Scope (E : Asis.Element) return Boolean is
-      Result : Boolean := False;
    begin
-      case Declaration_Kind (E) is
-         when A_Task_Type_Declaration       |
-              A_Protected_Type_Declaration  |
-              A_Procedure_Body_Declaration  |
-              A_Function_Body_Declaration   |
-              A_Package_Declaration         |
-              A_Package_Body_Declaration    |
-              A_Task_Body_Declaration       |
-              A_Protected_Body_Declaration  |
-              A_Generic_Package_Declaration =>
-            Result := True;
-         when A_Procedure_Declaration                  |
-              A_Function_Declaration                   |
-              A_Package_Renaming_Declaration           |
-              A_Procedure_Renaming_Declaration         |
-              A_Function_Renaming_Declaration          |
-              A_Generic_Package_Renaming_Declaration   |
-              A_Generic_Procedure_Renaming_Declaration |
-              A_Generic_Function_Renaming_Declaration  |
-              A_Generic_Procedure_Declaration          |
-              A_Generic_Function_Declaration           |
-              A_Package_Instantiation                  |
-              A_Procedure_Instantiation                |
-              A_Function_Instantiation                 =>
-            --  This should be considered as a scope only if it is a top-level
-            --  declaration of a compilation unit
-            Result := Is_Nil (Enclosing_Element (E));
-         when others =>
-            null;
-      end case;
 
-      return Result;
+      return Declaration_Kind (E) in
+               A_Task_Type_Declaration                  |
+               A_Protected_Type_Declaration             |
+               A_Procedure_Body_Declaration             |
+               A_Function_Body_Declaration              |
+               A_Package_Declaration                    |
+               A_Package_Body_Declaration               |
+               A_Task_Body_Declaration                  |
+               A_Protected_Body_Declaration             |
+               A_Generic_Package_Declaration            |
+               A_Procedure_Declaration                  |
+               An_Expression_Function_Declaration       |
+               A_Function_Declaration                   |
+               A_Package_Renaming_Declaration           |
+               A_Procedure_Renaming_Declaration         |
+               A_Function_Renaming_Declaration          |
+               A_Generic_Package_Renaming_Declaration   |
+               A_Generic_Procedure_Renaming_Declaration |
+               A_Generic_Function_Renaming_Declaration  |
+               A_Generic_Procedure_Declaration          |
+               A_Generic_Function_Declaration;
+
    end Is_Named_Scope;
 
    ------------------------------
@@ -2728,6 +3103,36 @@ package body Gnatcheck.ASIS_Utilities is
 
       return Result;
    end Is_Numeric_Error;
+
+   -------------------------------------
+   -- Is_Object_Address_Specification --
+   -------------------------------------
+
+   function Is_Object_Address_Specification
+     (El   : Asis.Element)
+      return Boolean
+   is
+      Result : Boolean := False;
+      Tmp    : Asis.Element;
+   begin
+
+      if Is_Address_Specification (El) then
+
+         if Definition_Kind (El) = An_Aspect_Specification then
+            Tmp := Enclosing_Element (El);
+         else
+            --  an 'Address definition clause
+            Tmp := Entity_From_Rep_Item (El);
+         end if;
+
+         Result := Declaration_Kind (Tmp) in
+                     A_Variable_Declaration |
+                     A_Constant_Declaration |
+                     A_Deferred_Constant_Declaration;
+      end if;
+
+      return Result;
+   end Is_Object_Address_Specification;
 
    -------------------
    -- Is_Positional --
@@ -2983,6 +3388,27 @@ package body Gnatcheck.ASIS_Utilities is
       return Result;
    end Is_Renaming;
 
+   ----------------------------
+   -- Is_Representation_Item --
+   ----------------------------
+
+   function Is_Representation_Item (El : Asis.Element) return Boolean is
+   begin
+      return Clause_Kind (El) = A_Representation_Clause
+           or else
+             (Element_Kind (El) = A_Pragma
+             and then
+              To_Lower_Case (Pragma_Name_Image (El)) in
+                "atomic"                 |
+                "atomic_components"      |
+                "independent"            |
+                "independent_components" |
+                "pack"                   |
+                "unchecked_union"        |
+                "volatile)"              |
+                "volatile_components");
+   end Is_Representation_Item;
+
    -------------------------
    -- Is_Standard_Boolean --
    -------------------------
@@ -3193,6 +3619,43 @@ package body Gnatcheck.ASIS_Utilities is
 
    end Look_For_Loop_Pre_Op;
 
+   ---------------------------------------
+   -- Look_For_Modular_Component_Pre_Op --
+   ---------------------------------------
+
+   procedure Look_For_Modular_Component_Pre_Op
+     (Element :        Asis.Element;
+      Control : in out Traverse_Control;
+      State   : in out Boolean)
+   is
+      S_Mark : Asis.Element;
+   begin
+
+      case Declaration_Kind (Element) is
+         when A_Component_Declaration =>
+            S_Mark := Object_Declaration_View (Element);
+            S_Mark := Component_Definition_View (S_Mark);
+
+            if Definition_Kind (S_Mark) = A_Subtype_Indication then
+               S_Mark := Asis.Definitions.Subtype_Mark (S_Mark);
+
+               if Is_Modular_Type (S_Mark) then
+                  State   := True;
+                  Control := Terminate_Immediately;
+               else
+                  Control := Abandon_Children;
+               end if;
+            else
+               --  Anonymous access definition
+               Control := Abandon_Children;
+            end if;
+
+         when others =>
+            null;
+      end case;
+
+   end Look_For_Modular_Component_Pre_Op;
+
    ----------------------
    -- Needs_Completion --
    ----------------------
@@ -3250,6 +3713,25 @@ package body Gnatcheck.ASIS_Utilities is
 
       return Result;
    end Needs_Completion;
+
+   ---------------------------------
+   -- Needs_Real_Range_Definition --
+   ---------------------------------
+
+   function Needs_Real_Range_Definition (El : Asis.Element) return Boolean is
+      Result : Boolean := False;
+      Tmp    : Asis.Element;
+      Ent    : Entity_Id;
+   begin
+      if Declaration_Kind (El) = An_Ordinary_Type_Declaration then
+         Tmp := First_Name (El);
+         Ent := R_Node (Tmp);
+
+         Result := Ekind (Ent) in Digits_Kind;
+      end if;
+
+      return Result;
+   end Needs_Real_Range_Definition;
 
    -----------------------
    -- Overloading_Index --

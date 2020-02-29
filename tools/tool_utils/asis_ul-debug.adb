@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                    Copyright (C) 2009-2017, AdaCore                      --
+--                    Copyright (C) 2009-2019, AdaCore                      --
 --                                                                          --
 -- Asis Utility Library (ASIS UL) is free software; you can redistribute it --
 -- and/or  modify  it  under  terms  of  the  GNU General Public License as --
@@ -73,7 +73,7 @@ package body ASIS_UL.Debug is
    --  dO   not used yet
    --  dP   not used yet
    --  dQ   not used yet
-   --  dR   not used yet
+   --  dR   gnatcheck  : indicate remediation level in brief rule help (-h)
    --  dS   not used yet
    --  dT   not used yet
    --  dU   not used yet
@@ -179,7 +179,10 @@ package body ASIS_UL.Debug is
    --  dO   not used yet
    --  dP   not used yet
    --  dQ   not used yet
-   --  dR   not used yet
+   --  dR   gnatcheck  :  indicate remediation level in the output generated
+   --                      with '-h' gnatcheck option
+   --       other tools: not used yet
+
    --  dS   not used yet
    --  dT   not used yet
    --  dU   not used yet

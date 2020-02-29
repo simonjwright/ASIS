@@ -7,11 +7,11 @@ START-INFO-DIR-ENTRY
 * gnatcheck_rm: (gnatcheck_rm.info). gnatcheck_rm
 END-INFO-DIR-ENTRY
 
-     GNATcheck Reference Manual 2018, May 24, 2018
+     GNATcheck Reference Manual 2019, May 18, 2019
 
      AdaCore
 
-     Copyright (C) 2008-2018, AdaCore
+     Copyright (C) 2008-2019, AdaCore
 
 
 File: gnatcheck_rm.info,  Node: Top,  Next: About This Manual,  Up: (dir)
@@ -19,16 +19,16 @@ File: gnatcheck_rm.info,  Node: Top,  Next: About This Manual,  Up: (dir)
 GNATcheck Reference Manual
 **************************
 
-     GNATcheck Reference Manual 2018, May 24, 2018
+     GNATcheck Reference Manual 2019, May 18, 2019
 
      AdaCore
 
-     Copyright (C) 2008-2018, AdaCore
+     Copyright (C) 2008-2019, AdaCore
 
 `GNAT, The GNU Ada Development Environment'
 
     The GNAT Ada Compiler 
-    Version 2018 
+    Version 2019 
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.1 or
@@ -746,6 +746,18 @@ the protected definition are also checked.
 
 This rule has no parameters.
 
+Example
+.......
+
+    protected PO is
+       entry Get (I :     Integer);
+       entry Put (I : out Integer);    --  FLAG
+       procedure Reset;
+       function Check return Boolean;
+    private
+       Val : Integer := 0;
+    end PO;
+
 
 File: gnatcheck_rm.info,  Node: Volatile_Objects_Without_Address_Clauses,  Prev: Multiple_Entries_In_Protected_Definitions,  Up: Tasking
 
@@ -761,6 +773,25 @@ the GNAT compiler considers this object as volatile because of some
 code generation reasons.
 
 This rule has no parameters.
+
+Example
+.......
+
+    with Interfaces, System, System.Storage_Elements;
+    package Foo is
+       Variable: Interfaces.Unsigned_8
+          with Address => System.Storage_Elements.To_Address (0), Volatile;
+
+       Variable1: Interfaces.Unsigned_8                                --  FLAG
+          with Volatile;
+
+       type My_Int is range 1 .. 32 with Volatile;
+
+       Variable3 : My_Int;                                             --  FLAG
+
+       Variable4 : My_Int
+         with Address => Variable3'Address;
+    end Foo;
 
 
 File: gnatcheck_rm.info,  Node: Object Orientation,  Next: Portability,  Prev: Tasking,  Up: Style-Related Rules
@@ -796,6 +827,17 @@ controlling result and no controlling parameter. If a declaration is a
 completion of another declaration then it is not flagged.
 
 This rule has no parameters.
+
+Example
+.......
+
+    type T is tagged record
+       I : Integer;
+    end record;
+
+    function Fun (I : Integer) return T;                -- FLAG
+    function Bar (J : Integer) return T renames Fun;    -- FLAG
+    function Foo (K : Integer) return T is ((I => K));  -- FLAG
 
 
 File: gnatcheck_rm.info,  Node: Deep_Inheritance_Hierarchies,  Next: Direct_Calls_To_Primitives,  Prev: Constructors,  Up: Object Orientation
@@ -835,13 +877,25 @@ This rule has the following (mandatory) parameter for the `+R' option:
      any inheritance hierarchy. If the rule parameter is set to -1, the
      rule flags all the declarations of tagged and interface types.
 
+Example
+.......
+
+    type I0 is interface;
+    type I1 is interface and I0;
+    type I2 is interface and I1;
+
+    type T0 is tagged null record;
+    type T1 is new T0 and I0 with null record;
+    type T2 is new T0 and I1 with null record;
+    type T3 is new T0 and I2 with null record; -- FLAG (if rule parameter is 2)
+
 
 File: gnatcheck_rm.info,  Node: Direct_Calls_To_Primitives,  Next: Downward_View_Conversions,  Prev: Deep_Inheritance_Hierarchies,  Up: Object Orientation
 
 9.1.2.3 `Direct_Calls_To_Primitives'
 ....................................
 
-Flag any nondispatching call to a dispatching primitive operation,
+Flag any non-dispatching call to a dispatching primitive operation,
 except for:
 
    * a call to the corresponding primitive of the parent type.  (This
@@ -856,9 +910,51 @@ except for:
 This rule has the following (optional) parameters for the `+R' option:
 
 `Except_Constructors'
-     Do not flag nondispatching calls to functions if the function has a
-     controlling result and no controlling parameters (in a traditional
-     OO sense such functions may be considered as constructors).
+     Do not flag non-dispatching calls to functions if the function has
+     a controlling result and no controlling parameters (in a
+     traditional OO sense such functions may be considered as
+     constructors).
+
+Example
+.......
+
+    package Root is
+       type T_Root is tagged private;
+
+       procedure Primitive_1 (X : in out T_Root);
+       procedure Primitive_2 (X : in out T_Root);
+    private
+       type T_Root is tagged record
+          Comp : Integer;
+       end record;
+    end Root;
+
+    package Root.Child is
+       type T_Child is new T_Root with private;
+
+       procedure Primitive_1 (X : in out T_Child);
+       procedure Primitive_2 (X : in out T_Child);
+    private
+       type T_Child is new T_Root with record
+          B : Boolean;
+       end record;
+    end Root.Child;
+
+    package body Root.Child is
+
+       procedure Primitive_1 (X : in out T_Child) is
+       begin
+          Primitive_1 (T_Root (X));      --  NO FLAG
+          Primitive_2 (T_Root (X));      --  FLAG
+          Primitive_2 (X);               --  FLAG
+       end Primitive_1;
+
+       procedure Primitive_2 (X : in out T_Child) is
+       begin
+          X.Comp  := X.Comp + 1;
+       end Primitive_2;
+
+    end Root.Child;
 
 
 File: gnatcheck_rm.info,  Node: Downward_View_Conversions,  Next: No_Inherited_Classwide_Pre,  Prev: Direct_Calls_To_Primitives,  Up: Object Orientation
@@ -869,6 +965,39 @@ File: gnatcheck_rm.info,  Node: Downward_View_Conversions,  Next: No_Inherited_C
 Flag downward view conversions.
 
 This rule has no parameters.
+
+Example
+.......
+
+    package Foo is
+       type T1 is tagged private;
+       procedure Proc1 (X : in out T1'Class);
+
+       type T2 is new T1 with private;
+       procedure Proc2 (X : in out T2'Class);
+
+    private
+       type T1 is tagged record
+          C : Integer := 0;
+       end record;
+
+       type T2 is new T1 with null record;
+    end Foo;
+
+    package body Foo is
+
+       procedure Proc1 (X : in out T1'Class) is
+          Var : T2 := T2 (X);                   --  FLAG
+       begin
+          Proc2 (T2'Class (X));                 --  FLAG
+       end Proc1;
+
+       procedure Proc2 (X : in out T2'Class) is
+       begin
+          X.C := X.C + 1;
+       end Proc2;
+
+    end Foo;
 
 
 File: gnatcheck_rm.info,  Node: No_Inherited_Classwide_Pre,  Next: Specific_Pre_Post,  Prev: Downward_View_Conversions,  Up: Object Orientation
@@ -882,6 +1011,37 @@ have (explicitly defined or inherited) Pre'Class aspect defined for it.
 
 This rule has no parameters.
 
+Example
+.......
+
+    package Foo is
+
+       type Int is interface;
+       function Test (X : Int) return Boolean is abstract;
+       procedure Proc (I : in out Int) is abstract with Pre'Class => Test (I);
+
+       type Int1 is interface;
+       procedure Proc (I : in out Int1) is abstract;
+
+       type T is tagged private;
+
+        type NT1 is new T and Int with private;
+        function Test (X : NT1) return Boolean;        --  FLAG
+        procedure Proc (X : in out NT1);
+
+        type NT2 is new T and Int1 with private;
+        procedure Proc (X : in out NT2);               --  FLAG
+
+       private
+       type T is tagged record
+          I : Integer;
+       end record;
+
+       type NT1 is new T and Int with null record;
+       type NT2 is new T and Int1 with null record;
+
+    end Foo;
+
 
 File: gnatcheck_rm.info,  Node: Specific_Pre_Post,  Next: Specific_Parent_Type_Invariant,  Prev: No_Inherited_Classwide_Pre,  Up: Object Orientation
 
@@ -892,6 +1052,33 @@ Flag a declaration of a primitive operation of a tagged type if this
 declaration contains specification of Pre or/and Post aspect.
 
 This rule has no parameters.
+
+Example
+.......
+
+    type T is tagged private;
+    function Check1 (X : T) return Boolean;
+    function Check2 (X : T) return Boolean;
+
+    procedure Proc1 (X : in out T)           --  FLAG
+       with Pre => Check1 (X);
+
+    procedure Proc2 (X : in out T)           --  FLAG
+       with Post => Check2 (X);
+
+    function Fun1 (X : T) return Integer     --  FLAG
+       with Pre  => Check1 (X),
+            Post => Check2 (X);
+
+    function Fun2 (X : T) return Integer
+       with Pre'Class  => Check1 (X),
+            Post'Class => Check2 (X);
+
+    function Fun3 (X : T) return Integer     --  FLAG
+       with Pre'Class  => Check1 (X),
+            Post'Class => Check2 (X),
+            Pre        => Check1 (X),
+            Post       => Check2 (X);
 
 
 File: gnatcheck_rm.info,  Node: Specific_Parent_Type_Invariant,  Next: Specific_Type_Invariants,  Prev: Specific_Pre_Post,  Up: Object Orientation
@@ -906,6 +1093,37 @@ private extension declaration.
 
 This rule has no parameters.
 
+Example
+.......
+
+    package Pack1 is
+       type PT1 is tagged private;
+       type PT2 is tagged private
+         with Type_Invariant => Invariant_2 (PT2);
+
+       function Invariant_2   (X : PT2) return Boolean;
+
+    private
+       type PT1 is tagged record
+          I : Integer;
+       end record;
+
+       type PT2 is tagged record
+          I : Integer;
+       end record;
+
+       type PT1_N is new PT1 with null record;
+       type PT2_N is new PT2 with null record;    --  FLAG
+    end Pack1;
+
+    package Pack2 is
+       type N_PT1 is new Pack1.PT1 with private;
+       type N_PT2 is new Pack1.PT2 with private;  --  FLAG
+    private
+       type N_PT1 is new Pack1.PT1 with null record;
+       type N_PT2 is new Pack1.PT2 with null record;
+    end Pack2;
+
 
 File: gnatcheck_rm.info,  Node: Specific_Type_Invariants,  Next: Too_Many_Parents,  Prev: Specific_Parent_Type_Invariant,  Up: Object Orientation
 
@@ -919,6 +1137,21 @@ Definitions of (non-class-wide) Type_Invariant aspect that are parts of
 declarations of non-tagged types are not flagged.
 
 This rule has no parameters.
+
+Example
+.......
+
+    type PT is private
+       with Type_Invariant => Test_PT (PT);
+    function Test_PT (X : PT) return Boolean;
+
+    type TPT1 is tagged private
+       with Type_Invariant => Test_TPT1 (TPT1);        --  FLAG
+    function Test_TPT1 (X : TPT1) return Boolean;
+
+    type TPT2 is tagged private
+       with Type_Invariant'Class => Test_TPT2 (TPT2);
+    function Test_TPT2 (X : TPT2) return Boolean;
 
 
 File: gnatcheck_rm.info,  Node: Too_Many_Parents,  Next: Too_Many_Primitives,  Prev: Specific_Type_Invariants,  Up: Object Orientation
@@ -939,6 +1172,21 @@ This rule has the following (mandatory) parameters for the `+R' option:
      Positive integer specifying the maximal allowed number of
      parents/progenitors.
 
+Example
+.......
+
+    type I1 is interface;
+    type I2 is interface;
+    type I3 is interface;
+    type I4 is interface;
+
+    type T_Root is tagged private;
+
+    type T_1 is new T_Root with private;
+    type T_2 is new T_Root and I1 with private;
+    type T_3 is new T_Root and I1 and I2 with private;
+    type T_4 is new T_Root and I1 and I2 and I3 with private; -- FLAG (if rule parameter is 3 or less)
+
 
 File: gnatcheck_rm.info,  Node: Too_Many_Primitives,  Next: Visible_Components,  Prev: Too_Many_Parents,  Up: Object Orientation
 
@@ -947,7 +1195,7 @@ File: gnatcheck_rm.info,  Node: Too_Many_Primitives,  Next: Visible_Components, 
 
 Flag any tagged type declaration that has more than N user-defined
 primitive operations (counting both inherited and not overridden and
-explicitly declared, not counting predefined operators), Do not flag
+explicitly declared, not counting predefined operators). Do not flag
 type declarations that are completions of private type or extension
 declarations.
 
@@ -956,6 +1204,32 @@ This rule has the following (mandatory) parameters for the `+R' option:
 `N'
      Positive integer specifying the maximal number of primitives when
      the type is not flagged.
+
+Example
+.......
+
+    package Foo is
+       type PT is tagged private;     --  FLAG (if rule parameter is 3 or less)
+
+       procedure P1 (X : in out PT);
+       procedure P2 (X : in out PT) is null;
+       function F1 (X : PT) return Integer;
+       function F2 (X : PT) return Integer is (F1 (X) + 1);
+
+       type I1 is interface;
+
+       procedure P1 (X : in out I1) is abstract;
+       procedure P2 (X : in out I1) is null;
+
+       type I2 is interface and I1;   --  FLAG (if rule parameter is 3 or less)
+       function F1 (X : I2) return Integer is abstract;
+       function F2 (X : I2) return Integer is abstract;
+
+    private
+       type PT is tagged record
+          I : Integer;
+       end record;
+    end Foo;
 
 
 File: gnatcheck_rm.info,  Node: Visible_Components,  Prev: Too_Many_Primitives,  Up: Object Orientation
@@ -974,7 +1248,43 @@ packages or in local (generic) packages are not flagged. `Record
 definitions' in private packages, in package bodies, and in the main
 subprogram body are not flagged.
 
-This rule has no parameters.
+This rule has the following (optional) parameters for the `+R' option:
+
+`Tagged_Only'
+     Only declarations of tagged types are flagged.
+
+Example
+.......
+
+    with Types;
+    package Foo is
+       type Null_Record is null record;                                    --  FLAG
+
+       type Not_Null_Record is record                                      --  FLAG
+          I : Integer;
+          B : Boolean;
+       end record;
+
+       type Tagged_Not_Null_Record is tagged record                        --  FLAG
+          I : Integer;
+          B : Boolean;
+       end record;
+
+       type Private_Extension is new Types.Tagged_Private with private;
+
+       type NoN_Private_Extension is new Types.Tagged_Private with record  --  FLAG
+          B : Boolean;
+       end record;
+
+    private
+       type Rec is tagged record
+          I : Integer;
+       end record;
+
+       type Private_Extension is new Types.Tagged_Private with record
+          C : Rec;
+       end record;
+    end Foo;
 
 
 File: gnatcheck_rm.info,  Node: Portability,  Next: Program Structure,  Prev: Object Orientation,  Up: Style-Related Rules
@@ -987,18 +1297,44 @@ usages that support program portability.
 
 * Menu:
 
+* Bit_Records_Without_Layout_Definition::
 * Forbidden_Attributes::
 * Forbidden_Pragmas::
 * Implicit_SMALL_For_Fixed_Point_Types::
+* Incomplete_Representation_Specifications::
+* No_Explicit_Real_Range::
 * No_Scalar_Storage_Order_Specified::
 * Predefined_Numeric_Types::
 * Printable_ASCII::
 * Separate_Numeric_Error_Handlers::
 
 
-File: gnatcheck_rm.info,  Node: Forbidden_Attributes,  Next: Forbidden_Pragmas,  Up: Portability
+File: gnatcheck_rm.info,  Node: Bit_Records_Without_Layout_Definition,  Next: Forbidden_Attributes,  Up: Portability
 
-9.1.3.1 `Forbidden_Attributes'
+9.1.3.1 `Bit_Records_Without_Layout_Definition'
+...............................................
+
+Flag record type declarations if a record has a component of a modular
+type and the record type does not have a record representation clause
+applied to it.
+
+This rule has no parameters.
+
+Example
+.......
+
+    package Pack is
+       type My_Mod is mod 8;
+
+       type My_Rec is record   --  FLAG
+          I : My_Mod;
+       end record;
+    end Pack;
+
+
+File: gnatcheck_rm.info,  Node: Forbidden_Attributes,  Next: Forbidden_Pragmas,  Prev: Bit_Records_Without_Layout_Definition,  Up: Portability
+
+9.1.3.2 `Forbidden_Attributes'
 ..............................
 
 Flag each use of the specified attributes. The attributes to be
@@ -1065,10 +1401,24 @@ in the definition of exemption sections are `Attribute_Designators'.
 Each `Attribute_Designator' used as a rule exemption parameter should
 denote a predefined or GNAT-specific attribute.
 
+Example
+.......
+
+    --  if the rule is activated as +RForbidden_Attributes:Range,First,Last
+    procedure Foo is
+       type Arr is array (1 .. 10) of Integer;
+       Arr_Var : Arr;
+
+       subtype Ind is Integer range Arr'First .. Arr'Last; --  FLAG (twice)
+    begin
+
+       for J in Arr'Range loop                             --  FLAG
+          Arr_Var (J) := Integer'Succ (J);
+
 
 File: gnatcheck_rm.info,  Node: Forbidden_Pragmas,  Next: Implicit_SMALL_For_Fixed_Point_Types,  Prev: Forbidden_Attributes,  Up: Portability
 
-9.1.3.2 `Forbidden_Pragmas'
+9.1.3.3 `Forbidden_Pragmas'
 ...........................
 
 Flag each use of the specified pragmas.  The pragmas to be detected are
@@ -1140,10 +1490,24 @@ in the definition of exemption sections are pragma names. Each name
 used as a rule exemption parameter should denote a predefined or
 GNAT-specific pragma.
 
-
-File: gnatcheck_rm.info,  Node: Implicit_SMALL_For_Fixed_Point_Types,  Next: No_Scalar_Storage_Order_Specified,  Prev: Forbidden_Pragmas,  Up: Portability
+Example
+.......
 
-9.1.3.3 `Implicit_SMALL_For_Fixed_Point_Types'
+    --  if the rule is activated as +RForbidden_Pragmas:Pack
+    package Foo is
+
+       type Arr is array (1 .. 8) of Boolean;
+       pragma Pack (Arr);                      --  FLAG
+
+       I : Integer;
+       pragma Atomic (I);
+
+    end Foo;
+
+
+File: gnatcheck_rm.info,  Node: Implicit_SMALL_For_Fixed_Point_Types,  Next: Incomplete_Representation_Specifications,  Prev: Forbidden_Pragmas,  Up: Portability
+
+9.1.3.4 `Implicit_SMALL_For_Fixed_Point_Types'
 ..............................................
 
 Flag each fixed point type declaration that lacks an explicit
@@ -1153,10 +1517,66 @@ point type declarations are not checked.
 
 This rule has no parameters.
 
-
-File: gnatcheck_rm.info,  Node: No_Scalar_Storage_Order_Specified,  Next: Predefined_Numeric_Types,  Prev: Implicit_SMALL_For_Fixed_Point_Types,  Up: Portability
+Example
+.......
 
-9.1.3.4 `No_Scalar_Storage_Order_Specified'
+    package Foo is
+       type Fraction is delta 0.01 range -1.0 .. 1.0;
+       type Fraction1 is delta 0.01 range -1.0 .. 1.0; --  FLAG
+
+       type Money is delta 0.01 digits 15;
+
+       for Fraction'Small use 0.01;
+    end Foo;
+
+
+File: gnatcheck_rm.info,  Node: Incomplete_Representation_Specifications,  Next: No_Explicit_Real_Range,  Prev: Implicit_SMALL_For_Fixed_Point_Types,  Up: Portability
+
+9.1.3.5 `Incomplete_Representation_Specifications'
+..................................................
+
+Flag all record types that have a layout representation specification
+but without Size and Pack representation specifications.
+
+This rule has no parameters.
+
+Example
+.......
+
+    package Pack is
+       type Rec is record  --  FLAG
+          I : Integer;
+          B : Boolean;
+       end record;
+
+       for Rec use record
+          I at 0 range 0 ..31;
+          B at 4 range 0 .. 7;
+       end record;
+    end Pack;
+
+
+File: gnatcheck_rm.info,  Node: No_Explicit_Real_Range,  Next: No_Scalar_Storage_Order_Specified,  Prev: Incomplete_Representation_Specifications,  Up: Portability
+
+9.1.3.6 `No_Explicit_Real_Range'
+................................
+
+Flag a declaration of a floating point type or a decimal fixed point
+type, including types derived from them if no explicit range
+specification is provided for the type.
+
+This rule has no parameters.
+
+Example
+.......
+
+    type F1 is digits 8;                           --  FLAG
+    type F2 is delta 0.01 digits 8;                --  FLAG
+
+
+File: gnatcheck_rm.info,  Node: No_Scalar_Storage_Order_Specified,  Next: Predefined_Numeric_Types,  Prev: No_Explicit_Real_Range,  Up: Portability
+
+9.1.3.7 `No_Scalar_Storage_Order_Specified'
 ...........................................
 
 Flag each record type declaration, record extension declaration, and
@@ -1167,10 +1587,37 @@ ancestors has an explicitly specified Scalar_Storage_Order attribute.
 
 This rule has no parameters.
 
+Example
+.......
+
+    with System;
+    package Foo is
+
+       type Rec1 is  record     --  FLAG
+          I : Integer;
+       end record;
+
+       for Rec1 use
+          record
+             I at 0 range 0 .. 31;
+          end record;
+
+       type Rec2 is  record
+          I : Integer;
+       end record;
+
+       for Rec2 use
+          record
+             I at 0 range 0 .. 31;
+          end record;
+
+       pragma Attribute_Definition (Scalar_Storage_Order, Rec2, System.Low_Order_First);
+    end Foo;
+
 
 File: gnatcheck_rm.info,  Node: Predefined_Numeric_Types,  Next: Printable_ASCII,  Prev: No_Scalar_Storage_Order_Specified,  Up: Portability
 
-9.1.3.5 `Predefined_Numeric_Types'
+9.1.3.8 `Predefined_Numeric_Types'
 ..................................
 
 Flag each explicit use of the name of any numeric type or subtype
@@ -1193,10 +1640,27 @@ predefined packages (such as `System.Any_Priority' or
 
 This rule has no parameters.
 
+Example
+.......
+
+    package Foo is
+       I : Integer;                               -- FLAG
+       F : Float;                                 -- FLAG
+       B : Boolean;
+
+       type Arr is array (1 .. 5) of Short_Float; -- FLAG
+
+       type Res is record
+          C1 : Long_Integer;                      -- FLAG
+          C2 : Character;
+       end record;
+
+    end Foo;
+
 
 File: gnatcheck_rm.info,  Node: Printable_ASCII,  Next: Separate_Numeric_Error_Handlers,  Prev: Predefined_Numeric_Types,  Up: Portability
 
-9.1.3.6 `Printable_ASCII'
+9.1.3.9 `Printable_ASCII'
 .........................
 
 Flag source code text characters that are not part of the printable
@@ -1212,8 +1676,8 @@ This rule has no parameters.
 
 File: gnatcheck_rm.info,  Node: Separate_Numeric_Error_Handlers,  Prev: Printable_ASCII,  Up: Portability
 
-9.1.3.7 `Separate_Numeric_Error_Handlers'
-.........................................
+9.1.3.10 `Separate_Numeric_Error_Handlers'
+..........................................
 
 Flags each exception handler that contains a choice for the predefined
 `Constraint_Error' exception, but does not contain the choice for the
@@ -1221,6 +1685,14 @@ predefined `Numeric_Error' exception, or that contains the choice for
 `Numeric_Error', but does not contain the choice for `Constraint_Error'.
 
 This rule has no parameters.
+
+Example
+.......
+
+    exception
+       when Constraint_Error =>  --  FLAG
+          Clean_Up;
+    end;
 
 
 File: gnatcheck_rm.info,  Node: Program Structure,  Next: Programming Practice,  Prev: Portability,  Up: Style-Related Rules
@@ -1257,6 +1729,13 @@ This rule has the following (mandatory) parameters for the `+R' option:
      Positive integer specifying the maximal number of ancestors when
      the unit is not flagged.
 
+Example
+.......
+
+    package Parent.Child1.Child2 is  -- FLAG  (if rule parameter is 1)
+       I : Integer;
+    end;
+
 
 File: gnatcheck_rm.info,  Node: Deeply_Nested_Generics,  Next: Local_Packages,  Prev: Deep_Library_Hierarchy,  Up: Program Structure
 
@@ -1275,6 +1754,24 @@ This rule has the following (mandatory) parameters for the `+R' option:
      Nonnegative integer specifying the maximum nesting level for a
      generic declaration.
 
+Example
+.......
+
+    package Foo is
+
+       generic
+       package P_G_0 is
+          generic
+          package P_G_1 is
+             generic              --  FLAG (if rule parameter is 1)
+             package P_G_2 is
+                I  : Integer;
+             end;
+          end;
+       end;
+
+    end Foo;
+
 
 File: gnatcheck_rm.info,  Node: Local_Packages,  Next: Non_Visible_Exceptions,  Prev: Deeply_Nested_Generics,  Up: Program Structure
 
@@ -1285,6 +1782,15 @@ Flag all local packages declared in package and generic package specs.
 Local packages in bodies are not flagged.
 
 This rule has no parameters.
+
+Example
+.......
+
+    package Foo is
+       package Inner is    --  FLAG
+          I : Integer;
+       end Inner;
+    end Foo;
 
 
 File: gnatcheck_rm.info,  Node: Non_Visible_Exceptions,  Next: Raising_External_Exceptions,  Prev: Local_Packages,  Up: Program Structure
@@ -1315,6 +1821,33 @@ Renamings of local exceptions are not flagged.
 
 This rule has no parameters.
 
+Example
+.......
+
+    procedure Bar is
+       Var : Integer :=- 13;
+
+       procedure Inner (I : in out Integer) is
+          Inner_Exception_1 : exception;          --  FLAG
+          Inner_Exception_2 : exception;
+       begin
+          if I = 0 then
+             raise Inner_Exception_1;
+          elsif I = 1 then
+             raise Inner_Exception_2;
+          else
+             I := I - 1;
+          end if;
+       exception
+          when Inner_Exception_2 =>
+             I := 0;
+             raise;                               --  FLAG
+       end Inner;
+
+    begin
+       Inner (Var);
+    end Bar;
+
 
 File: gnatcheck_rm.info,  Node: Raising_External_Exceptions,  Prev: Non_Visible_Exceptions,  Up: Program Structure
 
@@ -1328,6 +1861,27 @@ neither a predefined exception nor an exception that is also declared
 
 This rule has no parameters.
 
+Example
+.......
+
+    package Exception_Declarations is
+       Ex : exception;
+    end Exception_Declarations;
+    package Foo is
+       procedure Proc (I : in out Integer);
+    end Foo;
+    with Exception_Declarations;
+    package body Foo is
+       procedure Proc (I : in out Integer) is
+       begin
+          if I < 0 then
+             raise Exception_Declarations.Ex;   --  FLAG
+          else
+             I := I - 1;
+          end if;
+       end Proc;
+    end Foo;
+
 
 File: gnatcheck_rm.info,  Node: Programming Practice,  Next: Readability,  Prev: Program Structure,  Up: Style-Related Rules
 
@@ -1339,6 +1893,8 @@ relate to program maintainability.
 
 * Menu:
 
+* Address_Specifications_For_Initialized_Objects::
+* Address_Specifications_For_Local_Objects::
 * Anonymous_Arrays::
 * Binary_Case_Statements::
 * Default_Values_For_Record_Components::
@@ -1351,7 +1907,9 @@ relate to program maintainability.
 * Global_Variables::
 * GOTO_Statements::
 * Improper_Returns::
+* Local_USE_Clauses::
 * Maximum_Parameters::
+* Misplaced_Representation_Items::
 * Nested_Subprograms::
 * Non_Short_Circuit_Operators::
 * Null_Paths::
@@ -1359,6 +1917,7 @@ relate to program maintainability.
 * OTHERS_In_Aggregates::
 * OTHERS_In_CASE_Statements::
 * OTHERS_In_Exception_Handlers::
+* Outbound_Protected_Assignments::
 * Overly_Nested_Control_Structures::
 * POS_On_Enumeration_Types::
 * Positional_Actuals_For_Defaulted_Generic_Parameters::
@@ -1367,6 +1926,7 @@ relate to program maintainability.
 * Positional_Generic_Parameters::
 * Positional_Parameters::
 * Recursive_Subprograms::
+* Single_Value_Enumeration_Types::
 * Unchecked_Address_Conversions::
 * Unchecked_Conversions_As_Actuals::
 * Unconditional_Exits::
@@ -1375,9 +1935,56 @@ relate to program maintainability.
 * USE_PACKAGE_Clauses::
 
 
-File: gnatcheck_rm.info,  Node: Anonymous_Arrays,  Next: Binary_Case_Statements,  Up: Programming Practice
+File: gnatcheck_rm.info,  Node: Address_Specifications_For_Initialized_Objects,  Next: Address_Specifications_For_Local_Objects,  Up: Programming Practice
 
-9.1.5.1 `Anonymous_Arrays'
+9.1.5.1 `Address_Specifications_For_Initialized_Objects'
+........................................................
+
+Flag address clauses and address aspect definitions if they are applied
+to object declarations with explicit initializations.
+
+This rule has no parameters.
+
+Example
+.......
+
+    I : Integer := 0;
+    Var0 : Integer with Address => I'Address;
+
+    Var1 : Integer := 10;
+    for Var1'Address use Var0'Address;             --  FLAG
+
+
+File: gnatcheck_rm.info,  Node: Address_Specifications_For_Local_Objects,  Next: Anonymous_Arrays,  Prev: Address_Specifications_For_Initialized_Objects,  Up: Programming Practice
+
+9.1.5.2 `Address_Specifications_For_Local_Objects'
+..................................................
+
+Flag address clauses and address aspect definitions if they are applied
+to data objects declared in local subprogram bodies. Data objects
+declared in library subprogram bodies are not flagged.
+
+This rule has no parameters.
+
+Example
+.......
+
+    package Pack is
+       Var : Integer;
+       procedure Proc (I : in out Integer);
+    end Pack;
+    package body Pack is
+       procedure Proc (I : in out Integer) is
+          Tmp : Integer with Address => Pack.Var'Address;   --  FLAG
+       begin
+          I := Tmp;
+       end Proc;
+    end Pack;
+
+
+File: gnatcheck_rm.info,  Node: Anonymous_Arrays,  Next: Binary_Case_Statements,  Prev: Address_Specifications_For_Local_Objects,  Up: Programming Practice
+
+9.1.5.3 `Anonymous_Arrays'
 ..........................
 
 Flag all anonymous array type definitions (by Ada semantics these can
@@ -1385,10 +1992,17 @@ only occur in object declarations).
 
 This rule has no parameters.
 
+Example
+.......
+
+    type Arr is array (1 .. 10) of Integer;
+    Var1 : Arr;
+    Var2 : array (1 .. 10) of Integer;      --  FLAG
+
 
 File: gnatcheck_rm.info,  Node: Binary_Case_Statements,  Next: Default_Values_For_Record_Components,  Prev: Anonymous_Arrays,  Up: Programming Practice
 
-9.1.5.2 `Binary_Case_Statements'
+9.1.5.4 `Binary_Case_Statements'
 ................................
 
 Flag a case statement if this statement has only two alternatives, one
@@ -1397,10 +2011,20 @@ or the `OTHERS' choice.
 
 This rule has no parameters.
 
+Example
+.......
+
+    case Var is                   --  FLAG
+       when 1 =>
+          Var := Var + 1;
+       when others =>
+          null;
+    end case;
+
 
 File: gnatcheck_rm.info,  Node: Default_Values_For_Record_Components,  Next: Deriving_From_Predefined_Type,  Prev: Binary_Case_Statements,  Up: Programming Practice
 
-9.1.5.3 `Default_Values_For_Record_Components'
+9.1.5.5 `Default_Values_For_Record_Components'
 ..............................................
 
 Flag a record component declaration if it contains a default expression.
@@ -1409,10 +2033,25 @@ not flag discriminant specifications.
 
 This rule has no parameters.
 
+Example
+.......
+
+    type Rec (D : Natural := 0) is record
+       I : Integer := 0;                    -- FLAG
+       B : Boolean;
+
+       case D is
+          when 0 =>
+             C : Character := 'A';          -- FLAG
+          when others =>
+             F : Float;
+       end case;
+    end record;
+
 
 File: gnatcheck_rm.info,  Node: Deriving_From_Predefined_Type,  Next: Enumeration_Ranges_In_CASE_Statements,  Prev: Default_Values_For_Record_Components,  Up: Programming Practice
 
-9.1.5.4 `Deriving_From_Predefined_Type'
+9.1.5.6 `Deriving_From_Predefined_Type'
 .......................................
 
 Flag derived type declaration if the ultimate ancestor type is a
@@ -1421,10 +2060,20 @@ extensions. The rule is checked inside expanded generics.
 
 This rule has no parameters.
 
+Example
+.......
+
+    package Foo is
+       type T is private;
+       type My_String is new String;  --  FLAG
+    private
+       type T is new Integer;         --  FLAG
+    end Foo;
+
 
 File: gnatcheck_rm.info,  Node: Enumeration_Ranges_In_CASE_Statements,  Next: Enumeration_Representation_Clauses,  Prev: Deriving_From_Predefined_Type,  Up: Programming Practice
 
-9.1.5.5 `Enumeration_Ranges_In_CASE_Statements'
+9.1.5.7 `Enumeration_Ranges_In_CASE_Statements'
 ...............................................
 
 Flag each use of a range of enumeration literals as a choice in a
@@ -1441,20 +2090,43 @@ new literal.
 
 This rule has no parameters.
 
+Example
+.......
+
+    procedure Bar (I : in out Integer) is
+       type Enum is (A, B, C, D, E);
+       type Arr is array (A .. C) of Integer;
+
+       function F (J : Integer) return Enum is separate;
+    begin
+       case F (I) is
+          when Arr'Range  =>  --  FLAG
+             I := I + 1;
+          when D .. E =>      --  FLAG
+             null;
+       end case;
+    end Bar;
+
 
 File: gnatcheck_rm.info,  Node: Enumeration_Representation_Clauses,  Next: Exceptions_As_Control_Flow,  Prev: Enumeration_Ranges_In_CASE_Statements,  Up: Programming Practice
 
-9.1.5.6 `Enumeration_Representation_Clauses'
+9.1.5.8 `Enumeration_Representation_Clauses'
 ............................................
 
 Flag enumeration representation clauses.
 
 This rule has no parameters.
 
+Example
+.......
+
+    type Enum1 is (A1, B1, C1);
+    for Enum1 use (A1 => 1, B1 => 11, C1 => 111);     --  FLAG
+
 
 File: gnatcheck_rm.info,  Node: Exceptions_As_Control_Flow,  Next: Exits_From_Conditional_Loops,  Prev: Enumeration_Representation_Clauses,  Up: Programming Practice
 
-9.1.5.7 `Exceptions_As_Control_Flow'
+9.1.5.9 `Exceptions_As_Control_Flow'
 ....................................
 
 Flag each place where an exception is explicitly raised and handled in
@@ -1463,11 +2135,27 @@ package body, task body or entry body is not flagged.
 
 The rule has no parameters.
 
+Example
+.......
+
+    procedure Bar (I : in out Integer) is
+
+    begin
+       if I = Integer'Last then
+          raise Constraint_Error;    --  FLAG
+       else
+         I := I - 1;
+       end if;
+    exception
+       when Constraint_Error =>
+          I := Integer'First;
+    end Bar;
+
 
 File: gnatcheck_rm.info,  Node: Exits_From_Conditional_Loops,  Next: EXIT_Statements_With_No_Loop_Name,  Prev: Exceptions_As_Control_Flow,  Up: Programming Practice
 
-9.1.5.8 `Exits_From_Conditional_Loops'
-......................................
+9.1.5.10 `Exits_From_Conditional_Loops'
+.......................................
 
 Flag any exit statement if it transfers the control out of a `for' loop
 or a `while' loop. This includes cases when the `exit' statement
@@ -1477,21 +2165,47 @@ some `for' or `while' loop, but transfers the control from some outer
 
 The rule has no parameters.
 
+Example
+.......
+
+    function Bar (S : String) return Natural is
+       Result : Natural := 0;
+    begin
+       for J in S'Range loop
+          exit when S (J) = '@';  --  FLAG
+          Result := Result + J;
+       end loop;
+
+       return 0;
+    end Bar;
+
 
 File: gnatcheck_rm.info,  Node: EXIT_Statements_With_No_Loop_Name,  Next: Global_Variables,  Prev: Exits_From_Conditional_Loops,  Up: Programming Practice
 
-9.1.5.9 `EXIT_Statements_With_No_Loop_Name'
-...........................................
+9.1.5.11 `EXIT_Statements_With_No_Loop_Name'
+............................................
 
 Flag each `exit' statement that does not specify the name of the loop
 being exited.
 
 The rule has no parameters.
 
+Example
+.......
+
+    procedure Bar (I, J : in out Integer) is
+    begin
+       loop
+          exit when I < J;  --  FLAG
+          I := I - 1;
+          J := J + 1;
+       end loop;
+    end Bar;
+
 
 File: gnatcheck_rm.info,  Node: Global_Variables,  Next: GOTO_Statements,  Prev: EXIT_Statements_With_No_Loop_Name,  Up: Programming Practice
 
-9.1.5.10 `Global_Variables'
+9.1.5.12 `Global_Variables'
 ...........................
 
 Flag any variable declaration that appears immediately within the
@@ -1505,20 +2219,42 @@ This rule has the following (optional) parameters for the `+R' option:
      Do not flag variable declarations in private library (generic)
      packages and in package private parts.
 
+Example
+.......
+
+    package Foo is
+        Var1 : Integer;    --  FLAG
+        procedure Proc;
+    private
+        Var2 : Boolean;    --  FLAG
+    end Foo;
+
 
 File: gnatcheck_rm.info,  Node: GOTO_Statements,  Next: Improper_Returns,  Prev: Global_Variables,  Up: Programming Practice
 
-9.1.5.11 `GOTO_Statements'
+9.1.5.13 `GOTO_Statements'
 ..........................
 
 Flag each occurrence of a `goto' statement.
 
 This rule has no parameters.
 
-
-File: gnatcheck_rm.info,  Node: Improper_Returns,  Next: Maximum_Parameters,  Prev: GOTO_Statements,  Up: Programming Practice
+Example
+.......
 
-9.1.5.12 `Improper_Returns'
+    for K in 1 .. 10 loop
+       if K = 6 then
+          goto Quit; -- FLAG
+       end if;
+       null;
+    end loop;
+    <<Quit>>
+    return;
+
+
+File: gnatcheck_rm.info,  Node: Improper_Returns,  Next: Local_USE_Clauses,  Prev: GOTO_Statements,  Up: Programming Practice
+
+9.1.5.14 `Improper_Returns'
 ...........................
 
 Flag each explicit `return' statement in procedures, and multiple
@@ -1531,10 +2267,58 @@ have no more than one point of normal return.
 
 This rule has no parameters.
 
-
-File: gnatcheck_rm.info,  Node: Maximum_Parameters,  Next: Nested_Subprograms,  Prev: Improper_Returns,  Up: Programming Practice
+Example
+.......
 
-9.1.5.13 `Maximum_Parameters'
+    procedure Proc (I : in out Integer) is
+    begin
+       if I = 0 then
+          return;                          --  FLAG
+       end if;
+
+       I := I * (I + 1);
+    end Proc;
+
+    function Factorial (I : Natural) return Positive is
+    begin
+       if I = 0 then
+          return 1;
+       else
+          return I * Factorial (I - 1);    --  FLAG
+       end if;
+    exception
+       when Constraint_Error =>
+          return Natural'Last;             --  FLAG
+    end Factorial;
+
+
+File: gnatcheck_rm.info,  Node: Local_USE_Clauses,  Next: Maximum_Parameters,  Prev: Improper_Returns,  Up: Programming Practice
+
+9.1.5.15 `Local_USE_Clauses'
+............................
+
+Use clauses that are not parts of compilation unit context clause are
+flagged. The rule has an optional parameter for +R option:
+
+`Except_USE_TYPE_Clauses'
+     Do not flag local use type clauses.
+
+Example
+.......
+
+    with Pack1;
+    with Pack2;
+    procedure Proc is
+       use Pack1;               --  FLAG
+
+       procedure Inner is
+          use type Pack2.T;     --  FLAG (if Except_USE_TYPE_Clauses is not set)
+       ...
+
+
+File: gnatcheck_rm.info,  Node: Maximum_Parameters,  Next: Misplaced_Representation_Items,  Prev: Local_USE_Clauses,  Up: Programming Practice
+
+9.1.5.16 `Maximum_Parameters'
 .............................
 
 Flag any subprogram declaration, subprogram body declaration, expression
@@ -1554,10 +2338,67 @@ This rule has the following (mandatory) parameters for the `+R' option:
      Positive integer specifying the maximum allowed total number of
      subprogram formal parameters.
 
-
-File: gnatcheck_rm.info,  Node: Nested_Subprograms,  Next: Non_Short_Circuit_Operators,  Prev: Maximum_Parameters,  Up: Programming Practice
+Example
+.......
 
-9.1.5.14 `Nested_Subprograms'
+    package Foo is
+
+       procedure Proc_1 (I : in out Integer);
+       procedure Proc_2 (I, J : in out Integer);
+       procedure Proc_3 (I, J, K : in out Integer);
+       procedure Proc_4 (I, J, K, L : in out Integer); --  FLAG (if rule parameter is 3)
+
+       function Fun_4                                  --  FLAG (if rule parameter is 3)
+         (I : Integer;
+          J : Integer;
+          K : Integer;
+          L : Integer) return Integer is (I + J * K - L);
+
+    end Foo;
+
+
+File: gnatcheck_rm.info,  Node: Misplaced_Representation_Items,  Next: Nested_Subprograms,  Prev: Maximum_Parameters,  Up: Programming Practice
+
+9.1.5.17 `Misplaced_Representation_Items'
+.........................................
+
+Flag a representation item if there is any Ada construct except another
+representation item for the same entity between this clause and the
+declaration of the entity it applies to. A representation item in the
+context of this rule is either a representation clause or one of the
+following representation pragmas:
+
+   * Atomic   J.15.8(9/3)
+
+   * Atomic_Components   J.15.8(9/3)
+
+   * Independent   J.15.8(9/3)
+
+   * Independent_Components   J.15.8(9/3)
+
+   * Pack   J.15.3(1/3)
+
+   * Unchecked_Union   J.15.6(1/3)
+
+   * Volatile   J.15.8(9/3)
+
+   * Volatile_Components   J.15.8(9/3)
+
+This rule has no parameters.
+
+Example
+.......
+
+    type Int1 is range 0 .. 1024;
+    type Int2 is range 0 .. 1024;
+
+    for Int2'Size use 16;         --  NO FLAG
+    for Int1'Size use 16;         --  FLAG
+
+
+File: gnatcheck_rm.info,  Node: Nested_Subprograms,  Next: Non_Short_Circuit_Operators,  Prev: Misplaced_Representation_Items,  Up: Programming Practice
+
+9.1.5.18 `Nested_Subprograms'
 .............................
 
 Flag any subprogram declaration, subprogram body declaration, subprogram
@@ -1571,10 +2412,27 @@ completed by null procedure declarations are not flagged.
 
 This rule has no parameters.
 
+Example
+.......
+
+    procedure Bar (I, J : in out Integer) is
+
+       procedure Foo (K : Integer) is null;
+       procedure Proc1;                    --  FLAG
+
+       procedure Proc2 is separate;        --  FLAG
+
+       procedure Proc1 is
+       begin
+          I := I + J;
+       end Proc1;
+
+    begin
+
 
 File: gnatcheck_rm.info,  Node: Non_Short_Circuit_Operators,  Next: Null_Paths,  Prev: Nested_Subprograms,  Up: Programming Practice
 
-9.1.5.15 `Non_Short_Circuit_Operators'
+9.1.5.19 `Non_Short_Circuit_Operators'
 ......................................
 
 Flag all calls to predefined `and' and `or' operators for any boolean
@@ -1584,10 +2442,18 @@ renaming declarations are not flagged. Calls to predefined `and' and
 
 This rule has no parameters.
 
+Example
+.......
+
+    B1 := I > 0 and J > 0;       --  FLAG
+    B2 := I < 0 and then J < 0;
+    B3 := I > J or J > 0;        --  FLAG
+    B4 := I < J or else I < 0;
+
 
 File: gnatcheck_rm.info,  Node: Null_Paths,  Next: Objects_Of_Anonymous_Types,  Prev: Non_Short_Circuit_Operators,  Up: Programming Practice
 
-9.1.5.16 `Null_Paths'
+9.1.5.20 `Null_Paths'
 .....................
 
 Flag a statement sequence that is a component of an IF, CASE or LOOP
@@ -1595,10 +2461,32 @@ statement if this sequences consists of NULL statements only.
 
 This rule has no parameters.
 
+Example
+.......
+
+    if I > 10 then
+       J := 5;
+    elsif I > 0 then
+       null;                 --  FLAG
+    else
+      J := J + 1;
+    end if;
+
+    case J is
+       when 1 =>
+          I := I + 1;
+       when 2 =>
+          null;              --  FLAG
+       when 3 =>
+          J := J + 1;
+       when others =>
+          null;              --  FLAG
+    end case;
+
 
 File: gnatcheck_rm.info,  Node: Objects_Of_Anonymous_Types,  Next: OTHERS_In_Aggregates,  Prev: Null_Paths,  Up: Programming Practice
 
-9.1.5.17 `Objects_Of_Anonymous_Types'
+9.1.5.21 `Objects_Of_Anonymous_Types'
 .....................................
 
 Flag any object declaration located immediately within a package
@@ -1609,10 +2497,31 @@ defined with anonymous access definitions are flagged.
 
 This rule has no parameters.
 
+Example
+.......
+
+    package Foo is
+       type Arr is array (1 .. 10) of Integer;
+       type Acc is access Integer;
+
+       A : array (1 .. 10) of Integer;  --  FLAG
+       B : Arr;
+
+       C : access Integer;              --  FLAG
+       D : Acc;
+
+       generic
+          F1 : access Integer;          --  FLAG
+          F2 : Acc;
+       procedure Proc_G
+         (P1 : access Integer;
+          P2 : Acc);
+    end Foo;
+
 
 File: gnatcheck_rm.info,  Node: OTHERS_In_Aggregates,  Next: OTHERS_In_CASE_Statements,  Prev: Objects_Of_Anonymous_Types,  Up: Programming Practice
 
-9.1.5.18 `OTHERS_In_Aggregates'
+9.1.5.22 `OTHERS_In_Aggregates'
 ...............................
 
 Flag each use of an `others' choice in extension aggregates.  In record
@@ -1626,30 +2535,127 @@ component; for example, `(1..1 => 0, others => 1)'.
 
 This rule has no parameters.
 
+Example
+.......
+
+    package Foo is
+       type Arr is array (1 .. 10) of Integer;
+
+       type Rec is record
+          C1 : Integer;
+          C2 : Integer;
+          C3 : Integer;
+          C4 : Integer;
+       end record;
+
+       type Tagged_Rec is tagged record
+          C1 : Integer;
+       end record;
+
+       type New_Tagged_Rec is new Tagged_Rec with record
+          C2 : Integer;
+          C3 : Integer;
+          C4 : Integer;
+       end record;
+
+       Arr_Var1 : Arr := (others => 1);
+       Arr_Var2 : Arr := (1 => 1, 2=> 2, others => 0);  --  FLAG
+
+       Rec_Var1 : Rec := (C1 => 1, others => 0);
+       Rec_Var2 : Rec := (1, 2, others => 3);           --  FLAG
+
+       Tagged_Rec_Var : Tagged_Rec := (C1 => 1);
+
+       New_Tagged_Rec_Var : New_Tagged_Rec := (Tagged_Rec_Var with others => 0); -- FLAG
+    end Foo;
+
 
 File: gnatcheck_rm.info,  Node: OTHERS_In_CASE_Statements,  Next: OTHERS_In_Exception_Handlers,  Prev: OTHERS_In_Aggregates,  Up: Programming Practice
 
-9.1.5.19 `OTHERS_In_CASE_Statements'
+9.1.5.23 `OTHERS_In_CASE_Statements'
 ....................................
 
 Flag any use of an `others' choice in a `case' statement.
 
 This rule has no parameters.
 
-
-File: gnatcheck_rm.info,  Node: OTHERS_In_Exception_Handlers,  Next: Overly_Nested_Control_Structures,  Prev: OTHERS_In_CASE_Statements,  Up: Programming Practice
+Example
+.......
 
-9.1.5.20 `OTHERS_In_Exception_Handlers'
+    case J is
+       when 1 =>
+          I := I + 1;
+       when 3 =>
+          J := J + 1;
+       when others =>        --  FLAG
+          null;
+    end case;
+
+
+File: gnatcheck_rm.info,  Node: OTHERS_In_Exception_Handlers,  Next: Outbound_Protected_Assignments,  Prev: OTHERS_In_CASE_Statements,  Up: Programming Practice
+
+9.1.5.24 `OTHERS_In_Exception_Handlers'
 .......................................
 
 Flag any use of an `others' choice in an exception handler.
 
 This rule has no parameters.
 
-
-File: gnatcheck_rm.info,  Node: Overly_Nested_Control_Structures,  Next: POS_On_Enumeration_Types,  Prev: OTHERS_In_Exception_Handlers,  Up: Programming Practice
+Example
+.......
 
-9.1.5.21 `Overly_Nested_Control_Structures'
+    exception
+       when Constraint_Error =>
+          I:= Integer'Last;
+       when others =>                   --  FLAG
+          I := I_Old;
+          raise;
+
+
+File: gnatcheck_rm.info,  Node: Outbound_Protected_Assignments,  Next: Overly_Nested_Control_Structures,  Prev: OTHERS_In_Exception_Handlers,  Up: Programming Practice
+
+9.1.5.25 `Outbound_Protected_Assignments'
+.........................................
+
+Flag an assignment statement located in a protected body if the
+variable name in the left part of the statement denotes an object
+declared outssided ourside this protected type or object.
+
+This rule has no parameters.
+
+Example
+.......
+
+    package Pack is
+       Var : Integer;
+
+       protected P is
+          entry E (I : in out Integer);
+          procedure P (I : Integer);
+       private
+          Flag : Boolean;
+       end P;
+
+    end Pack;
+    package body Pack is
+       protected body P is
+          entry E (I : in out Integer) when Flag is
+          begin
+             I   := Var + I;
+             Var := I;           --  FLAG
+          end E;
+
+          procedure P (I : Integer) is
+          begin
+             Flag := I > 0;
+          end P;
+       end P;
+    end Pack;
+
+
+File: gnatcheck_rm.info,  Node: Overly_Nested_Control_Structures,  Next: POS_On_Enumeration_Types,  Prev: Outbound_Protected_Assignments,  Up: Programming Practice
+
+9.1.5.26 `Overly_Nested_Control_Structures'
 ...........................................
 
 Flag each control structure whose nesting level exceeds the value
@@ -1683,10 +2689,28 @@ positive integer, `+R' option is ignored.
 If more than one  option is specified for the gnatcheck call, the later
 option and new parameter override the previous one(s).
 
+Example
+.......
+
+    if I > 0 then
+        for Idx in I .. J loop
+           if J < 0 then
+              case I is
+                 when 1 =>
+                    if Idx /= 0 then  --  FLAG (if rule parameter is 3)
+                       J := J / Idx;
+                    end if;
+                 when others =>
+                    J := J + Idx;
+              end case;
+           end if;
+        end loop;
+    end if;
+
 
 File: gnatcheck_rm.info,  Node: POS_On_Enumeration_Types,  Next: Positional_Actuals_For_Defaulted_Generic_Parameters,  Prev: Overly_Nested_Control_Structures,  Up: Programming Practice
 
-9.1.5.22 `POS_On_Enumeration_Types'
+9.1.5.27 `POS_On_Enumeration_Types'
 ...................................
 
 Flag `'Pos' attribute in case if the attribute prefix has an enumeration
@@ -1694,10 +2718,23 @@ type (including types derived from enumeration types).
 
 This rule has no parameters.
 
+Example
+.......
+
+    procedure Bar (Ch1, Ch2 : Character; I : in out Integer) is
+    begin
+       if Ch1'Pos in 32 .. 126           --  FLAG
+         and then
+          Ch2'Pos not in 0 .. 31         --  FLAG
+       then
+          I := (Ch1'Pos + Ch2'Pos) / 2;  --  FLAG (twice)
+       end if;
+    end Bar;
+
 
 File: gnatcheck_rm.info,  Node: Positional_Actuals_For_Defaulted_Generic_Parameters,  Next: Positional_Actuals_For_Defaulted_Parameters,  Prev: POS_On_Enumeration_Types,  Up: Programming Practice
 
-9.1.5.23 `Positional_Actuals_For_Defaulted_Generic_Parameters'
+9.1.5.28 `Positional_Actuals_For_Defaulted_Generic_Parameters'
 ..............................................................
 
 Flag each generic actual parameter corresponding to a generic formal
@@ -1705,10 +2742,41 @@ parameter with a default initialization, if positional notation is used.
 
 This rule has no parameters.
 
+Example
+.......
+
+    package Foo is
+       function Fun_1 (I : Integer) return Integer;
+       function Fun_2 (I : Integer) return Integer;
+
+       generic
+          I_Par1 : Integer;
+          I_Par2 : Integer := 1;
+          with function Fun_1 (I : Integer) return Integer is <>;
+          with function Fun_3 (I : Integer) return Integer is Fun_2;
+       package Pack_G is
+          Var_1 : Integer := I_Par1;
+          Var_2 : Integer := I_Par2;
+          Var_3 : Integer := Fun_1 (Var_1);
+          Var_4 : Integer := Fun_3 (Var_2);
+       end Pack_G;
+
+       package Pack_I_1 is new Pack_G (1);
+
+       package Pact_I_2 is new Pack_G
+         (2, I_Par2 => 3, Fun_1 => Fun_2, Fun_3 => Fun_1);
+
+       package Pack_I_3 is new Pack_G (1,
+                                       2,            --  FLAG
+                                       Fun_2,        --  FLAG
+                                       Fun_1);       --  FLAG
+
+    end Foo;
+
 
 File: gnatcheck_rm.info,  Node: Positional_Actuals_For_Defaulted_Parameters,  Next: Positional_Components,  Prev: Positional_Actuals_For_Defaulted_Generic_Parameters,  Up: Programming Practice
 
-9.1.5.24 `Positional_Actuals_For_Defaulted_Parameters'
+9.1.5.29 `Positional_Actuals_For_Defaulted_Parameters'
 ......................................................
 
 Flag each actual parameter to a subprogram or entry call where the
@@ -1717,10 +2785,21 @@ notation is used.
 
 This rule has no parameters.
 
+Example
+.......
+
+       procedure Proc (I : in out Integer; J : Integer := 0) is
+       begin
+          I := I + J;
+       end Proc;
+
+    begin
+       Proc (Var1, Var2);   --  FLAG
+
 
 File: gnatcheck_rm.info,  Node: Positional_Components,  Next: Positional_Generic_Parameters,  Prev: Positional_Actuals_For_Defaulted_Parameters,  Up: Programming Practice
 
-9.1.5.25 `Positional_Components'
+9.1.5.30 `Positional_Components'
 ................................
 
 Flag each array, record and extension aggregate that includes positional
@@ -1728,10 +2807,27 @@ notation.
 
 This rule has no parameters.
 
+Example
+.......
+
+    package Foo is
+       type Arr is array (1 .. 10) of Integer;
+
+       type Rec is record
+          C_Int  : Integer;
+          C_Bool : Boolean;
+          C_Char : Character;
+       end record;
+
+       Var_Rec_1 : Rec := (C_Int => 1, C_Bool => True, C_Char => 'a');
+       Var_Rec_2 : Rec := (2, C_Bool => False, C_Char => 'b');   --  FLAG
+       Var_Rec_3 : Rec := (1, True, 'c');                        --  FLAG
+    end Foo;
+
 
 File: gnatcheck_rm.info,  Node: Positional_Generic_Parameters,  Next: Positional_Parameters,  Prev: Positional_Components,  Up: Programming Practice
 
-9.1.5.26 `Positional_Generic_Parameters'
+9.1.5.31 `Positional_Generic_Parameters'
 ........................................
 
 Flag each positional actual generic parameter except for the case when
@@ -1740,10 +2836,26 @@ parameter.
 
 This rule has no parameters.
 
+Example
+.......
+
+    with Ada.Text_IO; use Ada.Text_IO;
+    with Ada.Unchecked_Conversion;
+    procedure Bar (I : in out Integer) is
+       type My_Int is range -12345 .. 12345;
+
+       function To_My_Int is new Ada.Unchecked_Conversion
+         (Source => Integer, Target => My_Int);
+
+       function To_Integer is new Ada.Unchecked_Conversion
+         (My_Int, Integer);                                --  FLAG (twice)
+
+       package My_Int_IO is new  Ada.Text_IO.Integer_IO (My_Int);
+
 
 File: gnatcheck_rm.info,  Node: Positional_Parameters,  Next: Recursive_Subprograms,  Prev: Positional_Generic_Parameters,  Up: Programming Practice
 
-9.1.5.27 `Positional_Parameters'
+9.1.5.32 `Positional_Parameters'
 ................................
 
 Flag each positional parameter notation in a subprogram or entry call,
@@ -1771,12 +2883,37 @@ This rule has the following (optional) parameters for the `+R' option:
      associations that can be replaced with named associations
      according to language rules are flagged
 
-This rule has no parameters.
+Example
+.......
+
+    procedure Bar (I : in out Integer) is
+       function My_Max (Left, Right : Integer) return Integer renames Integer'Max;
+
+       procedure Proc1 (I : in out Integer) is
+       begin
+          I := I + 1;
+       end Proc1;
+
+       procedure Proc2 (I, J : in out Integer) is
+       begin
+          I := I + J;
+       end Proc2;
+
+       L, M : Integer := 1;
+    begin
+       Proc1 (L);
+       Proc2 (L, M);                              --  FLAG (twice)
+       Proc2 (I => M, J => L);
+
+       L := Integer'Max (10, M);
+       M := My_Max (100, Right => L);             --  FLAG
+
+    end Bar;
 
 
-File: gnatcheck_rm.info,  Node: Recursive_Subprograms,  Next: Unchecked_Address_Conversions,  Prev: Positional_Parameters,  Up: Programming Practice
+File: gnatcheck_rm.info,  Node: Recursive_Subprograms,  Next: Single_Value_Enumeration_Types,  Prev: Positional_Parameters,  Up: Programming Practice
 
-9.1.5.28 `Recursive_Subprograms'
+9.1.5.33 `Recursive_Subprograms'
 ................................
 
 Flags specs (and bodies that act as specs) of recursive subprograms. A
@@ -1794,12 +2931,45 @@ flagged.
 This rule does not take into account subprogram calls in aspect
 definitions.
 
-This rule has no parameters.
+The rule has an optional parameters for `+R' option:
+
+`Skip_Dispatching_Calls'
+     Do not take into account dispatching calls when building and
+     analyzing call chains.
+
+Example
+.......
+
+    function Factorial (N : Natural) return Positive is  --  FLAG
+    begin
+       if N = 0 then
+          return 1;
+       else
+          return N * Factorial (N - 1);
+       end if;
+    end Factorial;
 
 
-File: gnatcheck_rm.info,  Node: Unchecked_Address_Conversions,  Next: Unchecked_Conversions_As_Actuals,  Prev: Recursive_Subprograms,  Up: Programming Practice
+File: gnatcheck_rm.info,  Node: Single_Value_Enumeration_Types,  Next: Unchecked_Address_Conversions,  Prev: Recursive_Subprograms,  Up: Programming Practice
 
-9.1.5.29 `Unchecked_Address_Conversions'
+9.1.5.34 `Single_Value_Enumeration_Types'
+.........................................
+
+Flag an enumeration type definition if it contains a single enumeration
+literal specification
+
+This rule has no parameters.
+
+Example
+.......
+
+    type Enum3 is (A, B, C);
+    type Enum1 is (D);      --  FLAG
+
+
+File: gnatcheck_rm.info,  Node: Unchecked_Address_Conversions,  Next: Unchecked_Conversions_As_Actuals,  Prev: Single_Value_Enumeration_Types,  Up: Programming Practice
+
+9.1.5.35 `Unchecked_Address_Conversions'
 ........................................
 
 Flag instantiations of `Ada.Unchecked_Conversion' if the actual for the
@@ -1813,10 +2983,26 @@ checked inside expanded generics.
 
 This rule has no parameters.
 
+Example
+.......
+
+    with Ada.Unchecked_Conversion;
+    with System;
+    package Foo is
+       type My_Address is new System.Address;
+
+       type My_Integer is new Integer;
+       type My_Access is access all My_Integer;
+
+       function Address_To_Access is new Ada.Unchecked_Conversion  --  FLAG
+         (Source => My_Address,
+          Target => My_Access);
+    end Foo;
+
 
 File: gnatcheck_rm.info,  Node: Unchecked_Conversions_As_Actuals,  Next: Unconditional_Exits,  Prev: Unchecked_Address_Conversions,  Up: Programming Practice
 
-9.1.5.30 `Unchecked_Conversions_As_Actuals'
+9.1.5.36 `Unchecked_Conversions_As_Actuals'
 ...........................................
 
 Flag call to instantiation of `Ada.Unchecked_Conversion' if it is an
@@ -1825,20 +3011,62 @@ subprogram or entry parameter specification.
 
 This rule has no parameters.
 
+Example
+.......
+
+    with Ada.Unchecked_Conversion;
+    procedure Bar (I : in out Integer) is
+       type T1 is array (1 .. 10) of Integer;
+       type T2 is array (1 .. 10) of Integer;
+
+       function UC is new Ada.Unchecked_Conversion (T1, T2);
+
+       Var1 : T1 := (others => 1);
+       Var2 : T2 := (others => 2);
+
+       procedure Init (X : out T2; Y : T2 := UC (Var1)) is   --  FLAG
+       begin
+          X := Y;
+       end Init;
+
+       procedure Ident (X : T2; Y : out T2) is
+       begin
+          Y := X;
+       end Ident;
+
+    begin
+       Ident (UC (Var1), Var2);                              --  FLAG
+    end Bar;
+
 
 File: gnatcheck_rm.info,  Node: Unconditional_Exits,  Next: Uninitialized_Global_Variables,  Prev: Unchecked_Conversions_As_Actuals,  Up: Programming Practice
 
-9.1.5.31 `Unconditional_Exits'
+9.1.5.37 `Unconditional_Exits'
 ..............................
 
 Flag unconditional `exit' statements.
 
 This rule has no parameters.
 
+Example
+.......
+
+    procedure Find_A (S : String; Idx : out Natural) is
+    begin
+       Idx := 0;
+
+       for J in S'Range loop
+          if S (J) = 'A' then
+             Idx := J;
+             exit;             --  FLAG
+          end if;
+       end loop;
+    end Find_A;
+
 
 File: gnatcheck_rm.info,  Node: Uninitialized_Global_Variables,  Next: Unnamed_Blocks_And_Loops,  Prev: Unconditional_Exits,  Up: Programming Practice
 
-9.1.5.32 `Uninitialized_Global_Variables'
+9.1.5.38 `Uninitialized_Global_Variables'
 .........................................
 
 Flag an object declaration located immediately within a package
@@ -1848,25 +3076,69 @@ declarations and declarations of objects of limited types.
 
 This rule has no parameters.
 
+Example
+.......
+
+    package Foo is
+       Var1 : Integer;      --  FLAG
+       Var2 : Integer := 0;
+    end Foo;
+
 
 File: gnatcheck_rm.info,  Node: Unnamed_Blocks_And_Loops,  Next: USE_PACKAGE_Clauses,  Prev: Uninitialized_Global_Variables,  Up: Programming Practice
 
-9.1.5.33 `Unnamed_Blocks_And_Loops'
+9.1.5.39 `Unnamed_Blocks_And_Loops'
 ...................................
 
-Flag each unnamed block statement and loop statement.
+Flag each unnamed block statement. Flag a unnamed loop loop statement
+if this statement is enclosed by another loop statement or if it
+encloses another loop statement.
 
 The rule has no parameters.
+
+Example
+.......
+
+    procedure Bar (S : in out String) is
+       I : Integer := 1;
+    begin
+       if S'Length > 10 then
+          declare                                  --  FLAG
+             S1   : String (S'Range);
+             Last : Positive := S1'Last;
+             Idx  : Positive := 0;
+          begin
+             for J in S'Range loop                 --  FLAG
+                S1 (Last - Idx) := S (J);
+                Idx             := Idx + 1;
+
+                for K in S'Range loop              --  FLAG
+                   S (K) := Character'Succ (S (K));
+                end loop;
+
+             end loop;
+
+             S := S1;
+          end;
+       end if;
+    end Bar;
 
 
 File: gnatcheck_rm.info,  Node: USE_PACKAGE_Clauses,  Prev: Unnamed_Blocks_And_Loops,  Up: Programming Practice
 
-9.1.5.34 `USE_PACKAGE_Clauses'
+9.1.5.40 `USE_PACKAGE_Clauses'
 ..............................
 
 Flag all `use' clauses for packages; `use type' clauses are not flagged.
 
 This rule has no parameters.
+
+Example
+.......
+
+    with Ada.Text_IO;
+    use Ada.Text_IO;                               --  FLAG
+    procedure Bar (S : in out String) is
 
 
 File: gnatcheck_rm.info,  Node: Readability,  Next: Source Code Presentation,  Prev: Programming Practice,  Up: Style-Related Rules
@@ -1882,8 +3154,11 @@ usages that contribute towards readability.
 * Identifier_Casing::
 * Identifier_Prefixes::
 * Identifier_Suffixes::
+* Max_Identifier_Length::
 * Misnamed_Controlling_Parameters::
 * Name_Clashes::
+* Object_Declarations_Out_Of_Order::
+* One_Construct_Per_Line::
 * Uncommented_BEGIN_In_Package_Bodies::
 
 
@@ -2031,6 +3306,18 @@ the definition of exemption sections are:
 `Exclude'
      Exempts check for defining names for which casing schemes are
      specified in exception dictionaries
+
+Example
+.......
+
+    --  if the rule is activated as '+RIdentifier_Casing:Type=upper,others=mixed'
+    package Foo is
+       type ENUM_1 is (A1, B1, C1);
+       type Enum_2 is (A2, B2, C2);      --  FLAG
+
+       Var1 : Enum_1 := A1;
+       VAR2 : ENUM_2 := A2;              --  FLAG
+    end Foo;
 
 
 File: gnatcheck_rm.info,  Node: Identifier_Prefixes,  Next: Identifier_Suffixes,  Prev: Identifier_Casing,  Up: Readability
@@ -2251,8 +3538,23 @@ the definition of exemption sections are:
      Exempts check that only names of specific kinds of entities have
      prefixes specified for these kinds
 
+Example
+.......
+
+    --  if the rule is activated as '+RIdentifier_Prefixes:Type=Type_,Constant=Const_,ExceptioN=X_'
+    package Foo is
+       type Type_Enum_1 is (A1, B1, C1);
+       type Enum_2      is (A2, B2, C2);         --  FLAG
+
+       Const_C1 : constant Type_Enum_1 := A1;
+       Const2   : constant Enum_2      := A2;    --  FLAG
+
+       X_Exc_1 : exception;
+       Exc_2   : exception;                      --  FLAG
+    end Foo;
+
 
-File: gnatcheck_rm.info,  Node: Identifier_Suffixes,  Next: Misnamed_Controlling_Parameters,  Prev: Identifier_Prefixes,  Up: Readability
+File: gnatcheck_rm.info,  Node: Identifier_Suffixes,  Next: Max_Identifier_Length,  Prev: Identifier_Prefixes,  Up: Readability
 
 9.1.6.3 `Identifier_Suffixes'
 .............................
@@ -2367,6 +3669,11 @@ The rule may have the following parameters:
           Specifies the suffix for objects that have an access type
           (including types derived from access types).
 
+   * Interrupt_Suffix=`string'
+
+          Specifies the suffix for protected subprograms used as
+          interrupt handlers.
+
    * For the `-R' option:
 
 `All_Suffixes'
@@ -2414,6 +3721,11 @@ The rule may have the following parameters:
      disables checks for such objects. It does not disable any other
      checks for this rule
 
+`Interrupt_Suffix'
+     Removes the suffix specified for protected subprograms used as
+     interrupt handlers. It does not disable any other checks for this
+     rule.
+
 If more than one parameter is used, parameters must be separated by
 commas.
 
@@ -2460,10 +3772,44 @@ the definition of exemption sections are:
 `Renaming'
      Exempts check for package renaming name suffixes
 
-
-File: gnatcheck_rm.info,  Node: Misnamed_Controlling_Parameters,  Next: Name_Clashes,  Prev: Identifier_Suffixes,  Up: Readability
+Example
+.......
 
-9.1.6.4 `Misnamed_Controlling_Parameters'
+    --  if the rule is activated as '+RIdentifier_Suffixes:Access_Suffix=_PTR,Type_Suffix=_T,Constant_Suffix=_C'
+    package Foo is
+       type Int   is range 0 .. 100;      --  FLAG
+       type Int_T is range 0 .. 100;
+
+       type Int_A   is access Int;        --  FLAG
+       type Int_PTR is access Int;
+
+       Const   : constant Int := 1;       --  FLAG
+       Const_C : constant Int := 1;
+
+    end Foo;
+
+
+File: gnatcheck_rm.info,  Node: Max_Identifier_Length,  Next: Misnamed_Controlling_Parameters,  Prev: Identifier_Suffixes,  Up: Readability
+
+9.1.6.4 `Max_Identifier_Length'
+...............................
+
+Flag any defining identifier that has length longer than specified by
+the rule parameter. The rule has a mandatory parameter for +R option:
+
+`N'
+     The maximal allowed identifier length specification.
+
+Example
+.......
+
+    type My_Type is range -100 .. 100;
+    My_Variable_With_A_Long_Name : My_Type;  -- FLAG (if rule parameter is 27 or smaller)
+
+
+File: gnatcheck_rm.info,  Node: Misnamed_Controlling_Parameters,  Next: Name_Clashes,  Prev: Max_Identifier_Length,  Up: Readability
+
+9.1.6.5 `Misnamed_Controlling_Parameters'
 .........................................
 
 Flag a declaration of a dispatching operation, if the first parameter is
@@ -2478,10 +3824,20 @@ prior subprogram declaration.
 
 This rule has no parameters.
 
-
-File: gnatcheck_rm.info,  Node: Name_Clashes,  Next: Uncommented_BEGIN_In_Package_Bodies,  Prev: Misnamed_Controlling_Parameters,  Up: Readability
+Example
+.......
 
-9.1.6.5 `Name_Clashes'
+    package Foo is
+       type T is tagged private;
+
+       procedure P1 (This : in out T);
+       procedure P2 (That : in out T);              --  FLAG
+       procedure P1 (I : Integer; This : in out T); --  FLAG
+
+
+File: gnatcheck_rm.info,  Node: Name_Clashes,  Next: Object_Declarations_Out_Of_Order,  Prev: Misnamed_Controlling_Parameters,  Up: Readability
+
+9.1.6.6 `Name_Clashes'
 ......................
 
 Check that certain names are not used as defining identifiers. The
@@ -2497,9 +3853,6 @@ This rule has the following (mandatory) parameters for the `+R' option:
 
 `dictionary_file'
      The name of a dictionary file.
-
-This rule is enabled by default, but without setting any corresponding
-dictionary file(s); thus the default effect is to do no checks.
 
 A dictionary file is a plain text file. The maximum line length for
 this file is 1024 characters.  If the line is longer than this limit,
@@ -2517,10 +3870,78 @@ A comment is an Ada-style comment (from `--' to end-of-line).
 Identifiers must follow the Ada syntax for identifiers.  A line
 containing one or more identifiers may end with a comment.
 
-
-File: gnatcheck_rm.info,  Node: Uncommented_BEGIN_In_Package_Bodies,  Prev: Name_Clashes,  Up: Readability
+Example
+.......
 
-9.1.6.6 `Uncommented_BEGIN_In_Package_Bodies'
+    --  If the dictionary file contains names 'One' and 'Two":
+    One          : constant Integer := 1;     --  FLAG
+    Two          : constant Float   := 2.0;   --  FLAG
+    Constant_One : constant Float   := 1.0;
+
+
+File: gnatcheck_rm.info,  Node: Object_Declarations_Out_Of_Order,  Next: One_Construct_Per_Line,  Prev: Name_Clashes,  Up: Readability
+
+9.1.6.7 `Object_Declarations_Out_Of_Order'
+..........................................
+
+Flag any object declaration that is located in a library unit body if
+this is preceding by a declaration of a program unit spec, stub or body.
+
+This rule has no parameters.
+
+Example
+.......
+
+    procedure Proc is
+       procedure Proc1 is separate;
+
+       I : Integer;    -- FLAG
+
+
+File: gnatcheck_rm.info,  Node: One_Construct_Per_Line,  Next: Uncommented_BEGIN_In_Package_Bodies,  Prev: Object_Declarations_Out_Of_Order,  Up: Readability
+
+9.1.6.8 `One_Construct_Per_Line'
+................................
+
+Flag any statement, declaration or representation clause if the code
+line where this construct starts contains some other Ada code symbols
+preceding or following this construct. The following constructs are not
+flagged:
+
+   * enumeration literal specification;
+
+   * parameter specifications;
+
+   * discriminant specifications;
+
+   * mod clauses;
+
+   * loop parameter specification;
+
+   * entry index specification;
+
+   * choice parameter specification;
+
+In case if we have two or more declarations/statements/clauses on a
+line and if there is no Ada code preceding the first construct, the
+first construct is flagged
+
+This rule has no parameters.
+
+Example
+.......
+
+    procedure Swap (I, J : in out Integer) is
+       Tmp : Integer;
+    begin
+       Tmp := I;
+       I := J; J := Tmp;      --  FLAG
+    end Swap;
+
+
+File: gnatcheck_rm.info,  Node: Uncommented_BEGIN_In_Package_Bodies,  Prev: One_Construct_Per_Line,  Up: Readability
+
+9.1.6.9 `Uncommented_BEGIN_In_Package_Bodies'
 .............................................
 
 Flags each package body with declarations and a statement part that
@@ -2535,6 +3956,27 @@ whether the line contains a trailing comment. The diagnostic message is
 attached to the line containing the first statement.
 
 This rule has no parameters.
+
+Example
+.......
+
+    package body Foo is
+       procedure Proc (I : out Integer) is
+       begin
+          I := Var;
+       end Proc;
+
+       package body Inner is
+          procedure Inner_Proc (I : out Integer) is
+          begin
+             I := Inner_Var;
+          end  ;
+       begin  -- Inner
+          Inner_Var := 1;
+       end Inner;
+    begin                 --  FLAG
+       Var := Inner.Inner_Var + 1;
+    end Foo;
 
 
 File: gnatcheck_rm.info,  Node: Source Code Presentation,  Prev: Readability,  Up: Style-Related Rules
@@ -2556,6 +3998,7 @@ patterns for a variety of language features.
 
 * Menu:
 
+* Abort_Statements::
 * Abstract_Type_Declarations::
 * Anonymous_Subtypes::
 * Blocks::
@@ -2577,10 +4020,12 @@ patterns for a variety of language features.
 * Library_Level_Subprograms::
 * Membership_Tests::
 * Non_Qualified_Aggregates::
+* Number_Declarations::
 * Numeric_Indexing::
 * Numeric_Literals::
 * Parameters_Out_Of_Order::
 * Predicate_Testing::
+* Relative_Delay_Statements::
 * Representation_Specifications::
 * Quantified_Expressions::
 * Raising_Predefined_Exceptions::
@@ -2588,11 +4033,29 @@ patterns for a variety of language features.
 * Too_Many_Dependencies::
 * Unassigned_OUT_Parameters::
 * Unconstrained_Array_Returns::
+* Unconstrained_Arrays::
 
 
-File: gnatcheck_rm.info,  Node: Abstract_Type_Declarations,  Next: Anonymous_Subtypes,  Up: Feature Usage Rules
+File: gnatcheck_rm.info,  Node: Abort_Statements,  Next: Abstract_Type_Declarations,  Up: Feature Usage Rules
 
-9.2.1 `Abstract_Type_Declarations'
+9.2.1 `Abort_Statements'
+------------------------
+
+Flag abort statements.
+
+This rule has no parameters.
+
+Example
+.......
+
+    if Flag then
+       abort T;    --  FLAG
+    end if;
+
+
+File: gnatcheck_rm.info,  Node: Abstract_Type_Declarations,  Next: Anonymous_Subtypes,  Prev: Abort_Statements,  Up: Feature Usage Rules
+
+9.2.2 `Abstract_Type_Declarations'
 ----------------------------------
 
 Flag all declarations of abstract types. For an abstract private type,
@@ -2600,10 +4063,20 @@ both the private and full type declarations are flagged.
 
 This rule has no parameters.
 
+Example
+.......
+
+    package Foo is
+       type Figure is abstract tagged private;              --  FLAG
+       procedure Move (X : in out Figure) is abstract;
+    private
+       type Figure is abstract tagged null record;          --  FLAG
+    end Foo;
+
 
 File: gnatcheck_rm.info,  Node: Anonymous_Subtypes,  Next: Blocks,  Prev: Abstract_Type_Declarations,  Up: Feature Usage Rules
 
-9.2.2 `Anonymous_Subtypes'
+9.2.3 `Anonymous_Subtypes'
 --------------------------
 
 Flag all uses of anonymous subtypes except for the following:
@@ -2630,34 +4103,37 @@ subtype names there.
 An effect of this rule is that `for' loops such as the following are
 flagged (since `1..N' is formally a 'range'):
 
-    for I in 1 .. N loop
-       ...
-    end loop;
-
 Declaring an explicit subtype solves the problem:
-
-    subtype S is Integer range 1..N;
-    ...
-    for I in S loop
-       ...
-    end loop;
 
 This rule has no parameters.
 
 
 File: gnatcheck_rm.info,  Node: Blocks,  Next: Complex_Inlined_Subprograms,  Prev: Anonymous_Subtypes,  Up: Feature Usage Rules
 
-9.2.3 `Blocks'
+9.2.4 `Blocks'
 --------------
 
 Flag each block statement.
 
 This rule has no parameters.
 
+Example
+.......
+
+    if I /= J then
+       declare             --  FLAG
+          Tmp : Integer;
+       begin
+          TMP := I;
+          I   := J;
+          J   := Tmp;
+       end;
+    end if;
+
 
 File: gnatcheck_rm.info,  Node: Complex_Inlined_Subprograms,  Next: Conditional_Expressions,  Prev: Blocks,  Up: Feature Usage Rules
 
-9.2.4 `Complex_Inlined_Subprograms'
+9.2.5 `Complex_Inlined_Subprograms'
 -----------------------------------
 
 Flag a subprogram (or generic subprogram, or instantiation of a
@@ -2682,10 +4158,30 @@ This rule has the following (mandatory) parameter for the `+R' option:
      Positive integer specifying the maximum allowed total number of
      statements in the subprogram body.
 
+Example
+.......
+
+    procedure Swap (I, J : in out Integer) with Inline => True;
+
+    procedure Swap (I, J : in out Integer) is   --  FLAG
+    begin
+
+       if I /= J then
+          declare
+             Tmp : Integer;
+          begin
+             TMP := I;
+             I   := J;
+             J   := Tmp;
+          end;
+       end if;
+
+    end Swap;
+
 
 File: gnatcheck_rm.info,  Node: Conditional_Expressions,  Next: Controlled_Type_Declarations,  Prev: Complex_Inlined_Subprograms,  Up: Feature Usage Rules
 
-9.2.5 `Conditional_Expressions'
+9.2.6 `Conditional_Expressions'
 -------------------------------
 
 Flag use of conditional expression.
@@ -2758,10 +4254,16 @@ This rule has the following (optional) parameters for the `+R' option:
 
    * `Refined_Post'
 
+Example
+.......
+
+    Var1 : Integer := (if I > J then 1 else 0);  --  FLAG
+    Var2 : Integer := I + J;
+
 
 File: gnatcheck_rm.info,  Node: Controlled_Type_Declarations,  Next: Declarations_In_Blocks,  Prev: Conditional_Expressions,  Up: Feature Usage Rules
 
-9.2.6 `Controlled_Type_Declarations'
+9.2.7 `Controlled_Type_Declarations'
 ------------------------------------
 
 Flag all declarations of controlled types. A declaration of a private
@@ -2773,10 +4275,17 @@ type that itself is not a descendant of a type declared in
 
 This rule has no parameters.
 
+Example
+.......
+
+    with Ada.Finalization;
+    package Foo is
+       type Resource is new Ada.Finalization.Controlled with private;  --  FLAG
+
 
 File: gnatcheck_rm.info,  Node: Declarations_In_Blocks,  Next: Deeply_Nested_Inlining,  Prev: Controlled_Type_Declarations,  Up: Feature Usage Rules
 
-9.2.7 `Declarations_In_Blocks'
+9.2.8 `Declarations_In_Blocks'
 ------------------------------
 
 Flag all block statements containing local declarations. A `declare'
@@ -2785,10 +4294,23 @@ containing only pragmas and/or `use' clauses is not flagged.
 
 This rule has no parameters.
 
+Example
+.......
+
+    if I /= J then
+       declare                       --  FLAG
+          Tmp : Integer;
+       begin
+          TMP := I;
+          I   := J;
+          J   := Tmp;
+       end;
+    end if;
+
 
 File: gnatcheck_rm.info,  Node: Deeply_Nested_Inlining,  Next: Default_Parameters,  Prev: Declarations_In_Blocks,  Up: Feature Usage Rules
 
-9.2.8 `Deeply_Nested_Inlining'
+9.2.9 `Deeply_Nested_Inlining'
 ------------------------------
 
 Flag a subprogram (or generic subprogram) if pragma Inline has been
@@ -2806,11 +4328,42 @@ This rule has the following (mandatory) parameter for the `+R' option:
      Positive integer specifying the maximum level of nested calls to
      subprograms to which pragma Inline has been applied.
 
+Example
+.......
+
+    procedure P1 (I : in out integer) with Inline => True;   --  FLAG
+    procedure P2 (I : in out integer) with Inline => True;
+    procedure P3 (I : in out integer) with Inline => True;
+    procedure P4 (I : in out integer) with Inline => True;
+
+    procedure P1 (I : in out integer) is
+    begin
+       I := I + 1;
+       P2 (I);
+    end;
+
+    procedure P2 (I : in out integer) is
+    begin
+       I := I + 1;
+       P3 (I);
+    end;
+
+    procedure P3 (I : in out integer) is
+    begin
+       I := I + 1;
+       P4 (I);
+    end;
+
+    procedure P4 (I : in out integer) is
+    begin
+       I := I + 1;
+    end;
+
 
 File: gnatcheck_rm.info,  Node: Default_Parameters,  Next: Discriminated_Records,  Prev: Deeply_Nested_Inlining,  Up: Feature Usage Rules
 
-9.2.9 `Default_Parameters'
---------------------------
+9.2.10 `Default_Parameters'
+---------------------------
 
 Flag all default expressions in parameters specifications. All parameter
 specifications are checked: in subprograms (including formal, generic
@@ -2819,10 +4372,16 @@ accept statements and entry bodies).
 
 This rule has no parameters.
 
+Example
+.......
+
+    procedure P (I : in out Integer; J : Integer := 0);   --  FLAG
+    procedure Q (I : in out Integer; J : Integer);
+
 
 File: gnatcheck_rm.info,  Node: Discriminated_Records,  Next: Explicit_Full_Discrete_Ranges,  Prev: Default_Parameters,  Up: Feature Usage Rules
 
-9.2.10 `Discriminated_Records'
+9.2.11 `Discriminated_Records'
 ------------------------------
 
 Flag all declarations of record types with discriminants. Only the
@@ -2833,20 +4392,52 @@ are not checked.
 
 This rule has no parameters.
 
+Example
+.......
+
+    type Idx is range 1 .. 100;
+    type Arr is array (Idx range <>) of Integer;
+    subtype Arr_10 is Arr (1 .. 10);
+
+    type Rec_1 (D : Idx) is record        --  FLAG
+       A : Arr (1 .. D);
+    end record;
+
+    type Rec_2 (D : Idx) is record        --  FLAG
+       B : Boolean;
+    end record;
+
+    type Rec_3 is record
+       B : Boolean;
+    end record;
+
 
 File: gnatcheck_rm.info,  Node: Explicit_Full_Discrete_Ranges,  Next: Expression_Functions,  Prev: Discriminated_Records,  Up: Feature Usage Rules
 
-9.2.11 `Explicit_Full_Discrete_Ranges'
+9.2.12 `Explicit_Full_Discrete_Ranges'
 --------------------------------------
 
 Flag each discrete range that has the form `A'First .. A'Last'.
 
 This rule has no parameters.
 
+Example
+.......
+
+       subtype Idx is Integer range 1 .. 100;
+    begin
+       for J in Idx'First .. Idx'Last loop   --  FLAG
+          K := K + J;
+       end loop;
+
+       for J in Idx loop
+          L := L + J;
+       end loop;
+
 
 File: gnatcheck_rm.info,  Node: Expression_Functions,  Next: Fixed_Equality_Checks,  Prev: Explicit_Full_Discrete_Ranges,  Up: Feature Usage Rules
 
-9.2.12 `Expression_Functions'
+9.2.13 `Expression_Functions'
 -----------------------------
 
 Flag each expression function declared in a package specification
@@ -2855,10 +4446,18 @@ specifications).
 
 This rule has no parameters.
 
+Example
+.......
+
+    package Foo is
+
+       function F (I : Integer) return Integer is   --  FLAG
+         (if I > 0 then I - 1 else I + 1);
+
 
 File: gnatcheck_rm.info,  Node: Fixed_Equality_Checks,  Next: Float_Equality_Checks,  Prev: Expression_Functions,  Up: Feature Usage Rules
 
-9.2.13 `Fixed_Equality_Checks'
+9.2.14 `Fixed_Equality_Checks'
 ------------------------------
 
 Flag all calls to the predefined equality operations for fixed-point
@@ -2869,24 +4468,55 @@ renamings of the predefined equality operations.  Also, the '`='' and
 
 This rule has no parameters.
 
+Example
+.......
+
+    package Pack is
+         type Speed is delta 0.01 range 0.0 .. 10_000.0;
+         function Get_Speed return Speed;
+    end Pack;
+
+    with Pack; use Pack;
+    procedure Process is
+         Speed1 : Speed := Get_Speed;
+         Speed2 : Speed := Get_Speed;
+
+         Flag : Boolean := Speed1 = Speed2;     --  FLAG
+
 
 File: gnatcheck_rm.info,  Node: Float_Equality_Checks,  Next: Function_Style_Procedures,  Prev: Fixed_Equality_Checks,  Up: Feature Usage Rules
 
-9.2.14 `Float_Equality_Checks'
+9.2.15 `Float_Equality_Checks'
 ------------------------------
 
 Flag all calls to the predefined equality operations for floating-point
-types.  Both '`='' and '`/='' operations are checked.  User-defined
-equality operations are not flagged, nor are uses of operators that are
+types and private types whose completions are floating-point types.
+Both '`='' and '`/='' operations are checked.  User-defined equality
+operations are not flagged, nor are uses of operators that are
 renamings of the predefined equality operations.  Also, the '`='' and
 '`/='' operations for fixed-point types are not flagged.
 
 This rule has no parameters.
 
+Example
+.......
+
+    package Pack is
+         type Speed is digits 0.01 range 0.0 .. 10_000.0;
+         function Get_Speed return Speed;
+    end Pack;
+
+    with Pack; use Pack;
+    procedure Process is
+         Speed1 : Speed := Get_Speed;
+         Speed2 : Speed := Get_Speed;
+
+         Flag : Boolean := Speed1 = Speed2;     --  FLAG
+
 
 File: gnatcheck_rm.info,  Node: Function_Style_Procedures,  Next: Generics_In_Subprograms,  Prev: Float_Equality_Checks,  Up: Feature Usage Rules
 
-9.2.15 `Function_Style_Procedures'
+9.2.16 `Function_Style_Procedures'
 ----------------------------------
 
 Flag each procedure that can be rewritten as a function. A procedure
@@ -2905,10 +4535,16 @@ flagged.
 
 This rule has no parameters.
 
+Example
+.......
+
+    procedure Cannot_be_a_function (A, B : out Boolean);
+    procedure Can_be_a_function (A : out Boolean);           --  FLAG
+
 
 File: gnatcheck_rm.info,  Node: Generics_In_Subprograms,  Next: Implicit_IN_Mode_Parameters,  Prev: Function_Style_Procedures,  Up: Feature Usage Rules
 
-9.2.16 `Generics_In_Subprograms'
+9.2.17 `Generics_In_Subprograms'
 --------------------------------
 
 Flag each declaration of a generic unit in a subprogram. Generic
@@ -2919,10 +4555,19 @@ subprogram body, the generic unit is flagged.
 
 This rule has no parameters.
 
+Example
+.......
+
+    procedure Proc is
+
+       generic                                --  FLAG
+          type FT is range <>;
+       function F_G (I : FT) return FT;
+
 
 File: gnatcheck_rm.info,  Node: Implicit_IN_Mode_Parameters,  Next: Improperly_Located_Instantiations,  Prev: Generics_In_Subprograms,  Up: Feature Usage Rules
 
-9.2.17 `Implicit_IN_Mode_Parameters'
+9.2.18 `Implicit_IN_Mode_Parameters'
 ------------------------------------
 
 Flag each occurrence of a formal parameter with an implicit `in' mode.
@@ -2931,10 +4576,17 @@ Note that `access' parameters, although they technically behave like
 
 This rule has no parameters.
 
+Example
+.......
+
+    procedure Proc1 (I :    Integer);          --  FLAG
+    procedure Proc2 (I : in Integer);
+    procedure Proc3 (I :    access Integer);
+
 
 File: gnatcheck_rm.info,  Node: Improperly_Located_Instantiations,  Next: Library_Level_Subprograms,  Prev: Implicit_IN_Mode_Parameters,  Up: Feature Usage Rules
 
-9.2.18 `Improperly_Located_Instantiations'
+9.2.19 `Improperly_Located_Instantiations'
 ------------------------------------------
 
 Flag all generic instantiations in library-level package specs
@@ -2945,10 +4597,17 @@ in the bodies of protected subprograms are flagged.
 
 This rule has no parameters.
 
+Example
+.......
+
+    with Ada.Text_IO; use Ada.Text_IO;
+    procedure Proc is
+       package My_Int_IO is new Integer_IO (Integer);   --  FLAG
+
 
 File: gnatcheck_rm.info,  Node: Library_Level_Subprograms,  Next: Membership_Tests,  Prev: Improperly_Located_Instantiations,  Up: Feature Usage Rules
 
-9.2.19 `Library_Level_Subprograms'
+9.2.20 `Library_Level_Subprograms'
 ----------------------------------
 
 Flag all library-level subprograms (including generic subprogram
@@ -2956,10 +4615,13 @@ instantiations).
 
 This rule has no parameters.
 
+    with Ada.Text_IO; use Ada.Text_IO;
+    procedure Proc is                         --  FLAG
+
 
 File: gnatcheck_rm.info,  Node: Membership_Tests,  Next: Non_Qualified_Aggregates,  Prev: Library_Level_Subprograms,  Up: Feature Usage Rules
 
-9.2.20 `Membership_Tests'
+9.2.21 `Membership_Tests'
 -------------------------
 
 Flag use of membership test expression.
@@ -2969,6 +4631,11 @@ This rule has the following (optional) parameters for the `+R' option:
 `Multi_Alternative_Only'
      Flag only those membership test expressions that have more than one
      membership choice in the membership choice list.
+
+`Float_Types_Only'
+     Flag only those membership test expressions that checks objects of
+     floating point type and private types whose completions are
+     floating-point types.
 
 `Except_Assertions'
      Do not flag a membership test expression if it is a subcomponent
@@ -3036,12 +4703,19 @@ This rule has the following (optional) parameters for the `+R' option:
 
    * `Refined_Post'
 
-These two parameters are independent on each other.
+These three parameters are independent on each other.
+
+Example
+.......
+
+    procedure Proc (S : in out Speed) is
+    begin
+       if S in Low .. High then      --  FLAG
 
 
-File: gnatcheck_rm.info,  Node: Non_Qualified_Aggregates,  Next: Numeric_Indexing,  Prev: Membership_Tests,  Up: Feature Usage Rules
+File: gnatcheck_rm.info,  Node: Non_Qualified_Aggregates,  Next: Number_Declarations,  Prev: Membership_Tests,  Up: Feature Usage Rules
 
-9.2.21 `Non_Qualified_Aggregates'
+9.2.22 `Non_Qualified_Aggregates'
 ---------------------------------
 
 Flag each non-qualified aggregate.  A non-qualified aggregate is an
@@ -3052,10 +4726,37 @@ anonymous array types are not flagged.
 
 This rule has no parameters.
 
-
-File: gnatcheck_rm.info,  Node: Numeric_Indexing,  Next: Numeric_Literals,  Prev: Non_Qualified_Aggregates,  Up: Feature Usage Rules
+Example
+.......
 
-9.2.22 `Numeric_Indexing'
+    type Arr is array (1 .. 10) of Integer;
+
+    Var1 : Arr := (1 => 10, 2 => 20, others => 30);             --  FLAG
+    Var2 : array (1 .. 10) of Integer := (1 => 10, 2 => 20, others => 30);
+
+
+File: gnatcheck_rm.info,  Node: Number_Declarations,  Next: Numeric_Indexing,  Prev: Non_Qualified_Aggregates,  Up: Feature Usage Rules
+
+9.2.23 `Number_Declarations'
+----------------------------
+
+Number declarations are flagged.
+
+This rule has no parameters.
+
+Example
+.......
+
+    Num1 : constant := 13;                 --  FLAG
+    Num2 : constant := 1.3;                --  FLAG
+
+    Const1 : constant Integer := 13;
+    Const2 : constant Float := 1.3;
+
+
+File: gnatcheck_rm.info,  Node: Numeric_Indexing,  Next: Numeric_Literals,  Prev: Number_Declarations,  Up: Feature Usage Rules
+
+9.2.24 `Numeric_Indexing'
 -------------------------
 
 Flag numeric literals, including those preceded by a predefined unary
@@ -3065,10 +4766,19 @@ Literals that are subcomponents of index expressions are not flagged
 
 This rule has no parameters.
 
+Example
+.......
+
+    procedure Proc is
+       type Arr is array (1 .. 10) of Integer;
+       Var : Arr;
+    begin
+       Var (1) := 10;       --  FLAG
+
 
 File: gnatcheck_rm.info,  Node: Numeric_Literals,  Next: Parameters_Out_Of_Order,  Prev: Numeric_Indexing,  Up: Feature Usage Rules
 
-9.2.23 `Numeric_Literals'
+9.2.25 `Numeric_Literals'
 -------------------------
 
 Flag each use of a numeric literal except for the following:
@@ -3109,10 +4819,17 @@ and restores its default operation mode.  If the `+R' option
 subsequently appears, will be 1, and the check will not be limited by
 statements only.
 
+Example
+.......
+
+    C1 : constant Integer := 10;
+    V1 :          Integer := C1;
+    V2 :          Integer := 20;      --  FLAG
+
 
 File: gnatcheck_rm.info,  Node: Parameters_Out_Of_Order,  Next: Predicate_Testing,  Prev: Numeric_Literals,  Up: Feature Usage Rules
 
-9.2.24 `Parameters_Out_Of_Order'
+9.2.26 `Parameters_Out_Of_Order'
 --------------------------------
 
 Flag each subprogram and entry declaration whose formal parameters are
@@ -3143,10 +4860,15 @@ Subprogram renamings are not checked.
 
 This rule has no parameters.
 
-
-File: gnatcheck_rm.info,  Node: Predicate_Testing,  Next: Representation_Specifications,  Prev: Parameters_Out_Of_Order,  Up: Feature Usage Rules
+Example
+.......
 
-9.2.25 `Predicate_Testing'
+    procedure Proc1 (I : in out Integer; B : Boolean) is    --  FLAG
+
+
+File: gnatcheck_rm.info,  Node: Predicate_Testing,  Next: Relative_Delay_Statements,  Prev: Parameters_Out_Of_Order,  Up: Feature Usage Rules
+
+9.2.27 `Predicate_Testing'
 --------------------------
 
 Flag a subtype mark if it denotes a subtype defined with (static or
@@ -3224,24 +4946,70 @@ This rule has the following (optional) parameters for the `+R' option:
 
    * `Refined_Post'
 
-
-File: gnatcheck_rm.info,  Node: Representation_Specifications,  Next: Quantified_Expressions,  Prev: Predicate_Testing,  Up: Feature Usage Rules
+Example
+.......
 
-9.2.26 `Representation_Specifications'
+    with Support; use Support;
+    package Pack is
+       subtype Even is Integer with Dynamic_Predicate => Even mod 2 = 0;
+
+       subtype Small_Even is Even range -100 .. 100;
+
+       B1 : Boolean := Ident (101) in Small_Even;      --  FLAG
+
+
+File: gnatcheck_rm.info,  Node: Relative_Delay_Statements,  Next: Representation_Specifications,  Prev: Predicate_Testing,  Up: Feature Usage Rules
+
+9.2.28 `Relative_Delay_Statements'
+----------------------------------
+
+Relative delay statements are flagged. Delay until statements are not
+flagged.
+
+This rule has no parameters.
+
+Example
+.......
+
+    if I > 0 then
+       delay until Current_Time + Big_Delay;
+    else
+       delay Small_Delay;                      --  FLAG
+    end if;
+
+
+File: gnatcheck_rm.info,  Node: Representation_Specifications,  Next: Quantified_Expressions,  Prev: Relative_Delay_Statements,  Up: Feature Usage Rules
+
+9.2.29 `Representation_Specifications'
 --------------------------------------
 
 Flag each record representation clause, enumeration representation
 clause and representation attribute clause. Flag each aspect definition
 that defines a representation aspect. Also flag any pragma that is
-classifiead by the Ada Standard as a representation pragma, and the
+classified by the Ada Standard as a representation pragma, and the
 definition of the corresponding aspects.
 
 This rule has no parameters.
 
+Example
+.......
+
+    type State         is (A,M,W,P);
+    type Mode          is (Fix, Dec, Exp, Signif);
+
+    type Byte_Mask     is array (0..7)  of Boolean
+      with Component_Size => 1;                                --  FLAG
+
+    type State_Mask    is array (State) of Boolean
+      with Component_Size => 1;                                --  FLAG
+
+    type Mode_Mask     is array (Mode)  of Boolean;
+    for Mode_Mask'Component_Size use 1;                        --  FLAG
+
 
 File: gnatcheck_rm.info,  Node: Quantified_Expressions,  Next: Raising_Predefined_Exceptions,  Prev: Representation_Specifications,  Up: Feature Usage Rules
 
-9.2.27 `Quantified_Expressions'
+9.2.30 `Quantified_Expressions'
 -------------------------------
 
 Flag use of quantified expression.
@@ -3314,10 +5082,20 @@ This rule has the following (optional) parameters for the `+R' option:
 
    * `Refined_Post'
 
+Example
+.......
+
+    subtype Ind is Integer range 1 .. 10;
+    type Matrix is array (Ind, Ind) of Integer;
+
+    function Check_Matrix (M : Matrix) return Boolean is
+      (for some I in Ind =>                               --  FLAG
+         (for all J in Ind => M (I, J) = 0));             --  FLAG
+
 
 File: gnatcheck_rm.info,  Node: Raising_Predefined_Exceptions,  Next: Subprogram_Access,  Prev: Quantified_Expressions,  Up: Feature Usage Rules
 
-9.2.28 `Raising_Predefined_Exceptions'
+9.2.31 `Raising_Predefined_Exceptions'
 --------------------------------------
 
 Flag each `raise' statement that raises a predefined exception (i.e.,
@@ -3326,10 +5104,16 @@ one of the exceptions `Constraint_Error', `Numeric_Error',
 
 This rule has no parameters.
 
+Example
+.......
+
+    begin
+       raise Constraint_Error;    --  FLAG
+
 
 File: gnatcheck_rm.info,  Node: Subprogram_Access,  Next: Too_Many_Dependencies,  Prev: Raising_Predefined_Exceptions,  Up: Feature Usage Rules
 
-9.2.29 `Subprogram_Access'
+9.2.32 `Subprogram_Access'
 --------------------------
 
 Flag all constructs that belong to access_to_subprogram_definition
@@ -3338,10 +5122,19 @@ subprogram.
 
 This rule has no parameters.
 
+Example
+.......
+
+    type Proc_A is access procedure ( I : Integer);       --  FLAG
+
+    procedure Proc
+      (I       : Integer;
+       Process : access procedure (J : in out Integer));  --  FLAG
+
 
 File: gnatcheck_rm.info,  Node: Too_Many_Dependencies,  Next: Unassigned_OUT_Parameters,  Prev: Subprogram_Access,  Up: Feature Usage Rules
 
-9.2.30 `Too_Many_Dependencies'
+9.2.33 `Too_Many_Dependencies'
 ------------------------------
 
 Flag a library item or a subunit that immediately depends on more than
@@ -3355,10 +5148,22 @@ This rule has the following (mandatory) parameters for the `+R' option:
      Positive integer specifying the maximal number of dependencies when
      the library item or subunit is not flagged.
 
+Example
+.......
+
+    --  if rule parameter is 5 or smaller:
+    with Pack1;
+    with Pack2;
+    with Pack3;
+    with Pack4;
+    with Pack5;
+    with Pack6;
+    procedure Main is               --  FLAG
+
 
 File: gnatcheck_rm.info,  Node: Unassigned_OUT_Parameters,  Next: Unconstrained_Array_Returns,  Prev: Too_Many_Dependencies,  Up: Feature Usage Rules
 
-9.2.31 `Unassigned_OUT_Parameters'
+9.2.34 `Unassigned_OUT_Parameters'
 ----------------------------------
 
 Flag procedures' `out' parameters that are not assigned.
@@ -3391,10 +5196,22 @@ This rule has no parameters.
      is not a replacement for rigorous check for uninitialized access
      provided by advanced static analysis tools.
 
-
-File: gnatcheck_rm.info,  Node: Unconstrained_Array_Returns,  Prev: Unassigned_OUT_Parameters,  Up: Feature Usage Rules
+Example
+.......
 
-9.2.32 `Unconstrained_Array_Returns'
+    procedure Proc                --  FLAG
+      (I    : Integer;
+       Out1 : out Integer;
+       Out2 : out Integer)
+    is
+    begin
+       Out1 := I + 1;
+    end Proc;
+
+
+File: gnatcheck_rm.info,  Node: Unconstrained_Array_Returns,  Next: Unconstrained_Arrays,  Prev: Unassigned_OUT_Parameters,  Up: Feature Usage Rules
+
+9.2.35 `Unconstrained_Array_Returns'
 ------------------------------------
 
 Flag each function returning an unconstrained array. Function
@@ -3412,6 +5229,33 @@ This rule has the following (optional) parameters for the `+R' option:
 `Except_String'
      Do not flag functions that return the predefined `String' type or
      a type derived from it, directly or indirectly.
+
+Example
+.......
+
+    type Arr is array (Integer range <>) of Integer;
+    subtype Arr_S is Arr (1 .. 10);
+
+    function F1 (I : Integer) return Arr;      --  FLAG
+    function F2 (I : Integer) return Arr_S;
+
+
+File: gnatcheck_rm.info,  Node: Unconstrained_Arrays,  Prev: Unconstrained_Array_Returns,  Up: Feature Usage Rules
+
+9.2.36 `Unconstrained_Arrays'
+-----------------------------
+
+Unconstrained array definitions are flagged.
+
+This rule has no parameters.
+
+Example
+.......
+
+    type Idx is range -100 .. 100;
+
+    type U_Arr is array (Idx range <>) of Integer;      --  FLAG
+    type C_Arr is array (Idx) of Integer;
 
 
 File: gnatcheck_rm.info,  Node: Metrics-Related Rules,  Next: SPARK Ada Rules,  Prev: Feature Usage Rules,  Up: Predefined Rules
@@ -3468,6 +5312,28 @@ The Ada essential complexity metric is a McCabe cyclomatic complexity
 metric counted for the code that is reduced by excluding all the pure
 structural Ada control statements.
 
+Example
+.......
+
+    --  if the rule parameter is 3 or less
+    procedure Proc (I : in out Integer; S : String) is   --  FLAG
+    begin
+       if I in 1 .. 10 then
+          for J in S'Range loop
+
+             if S (J) = ' ' then
+                if I > 10 then
+                   exit;
+                else
+                   I := 10;
+                end if;
+             end if;
+
+             I := I + Character'Pos (S (J));
+          end loop;
+       end if;
+    end Proc;
+
 
 File: gnatcheck_rm.info,  Node: Metrics_Cyclomatic_Complexity,  Next: Metrics_LSLOC,  Prev: Metrics_Essential_Complexity,  Up: Metrics-Related Rules
 
@@ -3483,6 +5349,30 @@ The McCabe cyclomatic complexity metric is defined in
 complexity metric is to estimate the number of independent paths in the
 control flow graph that in turn gives the number of tests needed to
 satisfy paths coverage testing completeness criterion.
+
+Example
+.......
+
+    --  if the rule parameter is 6 or less
+    procedure Proc (I : in out Integer; S : String) is   --  FLAG
+    begin
+       if I in 1 .. 10 then
+          for J in S'Range loop
+
+             if S (J) = ' ' then
+                if I < 10 then
+                   I := 10;
+                end if;
+             end if;
+
+             I := I + Character'Pos (S (J));
+          end loop;
+       elsif S = "abs" then
+          if I > 0 then
+             I := I + 1;
+          end if;
+       end if;
+    end Proc;
 
 
 File: gnatcheck_rm.info,  Node: Metrics_LSLOC,  Prev: Metrics_Cyclomatic_Complexity,  Up: Metrics-Related Rules
@@ -3502,6 +5392,23 @@ restrict the rule to specific constructs:
 
 `Subprograms'
      Check the rule for subprogram bodies only.
+
+Example
+.......
+
+    --  if the rule parameter is 20 or less
+    package Pack is                             --  FLAG
+       procedure Proc1 (I : in out Integer);
+       procedure Proc2 (I : in out Integer);
+       procedure Proc3 (I : in out Integer);
+       procedure Proc4 (I : in out Integer);
+       procedure Proc5 (I : in out Integer);
+       procedure Proc6 (I : in out Integer);
+       procedure Proc7 (I : in out Integer);
+       procedure Proc8 (I : in out Integer);
+       procedure Proc9 (I : in out Integer);
+       procedure Proc10 (I : in out Integer);
+    end Pack;
 
 
 File: gnatcheck_rm.info,  Node: SPARK Ada Rules,  Prev: Metrics-Related Rules,  Up: Predefined Rules
@@ -3612,6 +5519,13 @@ not detected.
 
 This rule has no parameters.
 
+Example
+.......
+
+       procedure Proc (Flag_1 : Boolean; Flag_2 : Boolean; I : in out Integer) is
+       begin
+          if Flag_1 >= Flag_2 then     --  FLAG
+
 
 File: gnatcheck_rm.info,  Node: Expanded_Loop_Exit_Names,  Next: Non_SPARK_Attributes,  Prev: Boolean_Relational_Operators,  Up: SPARK Ada Rules
 
@@ -3621,6 +5535,19 @@ File: gnatcheck_rm.info,  Node: Expanded_Loop_Exit_Names,  Next: Non_SPARK_Attri
 Flag all expanded loop names in `exit' statements.
 
 This rule has no parameters.
+
+Example
+.......
+
+    procedure Proc (S : in out String) is
+    begin
+       Search : for J in S'Range loop
+          if S (J) = ' ' then
+             S (J) := '_';
+             exit Proc.Search;            --  FLAG
+          end if;
+       end loop Search;
+    end Proc;
 
 
 File: gnatcheck_rm.info,  Node: Non_SPARK_Attributes,  Next: Non_Tagged_Derived_Types,  Prev: Expanded_Loop_Exit_Names,  Up: SPARK Ada Rules
@@ -3732,6 +5659,14 @@ other attribute is flagged.
 
 This rule has no parameters.
 
+Example
+.......
+
+    type Integer_A is access all Integer;
+
+    Var : aliased Integer := 1;
+    Var_A : Integer_A := Var'Access;  --  FLAG
+
 
 File: gnatcheck_rm.info,  Node: Non_Tagged_Derived_Types,  Next: Outer_Loop_Exits,  Prev: Non_SPARK_Attributes,  Up: SPARK Ada Rules
 
@@ -3743,6 +5678,15 @@ part.
 
 This rule has no parameters.
 
+Example
+.......
+
+    type Coordinates is record
+       X, Y, Z : Float;
+    end record;
+
+    type Hidden_Coordinates is new Coordinates;   --  FLAG
+
 
 File: gnatcheck_rm.info,  Node: Outer_Loop_Exits,  Next: Overloaded_Operators,  Prev: Non_Tagged_Derived_Types,  Up: SPARK Ada Rules
 
@@ -3753,6 +5697,18 @@ Flag each `exit' statement containing a loop name that is not the name
 of the immediately enclosing `loop' statement.
 
 This rule has no parameters.
+
+Example
+.......
+
+    Outer : for J in S1'Range loop
+       for K in S2'Range loop
+          if S1 (J) = S2 (K) then
+             Detected := True;
+             exit Outer;                     --  FLAG
+          end if;
+       end loop;
+    end loop Outer;
 
 
 File: gnatcheck_rm.info,  Node: Overloaded_Operators,  Next: Slices,  Prev: Outer_Loop_Exits,  Up: SPARK Ada Rules
@@ -3767,6 +5723,16 @@ only renaming-as-declaration is checked
 
 This rule has no parameters.
 
+Example
+.......
+
+    type Rec is record
+       C1 : Integer;
+       C2 : Float;
+    end record;
+
+    function "<" (Left, Right : Rec) return Boolean;    --  FLAG
+
 
 File: gnatcheck_rm.info,  Node: Slices,  Next: Universal_Ranges,  Prev: Overloaded_Operators,  Up: SPARK Ada Rules
 
@@ -3776,6 +5742,13 @@ File: gnatcheck_rm.info,  Node: Slices,  Next: Universal_Ranges,  Prev: Overload
 Flag all uses of array slicing
 
 This rule has no parameters.
+
+Example
+.......
+
+    procedure Proc (S : in out String; L, R : Positive) is
+       Tmp : String := S (L .. R);        --  FLAG
+    begin
 
 
 File: gnatcheck_rm.info,  Node: Universal_Ranges,  Prev: Slices,  Up: SPARK Ada Rules
@@ -3790,6 +5763,14 @@ one bound of a specific type (such as `1 .. N', where `N' is a variable
 or an expression of non-universal type) are not flagged.
 
 This rule has no parameters.
+
+Example
+.......
+
+    L : Positive := 1;
+
+    S1 : String (L .. 10);
+    S2 : String (1 .. 10);     --  FLAG
 
 
 File: gnatcheck_rm.info,  Node: Example of gnatcheck Usage,  Next: List of Rules,  Prev: Predefined Rules,  Up: Top
@@ -3961,171 +5942,205 @@ File: gnatcheck_rm.info,  Node: List of Rules,  Next: GNU Free Documentation Lic
 This section contains an alphabetized list of all the predefined
 GNATcheck rules.
 
-   * *note Abstract_Type_Declarations: b4.
+   * *note Abort_Statements: cc.
 
-   * *note Anonymous_Arrays: 60.
+   * *note Abstract_Type_Declarations: ce.
 
-   * *note Anonymous_Subtypes: b6.
+   * *note Address_Specifications_For_Initialized_Objects: 66.
 
-   * *note Binary_Case_Statements: 61.
+   * *note Address_Specifications_For_Local_Objects: 67.
 
-   * *note Blocks: b9.
+   * *note Anonymous_Arrays: 6a.
 
-   * *note Boolean_Relational_Operators: ff.
+   * *note Anonymous_Subtypes: d1.
 
-   * *note Complex_Inlined_Subprograms: ba.
+   * *note Binary_Case_Statements: 6b.
 
-   * *note Conditional_Expressions: bd.
+   * *note Bit_Records_Without_Layout_Definition: 44.
+
+   * *note Blocks: d3.
+
+   * *note Boolean_Relational_Operators: 11f.
+
+   * *note Complex_Inlined_Subprograms: d5.
+
+   * *note Conditional_Expressions: d7.
 
    * *note Constructors: 2c.
 
-   * *note Controlled_Type_Declarations: bf.
+   * *note Controlled_Type_Declarations: d9.
 
-   * *note Declarations_In_Blocks: c1.
+   * *note Declarations_In_Blocks: db.
 
    * *note Deep_Inheritance_Hierarchies: 2e.
 
-   * *note Deep_Library_Hierarchy: 53.
+   * *note Deep_Library_Hierarchy: 5a.
 
-   * *note Deeply_Nested_Generics: 56.
+   * *note Deeply_Nested_Generics: 5c.
 
-   * *note Deeply_Nested_Inlining: c3.
+   * *note Deeply_Nested_Inlining: dd.
 
-   * *note Default_Parameters: c5.
+   * *note Default_Parameters: df.
 
-   * *note Default_Values_For_Record_Components: 64.
+   * *note Default_Values_For_Record_Components: 6e.
 
-   * *note Deriving_From_Predefined_Type: 66.
+   * *note Deriving_From_Predefined_Type: 6f.
 
    * *note Direct_Calls_To_Primitives: 2f.
 
-   * *note Discriminated_Records: c7.
+   * *note Discriminated_Records: e0.
 
    * *note Downward_View_Conversions: 31.
 
-   * *note Enumeration_Ranges_In_CASE_Statements: 68.
+   * *note Enumeration_Ranges_In_CASE_Statements: 71.
 
-   * *note Enumeration_Representation_Clauses: 6a.
+   * *note Enumeration_Representation_Clauses: 74.
 
-   * *note Exceptions_As_Control_Flow: 6c.
+   * *note Exceptions_As_Control_Flow: 76.
 
-   * *note Exits_From_Conditional_Loops: 6d.
+   * *note Exits_From_Conditional_Loops: 78.
 
-   * *note EXIT_Statements_With_No_Loop_Name: 6f.
+   * *note EXIT_Statements_With_No_Loop_Name: 7a.
 
-   * *note Expanded_Loop_Exit_Names: 100.
+   * *note Expanded_Loop_Exit_Names: 120.
 
-   * *note Explicit_Full_Discrete_Ranges: c8.
+   * *note Explicit_Full_Discrete_Ranges: e2.
 
-   * *note Expression_Functions: cb.
+   * *note Expression_Functions: e5.
 
-   * *note Fixed_Equality_Checks: cc.
+   * *note Fixed_Equality_Checks: e7.
 
-   * *note Float_Equality_Checks: ce.
+   * *note Float_Equality_Checks: e9.
 
-   * *note Forbidden_Attributes: 44.
+   * *note Forbidden_Attributes: 46.
 
-   * *note Forbidden_Pragmas: 46.
+   * *note Forbidden_Pragmas: 48.
 
-   * *note Function_Style_Procedures: d1.
+   * *note Function_Style_Procedures: eb.
 
-   * *note Generics_In_Subprograms: d3.
+   * *note Generics_In_Subprograms: ec.
 
-   * *note GOTO_Statements: 74.
+   * *note GOTO_Statements: 7e.
 
-   * *note Implicit_IN_Mode_Parameters: d5.
+   * *note Implicit_IN_Mode_Parameters: ee.
 
-   * *note Implicit_SMALL_For_Fixed_Point_Types: 47.
+   * *note Implicit_SMALL_For_Fixed_Point_Types: 4a.
 
-   * *note Improperly_Located_Instantiations: d7.
+   * *note Improperly_Located_Instantiations: f0.
 
-   * *note Improper_Returns: 76.
+   * *note Improper_Returns: 7f.
 
-   * *note Maximum_Parameters: 78.
+   * *note Incomplete_Representation_Specifications: 4c.
 
-   * *note Library_Level_Subprograms: d9.
+   * *note Maximum_Parameters: 84.
 
-   * *note Local_Packages: 58.
+   * *note Library_Level_Subprograms: f3.
 
-   * *note Metrics_Cyclomatic_Complexity: f7.
+   * *note Local_Packages: 5e.
 
-   * *note Metrics_Essential_Complexity: f5.
+   * *note Local_USE_Clauses: 82.
 
-   * *note Metrics_LSLOC: fa.
+   * *note Metrics_Cyclomatic_Complexity: 117.
 
-   * *note Misnamed_Controlling_Parameters: ab.
+   * *note Metrics_Essential_Complexity: 115.
 
-   * *note Identifier_Suffixes: aa.
+   * *note Metrics_LSLOC: 119.
 
-   * *note Membership_Tests: da.
+   * *note Misnamed_Controlling_Parameters: bf.
+
+   * *note Identifier_Suffixes: bc.
+
+   * *note Max_Identifier_Length: bd.
+
+   * *note Membership_Tests: f4.
+
+   * *note Misplaced_Representation_Items: 85.
 
    * *note Multiple_Entries_In_Protected_Definitions: 25.
 
-   * *note Name_Clashes: ad.
+   * *note Name_Clashes: c1.
 
-   * *note Nested_Subprograms: 7a.
+   * *note Nested_Subprograms: 87.
+
+   * *note No_Explicit_Real_Range: 4e.
 
    * *note No_Inherited_Classwide_Pre: 33.
 
-   * *note Non_Qualified_Aggregates: dd.
+   * *note No_Scalar_Storage_Order_Specified: 4f.
 
-   * *note Non_Short_Circuit_Operators: 7c.
+   * *note Non_Qualified_Aggregates: f6.
 
-   * *note Non_SPARK_Attributes: 103.
+   * *note Non_Short_Circuit_Operators: 89.
 
-   * *note Non_Tagged_Derived_Types: 105.
+   * *note Non_SPARK_Attributes: 122.
 
-   * *note Non_Visible_Exceptions: 5a.
+   * *note Non_Tagged_Derived_Types: 125.
 
-   * *note Null_Paths: 7e.
+   * *note Non_Visible_Exceptions: 5f.
 
-   * *note Numeric_Literals: e0.
+   * *note Number_Declarations: f8.
 
-   * *note Objects_Of_Anonymous_Types: 7f.
+   * *note Null_Paths: 8c.
 
-   * *note OTHERS_In_Aggregates: 81.
+   * *note Numeric_Indexing: fb.
 
-   * *note OTHERS_In_CASE_Statements: 83.
+   * *note Numeric_Literals: fc.
 
-   * *note OTHERS_In_Exception_Handlers: 86.
+   * *note Object_Declarations_Out_Of_Order: c4.
 
-   * *note Outer_Loop_Exits: 106.
+   * *note Objects_Of_Anonymous_Types: 8e.
 
-   * *note Overloaded_Operators: 108.
+   * *note One_Construct_Per_Line: c6.
 
-   * *note Overly_Nested_Control_Structures: 87.
+   * *note OTHERS_In_Aggregates: 90.
 
-   * *note Parameters_Out_Of_Order: e2.
+   * *note OTHERS_In_CASE_Statements: 91.
 
-   * *note POS_On_Enumeration_Types: 89.
+   * *note OTHERS_In_Exception_Handlers: 94.
 
-   * *note Positional_Actuals_For_Defaulted_Generic_Parameters: 8c.
+   * *note Outbound_Protected_Assignments: 95.
 
-   * *note Positional_Actuals_For_Defaulted_Parameters: 8d.
+   * *note Outer_Loop_Exits: 127.
 
-   * *note Positional_Components: 8f.
+   * *note Overloaded_Operators: 129.
 
-   * *note Positional_Generic_Parameters: 91.
+   * *note Overly_Nested_Control_Structures: 97.
 
-   * *note Positional_Parameters: 93.
+   * *note Parameters_Out_Of_Order: fe.
 
-   * *note Predicate_Testing: e5.
+   * *note POS_On_Enumeration_Types: 9a.
 
-   * *note Predefined_Numeric_Types: 4b.
+   * *note Positional_Actuals_For_Defaulted_Generic_Parameters: 9b.
 
-   * *note Printable_ASCII: 4e.
+   * *note Positional_Actuals_For_Defaulted_Parameters: 9d.
 
-   * *note Representation_Specifications: e7.
+   * *note Positional_Components: a0.
 
-   * *note Quantified_Expressions: e9.
+   * *note Positional_Generic_Parameters: a2.
 
-   * *note Raising_External_Exceptions: 5b.
+   * *note Positional_Parameters: a3.
 
-   * *note Raising_Predefined_Exceptions: eb.
+   * *note Predicate_Testing: 101.
 
-   * *note Separate_Numeric_Error_Handlers: 4f.
+   * *note Predefined_Numeric_Types: 51.
 
-   * *note Slices: 10b.
+   * *note Printable_ASCII: 53.
+
+   * *note Relative_Delay_Statements: 102.
+
+   * *note Representation_Specifications: 104.
+
+   * *note Quantified_Expressions: 106.
+
+   * *note Raising_External_Exceptions: 61.
+
+   * *note Raising_Predefined_Exceptions: 108.
+
+   * *note Separate_Numeric_Error_Handlers: 55.
+
+   * *note Single_Value_Enumeration_Types: a7.
+
+   * *note Slices: 12b.
 
    * *note Specific_Parent_Type_Invariant: 38.
 
@@ -4133,35 +6148,37 @@ GNATcheck rules.
 
    * *note Specific_Type_Invariants: 39.
 
-   * *note Subprogram_Access: ec.
+   * *note Subprogram_Access: 10a.
 
-   * *note Too_Many_Dependencies: ef.
+   * *note Too_Many_Dependencies: 10d.
 
    * *note Too_Many_Primitives: 3e.
 
    * *note Too_Many_Parents: 3c.
 
-   * *note Unassigned_OUT_Parameters: f1.
+   * *note Unassigned_OUT_Parameters: 10f.
 
-   * *note Uncommented_BEGIN_In_Package_Bodies: b0.
+   * *note Uncommented_BEGIN_In_Package_Bodies: c7.
 
-   * *note Recursive_Subprograms: 96.
+   * *note Recursive_Subprograms: a6.
 
-   * *note Unchecked_Address_Conversions: 97.
+   * *note Unchecked_Address_Conversions: a9.
 
-   * *note Unchecked_Conversions_As_Actuals: 9a.
+   * *note Unchecked_Conversions_As_Actuals: ac.
 
-   * *note Unconditional_Exits: 9b.
+   * *note Unconditional_Exits: ae.
 
-   * *note Unconstrained_Array_Returns: f3.
+   * *note Unconstrained_Array_Returns: 110.
 
-   * *note Uninitialized_Global_Variables: 9d.
+   * *note Unconstrained_Arrays: 112.
 
-   * *note Universal_Ranges: 10c.
+   * *note Uninitialized_Global_Variables: b0.
 
-   * *note Unnamed_Blocks_And_Loops: 9f.
+   * *note Universal_Ranges: 12c.
 
-   * *note USE_PACKAGE_Clauses: a1.
+   * *note Unnamed_Blocks_And_Loops: b1.
+
+   * *note USE_PACKAGE_Clauses: b3.
 
    * *note Visible_Components: 3f.
 
@@ -4698,13 +6715,20 @@ Index
                                                               (line 105)
 * -Xname=value:                          General gnatcheck Switches.
                                                               (line  33)
+* Abort_Statements:                      Abort_Statements.    (line   6)
 * Abstract_Type_Declarations:            Abstract_Type_Declarations.
+                                                              (line   6)
+* Address_Specifications_For_Initialized_Objects: Address_Specifications_For_Initialized_Objects.
+                                                              (line   6)
+* Address_Specifications_For_Local_Objects: Address_Specifications_For_Local_Objects.
                                                               (line   6)
 * Annotated_Comments:                    Annotated_Comments.  (line   6)
 * Anonymous_Arrays:                      Anonymous_Arrays.    (line   6)
 * Anonymous_Subtypes:                    Anonymous_Subtypes.  (line   6)
 * ASIS:                                  Introduction.        (line   6)
 * Binary_Case_Statements:                Binary_Case_Statements.
+                                                              (line   6)
+* Bit_Records_Without_Layout_Definition: Bit_Records_Without_Layout_Definition.
                                                               (line   6)
 * Blocks:                                Blocks.              (line   6)
 * Boolean_Relational_Operators:          Boolean_Relational_Operators.
@@ -4783,9 +6807,14 @@ Index
 * Improper_Returns:                      Improper_Returns.    (line   6)
 * Improperly_Located_Instantiations:     Improperly_Located_Instantiations.
                                                               (line   6)
+* Incomplete_Representation_Specifications: Incomplete_Representation_Specifications.
+                                                              (line   6)
 * Library_Level_Subprograms:             Library_Level_Subprograms.
                                                               (line   6)
 * Local_Packages:                        Local_Packages.      (line   6)
+* Local_USE_Clauses:                     Local_USE_Clauses.   (line   6)
+* Max_Identifier_Length:                 Max_Identifier_Length.
+                                                              (line   6)
 * Maximum_Parameters:                    Maximum_Parameters.  (line   6)
 * Membership_Tests:                      Membership_Tests.    (line   6)
 * Metrics-related rules:                 Metrics-Related Rules.
@@ -4797,10 +6826,14 @@ Index
 * Metrics_LSLOC:                         Metrics_LSLOC.       (line   6)
 * Misnamed_Controlling_Parameters:       Misnamed_Controlling_Parameters.
                                                               (line   6)
+* Misplaced_Representation_Items:        Misplaced_Representation_Items.
+                                                              (line   6)
 * Multiple_Entries_In_Protected_Definitions: Multiple_Entries_In_Protected_Definitions.
                                                               (line   6)
 * Name_Clashes:                          Name_Clashes.        (line   6)
 * Nested_Subprograms:                    Nested_Subprograms.  (line   6)
+* No_Explicit_Real_Range:                No_Explicit_Real_Range.
+                                                              (line   6)
 * No_Inherited_Classwide_Pre:            No_Inherited_Classwide_Pre.
                                                               (line   6)
 * No_Scalar_Storage_Order_Specified:     No_Scalar_Storage_Order_Specified.
@@ -4813,19 +6846,26 @@ Index
                                                               (line   6)
 * Non_Tagged_Derived_Types:              Non_Tagged_Derived_Types.
                                                               (line   6)
-* Non_Visible_Exceptions rule:           Non_Visible_Exceptions.
+* Non_Visible_Exceptions:                Non_Visible_Exceptions.
                                                               (line   6)
 * Null_Paths:                            Null_Paths.          (line   6)
+* Number_Declarations:                   Number_Declarations. (line   6)
 * Numeric_Indexing:                      Numeric_Indexing.    (line   6)
 * Numeric_Literals:                      Numeric_Literals.    (line   6)
 * Object-Orientation related rules:      Object Orientation.  (line   6)
+* Object_Declarations_Out_Of_Order:      Object_Declarations_Out_Of_Order.
+                                                              (line   6)
 * Objects_Of_Anonymous_Types:            Objects_Of_Anonymous_Types.
+                                                              (line   6)
+* One_Construct_Per_Line:                One_Construct_Per_Line.
                                                               (line   6)
 * OTHERS_In_Aggregates:                  OTHERS_In_Aggregates.
                                                               (line   6)
 * OTHERS_In_CASE_Statements:             OTHERS_In_CASE_Statements.
                                                               (line   6)
 * OTHERS_In_Exception_Handlers:          OTHERS_In_Exception_Handlers.
+                                                              (line   6)
+* Outbound_Protected_Assignments:        Outbound_Protected_Assignments.
                                                               (line   6)
 * Outer_Loop_Exits:                      Outer_Loop_Exits.    (line   6)
 * Overloaded_Operators:                  Overloaded_Operators.
@@ -4864,10 +6904,14 @@ Index
 * Readability-related rules:             Readability.         (line   6)
 * Recursive_Subprograms:                 Recursive_Subprograms.
                                                               (line   6)
+* Relative_Delay_Statements:             Relative_Delay_Statements.
+                                                              (line   6)
 * Representation_Specifications:         Representation_Specifications.
                                                               (line   6)
 * Rule exemption:                        Rule exemption.      (line   6)
 * Separate_Numeric_Error_Handlers:       Separate_Numeric_Error_Handlers.
+                                                              (line   6)
+* Single_Value_Enumeration_Types:        Single_Value_Enumeration_Types.
                                                               (line   6)
 * Slices:                                Slices.              (line   6)
 * Source code presentation related rules: Source Code Presentation.
@@ -4896,9 +6940,11 @@ Index
 * Unconditional_Exits:                   Unconditional_Exits. (line   6)
 * Unconstrained_Array_Returns:           Unconstrained_Array_Returns.
                                                               (line   6)
+* Unconstrained_Arrays:                  Unconstrained_Arrays.
+                                                              (line   6)
 * Uninitialized_Global_Variables:        Uninitialized_Global_Variables.
                                                               (line   6)
-* Universal_Ranges rule:                 Universal_Ranges.    (line   6)
+* Universal_Ranges:                      Universal_Ranges.    (line   6)
 * Unnamed_Blocks_And_Loops:              Unnamed_Blocks_And_Loops.
                                                               (line   6)
 * USE_PACKAGE_Clauses:                   USE_PACKAGE_Clauses. (line   6)
@@ -5000,607 +7046,687 @@ Ref: gnatcheck_rm/predefined_rules multiple-entries-in-protected-definitions297
 Ref: 2529721
 Ref: gnatcheck_rm/predefined_rules id329721
 Ref: 2629721
-Node: Volatile_Objects_Without_Address_Clauses30175
-Ref: gnatcheck_rm/predefined_rules id430315
-Ref: 2730315
-Ref: gnatcheck_rm/predefined_rules volatile-objects-without-address-clauses30315
-Ref: 2830315
-Node: Object Orientation30798
-Ref: gnatcheck_rm/predefined_rules object-orientation30914
-Ref: 2930914
-Ref: gnatcheck_rm/predefined_rules id530914
-Ref: 2a30914
-Node: Constructors31387
-Ref: gnatcheck_rm/predefined_rules id631497
-Ref: 2b31497
-Ref: gnatcheck_rm/predefined_rules constructors31497
-Ref: 2c31497
-Node: Deep_Inheritance_Hierarchies31777
-Ref: gnatcheck_rm/predefined_rules id731922
-Ref: 2d31922
-Ref: gnatcheck_rm/predefined_rules deep-inheritance-hierarchies31922
-Ref: 2e31922
-Node: Direct_Calls_To_Primitives33667
-Ref: gnatcheck_rm/predefined_rules direct-calls-to-primitives33825
-Ref: 2f33825
-Ref: gnatcheck_rm/predefined_rules id833825
-Ref: 3033825
-Node: Downward_View_Conversions34692
-Ref: gnatcheck_rm/predefined_rules downward-view-conversions34848
-Ref: 3134848
-Ref: gnatcheck_rm/predefined_rules id934848
-Ref: 3234848
-Node: No_Inherited_Classwide_Pre34984
-Ref: gnatcheck_rm/predefined_rules no-inherited-classwide-pre35131
-Ref: 3335131
-Ref: gnatcheck_rm/predefined_rules id1035131
-Ref: 3435131
-Node: Specific_Pre_Post35452
-Ref: gnatcheck_rm/predefined_rules id1135604
-Ref: 3535604
-Ref: gnatcheck_rm/predefined_rules specific-pre-post35604
-Ref: 3635604
-Node: Specific_Parent_Type_Invariant35823
-Ref: gnatcheck_rm/predefined_rules id1235973
-Ref: 3735973
-Ref: gnatcheck_rm/predefined_rules specific-parent-type-invariant35973
-Ref: 3835973
-Node: Specific_Type_Invariants36330
-Ref: gnatcheck_rm/predefined_rules specific-type-invariants36479
-Ref: 3936479
-Ref: gnatcheck_rm/predefined_rules id1336479
-Ref: 3a36479
-Node: Too_Many_Parents36898
-Ref: gnatcheck_rm/predefined_rules id1437036
-Ref: 3b37036
-Ref: gnatcheck_rm/predefined_rules too-many-parents37036
-Ref: 3c37036
-Node: Too_Many_Primitives37652
-Ref: gnatcheck_rm/predefined_rules id1537784
-Ref: 3d37784
-Ref: gnatcheck_rm/predefined_rules too-many-primitives37784
-Ref: 3e37784
-Node: Visible_Components38314
-Ref: gnatcheck_rm/predefined_rules visible-components38421
-Ref: 3f38421
-Ref: gnatcheck_rm/predefined_rules id1638421
-Ref: 4038421
-Node: Portability39086
-Ref: gnatcheck_rm/predefined_rules portability39212
-Ref: 4139212
-Ref: gnatcheck_rm/predefined_rules id1739212
-Ref: 4239212
-Node: Forbidden_Attributes39580
-Ref: gnatcheck_rm/predefined_rules id1839680
-Ref: 4339680
-Ref: gnatcheck_rm/predefined_rules forbidden-attributes39680
-Ref: 4439680
-Node: Forbidden_Pragmas42339
-Ref: gnatcheck_rm/predefined_rules id1942484
-Ref: 4542484
-Ref: gnatcheck_rm/predefined_rules forbidden-pragmas42484
-Ref: 4642484
-Node: Implicit_SMALL_For_Fixed_Point_Types45390
-Ref: gnatcheck_rm/predefined_rules implicit-small-for-fixed-point-types45548
-Ref: 4745548
-Ref: gnatcheck_rm/predefined_rules id2045548
-Ref: 4845548
-Node: No_Scalar_Storage_Order_Specified45913
-Ref: gnatcheck_rm/predefined_rules id2146078
-Ref: 4946078
-Ref: gnatcheck_rm/predefined_rules no-scalar-storage-order-specified46078
-Ref: 4a46078
-Node: Predefined_Numeric_Types46519
-Ref: gnatcheck_rm/predefined_rules predefined-numeric-types46663
-Ref: 4b46663
-Ref: gnatcheck_rm/predefined_rules id2246663
-Ref: 4c46663
-Node: Printable_ASCII47560
-Ref: gnatcheck_rm/predefined_rules id2347702
-Ref: 4d47702
-Ref: gnatcheck_rm/predefined_rules printable-ascii47702
-Ref: 4e47702
-Node: Separate_Numeric_Error_Handlers48195
-Ref: gnatcheck_rm/predefined_rules separate-numeric-error-handlers48304
-Ref: 4f48304
-Ref: gnatcheck_rm/predefined_rules id2448304
-Ref: 5048304
-Node: Program Structure48704
-Ref: gnatcheck_rm/predefined_rules program-structure48832
-Ref: 5148832
-Ref: gnatcheck_rm/predefined_rules id2548832
-Ref: 5248832
-Node: Deep_Library_Hierarchy49121
-Ref: gnatcheck_rm/predefined_rules deep-library-hierarchy49234
-Ref: 5349234
-Ref: gnatcheck_rm/predefined_rules id2649234
-Ref: 5449234
-Node: Deeply_Nested_Generics49804
-Ref: gnatcheck_rm/predefined_rules id2749940
-Ref: 5549940
-Ref: gnatcheck_rm/predefined_rules deeply-nested-generics49940
-Ref: 5649940
-Node: Local_Packages50491
-Ref: gnatcheck_rm/predefined_rules id2850627
-Ref: 5750627
-Ref: gnatcheck_rm/predefined_rules local-packages50627
-Ref: 5850627
-Node: Non_Visible_Exceptions50822
-Ref: gnatcheck_rm/predefined_rules id2950963
-Ref: 5950963
-Ref: gnatcheck_rm/predefined_rules non-visible-exceptions50963
-Ref: 5a50963
-Node: Raising_External_Exceptions51949
-Ref: gnatcheck_rm/predefined_rules raising-external-exceptions52067
-Ref: 5b52067
-Ref: gnatcheck_rm/predefined_rules id3052067
-Ref: 5c52067
-Node: Programming Practice52428
-Ref: gnatcheck_rm/predefined_rules id3152556
-Ref: 5d52556
-Ref: gnatcheck_rm/predefined_rules programming-practice52556
-Ref: 5e52556
-Node: Anonymous_Arrays53774
-Ref: gnatcheck_rm/predefined_rules id3253884
-Ref: 5f53884
-Ref: gnatcheck_rm/predefined_rules anonymous-arrays53884
-Ref: 6053884
-Node: Binary_Case_Statements54076
-Ref: gnatcheck_rm/predefined_rules binary-case-statements54231
-Ref: 6154231
-Ref: gnatcheck_rm/predefined_rules id3354231
-Ref: 6254231
-Node: Default_Values_For_Record_Components54495
-Ref: gnatcheck_rm/predefined_rules id3454663
-Ref: 6354663
-Ref: gnatcheck_rm/predefined_rules default-values-for-record-components54663
-Ref: 6454663
-Node: Deriving_From_Predefined_Type54972
-Ref: gnatcheck_rm/predefined_rules id3555155
-Ref: 6555155
-Ref: gnatcheck_rm/predefined_rules deriving-from-predefined-type55155
-Ref: 6655155
-Node: Enumeration_Ranges_In_CASE_Statements55453
-Ref: gnatcheck_rm/predefined_rules id3655634
-Ref: 6755634
-Ref: gnatcheck_rm/predefined_rules enumeration-ranges-in-case-statements55634
-Ref: 6855634
-Node: Enumeration_Representation_Clauses56364
-Ref: gnatcheck_rm/predefined_rules id3756542
-Ref: 6956542
-Ref: gnatcheck_rm/predefined_rules enumeration-representation-clauses56542
-Ref: 6a56542
-Node: Exceptions_As_Control_Flow56705
-Ref: gnatcheck_rm/predefined_rules id3856874
-Ref: 6b56874
-Ref: gnatcheck_rm/predefined_rules exceptions-as-control-flow56874
-Ref: 6c56874
-Node: Exits_From_Conditional_Loops57175
-Ref: gnatcheck_rm/predefined_rules exits-from-conditional-loops57343
-Ref: 6d57343
-Ref: gnatcheck_rm/predefined_rules id3957343
-Ref: 6e57343
-Node: EXIT_Statements_With_No_Loop_Name57762
-Ref: gnatcheck_rm/predefined_rules exit-statements-with-no-loop-name57920
-Ref: 6f57920
-Ref: gnatcheck_rm/predefined_rules id4057920
-Ref: 7057920
-Node: Global_Variables58123
-Ref: gnatcheck_rm/predefined_rules global-variables58268
-Ref: 7158268
-Ref: gnatcheck_rm/predefined_rules id4158268
-Ref: 7258268
-Node: GOTO_Statements58746
-Ref: gnatcheck_rm/predefined_rules id4258874
-Ref: 7358874
-Ref: gnatcheck_rm/predefined_rules goto-statements58874
-Ref: 7458874
-Node: Improper_Returns59004
-Ref: gnatcheck_rm/predefined_rules id4359134
-Ref: 7559134
-Ref: gnatcheck_rm/predefined_rules improper-returns59134
-Ref: 7659134
-Node: Maximum_Parameters59687
-Ref: gnatcheck_rm/predefined_rules id4459820
-Ref: 7759820
-Ref: gnatcheck_rm/predefined_rules maximum-parameters59820
-Ref: 7859820
-Node: Nested_Subprograms60655
-Ref: gnatcheck_rm/predefined_rules id4560799
-Ref: 7960799
-Ref: gnatcheck_rm/predefined_rules nested-subprograms60799
-Ref: 7a60799
-Node: Non_Short_Circuit_Operators61436
-Ref: gnatcheck_rm/predefined_rules id4661572
-Ref: 7b61572
-Ref: gnatcheck_rm/predefined_rules non-short-circuit-operators61572
-Ref: 7c61572
-Node: Null_Paths61965
-Ref: gnatcheck_rm/predefined_rules id4762109
-Ref: 7d62109
-Ref: gnatcheck_rm/predefined_rules null-paths62109
-Ref: 7e62109
-Node: Objects_Of_Anonymous_Types62316
-Ref: gnatcheck_rm/predefined_rules objects-of-anonymous-types62453
-Ref: 7f62453
-Ref: gnatcheck_rm/predefined_rules id4862453
-Ref: 8062453
-Node: OTHERS_In_Aggregates62896
-Ref: gnatcheck_rm/predefined_rules others-in-aggregates63048
-Ref: 8163048
-Ref: gnatcheck_rm/predefined_rules id4963048
-Ref: 8263048
-Node: OTHERS_In_CASE_Statements63607
-Ref: gnatcheck_rm/predefined_rules others-in-case-statements63761
-Ref: 8363761
-Ref: gnatcheck_rm/predefined_rules id5063761
-Ref: 8463761
-Node: OTHERS_In_Exception_Handlers63925
-Ref: gnatcheck_rm/predefined_rules id5164091
-Ref: 8564091
-Ref: gnatcheck_rm/predefined_rules others-in-exception-handlers64091
-Ref: 8664091
-Node: Overly_Nested_Control_Structures64263
-Ref: gnatcheck_rm/predefined_rules overly-nested-control-structures64428
-Ref: 8764428
-Ref: gnatcheck_rm/predefined_rules id5264428
-Ref: 8864428
-Node: POS_On_Enumeration_Types65284
-Ref: gnatcheck_rm/predefined_rules pos-on-enumeration-types65472
-Ref: 8965472
-Ref: gnatcheck_rm/predefined_rules id5365472
-Ref: 8a65472
-Node: Positional_Actuals_For_Defaulted_Generic_Parameters65704
-Ref: gnatcheck_rm/predefined_rules id5465903
-Ref: 8b65903
-Ref: gnatcheck_rm/predefined_rules positional-actuals-for-defaulted-generic-parameters65903
-Ref: 8c65903
-Node: Positional_Actuals_For_Defaulted_Parameters66203
-Ref: gnatcheck_rm/predefined_rules positional-actuals-for-defaulted-parameters66399
-Ref: 8d66399
-Ref: gnatcheck_rm/predefined_rules id5566399
-Ref: 8e66399
-Node: Positional_Components66697
-Ref: gnatcheck_rm/predefined_rules positional-components66871
-Ref: 8f66871
-Ref: gnatcheck_rm/predefined_rules id5666871
-Ref: 9066871
-Node: Positional_Generic_Parameters67052
-Ref: gnatcheck_rm/predefined_rules positional-generic-parameters67204
-Ref: 9167204
-Ref: gnatcheck_rm/predefined_rules id5767204
-Ref: 9267204
-Node: Positional_Parameters67467
-Ref: gnatcheck_rm/predefined_rules positional-parameters67619
-Ref: 9367619
-Ref: gnatcheck_rm/predefined_rules id5867619
-Ref: 9467619
-Node: Recursive_Subprograms68596
-Ref: gnatcheck_rm/predefined_rules id5968748
-Ref: 9568748
-Ref: gnatcheck_rm/predefined_rules recursive-subprograms68748
-Ref: 9668748
-Node: Unchecked_Address_Conversions69530
-Ref: gnatcheck_rm/predefined_rules unchecked-address-conversions69693
-Ref: 9769693
-Ref: gnatcheck_rm/predefined_rules id6069693
-Ref: 9869693
-Node: Unchecked_Conversions_As_Actuals70342
-Ref: gnatcheck_rm/predefined_rules id6170503
-Ref: 9970503
-Ref: gnatcheck_rm/predefined_rules unchecked-conversions-as-actuals70503
-Ref: 9a70503
-Node: Unconditional_Exits70804
-Ref: gnatcheck_rm/predefined_rules unconditional-exits70966
-Ref: 9b70966
-Ref: gnatcheck_rm/predefined_rules id6270966
-Ref: 9c70966
-Node: Uninitialized_Global_Variables71098
-Ref: gnatcheck_rm/predefined_rules uninitialized-global-variables71252
-Ref: 9d71252
-Ref: gnatcheck_rm/predefined_rules id6371252
-Ref: 9e71252
-Node: Unnamed_Blocks_And_Loops71631
-Ref: gnatcheck_rm/predefined_rules unnamed-blocks-and-loops71785
-Ref: 9f71785
-Ref: gnatcheck_rm/predefined_rules id6471785
-Ref: a071785
-Node: USE_PACKAGE_Clauses71942
-Ref: gnatcheck_rm/predefined_rules use-package-clauses72057
-Ref: a172057
-Ref: gnatcheck_rm/predefined_rules id6572057
-Ref: a272057
-Node: Readability72224
-Ref: gnatcheck_rm/predefined_rules id6672359
-Ref: a372359
-Ref: gnatcheck_rm/predefined_rules readability72359
-Ref: a472359
-Node: Identifier_Casing72684
-Ref: gnatcheck_rm/predefined_rules identifier-casing72783
-Ref: a572783
-Ref: gnatcheck_rm/predefined_rules id6772783
-Ref: a672783
-Node: Identifier_Prefixes77997
-Ref: gnatcheck_rm/predefined_rules identifier-prefixes78124
-Ref: a778124
-Ref: gnatcheck_rm/predefined_rules id6878124
-Ref: a878124
-Node: Identifier_Suffixes85568
-Ref: gnatcheck_rm/predefined_rules id6985709
-Ref: a985709
-Ref: gnatcheck_rm/predefined_rules identifier-suffixes85709
-Ref: aa85709
-Node: Misnamed_Controlling_Parameters92697
-Ref: gnatcheck_rm/predefined_rules misnamed-controlling-parameters92831
-Ref: ab92831
-Ref: gnatcheck_rm/predefined_rules id7092831
-Ref: ac92831
-Node: Name_Clashes93401
-Ref: gnatcheck_rm/predefined_rules name-clashes93551
-Ref: ad93551
-Ref: gnatcheck_rm/predefined_rules id7193551
-Ref: ae93551
-Node: Uncommented_BEGIN_In_Package_Bodies95169
-Ref: gnatcheck_rm/predefined_rules id7295279
-Ref: af95279
-Ref: gnatcheck_rm/predefined_rules uncommented-begin-in-package-bodies95279
-Ref: b095279
-Node: Source Code Presentation95963
-Ref: gnatcheck_rm/predefined_rules source-code-presentation96069
-Ref: b196069
-Ref: gnatcheck_rm/predefined_rules id7396069
-Ref: b296069
-Node: Feature Usage Rules96214
-Ref: gnatcheck_rm/predefined_rules feature-usage-rules96350
-Ref: b396350
-Node: Abstract_Type_Declarations97396
-Ref: gnatcheck_rm/predefined_rules abstract-type-declarations97511
-Ref: b497511
-Ref: gnatcheck_rm/predefined_rules id7497511
-Ref: b597511
-Node: Anonymous_Subtypes97741
-Ref: gnatcheck_rm/predefined_rules anonymous-subtypes97871
-Ref: b697871
-Ref: gnatcheck_rm/predefined_rules id7597871
-Ref: b797871
-Node: Blocks99187
-Ref: gnatcheck_rm/predefined_rules id7699318
-Ref: b899318
-Ref: gnatcheck_rm/predefined_rules blocks99318
-Ref: b999318
-Node: Complex_Inlined_Subprograms99407
-Ref: gnatcheck_rm/predefined_rules complex-inlined-subprograms99543
-Ref: ba99543
-Ref: gnatcheck_rm/predefined_rules id7799543
-Ref: bb99543
-Node: Conditional_Expressions100402
-Ref: gnatcheck_rm/predefined_rules id78100560
-Ref: bc100560
-Ref: gnatcheck_rm/predefined_rules conditional-expressions100560
-Ref: bd100560
-Node: Controlled_Type_Declarations101508
-Ref: gnatcheck_rm/predefined_rules id79101661
-Ref: be101661
-Ref: gnatcheck_rm/predefined_rules controlled-type-declarations101661
-Ref: bf101661
-Node: Declarations_In_Blocks102166
-Ref: gnatcheck_rm/predefined_rules id80102318
-Ref: c0102318
-Ref: gnatcheck_rm/predefined_rules declarations-in-blocks102318
-Ref: c1102318
-Node: Deeply_Nested_Inlining102610
-Ref: gnatcheck_rm/predefined_rules id81102752
-Ref: c2102752
-Ref: gnatcheck_rm/predefined_rules deeply-nested-inlining102752
-Ref: c3102752
-Node: Default_Parameters103436
-Ref: gnatcheck_rm/predefined_rules id82103577
-Ref: c4103577
-Ref: gnatcheck_rm/predefined_rules default-parameters103577
-Ref: c5103577
-Node: Discriminated_Records103915
-Ref: gnatcheck_rm/predefined_rules id83104063
-Ref: c6104063
-Ref: gnatcheck_rm/predefined_rules discriminated-records104063
-Ref: c7104063
-Node: Explicit_Full_Discrete_Ranges104440
-Ref: gnatcheck_rm/predefined_rules explicit-full-discrete-ranges104590
-Ref: c8104590
-Ref: gnatcheck_rm/predefined_rules id84104590
-Ref: c9104590
-Node: Expression_Functions104764
-Ref: gnatcheck_rm/predefined_rules id85104914
-Ref: ca104914
-Ref: gnatcheck_rm/predefined_rules expression-functions104914
-Ref: cb104914
-Node: Fixed_Equality_Checks105152
-Ref: gnatcheck_rm/predefined_rules fixed-equality-checks105294
-Ref: cc105294
-Ref: gnatcheck_rm/predefined_rules id86105294
-Ref: cd105294
-Node: Float_Equality_Checks105727
-Ref: gnatcheck_rm/predefined_rules float-equality-checks105874
-Ref: ce105874
-Ref: gnatcheck_rm/predefined_rules id87105874
-Ref: cf105874
-Node: Function_Style_Procedures106307
-Ref: gnatcheck_rm/predefined_rules id88106456
-Ref: d0106456
-Ref: gnatcheck_rm/predefined_rules function-style-procedures106456
-Ref: d1106456
-Node: Generics_In_Subprograms107214
-Ref: gnatcheck_rm/predefined_rules id89107369
-Ref: d2107369
-Ref: gnatcheck_rm/predefined_rules generics-in-subprograms107369
-Ref: d3107369
-Node: Implicit_IN_Mode_Parameters107781
-Ref: gnatcheck_rm/predefined_rules id90107944
-Ref: d4107944
-Ref: gnatcheck_rm/predefined_rules implicit-in-mode-parameters107944
-Ref: d5107944
-Node: Improperly_Located_Instantiations108224
-Ref: gnatcheck_rm/predefined_rules id91108389
-Ref: d6108389
-Ref: gnatcheck_rm/predefined_rules improperly-located-instantiations108389
-Ref: d7108389
-Node: Library_Level_Subprograms108762
-Ref: gnatcheck_rm/predefined_rules id92108916
-Ref: d8108916
-Ref: gnatcheck_rm/predefined_rules library-level-subprograms108916
-Ref: d9108916
-Node: Membership_Tests109100
-Ref: gnatcheck_rm/predefined_rules membership-tests109245
-Ref: da109245
-Ref: gnatcheck_rm/predefined_rules id93109245
-Ref: db109245
-Node: Non_Qualified_Aggregates110395
-Ref: gnatcheck_rm/predefined_rules id94110531
-Ref: dc110531
-Ref: gnatcheck_rm/predefined_rules non-qualified-aggregates110531
-Ref: dd110531
-Node: Numeric_Indexing110943
-Ref: gnatcheck_rm/predefined_rules id95111079
-Ref: de111079
-Ref: gnatcheck_rm/predefined_rules numeric-indexing111079
-Ref: df111079
-Node: Numeric_Literals111421
-Ref: gnatcheck_rm/predefined_rules numeric-literals111556
-Ref: e0111556
-Ref: gnatcheck_rm/predefined_rules id96111556
-Ref: e1111556
-Node: Parameters_Out_Of_Order112894
-Ref: gnatcheck_rm/predefined_rules parameters-out-of-order113030
-Ref: e2113030
-Ref: gnatcheck_rm/predefined_rules id97113030
-Ref: e3113030
-Node: Predicate_Testing113831
-Ref: gnatcheck_rm/predefined_rules id98113980
-Ref: e4113980
-Ref: gnatcheck_rm/predefined_rules predicate-testing113980
-Ref: e5113980
-Node: Representation_Specifications115172
-Ref: gnatcheck_rm/predefined_rules id99115320
-Ref: e6115320
-Ref: gnatcheck_rm/predefined_rules representation-specifications115320
-Ref: e7115320
-Node: Quantified_Expressions115745
-Ref: gnatcheck_rm/predefined_rules id100115905
-Ref: e8115905
-Ref: gnatcheck_rm/predefined_rules quantified-expressions115905
-Ref: e9115905
-Node: Raising_Predefined_Exceptions116852
-Ref: gnatcheck_rm/predefined_rules id101117000
-Ref: ea117000
-Ref: gnatcheck_rm/predefined_rules raising-predefined-exceptions117000
-Ref: eb117000
-Node: Subprogram_Access117294
-Ref: gnatcheck_rm/predefined_rules subprogram-access117441
-Ref: ec117441
-Ref: gnatcheck_rm/predefined_rules id102117441
-Ref: ed117441
-Node: Too_Many_Dependencies117672
-Ref: gnatcheck_rm/predefined_rules id103117815
-Ref: ee117815
-Ref: gnatcheck_rm/predefined_rules too-many-dependencies117815
-Ref: ef117815
-Node: Unassigned_OUT_Parameters118303
-Ref: gnatcheck_rm/predefined_rules id104118456
-Ref: f0118456
-Ref: gnatcheck_rm/predefined_rules unassigned-out-parameters118456
-Ref: f1118456
-Node: Unconstrained_Array_Returns119769
-Ref: gnatcheck_rm/predefined_rules id105119892
-Ref: f2119892
-Ref: gnatcheck_rm/predefined_rules unconstrained-array-returns119892
-Ref: f3119892
-Node: Metrics-Related Rules120676
-Ref: gnatcheck_rm/predefined_rules metrics-related-rules120808
-Ref: f4120808
-Node: Metrics_Essential_Complexity122100
-Ref: gnatcheck_rm/predefined_rules metrics-essential-complexity122230
-Ref: f5122230
-Ref: gnatcheck_rm/predefined_rules id106122230
-Ref: f6122230
-Node: Metrics_Cyclomatic_Complexity122644
-Ref: gnatcheck_rm/predefined_rules metrics-cyclomatic-complexity122796
-Ref: f7122796
-Ref: gnatcheck_rm/predefined_rules id107122796
-Ref: f8122796
-Node: Metrics_LSLOC123358
-Ref: gnatcheck_rm/predefined_rules id108123473
-Ref: f9123473
-Ref: gnatcheck_rm/predefined_rules metrics-lsloc123473
-Ref: fa123473
-Node: SPARK Ada Rules123938
-Ref: gnatcheck_rm/predefined_rules spark-ada-rules124042
-Ref: fb124042
-Node: Annotated_Comments124419
-Ref: gnatcheck_rm/predefined_rules id109124532
-Ref: fc124532
-Ref: gnatcheck_rm/predefined_rules annotated-comments124532
-Ref: fd124532
-Node: Boolean_Relational_Operators126282
-Ref: gnatcheck_rm/predefined_rules id110126428
-Ref: fe126428
-Ref: gnatcheck_rm/predefined_rules boolean-relational-operators126428
-Ref: ff126428
-Node: Expanded_Loop_Exit_Names127016
-Ref: gnatcheck_rm/predefined_rules expanded-loop-exit-names127164
-Ref: 100127164
-Ref: gnatcheck_rm/predefined_rules id111127164
-Ref: 101127164
-Node: Non_SPARK_Attributes127313
-Ref: gnatcheck_rm/predefined_rules id112127457
-Ref: 102127457
-Ref: gnatcheck_rm/predefined_rules non-spark-attributes127457
-Ref: 103127457
-Node: Non_Tagged_Derived_Types128598
-Ref: gnatcheck_rm/predefined_rules id113128734
-Ref: 104128734
-Ref: gnatcheck_rm/predefined_rules non-tagged-derived-types128734
-Ref: 105128734
-Node: Outer_Loop_Exits128909
-Ref: gnatcheck_rm/predefined_rules outer-loop-exits129045
-Ref: 106129045
-Ref: gnatcheck_rm/predefined_rules id114129045
-Ref: 107129045
-Node: Overloaded_Operators129245
-Ref: gnatcheck_rm/predefined_rules overloaded-operators129363
-Ref: 108129363
-Ref: gnatcheck_rm/predefined_rules id115129363
-Ref: 109129363
-Node: Slices129698
-Ref: gnatcheck_rm/predefined_rules id116129816
-Ref: 10a129816
-Ref: gnatcheck_rm/predefined_rules slices129816
-Ref: 10b129816
-Node: Universal_Ranges129909
-Ref: gnatcheck_rm/predefined_rules universal-ranges129998
-Ref: 10c129998
-Ref: gnatcheck_rm/predefined_rules id117129998
-Ref: 10d129998
-Node: Example of gnatcheck Usage130420
-Ref: gnatcheck_rm/example_of_gnatcheck_usage id1130539
-Ref: 10e130539
-Ref: gnatcheck_rm/example_of_gnatcheck_usage doc130539
-Ref: 10f130539
-Ref: gnatcheck_rm/example_of_gnatcheck_usage example-of-gnatcheck-usage130539
-Ref: b130539
-Node: List of Rules134990
-Ref: gnatcheck_rm/list_of_rules doc135123
-Ref: 110135123
-Ref: gnatcheck_rm/list_of_rules list-of-rules135123
-Ref: c135123
-Ref: gnatcheck_rm/list_of_rules id1135123
-Ref: 111135123
-Node: GNU Free Documentation License139555
-Ref: share/gnu_free_documentation_license gnu-fdl139667
-Ref: 112139667
-Ref: share/gnu_free_documentation_license doc139667
-Ref: 113139667
-Ref: share/gnu_free_documentation_license gnu-free-documentation-license139667
-Ref: 114139667
-Node: Index162789
+Node: Volatile_Objects_Without_Address_Clauses30410
+Ref: gnatcheck_rm/predefined_rules id430550
+Ref: 2730550
+Ref: gnatcheck_rm/predefined_rules volatile-objects-without-address-clauses30550
+Ref: 2830550
+Node: Object Orientation31562
+Ref: gnatcheck_rm/predefined_rules object-orientation31678
+Ref: 2931678
+Ref: gnatcheck_rm/predefined_rules id531678
+Ref: 2a31678
+Node: Constructors32151
+Ref: gnatcheck_rm/predefined_rules id632261
+Ref: 2b32261
+Ref: gnatcheck_rm/predefined_rules constructors32261
+Ref: 2c32261
+Node: Deep_Inheritance_Hierarchies32816
+Ref: gnatcheck_rm/predefined_rules id732961
+Ref: 2d32961
+Ref: gnatcheck_rm/predefined_rules deep-inheritance-hierarchies32961
+Ref: 2e32961
+Node: Direct_Calls_To_Primitives35026
+Ref: gnatcheck_rm/predefined_rules direct-calls-to-primitives35184
+Ref: 2f35184
+Ref: gnatcheck_rm/predefined_rules id835184
+Ref: 3035184
+Node: Downward_View_Conversions37061
+Ref: gnatcheck_rm/predefined_rules downward-view-conversions37217
+Ref: 3137217
+Ref: gnatcheck_rm/predefined_rules id937217
+Ref: 3237217
+Node: No_Inherited_Classwide_Pre38044
+Ref: gnatcheck_rm/predefined_rules no-inherited-classwide-pre38191
+Ref: 3338191
+Ref: gnatcheck_rm/predefined_rules id1038191
+Ref: 3438191
+Node: Specific_Pre_Post39312
+Ref: gnatcheck_rm/predefined_rules id1139464
+Ref: 3539464
+Ref: gnatcheck_rm/predefined_rules specific-pre-post39464
+Ref: 3639464
+Node: Specific_Parent_Type_Invariant40436
+Ref: gnatcheck_rm/predefined_rules id1240586
+Ref: 3740586
+Ref: gnatcheck_rm/predefined_rules specific-parent-type-invariant40586
+Ref: 3840586
+Node: Specific_Type_Invariants41708
+Ref: gnatcheck_rm/predefined_rules specific-type-invariants41857
+Ref: 3941857
+Ref: gnatcheck_rm/predefined_rules id1341857
+Ref: 3a41857
+Node: Too_Many_Parents42691
+Ref: gnatcheck_rm/predefined_rules id1442829
+Ref: 3b42829
+Ref: gnatcheck_rm/predefined_rules too-many-parents42829
+Ref: 3c42829
+Node: Too_Many_Primitives43851
+Ref: gnatcheck_rm/predefined_rules id1543983
+Ref: 3d43983
+Ref: gnatcheck_rm/predefined_rules too-many-primitives43983
+Ref: 3e43983
+Node: Visible_Components45235
+Ref: gnatcheck_rm/predefined_rules visible-components45342
+Ref: 3f45342
+Ref: gnatcheck_rm/predefined_rules id1645342
+Ref: 4045342
+Node: Portability46963
+Ref: gnatcheck_rm/predefined_rules portability47089
+Ref: 4147089
+Ref: gnatcheck_rm/predefined_rules id1747089
+Ref: 4247089
+Node: Bit_Records_Without_Layout_Definition47571
+Ref: gnatcheck_rm/predefined_rules id1847691
+Ref: 4347691
+Ref: gnatcheck_rm/predefined_rules bit-records-without-layout-definition47691
+Ref: 4447691
+Node: Forbidden_Attributes48138
+Ref: gnatcheck_rm/predefined_rules id1948284
+Ref: 4548284
+Ref: gnatcheck_rm/predefined_rules forbidden-attributes48284
+Ref: 4648284
+Node: Forbidden_Pragmas51326
+Ref: gnatcheck_rm/predefined_rules id2051471
+Ref: 4751471
+Ref: gnatcheck_rm/predefined_rules forbidden-pragmas51471
+Ref: 4851471
+Node: Implicit_SMALL_For_Fixed_Point_Types54639
+Ref: gnatcheck_rm/predefined_rules id2154804
+Ref: 4954804
+Ref: gnatcheck_rm/predefined_rules implicit-small-for-fixed-point-types54804
+Ref: 4a54804
+Node: Incomplete_Representation_Specifications55418
+Ref: gnatcheck_rm/predefined_rules id2255588
+Ref: 4b55588
+Ref: gnatcheck_rm/predefined_rules incomplete-representation-specifications55588
+Ref: 4c55588
+Node: No_Explicit_Real_Range56110
+Ref: gnatcheck_rm/predefined_rules id2356277
+Ref: 4d56277
+Ref: gnatcheck_rm/predefined_rules no-explicit-real-range56277
+Ref: 4e56277
+Node: No_Scalar_Storage_Order_Specified56683
+Ref: gnatcheck_rm/predefined_rules no-scalar-storage-order-specified56834
+Ref: 4f56834
+Ref: gnatcheck_rm/predefined_rules id2456834
+Ref: 5056834
+Node: Predefined_Numeric_Types57777
+Ref: gnatcheck_rm/predefined_rules predefined-numeric-types57921
+Ref: 5157921
+Ref: gnatcheck_rm/predefined_rules id2557921
+Ref: 5257921
+Node: Printable_ASCII59194
+Ref: gnatcheck_rm/predefined_rules printable-ascii59336
+Ref: 5359336
+Ref: gnatcheck_rm/predefined_rules id2659336
+Ref: 5459336
+Node: Separate_Numeric_Error_Handlers59829
+Ref: gnatcheck_rm/predefined_rules separate-numeric-error-handlers59938
+Ref: 5559938
+Ref: gnatcheck_rm/predefined_rules id2759938
+Ref: 5659938
+Node: Program Structure60443
+Ref: gnatcheck_rm/predefined_rules program-structure60571
+Ref: 5760571
+Ref: gnatcheck_rm/predefined_rules id2860571
+Ref: 5860571
+Node: Deep_Library_Hierarchy60860
+Ref: gnatcheck_rm/predefined_rules id2960973
+Ref: 5960973
+Ref: gnatcheck_rm/predefined_rules deep-library-hierarchy60973
+Ref: 5a60973
+Node: Deeply_Nested_Generics61661
+Ref: gnatcheck_rm/predefined_rules id3061797
+Ref: 5b61797
+Ref: gnatcheck_rm/predefined_rules deeply-nested-generics61797
+Ref: 5c61797
+Node: Local_Packages62657
+Ref: gnatcheck_rm/predefined_rules id3162793
+Ref: 5d62793
+Ref: gnatcheck_rm/predefined_rules local-packages62793
+Ref: 5e62793
+Node: Non_Visible_Exceptions63115
+Ref: gnatcheck_rm/predefined_rules non-visible-exceptions63256
+Ref: 5f63256
+Ref: gnatcheck_rm/predefined_rules id3263256
+Ref: 6063256
+Node: Raising_External_Exceptions64851
+Ref: gnatcheck_rm/predefined_rules raising-external-exceptions64969
+Ref: 6164969
+Ref: gnatcheck_rm/predefined_rules id3364969
+Ref: 6264969
+Node: Programming Practice65802
+Ref: gnatcheck_rm/predefined_rules id3465930
+Ref: 6365930
+Ref: gnatcheck_rm/predefined_rules programming-practice65930
+Ref: 6465930
+Node: Address_Specifications_For_Initialized_Objects67371
+Ref: gnatcheck_rm/predefined_rules id3567529
+Ref: 6567529
+Ref: gnatcheck_rm/predefined_rules address-specifications-for-initialized-objects67529
+Ref: 6667529
+Node: Address_Specifications_For_Local_Objects67974
+Ref: gnatcheck_rm/predefined_rules address-specifications-for-local-objects68157
+Ref: 6768157
+Ref: gnatcheck_rm/predefined_rules id3668157
+Ref: 6868157
+Node: Anonymous_Arrays68806
+Ref: gnatcheck_rm/predefined_rules id3768965
+Ref: 6968965
+Ref: gnatcheck_rm/predefined_rules anonymous-arrays68965
+Ref: 6a68965
+Node: Binary_Case_Statements69288
+Ref: gnatcheck_rm/predefined_rules binary-case-statements69443
+Ref: 6b69443
+Ref: gnatcheck_rm/predefined_rules id3869443
+Ref: 6c69443
+Node: Default_Values_For_Record_Components69863
+Ref: gnatcheck_rm/predefined_rules id3970031
+Ref: 6d70031
+Ref: gnatcheck_rm/predefined_rules default-values-for-record-components70031
+Ref: 6e70031
+Node: Deriving_From_Predefined_Type70644
+Ref: gnatcheck_rm/predefined_rules deriving-from-predefined-type70827
+Ref: 6f70827
+Ref: gnatcheck_rm/predefined_rules id4070827
+Ref: 7070827
+Node: Enumeration_Ranges_In_CASE_Statements71307
+Ref: gnatcheck_rm/predefined_rules enumeration-ranges-in-case-statements71488
+Ref: 7171488
+Ref: gnatcheck_rm/predefined_rules id4171488
+Ref: 7271488
+Node: Enumeration_Representation_Clauses72602
+Ref: gnatcheck_rm/predefined_rules id4272780
+Ref: 7372780
+Ref: gnatcheck_rm/predefined_rules enumeration-representation-clauses72780
+Ref: 7472780
+Node: Exceptions_As_Control_Flow73056
+Ref: gnatcheck_rm/predefined_rules id4373225
+Ref: 7573225
+Ref: gnatcheck_rm/predefined_rules exceptions-as-control-flow73225
+Ref: 7673225
+Node: Exits_From_Conditional_Loops73812
+Ref: gnatcheck_rm/predefined_rules id4473980
+Ref: 7773980
+Ref: gnatcheck_rm/predefined_rules exits-from-conditional-loops73980
+Ref: 7873980
+Node: EXIT_Statements_With_No_Loop_Name74659
+Ref: gnatcheck_rm/predefined_rules id4574817
+Ref: 7974817
+Ref: gnatcheck_rm/predefined_rules exit-statements-with-no-loop-name74817
+Ref: 7a74817
+Node: Global_Variables75218
+Ref: gnatcheck_rm/predefined_rules global-variables75363
+Ref: 7b75363
+Ref: gnatcheck_rm/predefined_rules id4675363
+Ref: 7c75363
+Node: GOTO_Statements75999
+Ref: gnatcheck_rm/predefined_rules id4776127
+Ref: 7d76127
+Ref: gnatcheck_rm/predefined_rules goto-statements76127
+Ref: 7e76127
+Node: Improper_Returns76418
+Ref: gnatcheck_rm/predefined_rules improper-returns76547
+Ref: 7f76547
+Ref: gnatcheck_rm/predefined_rules id4876547
+Ref: 8076547
+Node: Local_USE_Clauses77603
+Ref: gnatcheck_rm/predefined_rules id4977735
+Ref: 8177735
+Ref: gnatcheck_rm/predefined_rules local-use-clauses77735
+Ref: 8277735
+Node: Maximum_Parameters78224
+Ref: gnatcheck_rm/predefined_rules id5078370
+Ref: 8378370
+Ref: gnatcheck_rm/predefined_rules maximum-parameters78370
+Ref: 8478370
+Node: Misplaced_Representation_Items79710
+Ref: gnatcheck_rm/predefined_rules misplaced-representation-items79857
+Ref: 8579857
+Ref: gnatcheck_rm/predefined_rules id5179857
+Ref: 8679857
+Node: Nested_Subprograms80732
+Ref: gnatcheck_rm/predefined_rules nested-subprograms80888
+Ref: 8780888
+Ref: gnatcheck_rm/predefined_rules id5280888
+Ref: 8880888
+Node: Non_Short_Circuit_Operators81829
+Ref: gnatcheck_rm/predefined_rules non-short-circuit-operators81965
+Ref: 8981965
+Ref: gnatcheck_rm/predefined_rules id5381965
+Ref: 8a81965
+Node: Null_Paths82523
+Ref: gnatcheck_rm/predefined_rules id5482667
+Ref: 8b82667
+Ref: gnatcheck_rm/predefined_rules null-paths82667
+Ref: 8c82667
+Node: Objects_Of_Anonymous_Types83246
+Ref: gnatcheck_rm/predefined_rules id5583383
+Ref: 8d83383
+Ref: gnatcheck_rm/predefined_rules objects-of-anonymous-types83383
+Ref: 8e83383
+Node: OTHERS_In_Aggregates84251
+Ref: gnatcheck_rm/predefined_rules id5684403
+Ref: 8f84403
+Ref: gnatcheck_rm/predefined_rules others-in-aggregates84403
+Ref: 9084403
+Node: OTHERS_In_CASE_Statements85795
+Ref: gnatcheck_rm/predefined_rules others-in-case-statements85949
+Ref: 9185949
+Ref: gnatcheck_rm/predefined_rules id5785949
+Ref: 9285949
+Node: OTHERS_In_Exception_Handlers86291
+Ref: gnatcheck_rm/predefined_rules id5886455
+Ref: 9386455
+Ref: gnatcheck_rm/predefined_rules others-in-exception-handlers86455
+Ref: 9486455
+Node: Outbound_Protected_Assignments86807
+Ref: gnatcheck_rm/predefined_rules outbound-protected-assignments86978
+Ref: 9586978
+Ref: gnatcheck_rm/predefined_rules id5986978
+Ref: 9686978
+Node: Overly_Nested_Control_Structures87849
+Ref: gnatcheck_rm/predefined_rules overly-nested-control-structures88016
+Ref: 9788016
+Ref: gnatcheck_rm/predefined_rules id6088016
+Ref: 9888016
+Node: POS_On_Enumeration_Types89291
+Ref: gnatcheck_rm/predefined_rules id6189479
+Ref: 9989479
+Ref: gnatcheck_rm/predefined_rules pos-on-enumeration-types89479
+Ref: 9a89479
+Node: Positional_Actuals_For_Defaulted_Generic_Parameters90019
+Ref: gnatcheck_rm/predefined_rules positional-actuals-for-defaulted-generic-parameters90218
+Ref: 9b90218
+Ref: gnatcheck_rm/predefined_rules id6290218
+Ref: 9c90218
+Node: Positional_Actuals_For_Defaulted_Parameters91462
+Ref: gnatcheck_rm/predefined_rules positional-actuals-for-defaulted-parameters91658
+Ref: 9d91658
+Ref: gnatcheck_rm/predefined_rules id6391658
+Ref: 9e91658
+Node: Positional_Components92138
+Ref: gnatcheck_rm/predefined_rules id6492312
+Ref: 9f92312
+Ref: gnatcheck_rm/predefined_rules positional-components92312
+Ref: a092312
+Node: Positional_Generic_Parameters92942
+Ref: gnatcheck_rm/predefined_rules id6593094
+Ref: a193094
+Ref: gnatcheck_rm/predefined_rules positional-generic-parameters93094
+Ref: a293094
+Node: Positional_Parameters93846
+Ref: gnatcheck_rm/predefined_rules positional-parameters93998
+Ref: a393998
+Ref: gnatcheck_rm/predefined_rules id6693998
+Ref: a493998
+Node: Recursive_Subprograms95555
+Ref: gnatcheck_rm/predefined_rules id6795708
+Ref: a595708
+Ref: gnatcheck_rm/predefined_rules recursive-subprograms95708
+Ref: a695708
+Node: Single_Value_Enumeration_Types96855
+Ref: gnatcheck_rm/predefined_rules single-value-enumeration-types97016
+Ref: a797016
+Ref: gnatcheck_rm/predefined_rules id6897016
+Ref: a897016
+Node: Unchecked_Address_Conversions97310
+Ref: gnatcheck_rm/predefined_rules unchecked-address-conversions97482
+Ref: a997482
+Ref: gnatcheck_rm/predefined_rules id6997482
+Ref: aa97482
+Node: Unchecked_Conversions_As_Actuals98508
+Ref: gnatcheck_rm/predefined_rules id7098669
+Ref: ab98669
+Ref: gnatcheck_rm/predefined_rules unchecked-conversions-as-actuals98669
+Ref: ac98669
+Node: Unconditional_Exits99600
+Ref: gnatcheck_rm/predefined_rules id7199762
+Ref: ad99762
+Ref: gnatcheck_rm/predefined_rules unconditional-exits99762
+Ref: ae99762
+Node: Uninitialized_Global_Variables100169
+Ref: gnatcheck_rm/predefined_rules id72100323
+Ref: af100323
+Ref: gnatcheck_rm/predefined_rules uninitialized-global-variables100323
+Ref: b0100323
+Node: Unnamed_Blocks_And_Loops100817
+Ref: gnatcheck_rm/predefined_rules unnamed-blocks-and-loops100971
+Ref: b1100971
+Ref: gnatcheck_rm/predefined_rules id73100971
+Ref: b2100971
+Node: USE_PACKAGE_Clauses101930
+Ref: gnatcheck_rm/predefined_rules use-package-clauses102045
+Ref: b3102045
+Ref: gnatcheck_rm/predefined_rules id74102045
+Ref: b4102045
+Node: Readability102353
+Ref: gnatcheck_rm/predefined_rules readability102488
+Ref: b5102488
+Ref: gnatcheck_rm/predefined_rules id75102488
+Ref: b6102488
+Node: Identifier_Casing102903
+Ref: gnatcheck_rm/predefined_rules identifier-casing103002
+Ref: b7103002
+Ref: gnatcheck_rm/predefined_rules id76103002
+Ref: b8103002
+Node: Identifier_Prefixes108513
+Ref: gnatcheck_rm/predefined_rules identifier-prefixes108640
+Ref: b9108640
+Ref: gnatcheck_rm/predefined_rules id77108640
+Ref: ba108640
+Node: Identifier_Suffixes116525
+Ref: gnatcheck_rm/predefined_rules id78116656
+Ref: bb116656
+Ref: gnatcheck_rm/predefined_rules identifier-suffixes116656
+Ref: bc116656
+Node: Max_Identifier_Length124369
+Ref: gnatcheck_rm/predefined_rules max-identifier-length124512
+Ref: bd124512
+Ref: gnatcheck_rm/predefined_rules id79124512
+Ref: be124512
+Node: Misnamed_Controlling_Parameters124928
+Ref: gnatcheck_rm/predefined_rules misnamed-controlling-parameters125064
+Ref: bf125064
+Ref: gnatcheck_rm/predefined_rules id80125064
+Ref: c0125064
+Node: Name_Clashes125866
+Ref: gnatcheck_rm/predefined_rules name-clashes126013
+Ref: c1126013
+Ref: gnatcheck_rm/predefined_rules id81126013
+Ref: c2126013
+Node: Object_Declarations_Out_Of_Order127730
+Ref: gnatcheck_rm/predefined_rules id82127868
+Ref: c3127868
+Ref: gnatcheck_rm/predefined_rules object-declarations-out-of-order127868
+Ref: c4127868
+Node: One_Construct_Per_Line128237
+Ref: gnatcheck_rm/predefined_rules id83128398
+Ref: c5128398
+Ref: gnatcheck_rm/predefined_rules one-construct-per-line128398
+Ref: c6128398
+Node: Uncommented_BEGIN_In_Package_Bodies129280
+Ref: gnatcheck_rm/predefined_rules uncommented-begin-in-package-bodies129400
+Ref: c7129400
+Ref: gnatcheck_rm/predefined_rules id84129400
+Ref: c8129400
+Node: Source Code Presentation130513
+Ref: gnatcheck_rm/predefined_rules source-code-presentation130619
+Ref: c9130619
+Ref: gnatcheck_rm/predefined_rules id85130619
+Ref: ca130619
+Node: Feature Usage Rules130764
+Ref: gnatcheck_rm/predefined_rules feature-usage-rules130900
+Ref: cb130900
+Node: Abort_Statements132046
+Ref: gnatcheck_rm/predefined_rules abort-statements132159
+Ref: cc132159
+Ref: gnatcheck_rm/predefined_rules id86132159
+Ref: cd132159
+Node: Abstract_Type_Declarations132339
+Ref: gnatcheck_rm/predefined_rules abstract-type-declarations132479
+Ref: ce132479
+Ref: gnatcheck_rm/predefined_rules id87132479
+Ref: cf132479
+Node: Anonymous_Subtypes132964
+Ref: gnatcheck_rm/predefined_rules id88133094
+Ref: d0133094
+Ref: gnatcheck_rm/predefined_rules anonymous-subtypes133094
+Ref: d1133094
+Node: Blocks134268
+Ref: gnatcheck_rm/predefined_rules id89134399
+Ref: d2134399
+Ref: gnatcheck_rm/predefined_rules blocks134399
+Ref: d3134399
+Node: Complex_Inlined_Subprograms134685
+Ref: gnatcheck_rm/predefined_rules id90134821
+Ref: d4134821
+Ref: gnatcheck_rm/predefined_rules complex-inlined-subprograms134821
+Ref: d5134821
+Node: Conditional_Expressions136031
+Ref: gnatcheck_rm/predefined_rules id91136189
+Ref: d6136189
+Ref: gnatcheck_rm/predefined_rules conditional-expressions136189
+Ref: d7136189
+Node: Controlled_Type_Declarations137242
+Ref: gnatcheck_rm/predefined_rules id92137395
+Ref: d8137395
+Ref: gnatcheck_rm/predefined_rules controlled-type-declarations137395
+Ref: d9137395
+Node: Declarations_In_Blocks138044
+Ref: gnatcheck_rm/predefined_rules id93138196
+Ref: da138196
+Ref: gnatcheck_rm/predefined_rules declarations-in-blocks138196
+Ref: db138196
+Node: Deeply_Nested_Inlining138695
+Ref: gnatcheck_rm/predefined_rules id94138837
+Ref: dc138837
+Ref: gnatcheck_rm/predefined_rules deeply-nested-inlining138837
+Ref: dd138837
+Node: Default_Parameters140151
+Ref: gnatcheck_rm/predefined_rules id95140292
+Ref: de140292
+Ref: gnatcheck_rm/predefined_rules default-parameters140292
+Ref: df140292
+Node: Discriminated_Records140768
+Ref: gnatcheck_rm/predefined_rules discriminated-records140916
+Ref: e0140916
+Ref: gnatcheck_rm/predefined_rules id96140916
+Ref: e1140916
+Node: Explicit_Full_Discrete_Ranges141672
+Ref: gnatcheck_rm/predefined_rules explicit-full-discrete-ranges141822
+Ref: e2141822
+Ref: gnatcheck_rm/predefined_rules id97141822
+Ref: e3141822
+Node: Expression_Functions142228
+Ref: gnatcheck_rm/predefined_rules id98142378
+Ref: e4142378
+Ref: gnatcheck_rm/predefined_rules expression-functions142378
+Ref: e5142378
+Node: Fixed_Equality_Checks142758
+Ref: gnatcheck_rm/predefined_rules id99142900
+Ref: e6142900
+Ref: gnatcheck_rm/predefined_rules fixed-equality-checks142900
+Ref: e7142900
+Node: Float_Equality_Checks143669
+Ref: gnatcheck_rm/predefined_rules id100143816
+Ref: e8143816
+Ref: gnatcheck_rm/predefined_rules float-equality-checks143816
+Ref: e9143816
+Node: Function_Style_Procedures144646
+Ref: gnatcheck_rm/predefined_rules id101144795
+Ref: ea144795
+Ref: gnatcheck_rm/predefined_rules function-style-procedures144795
+Ref: eb144795
+Node: Generics_In_Subprograms145698
+Ref: gnatcheck_rm/predefined_rules generics-in-subprograms145853
+Ref: ec145853
+Ref: gnatcheck_rm/predefined_rules id102145853
+Ref: ed145853
+Node: Implicit_IN_Mode_Parameters146432
+Ref: gnatcheck_rm/predefined_rules implicit-in-mode-parameters146595
+Ref: ee146595
+Ref: gnatcheck_rm/predefined_rules id103146595
+Ref: ef146595
+Node: Improperly_Located_Instantiations147032
+Ref: gnatcheck_rm/predefined_rules improperly-located-instantiations147197
+Ref: f0147197
+Ref: gnatcheck_rm/predefined_rules id104147197
+Ref: f1147197
+Node: Library_Level_Subprograms147714
+Ref: gnatcheck_rm/predefined_rules id105147868
+Ref: f2147868
+Ref: gnatcheck_rm/predefined_rules library-level-subprograms147868
+Ref: f3147868
+Node: Membership_Tests148147
+Ref: gnatcheck_rm/predefined_rules membership-tests148292
+Ref: f4148292
+Ref: gnatcheck_rm/predefined_rules id106148292
+Ref: f5148292
+Node: Non_Qualified_Aggregates149743
+Ref: gnatcheck_rm/predefined_rules non-qualified-aggregates149882
+Ref: f6149882
+Ref: gnatcheck_rm/predefined_rules id107149882
+Ref: f7149882
+Node: Number_Declarations150505
+Ref: gnatcheck_rm/predefined_rules number-declarations150644
+Ref: f8150644
+Ref: gnatcheck_rm/predefined_rules id108150644
+Ref: f9150644
+Node: Numeric_Indexing150963
+Ref: gnatcheck_rm/predefined_rules id109151094
+Ref: fa151094
+Ref: gnatcheck_rm/predefined_rules numeric-indexing151094
+Ref: fb151094
+Node: Numeric_Literals151588
+Ref: gnatcheck_rm/predefined_rules numeric-literals151723
+Ref: fc151723
+Ref: gnatcheck_rm/predefined_rules id110151723
+Ref: fd151723
+Node: Parameters_Out_Of_Order153192
+Ref: gnatcheck_rm/predefined_rules parameters-out-of-order153328
+Ref: fe153328
+Ref: gnatcheck_rm/predefined_rules id111153328
+Ref: ff153328
+Node: Predicate_Testing154216
+Ref: gnatcheck_rm/predefined_rules id112154361
+Ref: 100154361
+Ref: gnatcheck_rm/predefined_rules predicate-testing154361
+Ref: 101154361
+Node: Relative_Delay_Statements155814
+Ref: gnatcheck_rm/predefined_rules relative-delay-statements155965
+Ref: 102155965
+Ref: gnatcheck_rm/predefined_rules id113155965
+Ref: 103155965
+Node: Representation_Specifications156304
+Ref: gnatcheck_rm/predefined_rules representation-specifications156460
+Ref: 104156460
+Ref: gnatcheck_rm/predefined_rules id114156460
+Ref: 105156460
+Node: Quantified_Expressions157363
+Ref: gnatcheck_rm/predefined_rules quantified-expressions157523
+Ref: 106157523
+Ref: gnatcheck_rm/predefined_rules id115157523
+Ref: 107157523
+Node: Raising_Predefined_Exceptions158770
+Ref: gnatcheck_rm/predefined_rules raising-predefined-exceptions158918
+Ref: 108158918
+Ref: gnatcheck_rm/predefined_rules id116158918
+Ref: 109158918
+Node: Subprogram_Access159283
+Ref: gnatcheck_rm/predefined_rules subprogram-access159430
+Ref: 10a159430
+Ref: gnatcheck_rm/predefined_rules id117159430
+Ref: 10b159430
+Node: Too_Many_Dependencies159859
+Ref: gnatcheck_rm/predefined_rules id118160002
+Ref: 10c160002
+Ref: gnatcheck_rm/predefined_rules too-many-dependencies160002
+Ref: 10d160002
+Node: Unassigned_OUT_Parameters160692
+Ref: gnatcheck_rm/predefined_rules id119160845
+Ref: 10e160845
+Ref: gnatcheck_rm/predefined_rules unassigned-out-parameters160845
+Ref: 10f160845
+Node: Unconstrained_Array_Returns162349
+Ref: gnatcheck_rm/predefined_rules unconstrained-array-returns162501
+Ref: 110162501
+Ref: gnatcheck_rm/predefined_rules id120162501
+Ref: 111162501
+Node: Unconstrained_Arrays163493
+Ref: gnatcheck_rm/predefined_rules unconstrained-arrays163611
+Ref: 112163611
+Ref: gnatcheck_rm/predefined_rules id121163611
+Ref: 113163611
+Node: Metrics-Related Rules163909
+Ref: gnatcheck_rm/predefined_rules metrics-related-rules164041
+Ref: 114164041
+Node: Metrics_Essential_Complexity165333
+Ref: gnatcheck_rm/predefined_rules metrics-essential-complexity165463
+Ref: 115165463
+Ref: gnatcheck_rm/predefined_rules id122165463
+Ref: 116165463
+Node: Metrics_Cyclomatic_Complexity166353
+Ref: gnatcheck_rm/predefined_rules metrics-cyclomatic-complexity166505
+Ref: 117166505
+Ref: gnatcheck_rm/predefined_rules id123166505
+Ref: 118166505
+Node: Metrics_LSLOC167592
+Ref: gnatcheck_rm/predefined_rules metrics-lsloc167707
+Ref: 119167707
+Ref: gnatcheck_rm/predefined_rules id124167707
+Ref: 11a167707
+Node: SPARK Ada Rules168756
+Ref: gnatcheck_rm/predefined_rules spark-ada-rules168860
+Ref: 11b168860
+Node: Annotated_Comments169237
+Ref: gnatcheck_rm/predefined_rules id125169350
+Ref: 11c169350
+Ref: gnatcheck_rm/predefined_rules annotated-comments169350
+Ref: 11d169350
+Node: Boolean_Relational_Operators171100
+Ref: gnatcheck_rm/predefined_rules id126171246
+Ref: 11e171246
+Ref: gnatcheck_rm/predefined_rules boolean-relational-operators171246
+Ref: 11f171246
+Node: Expanded_Loop_Exit_Names171995
+Ref: gnatcheck_rm/predefined_rules expanded-loop-exit-names172143
+Ref: 120172143
+Ref: gnatcheck_rm/predefined_rules id127172143
+Ref: 121172143
+Node: Non_SPARK_Attributes172564
+Ref: gnatcheck_rm/predefined_rules non-spark-attributes172708
+Ref: 122172708
+Ref: gnatcheck_rm/predefined_rules id128172708
+Ref: 123172708
+Node: Non_Tagged_Derived_Types173989
+Ref: gnatcheck_rm/predefined_rules id129174125
+Ref: 124174125
+Ref: gnatcheck_rm/predefined_rules non-tagged-derived-types174125
+Ref: 125174125
+Node: Outer_Loop_Exits174449
+Ref: gnatcheck_rm/predefined_rules id130174585
+Ref: 126174585
+Ref: gnatcheck_rm/predefined_rules outer-loop-exits174585
+Ref: 127174585
+Node: Overloaded_Operators175042
+Ref: gnatcheck_rm/predefined_rules id131175160
+Ref: 128175160
+Ref: gnatcheck_rm/predefined_rules overloaded-operators175160
+Ref: 129175160
+Node: Slices175658
+Ref: gnatcheck_rm/predefined_rules id132175776
+Ref: 12a175776
+Ref: gnatcheck_rm/predefined_rules slices175776
+Ref: 12b175776
+Node: Universal_Ranges176007
+Ref: gnatcheck_rm/predefined_rules universal-ranges176096
+Ref: 12c176096
+Ref: gnatcheck_rm/predefined_rules id133176096
+Ref: 12d176096
+Node: Example of gnatcheck Usage176627
+Ref: gnatcheck_rm/example_of_gnatcheck_usage id1176746
+Ref: 12e176746
+Ref: gnatcheck_rm/example_of_gnatcheck_usage doc176746
+Ref: 12f176746
+Ref: gnatcheck_rm/example_of_gnatcheck_usage example-of-gnatcheck-usage176746
+Ref: b176746
+Node: List of Rules181197
+Ref: gnatcheck_rm/list_of_rules doc181330
+Ref: 130181330
+Ref: gnatcheck_rm/list_of_rules list-of-rules181330
+Ref: c181330
+Ref: gnatcheck_rm/list_of_rules id1181330
+Ref: 131181330
+Node: GNU Free Documentation License186596
+Ref: share/gnu_free_documentation_license gnu-fdl186708
+Ref: 132186708
+Ref: share/gnu_free_documentation_license doc186708
+Ref: 133186708
+Ref: share/gnu_free_documentation_license gnu-free-documentation-license186708
+Ref: 134186708
+Node: Index209830
 
 End Tag Table
 

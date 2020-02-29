@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                        Copyright (C) 2018, AdaCore                       --
+--                      Copyright (C) 2018-2019, AdaCore                    --
 --                                                                          --
 -- Asis Utility Library (ASIS UL) is free software; you can redistribute it --
 -- and/or  modify  it  under  terms  of  the  GNU General Public License as --
@@ -63,7 +63,8 @@ package body ASIS_UL.Projects.Aggregate is
 
    Aggregated_Projects : Set;
 
-   --  ??? Project iterator??? More docs needed!
+   --  Project iterator - old-fasion manual iteration through the ordered set
+   --  is used.
    Iterator_Done   : Boolean := True;
    Iterator_C      : Cursor  := No_Element;
    Iterator_El     : Project_Record;

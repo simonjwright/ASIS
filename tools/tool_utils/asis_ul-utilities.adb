@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2007-2017, AdaCore                     --
+--                     Copyright (C) 2007-2019, AdaCore                     --
 --                                                                          --
 -- Asis Utility Library (ASIS UL) is free software; you can redistribute it --
 -- and/or  modify  it  under  terms  of  the  GNU General Public License as --
@@ -314,6 +314,34 @@ package body ASIS_UL.Utilities is
 
       return Result;
    end Is_Recursive_Component_Definition;
+
+   ---------------
+   -- Is_Tagged --
+   ---------------
+
+   function Is_Tagged (Dcl : Asis.Element) return Boolean is
+      Result : Boolean := False;
+   begin
+      case Declaration_Kind (Dcl) is
+         when A_Tagged_Incomplete_Type_Declaration |
+              A_Private_Extension_Declaration      =>
+            Result := True;
+         when A_Private_Type_Declaration =>
+            Result :=
+              Definition_Kind (Type_Declaration_View (Dcl)) =
+                A_Tagged_Private_Type_Definition;
+         when An_Ordinary_Type_Declaration =>
+            Result :=
+              Asis.Elements.Type_Kind (Type_Declaration_View (Dcl)) in
+                A_Derived_Record_Extension_Definition |
+                A_Tagged_Record_Type_Definition       |
+                An_Interface_Type_Definition;
+         when others =>
+            null;
+      end case;
+
+      return Result;
+   end Is_Tagged;
 
    -----------------
    -- Is_Volatile --
@@ -1237,7 +1265,8 @@ package body ASIS_UL.Utilities is
       Tmp    : Asis.Element;
    begin
 
-      if Expression_Kind (Call) = A_Function_Call then
+      if Expression_Kind (Call) in A_Function_Call | An_Indexed_Component then
+         --  An_Indexed_Component can be Is_Generalized_Indexing only here!
          Result := Corresponding_Called_Function (Call);
       else
          Result := Corresponding_Called_Entity (Call);
@@ -2210,6 +2239,17 @@ package body ASIS_UL.Utilities is
 
       return Result;
    end Is_Indefinite_Subtype;
+
+   ---------------------
+   -- Is_Modular_Type --
+   ---------------------
+
+   function Is_Modular_Type (Subtype_Ref : Asis.Element) return Boolean is
+      Ent : Entity_Id;
+   begin
+      Ent := Entity (R_Node (Subtype_Ref));
+      return Is_Modular_Integer_Type (Ent);
+   end Is_Modular_Type;
 
    ---------------------------------
    -- Is_Non_Structural_Statement --

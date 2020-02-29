@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2011-2018, AdaCore                     --
+--                     Copyright (C) 2011-2019, AdaCore                     --
 --                                                                          --
 -- GNATTEST  is  free  software;  you  can redistribute it and/or modify it --
 -- under terms of the  GNU  General Public License as published by the Free --
@@ -569,8 +569,8 @@ package body GNATtest.Skeleton.Generator is
    --  Returns argument string if commenting prefix not found.
 
    function Find_Same_Short_Name
-     (MD_Map     : Markered_Data_Maps.Map;
-      Short_Name : String) return Markered_Data_Maps.Cursor;
+     (MD_Map : Markered_Data_Maps.Map;
+      Subp   : Subp_Info) return Markered_Data_Maps.Cursor;
    --  Searches for the test with given short name
 
    function "<" (L, R : Unique_Hash) return Boolean is
@@ -675,12 +675,21 @@ package body GNATtest.Skeleton.Generator is
    --------------------------
 
    function Find_Same_Short_Name
-     (MD_Map     : Markered_Data_Maps.Map;
-      Short_Name : String) return Markered_Data_Maps.Cursor
+     (MD_Map : Markered_Data_Maps.Map;
+      Subp   : Subp_Info) return Markered_Data_Maps.Cursor
    is
+      Short_Name : constant String := Subp.Subp_Text_Name.all;
+      TC_Hash    : constant String :=
+        (if Subp.Has_TC_Info then
+            Sanitize_TC_Name (Subp.TC_Info.Name.all)
+         else "");
       Cur : Markered_Data_Maps.Cursor := MD_Map.First;
       MD  : Markered_Data;
    begin
+      Trace
+        (Me,
+         "Looking for a compatible dangling test for " & Short_Name);
+
       loop
          exit when Cur = Markered_Data_Maps.No_Element;
 
@@ -688,10 +697,9 @@ package body GNATtest.Skeleton.Generator is
          if
            MD.Short_Name_Used
            and then MD.Short_Name.all = Short_Name
-         --  it's too dangerous to use autocorrect with test cases, since
-         --  there is no way to tell, if this is a modified test case name,
-         --  a whole new testcase or just another test case for same subp
-           and then Markered_Data_Maps.Key (Cur).TC_Hash.all = ""
+         --  It is hard to understand what happens when test case name
+         --  is changed, so we do not handle this scenario.
+           and then Markered_Data_Maps.Key (Cur).TC_Hash.all = TC_Hash
          then
             exit;
          end if;
@@ -748,6 +756,9 @@ package body GNATtest.Skeleton.Generator is
    is
       Control : Traverse_Control := Continue;
       State   : No_State         := Not_Used;
+
+      Origin_Unit : constant Compilation_Unit :=
+        Enclosing_Compilation_Unit (Decl);
 
       procedure Pre_Operation
         (Element :        Asis.Element;
@@ -829,6 +840,15 @@ package body GNATtest.Skeleton.Generator is
             when others =>
                null;
          end case;
+
+         if
+           Is_Equal (Enclosing_Compilation_Unit (Decl), Origin_Unit)
+           or else Unit_Kind (Enclosing_Compilation_Unit (Decl)) /= A_Package
+         then
+            --  Callee is from the same unit spec or even from the body,
+            --  it won't be stubbed.
+            return;
+         end if;
 
          declare
             Suffix : constant String :=
@@ -1084,7 +1104,9 @@ package body GNATtest.Skeleton.Generator is
                Current_Subp.TC_Info.Req_Image.all &
                ");");
             New_Line_Count;
-            S_Put (9, "exception");
+            S_Put (9, "null;");
+            New_Line_Count;
+            S_Put (6, "exception");
             New_Line_Count;
             S_Put (12, "when System.Assertions.Assert_Failure =>");
             New_Line_Count;
@@ -1157,6 +1179,8 @@ package body GNATtest.Skeleton.Generator is
                "(" &
                Current_Subp.TC_Info.Ens_Image.all &
                ");");
+            New_Line_Count;
+            S_Put (12, "null;");
             New_Line_Count;
             S_Put (9, "exception");
             New_Line_Count;
@@ -1370,7 +1394,9 @@ package body GNATtest.Skeleton.Generator is
               (11,
                "(" &
                Current_Subp.TC_Info.Req_Image.all &
-               ");");
+                 ");");
+            New_Line_Count;
+            S_Put (9, "null;");
             New_Line_Count;
             S_Put (6, "exception");
             New_Line_Count;
@@ -1437,6 +1463,7 @@ package body GNATtest.Skeleton.Generator is
                Current_Subp.TC_Info.Ens_Image.all &
                ");");
             New_Line_Count;
+            S_Put (9, "null;");
             New_Line_Count;
             S_Put (6, "exception");
             New_Line_Count;
@@ -2308,13 +2335,13 @@ package body GNATtest.Skeleton.Generator is
                  (3,
                   "procedure User_Set_Up (Gnattest_T : in out Test_"
                   & Current_Type.Main_Type_Text_Name.all
-                  & ") is null;");
+                  & ");");
                Put_New_Line;
                S_Put
                  (3,
-                 "procedure User_Tear_Down (Gnattest_T : in out Test_"
-                 & Current_Type.Main_Type_Text_Name.all
-                 & ") is null;");
+                  "procedure User_Tear_Down (Gnattest_T : in out Test_"
+                  & Current_Type.Main_Type_Text_Name.all
+                  & ");");
                Put_New_Line;
                Put_New_Line;
             end if;
@@ -2407,8 +2434,21 @@ package body GNATtest.Skeleton.Generator is
                end if;
 
                S_Put
-                 (5,
+                 (6,
                   "GNATtest_Generated.GNATtest_Standard."    &
+                  Current_Type.Argument_Father_Unit_Name.all &
+                  "."                                        &
+                  Nesting_Add.all                            &
+                  Current_Type.Argument_Father_Type_Name.all &
+                  Test_Data_Unit_Name_Suff                   &
+                  "."                                        &
+                  Current_Type.Argument_Father_Type_Name.all &
+                  Test_Unit_Suffix.all                       &
+                  ".Set_Up");
+               Put_New_Line;
+               S_Put
+                 (8,
+                  "(GNATtest_Generated.GNATtest_Standard."    &
                   Current_Type.Argument_Father_Unit_Name.all &
                   "."                                        &
                   Nesting_Add.all                            &
@@ -2419,7 +2459,7 @@ package body GNATtest.Skeleton.Generator is
                   Test_Unit_Suffix.all                       &
                   ".Test_"                                   &
                   Current_Type.Argument_Father_Type_Name.all &
-                  "(Gnattest_T).Set_Up;");
+                  " (Gnattest_T));");
                Put_New_Line;
 
                Free (Nesting_Add);
@@ -2444,7 +2484,7 @@ package body GNATtest.Skeleton.Generator is
 
                   if Current_Pack.Data_Kind = Declaration_Data then
                      if Current_Pack.Is_Generic then
-                        S_Put (6, "X.User_Set_Up;");
+                        S_Put (6, "User_Set_Up (X);");
                         Put_New_Line;
                      end if;
                   end if;
@@ -2499,8 +2539,21 @@ package body GNATtest.Skeleton.Generator is
                end if;
 
                S_Put
-                 (5,
+                 (6,
                   "GNATtest_Generated.GNATtest_Standard."    &
+                  Current_Type.Argument_Father_Unit_Name.all &
+                  "."                                        &
+                  Nesting_Add.all                            &
+                  Current_Type.Argument_Father_Type_Name.all &
+                  Test_Data_Unit_Name_Suff                   &
+                  "."                                        &
+                  Current_Type.Argument_Father_Type_Name.all &
+                  Test_Unit_Suffix.all                       &
+                  ".Tear_Down");
+               Put_New_Line;
+               S_Put
+                 (8,
+                  "(GNATtest_Generated.GNATtest_Standard."    &
                   Current_Type.Argument_Father_Unit_Name.all &
                   "."                                        &
                   Nesting_Add.all                            &
@@ -2511,14 +2564,14 @@ package body GNATtest.Skeleton.Generator is
                   Test_Unit_Suffix.all                       &
                   ".Test_"                                   &
                   Current_Type.Argument_Father_Type_Name.all &
-                  "(Gnattest_T).Tear_Down;");
+                  " (Gnattest_T));");
 
                Free (Nesting_Add);
             else
                if Current_Pack.Data_Kind = Declaration_Data
                  and then Current_Pack.Is_Generic
                then
-                     S_Put (6, "X.User_Tear_Down;");
+                     S_Put (6, "User_Tear_Down (X);");
                else
                   S_Put
                     (6, "null;");
@@ -2552,6 +2605,35 @@ package body GNATtest.Skeleton.Generator is
                   & "(Gnattest_T : in out New_Test) is");
                Put_New_Line;
                S_Put (6, "pragma Unreferenced (Gnattest_T);");
+               Put_New_Line;
+               S_Put (3, "begin");
+               Put_New_Line;
+               S_Put (6, "null;");
+               Put_New_Line;
+               S_Put (3, "end User_Tear_Down;");
+               Put_New_Line;
+               Put_New_Line;
+            end if;
+
+            if Current_Pack.Is_Generic then
+               S_Put
+                 (3,
+                  "procedure User_Set_Up (Gnattest_T : in out Test_"
+                  & Current_Type.Main_Type_Text_Name.all
+                  & ") is");
+               Put_New_Line;
+               S_Put (3, "begin");
+               Put_New_Line;
+               S_Put (6, "null;");
+               Put_New_Line;
+               S_Put (3, "end User_Set_Up;");
+               Put_New_Line;
+               Put_New_Line;
+               S_Put
+                 (3,
+                  "procedure User_Tear_Down (Gnattest_T : in out Test_"
+                  & Current_Type.Main_Type_Text_Name.all
+                  & ") is");
                Put_New_Line;
                S_Put (3, "begin");
                Put_New_Line;
@@ -3081,7 +3163,7 @@ package body GNATtest.Skeleton.Generator is
                            --  name but different hash.
                            MD_Cur := Find_Same_Short_Name
                              (Markered_Data_Map,
-                              Current_Subp.Subp_Text_Name.all);
+                              Current_Subp);
 
                            if MD_Cur /= Markered_Data_Maps.No_Element then
                               --  Using corresponding dangling test
@@ -3459,6 +3541,7 @@ package body GNATtest.Skeleton.Generator is
                         Stub.Has_TC_Info := True;
                         Stub.TC_Info.TC_Hash := new String'
                           (Markered_Data_Maps.Key (MD_Cur).TC_Hash.all);
+                        Stub.TC_Info.Name := Stub.TC_Info.TC_Hash;
                      end if;
 
                      Put_Opening_Comment_Section
@@ -3694,13 +3777,11 @@ package body GNATtest.Skeleton.Generator is
                if Current_Pack.Is_Generic then
                   S_Put
                     (3,
-                    "procedure User_Set_Up (Gnattest_T : in out Test)"
-                    & "is null;");
+                    "procedure User_Set_Up (Gnattest_T : in out Test);");
                   Put_New_Line;
                   S_Put
                     (3,
-                    "procedure User_Tear_Down (Gnattest_T : in out Test)"
-                    & "is null;");
+                    "procedure User_Tear_Down (Gnattest_T : in out Test);");
                   Put_New_Line;
                   Put_New_Line;
                end if;
@@ -3732,7 +3813,7 @@ package body GNATtest.Skeleton.Generator is
                      Put_New_Line;
                      S_Put (3, "begin");
                      Put_New_Line;
-                     S_Put (6, "X.User_Set_Up;");
+                     S_Put (6, "User_Set_Up (X);");
                   else
                      S_Put (6, "pragma Unreferenced (Gnattest_T);");
                      Put_New_Line;
@@ -3753,7 +3834,7 @@ package body GNATtest.Skeleton.Generator is
                      Put_New_Line;
                      S_Put (3, "begin");
                      Put_New_Line;
-                     S_Put (6, "X.User_Tear_Down;");
+                     S_Put (6, "User_Tear_Down (X);");
                   else
                      S_Put (6, "pragma Unreferenced (Gnattest_T);");
                      Put_New_Line;
@@ -3818,9 +3899,38 @@ package body GNATtest.Skeleton.Generator is
                   S_Put (6, "null;");
                   Put_New_Line;
                   S_Put (3, "end User_Tear_Down;");
+
+                  Put_New_Line;
+                  Put_New_Line;
                end if;
-               Put_New_Line;
-               Put_New_Line;
+
+               if Current_Pack.Is_Generic then
+                  S_Put
+                    (3,
+                     "procedure User_Set_Up "
+                     & "(Gnattest_T : in out Test) is");
+                  Put_New_Line;
+                  S_Put (3, "begin");
+                  Put_New_Line;
+                  S_Put (6, "null;");
+                  Put_New_Line;
+                  S_Put (3, "end User_Set_Up;");
+                  Put_New_Line;
+                  Put_New_Line;
+                  S_Put
+                    (3,
+                     "procedure User_Tear_Down "
+                     & "(Gnattest_T : in out Test) is");
+                  Put_New_Line;
+                  S_Put (3, "begin");
+                  Put_New_Line;
+                  S_Put (6, "null;");
+                  Put_New_Line;
+                  S_Put (3, "end User_Tear_Down;");
+                  Put_New_Line;
+                  Put_New_Line;
+               end if;
+
                S_Put (0, "end " & Data_Unit_Name.all & ";");
                Put_New_Line;
 
@@ -4283,7 +4393,7 @@ package body GNATtest.Skeleton.Generator is
                               --  name but different hash.
                               MD_Cur := Find_Same_Short_Name
                                 (Markered_Data_Map,
-                                 Current_Subp.Subp_Text_Name.all);
+                                 Current_Subp);
 
                               if MD_Cur /= Markered_Data_Maps.No_Element then
                                  --  Using corresponding dangling test
@@ -4655,6 +4765,7 @@ package body GNATtest.Skeleton.Generator is
                            Stub.TC_Info.TC_Hash := new String'
                              (Markered_Data_Maps.Key (MD_Cur).TC_Hash.all);
 
+                           Stub.TC_Info.Name := Stub.TC_Info.TC_Hash;
                            Stub.Subp_Mangle_Name := new String'
                              (Test_Routine_Prefix
                               & Markered_Data_Maps.Element
@@ -5572,18 +5683,43 @@ package body GNATtest.Skeleton.Generator is
    function Is_Fully_Private
      (Arg : Asis.Declaration) return Boolean
    is
-      Corresp_Decl : Asis.Declaration;
+      Decl_1, Decl_2, Decl_3 : Asis.Element :=
+        Asis.Nil_Element;
+
+      function Is_Private_Or_Null (El : Asis.Element) return Boolean is
+         (if Is_Nil (El) then True else Is_Private (El));
+
    begin
-      if Is_Private (Arg) then
-         Corresp_Decl := Corresponding_Type_Declaration (Arg);
-         if Is_Nil (Corresp_Decl) then
-            return True;
-         else
-            return Is_Private (Corresp_Decl);
-         end if;
-      else
-         return False;
-      end if;
+      case Declaration_Kind (Arg) is
+         when An_Ordinary_Type_Declaration =>
+            Decl_3 := Arg;
+            Decl_2 := Corresponding_Type_Partial_View (Arg);
+            if Declaration_Kind (Decl_2) in
+              A_Private_Type_Declaration | A_Private_Extension_Declaration
+            then
+               Decl_1 := Corresponding_Type_Partial_View (Decl_2);
+            end if;
+         when A_Private_Type_Declaration      |
+              A_Private_Extension_Declaration =>
+            Decl_3 := Corresponding_Type_Completion (Arg);
+            Decl_2 := Arg;
+            Decl_1 := Corresponding_Type_Partial_View (Arg);
+         when An_Incomplete_Type_Declaration       |
+              A_Tagged_Incomplete_Type_Declaration =>
+            Decl_1 := Arg;
+            Decl_2 := Corresponding_Type_Completion (Arg);
+            if Declaration_Kind (Decl_2) in
+              A_Private_Type_Declaration | A_Private_Extension_Declaration
+            then
+               Decl_3 := Corresponding_Type_Completion (Decl_2);
+            end if;
+         when others =>
+            null;
+      end case;
+
+      return Is_Private_Or_Null (Decl_1)
+        and then Is_Private_Or_Null (Decl_2)
+        and then Is_Private_Or_Null (Decl_3);
    end Is_Fully_Private;
 
    -----------------
@@ -5619,19 +5755,12 @@ package body GNATtest.Skeleton.Generator is
          return Boolean
    is
       Elem  : Asis.Element := Inheritance_Final_Type;
-      Elem2 : Asis.Element;
+      Elem2 : Asis.Element := Inheritance_Root_Type;
    begin
-      if
-        Definition_Kind
-          (Type_Declaration_View
-               (Inheritance_Root_Type)) = A_Private_Extension_Definition
-        or else
-          Declaration_Kind
-            (Inheritance_Root_Type) = A_Private_Type_Declaration
+      if Declaration_Kind (Inheritance_Root_Type) in
+        A_Private_Type_Declaration | A_Private_Extension_Declaration
       then
-         Elem2 := Corresponding_Type_Declaration (Inheritance_Root_Type);
-      else
-         Elem2 := Inheritance_Root_Type;
+         Elem2 := Corresponding_Type_Completion (Elem2);
       end if;
 
       loop
@@ -5640,8 +5769,7 @@ package body GNATtest.Skeleton.Generator is
          end if;
 
          exit when
-           Is_Equal (Elem, Elem2) or else
-           Is_Equal (Elem, (Corresponding_Type_Declaration (Elem2)));
+           Is_Equal (Elem, Elem2);
          Elem := Parent_Type_Declaration (Elem);
       end loop;
       return True;
@@ -6103,7 +6231,7 @@ package body GNATtest.Skeleton.Generator is
          exit when Source_Name.all = "";
 
          if
-           (Stub_Mode_ON or else Main_Unit /= null)
+           (Stub_Mode_ON or else not Main_Units.Is_Empty)
            and then Get_Source_Body (Source_Name.all) /= ""
          then
             Successful_Initialization :=
@@ -6124,7 +6252,7 @@ package body GNATtest.Skeleton.Generator is
 
          if Successful_Initialization then
 
-            if Main_Unit /= null then
+            if not Main_Units.Is_Empty then
                declare
                   Success  : Boolean;
                   ALI_File : constant String :=
@@ -6133,10 +6261,16 @@ package body GNATtest.Skeleton.Generator is
                   Subdir   : constant String :=
                     Temp_Dir.all & Directory_Separator & Closure_Subdir_Name;
                begin
+
+                  --  If gnattest is invoked with -U unit.adb and there is
+                  --  a correspodning unit.ads, then the unit.ali will already
+                  --  be present in closure subdir. No harm ovewriting it,
+                  --  we will still get all other errors.
                   Copy_File
                     (ALI_File,
                      Subdir,
-                     Success);
+                     Success,
+                     Overwrite);
                   if not Success then
                      Trace (Me, "Cannot copy " & ALI_File & " to " & Subdir);
                      Report_Err ("cannot calculate closure");
@@ -6146,7 +6280,7 @@ package body GNATtest.Skeleton.Generator is
                Update_Closure;
             end if;
 
-            if Stub_Mode_ON or else Main_Unit /= null then
+            if Stub_Mode_ON or else not Main_Units.Is_Empty then
 
                if Get_Source_Body (Source_Name.all) = "" then
                   The_Unit := Main_Unit_In_Current_Tree (The_Context);
@@ -6207,6 +6341,12 @@ package body GNATtest.Skeleton.Generator is
             Next (Cur_Stor);
          end loop;
       end;
+
+      if not Main_Units.Is_Empty then
+         --  Report exclusions that were not found dyring on-the-fly closure
+         --  computation.
+         Report_Exclusions_Not_Found;
+      end if;
 
       if Verbose then
          Cur := Test_Info.First;
@@ -6748,7 +6888,7 @@ package body GNATtest.Skeleton.Generator is
                      Last_Context_Name.all & ".adt");
       end if;
 
-      if Main_Unit = null then
+      if Main_Units.Is_Empty then
          --  We need to keep ALI files for incremental closure recomputation.
          Delete_File (Last_Context_Name.all & ".ali", Success);
          if not Success then
@@ -6930,20 +7070,12 @@ package body GNATtest.Skeleton.Generator is
       return Boolean
    is
       Elem  : Asis.Element := Inheritance_Final_Type;
-      Elem2 : Asis.Element;
+      Elem2 : Asis.Element := Inheritance_Root_Type;
    begin
-
-      if
-        Definition_Kind
-          (Type_Declaration_View
-               (Inheritance_Root_Type)) = A_Private_Extension_Definition
-        or else
-          Declaration_Kind
-            (Inheritance_Root_Type) = A_Private_Type_Declaration
+      if Declaration_Kind (Inheritance_Root_Type) in
+        A_Private_Type_Declaration | A_Private_Extension_Declaration
       then
-         Elem2 := Corresponding_Type_Declaration (Inheritance_Root_Type);
-      else
-         Elem2 := Inheritance_Root_Type;
+         Elem2 := Corresponding_Type_Completion (Elem2);
       end if;
 
       loop
@@ -6951,9 +7083,7 @@ package body GNATtest.Skeleton.Generator is
             return False;
          end if;
 
-         exit when
-           Is_Equal (Elem, Elem2) or else
-           Is_Equal (Elem, (Corresponding_Type_Declaration (Elem2)));
+         exit when Is_Equal (Elem, Elem2);
          Elem := Parent_Type_Declaration (Elem);
       end loop;
       return True;

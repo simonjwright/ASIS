@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2009-2016, AdaCore                     --
+--                     Copyright (C) 2009-2018, AdaCore                     --
 --                                                                          --
 -- GNATCHECK  is  free  software;  you can redistribute it and/or modify it --
 -- under terms of the  GNU  General Public License as published by the Free --
@@ -139,9 +139,32 @@ package Gnatcheck.Rules.Global is
    --  flagged. In case of indirect recursion, the call chain resulted in
    --  recursion is not reported. Task entities are not considered by this
    --  rule.
+   --
+   --  The rule has the following optional parameter for +R option:
+   --
+   --    Skip_Dispatching_Calls - do not take into account dispatching calls
+   --                             when creating and analyzing the call
+   --                             graph
 
    type Recursive_Subprograms_Rule_Type is new Global_Rule_Template with
-     null record;
+     record
+         Skip_Dispatching_Calls : Boolean := False;
+     end record;
+
+   overriding procedure Process_Rule_Parameter
+    (Rule       : in out Recursive_Subprograms_Rule_Type;
+     Param      :        String;
+     Enable     :        Boolean;
+     Defined_At : String);
+
+   overriding procedure Print_Rule_To_File
+     (Rule         : Recursive_Subprograms_Rule_Type;
+      Rule_File    : File_Type;
+      Indent_Level : Natural := 0);
+
+   overriding procedure XML_Print_Rule
+     (Rule         : Recursive_Subprograms_Rule_Type;
+      Indent_Level : Natural := 0);
 
    procedure Init_Global_Structure (Rule : Recursive_Subprograms_Rule_Type);
    --  Sets unconditional mode for call graph creation, sets
