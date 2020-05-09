@@ -1,3 +1,5 @@
+*.ali
+*.o
 *.orig
 *.adb.stderr
 *.adb.stdout
