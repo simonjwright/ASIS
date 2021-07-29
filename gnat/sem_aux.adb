@@ -18,12 +18,12 @@
 -- Public License  distributed with GNAT; see file COPYING3.  If not, go to --
 -- http://www.gnu.org/licenses for a complete copy of the license.          --
 --                                                                          --
---                                                                          --
---                                                                          --
---                                                                          --
---                                                                          --
---                                                                          --
---                                                                          --
+-- As a special exception,  if other files  instantiate  generics from this --
+-- unit, or you link  this unit with other files  to produce an executable, --
+-- this  unit  does not  by itself cause  the resulting  executable  to  be --
+-- covered  by the  GNU  General  Public  License.  This exception does not --
+-- however invalidate  any other reasons why  the executable file  might be --
+-- covered by the  GNU Public License.                                      --
 --                                                                          --
 -- GNAT was originally developed  by the GNAT team at  New York University. --
 -- Extensive contributions were provided by Ada Core Technologies Inc.      --
@@ -569,6 +569,12 @@ package body Sem_Aux is
             elsif Entity (N) = E then
                return N;
             end if;
+
+         --  A Ghost-related aspect, if disabled, may have been replaced by a
+         --  null statement.
+
+         elsif Nkind (N) = N_Null_Statement then
+            N := Original_Node (N);
          end if;
 
          Next_Rep_Item (N);

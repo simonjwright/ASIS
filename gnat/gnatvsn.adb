@@ -15,9 +15,9 @@
 -- OUT ANY WARRANTY;  without even the  implied warranty of MERCHANTABILITY --
 -- or FITNESS FOR A PARTICULAR PURPOSE.                                     --
 --                                                                          --
---                                                                          --
---                                                                          --
---                                                                          --
+-- As a special exception under Section 7 of GPL version 3, you are granted --
+-- additional permissions described in the GCC Runtime Library Exception,   --
+-- version 3.1, as published by the Free Software Foundation.               --
 --                                                                          --
 -- You should have received a copy of the GNU General Public License and    --
 -- a copy of the GCC Runtime Library Exception along with this program;     --
@@ -46,51 +46,39 @@ package body Gnatvsn is
 
    function Gnat_Free_Software return String is
    begin
-      case Build_Type is
-         when FSF
-            | GPL
-         =>
-            return
-              "This is free software; see the source for copying conditions." &
-              ASCII.LF &
-              "There is NO warranty; not even for MERCHANTABILITY or FITNESS" &
-              " FOR A PARTICULAR PURPOSE.";
-
-         when Gnatpro
-            | Gnatpro_Devel
-         =>
-            return
-              "This is free software; see the source for copying conditions." &
-               ASCII.LF &
-               "See your AdaCore support agreement for details of warranty" &
-               " and support." &
-               ASCII.LF &
-               "If you do not have a current support agreement, then there" &
-               " is absolutely" &
-               ASCII.LF &
-               "no warranty; not even for MERCHANTABILITY or FITNESS FOR" &
-               " A PARTICULAR" &
-               ASCII.LF &
-               "PURPOSE.";
-      end case;
+      return
+        "This is free software; see the source for copying conditions." &
+        ASCII.LF &
+        "There is NO warranty; not even for MERCHANTABILITY or FITNESS" &
+        " FOR A PARTICULAR PURPOSE.";
    end Gnat_Free_Software;
+
+   type char_array is array (Natural range <>) of aliased Character;
+   Version_String : char_array (0 .. Ver_Len_Max - 1);
+   --  Import the C string defined in the (language-independent) source file
+   --  version.c using the zero-based convention of the C language.
+   --  The size is not the real one, which does not matter since we will
+   --  check for the nul character in Gnat_Version_String.
+   pragma Import (C, Version_String, "version_string");
 
    -------------------------
    -- Gnat_Version_String --
    -------------------------
 
    function Gnat_Version_String return String is
+      S : String (1 .. Ver_Len_Max);
+      Pos : Natural := 0;
    begin
-      case Build_Type is
-         when Gnatpro =>
-            return "Pro " & Gnat_Static_Version_String;
-         when Gnatpro_Devel =>
-            return "Pro Developer " & Gnat_Static_Version_String;
-         when GPL =>
-            return "Community " & Gnat_Static_Version_String;
-         when FSF =>
-            return Gnat_Static_Version_String;
-      end case;
+      loop
+         exit when Version_String (Pos) = ASCII.NUL;
+
+         S (Pos + 1) := Version_String (Pos);
+         Pos := Pos + 1;
+
+         exit when Pos = Ver_Len_Max;
+      end loop;
+
+      return S (1 .. Pos);
    end Gnat_Version_String;
 
 end Gnatvsn;

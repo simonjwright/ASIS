@@ -15,9 +15,9 @@
 -- OUT ANY WARRANTY;  without even the  implied warranty of MERCHANTABILITY --
 -- or FITNESS FOR A PARTICULAR PURPOSE.                                     --
 --                                                                          --
---                                                                          --
---                                                                          --
---                                                                          --
+-- As a special exception under Section 7 of GPL version 3, you are granted --
+-- additional permissions described in the GCC Runtime Library Exception,   --
+-- version 3.1, as published by the Free Software Foundation.               --
 --                                                                          --
 -- You should have received a copy of the GNU General Public License and    --
 -- a copy of the GCC Runtime Library Exception along with this program;     --
@@ -36,6 +36,9 @@
 --  See also package Nlists, which provides another form that is threaded
 --  through the nodes themselves (using the Link field), which is more time
 --  and space efficient, but a node can be only one such list.
+
+--  WARNING: There is a C version of this package. Any changes to this
+--  source file must be properly reflected in the C header file elists.h
 
 with Types;  use Types;
 with System;

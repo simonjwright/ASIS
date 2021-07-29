@@ -15,9 +15,9 @@
 -- OUT ANY WARRANTY;  without even the  implied warranty of MERCHANTABILITY --
 -- or FITNESS FOR A PARTICULAR PURPOSE.                                     --
 --                                                                          --
---                                                                          --
---                                                                          --
---                                                                          --
+-- As a special exception under Section 7 of GPL version 3, you are granted --
+-- additional permissions described in the GCC Runtime Library Exception,   --
+-- version 3.1, as published by the Free Software Foundation.               --
 --                                                                          --
 -- You should have received a copy of the GNU General Public License and    --
 -- a copy of the GCC Runtime Library Exception along with this program;     --
@@ -130,14 +130,15 @@ package Table is
       --  First .. Last.
 
       Locked : Boolean := False;
-      --  Table expansion is permitted only if this switch is set to False. A
-      --  client may set Locked to True, in which case any attempt to expand
-      --  the table will cause an assertion failure. Note that while a table
-      --  is locked, its address in memory remains fixed and unchanging. This
-      --  feature is used to control table expansion during Gigi processing.
-      --  Gigi assumes that tables other than the Uint and Ureal tables do
-      --  not move during processing, which means that they cannot be expanded.
-      --  The Locked flag is used to enforce this restriction.
+      --  Increasing the value of Last is permitted only if this switch is set
+      --  to False. A client may set Locked to True, in which case any attempt
+      --  to increase the value of Last (which might expand the table) will
+      --  cause an assertion failure. Note that while a table is locked, its
+      --  address in memory remains fixed and unchanging. This feature is used
+      --  to control table expansion during Gigi processing.  Gigi assumes that
+      --  tables other than the Uint and Ureal tables do not move during
+      --  processing, which means that they cannot be expanded.  The Locked
+      --  flag is used to enforce this restriction.
 
       procedure Init;
       --  This procedure allocates a new table of size Initial (freeing any

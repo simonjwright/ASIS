@@ -25,8 +25,8 @@ with "common";
 
 project Asis is
 
-   for Languages use ("ada");
-   for Source_Dirs use ("asis");
+   for Languages use ("ada", "c");
+   for Source_Dirs use ("asis", "gnat");
    for Object_Dir use "obj";
    for Library_Name use "asis";
    for Library_Dir use "lib";

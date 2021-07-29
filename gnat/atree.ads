@@ -15,9 +15,9 @@
 -- OUT ANY WARRANTY;  without even the  implied warranty of MERCHANTABILITY --
 -- or FITNESS FOR A PARTICULAR PURPOSE.                                     --
 --                                                                          --
---                                                                          --
---                                                                          --
---                                                                          --
+-- As a special exception under Section 7 of GPL version 3, you are granted --
+-- additional permissions described in the GCC Runtime Library Exception,   --
+-- version 3.1, as published by the Free Software Foundation.               --
 --                                                                          --
 -- You should have received a copy of the GNU General Public License and    --
 -- a copy of the GCC Runtime Library Exception along with this program;     --
@@ -308,6 +308,8 @@ package Atree is
    --  and hence to prevent generation of an object file even if the
    --  switch -gnatQ is set. Initialized to zero at the start of compilation.
    --  Initialized for -gnatVa use, see comment above.
+
+   --  WARNING: There is a matching C declaration of this variable in fe.h
 
    Total_Errors_Detected : Nat := 0;
    --  Number of errors detected so far. Includes count of serious errors and
@@ -779,6 +781,27 @@ package Atree is
       V9  : Node_Kind;
       V10 : Node_Kind;
       V11 : Node_Kind) return Boolean;
+
+   --  12..15-parameter versions are not yet needed
+
+   function Nkind_In
+     (N   : Node_Id;
+      V1  : Node_Kind;
+      V2  : Node_Kind;
+      V3  : Node_Kind;
+      V4  : Node_Kind;
+      V5  : Node_Kind;
+      V6  : Node_Kind;
+      V7  : Node_Kind;
+      V8  : Node_Kind;
+      V9  : Node_Kind;
+      V10 : Node_Kind;
+      V11 : Node_Kind;
+      V12 : Node_Kind;
+      V13 : Node_Kind;
+      V14 : Node_Kind;
+      V15 : Node_Kind;
+      V16 : Node_Kind) return Boolean;
 
    pragma Inline (Nkind_In);
    --  Inline all above functions

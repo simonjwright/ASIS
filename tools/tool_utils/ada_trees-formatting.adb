@@ -25,6 +25,7 @@ pragma Ada_2012;
 
 with Ada.Strings.Fixed;
 with ASIS_UL.Vectors;
+with Ada.Containers;
 use type Ada.Containers.Count_Type;
 with System.WCh_Con;
 

@@ -15,9 +15,9 @@
 -- OUT ANY WARRANTY;  without even the  implied warranty of MERCHANTABILITY --
 -- or FITNESS FOR A PARTICULAR PURPOSE.                                     --
 --                                                                          --
---                                                                          --
---                                                                          --
---                                                                          --
+-- As a special exception under Section 7 of GPL version 3, you are granted --
+-- additional permissions described in the GCC Runtime Library Exception,   --
+-- version 3.1, as published by the Free Software Foundation.               --
 --                                                                          --
 -- You should have received a copy of the GNU General Public License and    --
 -- a copy of the GCC Runtime Library Exception along with this program;     --
@@ -34,6 +34,9 @@
 --  of the nodes is used as the forward pointer for these lists. See also
 --  package Elists which provides another form of lists that are not threaded
 --  through the nodes (and therefore allow nodes to be on multiple lists).
+
+--  WARNING: There is a C version of this package. Any changes to this
+--  source file must be properly reflected in the C header file nlists.h
 
 with System;
 with Types; use Types;

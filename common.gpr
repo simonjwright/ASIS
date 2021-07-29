@@ -21,7 +21,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with "gnat_util";
+-- with "gnat_util";
 
 abstract project Common is
 

@@ -15,9 +15,9 @@
 -- OUT ANY WARRANTY;  without even the  implied warranty of MERCHANTABILITY --
 -- or FITNESS FOR A PARTICULAR PURPOSE.                                     --
 --                                                                          --
---                                                                          --
---                                                                          --
---                                                                          --
+-- As a special exception under Section 7 of GPL version 3, you are granted --
+-- additional permissions described in the GCC Runtime Library Exception,   --
+-- version 3.1, as published by the Free Software Foundation.               --
 --                                                                          --
 -- You should have received a copy of the GNU General Public License and    --
 -- a copy of the GCC Runtime Library Exception along with this program;     --
@@ -47,6 +47,8 @@ package Debug is
    --  flags to be turned on. Documentation on the current usage of these flags
    --  is contained in the body of Debug rather than the spec, so that we don't
    --  have to recompile the world when a new debug flag is added.
+
+   --  WARNING: There is a matching C declaration of a few flags in fe.h
 
    Debug_Flag_A : Boolean := False;
    Debug_Flag_B : Boolean := False;

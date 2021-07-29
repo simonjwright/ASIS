@@ -15,9 +15,9 @@
 -- OUT ANY WARRANTY;  without even the  implied warranty of MERCHANTABILITY --
 -- or FITNESS FOR A PARTICULAR PURPOSE.                                     --
 --                                                                          --
---                                                                          --
---                                                                          --
---                                                                          --
+-- As a special exception under Section 7 of GPL version 3, you are granted --
+-- additional permissions described in the GCC Runtime Library Exception,   --
+-- version 3.1, as published by the Free Software Foundation.               --
 --                                                                          --
 -- You should have received a copy of the GNU General Public License and    --
 -- a copy of the GCC Runtime Library Exception along with this program;     --
@@ -142,7 +142,7 @@ package body Debug is
    --  d.V  Do not verify validity of SCIL files (CodePeer mode)
    --  d.W  Print out debugging information for Walk_Library_Items
    --  d.X  Old treatment of indexing aspects
-   --  d.Y  Output C code to standard output instead of file
+   --  d.Y
    --  d.Z  Do not enable expansion in configurable run-time mode
 
    --  d_a  Stop elaboration checks on accept or select statement
@@ -182,7 +182,7 @@ package body Debug is
    --  d_H
    --  d_I
    --  d_J
-   --  d_K
+   --  d_K  (Reserved) Enable reporting a warning on known-problem issues
    --  d_L  Output trace information on elaboration checking
    --  d_M
    --  d_N
@@ -965,9 +965,6 @@ package body Debug is
    --       preserved temporarily for use by the modeling project under debug
    --       flag d.X.
 
-   --  d.Y  Output C code to standard output instead of writing *.c and *.h
-   --       files, this is particularly useful when debugging cprint.
-
    --  d.Z  Normally we always enable expansion in configurable run-time mode
    --       to make sure we get error messages about unsupported features even
    --       when compiling in -gnatc mode. But expansion is turned off in this
@@ -1009,6 +1006,9 @@ package body Debug is
    --  d_F  The compiler encodes the full path from an invocation construct to
    --       an external target, offering additional information to GNATBIND for
    --       purposes of error diagnostics.
+
+   --  d_K  (Reserved) Enable reporting a warning on known-problem issues of
+   --       previous releases. No action performed in the wavefront.
 
    --  d_L  Output trace information on elaboration checking. This debug switch
    --       causes output to be generated showing each call or instantiation as

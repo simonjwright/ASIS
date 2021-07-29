@@ -15,9 +15,9 @@
 -- OUT ANY WARRANTY;  without even the  implied warranty of MERCHANTABILITY --
 -- or FITNESS FOR A PARTICULAR PURPOSE.                                     --
 --                                                                          --
---                                                                          --
---                                                                          --
---                                                                          --
+-- As a special exception under Section 7 of GPL version 3, you are granted --
+-- additional permissions described in the GCC Runtime Library Exception,   --
+-- version 3.1, as published by the Free Software Foundation.               --
 --                                                                          --
 -- You should have received a copy of the GNU General Public License and    --
 -- a copy of the GCC Runtime Library Exception along with this program;     --
@@ -38,7 +38,7 @@
 --  would have to be dealt with.
 
 --  WARNING: There is a C version of this package. Any changes to this source
---  file must be properly reflected in the C header file types.h declarations.
+--  file must be properly reflected in the C header file types.h
 
 --  Note: the declarations in this package reflect an expectation that the host
 --  machine has an efficient integer base type with a range at least 32 bits
@@ -138,7 +138,7 @@ package Types is
    -- Types Used for Text Buffer Handling --
    -----------------------------------------
 
-   --  We can not use type String for text buffers, since we must use the
+   --  We cannot use type String for text buffers, since we must use the
    --  standard 32-bit integer as an index value, since we count on all index
    --  values being the same size.
 

@@ -15,9 +15,9 @@
 -- OUT ANY WARRANTY;  without even the  implied warranty of MERCHANTABILITY --
 -- or FITNESS FOR A PARTICULAR PURPOSE.                                     --
 --                                                                          --
---                                                                          --
---                                                                          --
---                                                                          --
+-- As a special exception under Section 7 of GPL version 3, you are granted --
+-- additional permissions described in the GCC Runtime Library Exception,   --
+-- version 3.1, as published by the Free Software Foundation.               --
 --                                                                          --
 -- You should have received a copy of the GNU General Public License and    --
 -- a copy of the GCC Runtime Library Exception along with this program;     --
@@ -755,14 +755,15 @@ package Sinfo is
    --  Do_Division_Check flag on float exponentiation expressions, for the case
    --  where the value is 0.0 and the exponent is negative, although this case
    --  does lead to a division check failure. As another special case,
-   --  the frontend does not insert a Do_Range_Check on an allocator where
+   --  the front end does not insert a Do_Range_Check on an allocator where
    --  the designated type is scalar, and the designated type is more
    --  constrained than the type of the initialized allocator value or the type
    --  of the default value for an uninitialized allocator.
 
-   --  Note: the expander always takes care of the Do_Range check case,
-   --  so this flag will never be set in the expanded tree passed to the
-   --  back end code generator.
+   --  Note that the expander always takes care of the Do_Range_Check case, so
+   --  this flag will never be set in the expanded tree passed to the back end.
+   --  For the other two flags, the check can be generated either by the back
+   --  end or by the front end, depending on the setting of a target parameter.
 
    --  Note that this accounts for all nodes that trigger the corresponding
    --  checks, except for range checks on subtype_indications, which may be
@@ -931,6 +932,12 @@ package Sinfo is
    --    not normally handled (in particular the tasking abort signal). This
    --    is used for translation of the at end handler into a normal exception
    --    handler.
+
+   --  Aspect_On_Partial_View (Flag18)
+   --    Present on an N_Aspect_Specification node. For an aspect that applies
+   --    to a type entity, indicates whether the specification appears on the
+   --    partial view of a private type or extension. Undefined for aspects
+   --    that apply to other entities.
 
    --  Aspect_Rep_Item (Node2-Sem)
    --    Present in N_Aspect_Specification nodes. Points to the corresponding
@@ -1186,9 +1193,10 @@ package Sinfo is
    --    conversion nodes (and set if the conversion requires a check).
 
    --  Do_Division_Check (Flag13-Sem)
-   --    This flag is set on a division operator (/ mod rem) to indicate
-   --    that a zero divide check is required. The actual check is dealt
-   --    with by the backend (all the front end does is to set the flag).
+   --    This flag is set on a division operator (/ mod rem) to indicate that
+   --    a zero divide check is required. The actual check is either dealt with
+   --    by the back end if Backend_Divide_Checks is set to true, or by the
+   --    front end itself if it is set to false.
 
    --  Do_Length_Check (Flag4-Sem)
    --    This flag is set in an N_Assignment_Statement, N_Op_And, N_Op_Or,
@@ -1197,15 +1205,13 @@ package Sinfo is
 
    --  Do_Overflow_Check (Flag17-Sem)
    --    This flag is set on an operator where an overflow check is required on
-   --    the operation. The actual check is dealt with by the backend (all the
-   --    front end does is to set the flag). The other cases where this flag is
-   --    used is on a Type_Conversion node and for attribute reference nodes.
+   --    the operation. The actual check is either dealt with by the back end
+   --    if Backend_Overflow_Checks is set to true, or by the front end itself
+   --    if it is set to false. The other cases where this flag is used is on a
+   --    Type_Conversion node as well on if and case expression nodes.
    --    For a type conversion, it means that the conversion is from one base
    --    type to another, and the value may not fit in the target base type.
-   --    See also the description of Do_Range_Check for this case. The only
-   --    attribute references which use this flag are Pred and Succ, where it
-   --    means that the result should be checked for going outside the base
-   --    range. Note that this flag is not set for modular types. This flag is
+   --    See also the description of Do_Range_Check for this case. This flag is
    --    also set on if and case expression nodes if we are operating in either
    --    MINIMIZED or ELIMINATED overflow checking mode (to make sure that we
    --    properly process overflow checking for dependent expressions).
@@ -1215,9 +1221,9 @@ package Sinfo is
    --    range check is required. The target type is clear from the context.
    --    The contexts in which this flag can appear are the following:
 
-   --      Right side of an assignment. In this case the target type is
-   --      taken from the left side of the assignment, which is referenced
-   --      by the Name of the N_Assignment_Statement node.
+   --      Right side of an assignment. In this case the target type is taken
+   --      from the left side of the assignment, which is referenced by the
+   --      Name of the N_Assignment_Statement node.
 
    --      Subscript expressions in an indexed component. In this case the
    --      target type is determined from the type of the array, which is
@@ -1250,15 +1256,6 @@ package Sinfo is
    --    Note: when a range check is required in contexts other than those
    --    listed above (e.g. in a return statement), an additional type
    --    conversion node is introduced to represent the required check.
-
-   --    A special case arises for the arguments of the Pred/Succ attributes.
-   --    Here the range check needed is against First + 1 .. Last (Pred) or
-   --    First .. Last - 1 (Succ) of the corresponding base type. Essentially
-   --    these checks are what would be performed within the implicit body of
-   --    the functions that correspond to these attributes. In these cases,
-   --    the Do_Range check flag is set on the argument to the attribute
-   --    function, and the back end must special case the appropriate range
-   --    to check against.
 
    --  Do_Storage_Check (Flag17-Sem)
    --    This flag is set in an N_Allocator node to indicate that a storage
@@ -1840,6 +1837,11 @@ package Sinfo is
    --      Refined_State
    --      Test_Case
 
+   --  Is_Homogeneous_Aggregate (Flag14)
+   --    A flag set on an Ada2020 aggregate that uses square brackets as
+   --    delimiters, and thus denotes an array or container aggregate, or
+   --    the prefix of a reduction attribute.
+
    --  Is_Ignored (Flag9-Sem)
    --    A flag set in an N_Aspect_Specification or N_Pragma node if there was
    --    a Check_Policy or Assertion_Policy (or in the case of a Debug_Pragma)
@@ -2336,7 +2338,8 @@ package Sinfo is
    --    Present in N_Extended_Return_Statement. Points to a list initially
    --    containing a single N_Object_Declaration representing the return
    --    object. We use a list (instead of just a pointer to the object decl)
-   --    because Analyze wants to insert extra actions on this list.
+   --    because Analyze wants to insert extra actions on this list, before the
+   --    N_Object_Declaration, which always remains last on the list.
 
    --  Rounded_Result (Flag18-Sem)
    --    Present in N_Type_Conversion, N_Op_Divide, and N_Op_Multiply nodes.
@@ -4165,6 +4168,7 @@ package Sinfo is
       --  Compile_Time_Known_Aggregate (Flag18-Sem)
       --  Expansion_Delayed (Flag11-Sem)
       --  Has_Self_Reference (Flag13-Sem)
+      --  Is_Homogeneous_Aggregate (Flag14)
       --  plus fields for expression
 
       --  Note: this structure is used for both record and array aggregates
@@ -7646,6 +7650,7 @@ package Sinfo is
       --  Is_Disabled (Flag15-Sem)
       --  Is_Boolean_Aspect (Flag16-Sem)
       --  Split_PPC (Flag17) Set if split pre/post attribute
+      --  Aspect_On_Partial_View (Flag18-Sem)
 
       --  Note: Aspect_Specification is an Ada 2012 feature
 
@@ -9307,6 +9312,9 @@ package Sinfo is
    function Array_Aggregate
      (N : Node_Id) return Node_Id;    -- Node3
 
+   function Aspect_On_Partial_View
+     (N : Node_Id) return Boolean;    -- Flag18
+
    function Aspect_Rep_Item
      (N : Node_Id) return Node_Id;    -- Node2
 
@@ -9853,6 +9861,9 @@ package Sinfo is
    function Is_Generic_Contract_Pragma
      (N : Node_Id) return Boolean;    -- Flag2
 
+   function Is_Homogeneous_Aggregate
+     (N : Node_Id) return Boolean;    -- Flag14
+
    function Is_Ignored
      (N : Node_Id) return Boolean;    -- Flag9
 
@@ -10351,6 +10362,8 @@ package Sinfo is
    --  tree pointers (List1-4), the parent pointer of the Val node is set to
    --  point back to node N. This automates the setting of the parent pointer.
 
+   --  WARNING: There is a matching C declaration of a few subprograms in fe.h
+
    procedure Set_Abort_Present
      (N : Node_Id; Val : Boolean := True);    -- Flag15
 
@@ -10416,6 +10429,9 @@ package Sinfo is
 
    procedure Set_Array_Aggregate
      (N : Node_Id; Val : Node_Id);            -- Node3
+
+   procedure Set_Aspect_On_Partial_View
+     (N : Node_Id; Val : Boolean := True);    -- Flag18
 
    procedure Set_Aspect_Rep_Item
      (N : Node_Id; Val : Node_Id);            -- Node2
@@ -10960,6 +10976,9 @@ package Sinfo is
    procedure Set_Is_Generic_Contract_Pragma
      (N : Node_Id; Val : Boolean := True);    -- Flag2
 
+   procedure Set_Is_Homogeneous_Aggregate
+     (N : Node_Id; Val : Boolean := True);    -- Flag14
+
    procedure Set_Is_Ignored
      (N : Node_Id; Val : Boolean := True);    -- Flag9
 
@@ -11466,6 +11485,8 @@ package Sinfo is
    --  returns the location of the IF token in the END IF sequence by
    --  translating the value of the End_Span field.
 
+   --  WARNING: There is a matching C declaration of this subprogram in fe.h
+
    procedure Set_End_Location (N : Node_Id; S : Source_Ptr);
    --  N is an N_If_Statement or N_Case_Statement node. This procedure sets
    --  the End_Span field to correspond to the given value S. In other words,
@@ -11581,6 +11602,27 @@ package Sinfo is
       V9  : Node_Kind;
       V10 : Node_Kind;
       V11 : Node_Kind) return Boolean;
+
+   --  12..15-parameter versions are not yet needed
+
+   function Nkind_In
+     (T   : Node_Kind;
+      V1  : Node_Kind;
+      V2  : Node_Kind;
+      V3  : Node_Kind;
+      V4  : Node_Kind;
+      V5  : Node_Kind;
+      V6  : Node_Kind;
+      V7  : Node_Kind;
+      V8  : Node_Kind;
+      V9  : Node_Kind;
+      V10 : Node_Kind;
+      V11 : Node_Kind;
+      V12 : Node_Kind;
+      V13 : Node_Kind;
+      V14 : Node_Kind;
+      V15 : Node_Kind;
+      V16 : Node_Kind) return Boolean;
 
    pragma Inline (Nkind_In);
    --  Inline all above functions
@@ -11968,7 +12010,7 @@ package Sinfo is
 
      N_Iterated_Component_Association =>
        (1 => True,    --  Defining_Identifier (Node1)
-        2 => False,   --  unused
+        2 => True,    --  Loop_Actions (List2-Sem)
         3 => True,    --  Expression (Node3)
         4 => True,    --  Discrete_Choices (List4)
         5 => False),  --  unused
@@ -13307,6 +13349,7 @@ package Sinfo is
    pragma Inline (Ancestor_Part);
    pragma Inline (Atomic_Sync_Required);
    pragma Inline (Array_Aggregate);
+   pragma Inline (Aspect_On_Partial_View);
    pragma Inline (Aspect_Rep_Item);
    pragma Inline (Assignment_OK);
    pragma Inline (Associated_Node);
@@ -13490,6 +13533,7 @@ package Sinfo is
    pragma Inline (Is_Finalization_Wrapper);
    pragma Inline (Is_Folded_In_Parser);
    pragma Inline (Is_Generic_Contract_Pragma);
+   pragma Inline (Is_Homogeneous_Aggregate);
    pragma Inline (Is_Ignored);
    pragma Inline (Is_Ignored_Ghost_Pragma);
    pragma Inline (Is_In_Discriminant_Check);
@@ -13673,6 +13717,7 @@ package Sinfo is
    pragma Inline (Set_Alternatives);
    pragma Inline (Set_Ancestor_Part);
    pragma Inline (Set_Array_Aggregate);
+   pragma Inline (Set_Aspect_On_Partial_View);
    pragma Inline (Set_Aspect_Rep_Item);
    pragma Inline (Set_Assignment_OK);
    pragma Inline (Set_Associated_Node);
@@ -13855,6 +13900,7 @@ package Sinfo is
    pragma Inline (Set_Is_Finalization_Wrapper);
    pragma Inline (Set_Is_Folded_In_Parser);
    pragma Inline (Set_Is_Generic_Contract_Pragma);
+   pragma Inline (Set_Is_Homogeneous_Aggregate);
    pragma Inline (Set_Is_Ignored);
    pragma Inline (Set_Is_Ignored_Ghost_Pragma);
    pragma Inline (Set_Is_In_Discriminant_Check);

@@ -36,9 +36,7 @@ toolsdev: setup
 setup: setup-snames setup-factory
 
 .PHONY: setup-snames
-setup-snames:
-
-xsetup-snames: gnat/snames.ads-tmpl gnat/snames.adb-tmpl gnat/xutil.ads gnat/xutil.adb
+setup-snames: gnat/snames.ads-tmpl gnat/snames.adb-tmpl gnat/xutil.ads gnat/xutil.adb gnat/version.c
 	$(GPRBUILD) -p  -XBLD=$(BLD) $(GPRBUILD_FLAGS) gnat/snames.gpr
 	cd gnat ; ./xsnamest$(exe_ext)
 	if cmp --quiet gnat/snames.ns gnat/snames.ads; then \
@@ -72,6 +70,11 @@ setup-factory:
 	  echo "update ada_trees-factory.adb"; \
 	  mv tools/tool_utils/ada_trees-factory.nb tools/tool_utils/ada_trees-factory.adb; \
 	fi
+
+# Generate a version string to match the compiler.
+gnat/version.c:
+	printf "char version_string[] = \"%s\";\n" `gcc -dumpversion` \
+	  > $@
 
 # ==================================================== install
 

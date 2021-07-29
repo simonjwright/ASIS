@@ -15,9 +15,9 @@
 -- OUT ANY WARRANTY;  without even the  implied warranty of MERCHANTABILITY --
 -- or FITNESS FOR A PARTICULAR PURPOSE.                                     --
 --                                                                          --
---                                                                          --
---                                                                          --
---                                                                          --
+-- As a special exception under Section 7 of GPL version 3, you are granted --
+-- additional permissions described in the GCC Runtime Library Exception,   --
+-- version 3.1, as published by the Free Software Foundation.               --
 --                                                                          --
 -- You should have received a copy of the GNU General Public License and    --
 -- a copy of the GCC Runtime Library Exception along with this program;     --
@@ -357,6 +357,14 @@ package body Repinfo is
          Write_Eol;
          Write_Line ("}");
       end if;
+
+      --  The component type is relevant for an array
+
+      if List_Representation_Info = 4
+        and then Is_Itype (Component_Type (Base_Type (Ent)))
+      then
+         Relevant_Entities.Set (Component_Type (Base_Type (Ent)), True);
+      end if;
    end List_Array_Info;
 
    ---------------------------
@@ -479,6 +487,7 @@ package body Repinfo is
 
       if Present (Ent)
         and then Nkind (Declaration_Node (Ent)) not in N_Renaming_Declaration
+        and then not Is_Ignored_Ghost_Entity (Ent)
       then
          --  If entity is a subprogram and we are listing mechanisms,
          --  then we need to list mechanisms for this entity. We skip this
@@ -538,18 +547,15 @@ package body Repinfo is
                      List_Record_Info (E, Bytes_Big_Endian);
                   end if;
 
+                  --  Recurse into entities local to a record type
+
+                  if List_Representation_Info = 4 then
+                     List_Entities (E, Bytes_Big_Endian, False);
+                  end if;
+
                elsif Is_Array_Type (E) then
                   if List_Representation_Info >= 1 then
                      List_Array_Info (E, Bytes_Big_Endian);
-                  end if;
-
-                  --  The component type is relevant for an array
-
-                  if List_Representation_Info = 4
-                    and then Is_Itype (Component_Type (Base_Type (E)))
-                  then
-                     Relevant_Entities.Set
-                       (Component_Type (Base_Type (E)), True);
                   end if;
 
                elsif Is_Type (E) then
@@ -967,6 +973,12 @@ package body Repinfo is
 
          List_Linker_Section (Ent);
       end if;
+
+      --  The type is relevant for an object
+
+      if List_Representation_Info = 4 and then Is_Itype (Etype (Ent)) then
+         Relevant_Entities.Set (Etype (Ent), True);
+      end if;
    end List_Object_Info;
 
    ----------------------
@@ -1143,7 +1155,7 @@ package body Repinfo is
             if Ekind (Ent) = E_Discriminant then
                Spaces (Indent);
                Write_Str ("      ""discriminant"": ");
-               UI_Write (Discriminant_Number (Ent));
+               UI_Write (Discriminant_Number (Ent), Decimal);
                Write_Line (",");
             end if;
             Spaces (Indent);
@@ -1174,7 +1186,7 @@ package body Repinfo is
             Spaces (Max_Spos_Length - 2);
 
             if Starting_Position /= Uint_0 then
-               UI_Write (Starting_Position);
+               UI_Write (Starting_Position, Decimal);
                Write_Str (" + ");
             end if;
 
@@ -1198,7 +1210,7 @@ package body Repinfo is
             Sbit := Sbit - SSU;
          end if;
 
-         UI_Write (Sbit);
+         UI_Write (Sbit, Decimal);
 
          if List_Representation_Info_To_JSON then
             Write_Line (", ");
@@ -1220,13 +1232,13 @@ package body Repinfo is
             Lbit := Sbit + Esiz - 1;
 
             if List_Representation_Info_To_JSON then
-               UI_Write (Esiz);
+               UI_Write (Esiz, Decimal);
             else
                if Lbit >= 0 and then Lbit < 10 then
                   Write_Char (' ');
                end if;
 
-               UI_Write (Lbit);
+               UI_Write (Lbit, Decimal);
             end if;
 
          --  The test for Esize (Ent) not Uint_0 here is an annoying special
@@ -1274,6 +1286,12 @@ package body Repinfo is
             Write_Str ("    }");
          else
             Write_Line (";");
+         end if;
+
+         --  The type is relevant for a component
+
+         if List_Representation_Info = 4 and then Is_Itype (Etype (Ent)) then
+            Relevant_Entities.Set (Etype (Ent), True);
          end if;
       end List_Component_Layout;
 
@@ -1673,6 +1691,15 @@ package body Repinfo is
          Write_Eol;
          Write_Line ("}");
       end if;
+
+      --  The type is relevant for a record subtype
+
+      if List_Representation_Info = 4
+        and then not Is_Base_Type (Ent)
+        and then Is_Itype (Etype (Ent))
+      then
+         Relevant_Entities.Set (Etype (Ent), True);
+      end if;
    end List_Record_Info;
 
    -------------------
@@ -1801,16 +1828,23 @@ package body Repinfo is
                    Has_Rep_Item (Ent, Name_Scalar_Storage_Order)
                      or else SSO_Set_Low_By_Default  (Ent)
                      or else SSO_Set_High_By_Default (Ent);
-      --  Scalar_Storage_Order is displayed if specified explicitly
-      --  or set by Default_Scalar_Storage_Order.
+      --  Scalar_Storage_Order is displayed if specified explicitly or set by
+      --  Default_Scalar_Storage_Order.
 
    --  Start of processing for List_Scalar_Storage_Order
 
    begin
       --  For record types, list Bit_Order if not default, or if SSO is shown
 
+      --  Also, when -gnatR4 is in effect always list bit order and scalar
+      --  storage order explicitly, so that you don't need to know the native
+      --  endianness of the target for which the output was produced in order
+      --  to interpret it.
+
       if Is_Record_Type (Ent)
-        and then (List_SSO or else Reverse_Bit_Order (Ent))
+        and then (List_SSO
+                   or else Reverse_Bit_Order (Ent)
+                   or else List_Representation_Info = 4)
       then
          List_Attr ("Bit_Order", Reverse_Bit_Order (Ent));
       end if;
@@ -1818,7 +1852,7 @@ package body Repinfo is
       --  List SSO if required. If not, then storage is supposed to be in
       --  native order.
 
-      if List_SSO then
+      if List_SSO or else List_Representation_Info = 4 then
          List_Attr ("Scalar_Storage_Order", Reverse_Storage_Order (Ent));
       else
          pragma Assert (not Reverse_Storage_Order (Ent));
@@ -2407,7 +2441,7 @@ package body Repinfo is
          end if;
 
       else
-         UI_Write (Val);
+         UI_Write (Val, Decimal);
       end if;
    end Write_Val;
 
